@@ -4,5 +4,8 @@
 *.pdf binary
 *.png binary
 *.mp4 binary
+*.mp3 binary
+*.wav binary
+*.webm binary
 *.zip binary
 *.sqlite3 binary

@@ -1,0 +1,25 @@
+{
+  "output": "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\Probaho-presentation.mp4",
+  "frames": 6477,
+  "duration_seconds": 259.08,
+  "fps": 25,
+  "width": 1920,
+  "height": 1080,
+  "render_seconds": 336.28,
+  "voice_source": "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\presentation-production\\render\\work\\narration-joined.wav",
+  "preview": false,
+  "fresh_ui_assets": [
+    "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\presentation-production\\assets\\activity.png",
+    "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\presentation-production\\assets\\approved.png",
+    "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\presentation-production\\assets\\assistant.png",
+    "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\presentation-production\\assets\\consent.png",
+    "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\presentation-production\\assets\\executed.png",
+    "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\presentation-production\\assets\\import-preview.png",
+    "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\presentation-production\\assets\\overview.png",
+    "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\presentation-production\\assets\\plans.png",
+    "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\presentation-production\\assets\\readback.png",
+    "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\presentation-production\\assets\\records.png",
+    "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\presentation-production\\assets\\recovered-overview.png"
+  ],
+  "financial_fixture": "Synthetic Shapla Services; documented exact integer-paisa calculations"
+}

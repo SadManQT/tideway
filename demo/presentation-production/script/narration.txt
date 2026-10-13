@@ -1,0 +1,23 @@
+Payroll is approaching. A customer may pay late. A supplier still needs payment. For a small business, those dates can create a cash gap. Probaho helps the owner see that gap, compare realistic options, and stay in control of the next action.
+
+Probaho is an SME finance copilot for Topic E. This presentation uses synthetic Bangladeshi taka records in a local sandbox. The workflow is records, projection, comparison, human approval, execution, and evidence.
+
+Shapla Services starts with one hundred twenty thousand taka. Payroll needs eighty thousand, the supplier bill needs seventy thousand, and a confirmed receivable brings twenty thousand. By October thirty-first, closing cash is minus ten thousand. Against a twenty-thousand reserve floor, the shortfall is thirty thousand.
+
+The Records page brings transactions, invoices, and bills together. The owner selects one business and imports a combined CSV. Every row is validated before anything is written. Dates, amounts, currency, and conflicting identifiers are checked, and source records remain linked to the calculations.
+
+The overview compares scheduled cash with a seven-day late-collection scenario. Here, the receivable falls beyond the target date, so closing cash drops to minus thirty thousand and the reserve gap grows to fifty thousand. The arithmetic uses integer paisa, rather than a language model's estimate.
+
+Probaho compares a collection reminder, supplier rescheduling, and mock financing. A reminder creates a draft; it never counts as collected cash. Financing shows illustrative fees and repayment terms, but cannot execute. The supplier option proposes deferring forty thousand taka to November seventh, while protecting payroll.
+
+Before approval, the owner reviews the payee, source bill, amount, dates, assumptions, and policy limits. Approval is a separate human action. Supplier rescheduling also needs a separate acceptance simulation. That button represents a sandbox scenario, not a genuine supplier response.
+
+After both gates, execution changes only the synthetic payment schedule. Target-date closing cash becomes thirty thousand taka, with no reserve shortfall. The deferred supplier obligation still exists. A receipt shows the approved action and before-and-after state. Retrying with the same idempotency key returns the original receipt, instead of executing twice.
+
+Plans are bound to the selected business, policy, source records, and sandbox snapshot. Changed details invalidate a pending action. Activity exports include permission events and a per-business hash chain. The assistant has no approval, execution, payment, shell, or SQL tool.
+
+The Assistant can explain the cash gap, project scenarios, compare plans, and draft reminders. The demonstrated mode is labelled Local demo and uses deterministic tools. An optional AI adapter requires the owner's key and per-message consent; live-model quality has not yet been tested.
+
+Checked-in verification records thirty passing backend tests, eighteen passing deterministic evaluation cases, and desktop and mobile browser checks. These are synthetic correctness and safety results. They do not establish real-world business improvement or production readiness.
+
+Probaho connects a cash gap to a reviewed action and a verifiable receipt. The next step is consented SME usability testing and live-model evaluation. Financial participation, with the owner in control.

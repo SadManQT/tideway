@@ -1,0 +1,77 @@
+{
+  "status": "passed",
+  "source": "Actual Probaho UI; installed Chrome via Playwright",
+  "viewport": [
+    1440,
+    1000
+  ],
+  "full_page": false,
+  "fixture": "Fresh synthetic Shapla Services in isolated disposable database",
+  "live_ai_tested": false,
+  "import": "Valid example CSV locally previewed then cancelled; no records changed",
+  "initial_closing_bdt": -10000,
+  "initial_reserve_shortfall_bdt": 30000,
+  "supplier_reschedule_amount_bdt": 40000,
+  "approved_recovery_closing_bdt": 30000,
+  "approved_recovery_shortfall_bdt": 0,
+  "real_money_movement": false,
+  "supplier_contacted": false,
+  "screenshots": [
+    {
+      "file": "overview.png",
+      "elapsed_seconds": 1.02,
+      "scroll_y": 0
+    },
+    {
+      "file": "records.png",
+      "elapsed_seconds": 4.62,
+      "scroll_y": 0
+    },
+    {
+      "file": "import-preview.png",
+      "elapsed_seconds": 8.04,
+      "scroll_y": 0
+    },
+    {
+      "file": "assistant.png",
+      "elapsed_seconds": 12.54,
+      "scroll_y": 0
+    },
+    {
+      "file": "plans.png",
+      "elapsed_seconds": 16.35,
+      "scroll_y": 0
+    },
+    {
+      "file": "approved.png",
+      "elapsed_seconds": 20.19,
+      "scroll_y": 1280
+    },
+    {
+      "file": "consent.png",
+      "elapsed_seconds": 23.41,
+      "scroll_y": 1280
+    },
+    {
+      "file": "executed.png",
+      "elapsed_seconds": 26.87,
+      "scroll_y": 1365
+    },
+    {
+      "file": "readback.png",
+      "elapsed_seconds": 31.2,
+      "scroll_y": 6408
+    },
+    {
+      "file": "recovered-overview.png",
+      "elapsed_seconds": 35.19,
+      "scroll_y": 0
+    },
+    {
+      "file": "activity.png",
+      "elapsed_seconds": 38.78,
+      "scroll_y": 0
+    }
+  ],
+  "page_errors": []
+}

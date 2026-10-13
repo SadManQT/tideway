@@ -1,0 +1,30 @@
+{
+  "status": "passed",
+  "file": "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\Probaho-presentation.mp4",
+  "file_bytes": 16367785,
+  "duration_seconds": 259.08,
+  "expected_duration_seconds": 259.08,
+  "streams": [
+    {
+      "type": "video",
+      "codec": "h264",
+      "stream_duration_seconds": 259.08,
+      "width": 1920,
+      "height": 1080,
+      "pixel_format": "yuv420p",
+      "fps": 25.0,
+      "frames": 6477
+    },
+    {
+      "type": "audio",
+      "codec": "aac",
+      "stream_duration_seconds": 259.08,
+      "sample_rate": 48000,
+      "channels": 2,
+      "layout": "stereo",
+      "bitrate": 165092
+    }
+  ],
+  "entire_audio_stream_decoded_without_errors": true,
+  "scope": "Independent media stream/duration/decode check; root separately verifies PCM placement and visual motion."
+}

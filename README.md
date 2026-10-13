@@ -122,6 +122,12 @@ python tests/browser_check.py
 
 The browser check uses an isolated temporary database and installed Chrome/Playwright. It verifies the overview, exact Shapla gap, records view, combined import and escaping, comparison, approval, supplier-consent gate, execution receipt/read-back, reset, evidence export, assistant, desktop/mobile layout, and no page errors. It does **not** prove live-model quality or organizer acceptance.
 
+## Motion presentation
+
+[Watch or download the narrated presentation](demo/Probaho-presentation.mp4) — **4:19**, 1080p, English AI voice, reference-inspired motion and genuine synthetic-sandbox UI captures.
+
+[Editable source ZIP](demo/Probaho-presentation-source.zip) and [production instructions](demo/presentation-production/README.md) include the scene script, final narration, motion renderer and QA reports. All twelve scenes were checked for motion and narration timing; the final audio/video decode without errors. The supplied visual reference is [reference.mp4](reference.mp4).
+
 ## Repository contents
 
 - `finmate/finance.py` — validation, deterministic projection, gap calculation, and plan comparison.

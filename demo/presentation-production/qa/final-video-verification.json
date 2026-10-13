@@ -1,0 +1,266 @@
+{
+  "status": "passed",
+  "video": "C:\\Users\\User\\OneDrive\\Desktop\\2-1\\CSE 207\\TF\\FinMate\\demo\\Probaho-presentation.mp4",
+  "sha256": "88baa77aef2135f68105d3adddfde38865d8206b0401c5ebf441342dce82fc73",
+  "bytes": 16367785,
+  "width": 1920,
+  "height": 1080,
+  "fps": 25.0,
+  "frames": 6477,
+  "duration_seconds": 259.08,
+  "decoded_audio_duration_seconds": 259.0933333333333,
+  "faststart": true,
+  "mp4_boxes": [
+    {
+      "type": "ftyp",
+      "offset": 0,
+      "bytes": 32
+    },
+    {
+      "type": "moov",
+      "offset": 32,
+      "bytes": 197352
+    },
+    {
+      "type": "free",
+      "offset": 197384,
+      "bytes": 8
+    },
+    {
+      "type": "mdat",
+      "offset": 197392,
+      "bytes": 16170393
+    }
+  ],
+  "full_decode_errors": 0,
+  "scenes": [
+    {
+      "scene_id": "01-problem",
+      "sample_seconds": [
+        1.428,
+        4.08,
+        9.18,
+        13.26,
+        18.36
+      ],
+      "adjacent_frame_mean_differences": [
+        2.4613,
+        3.7925,
+        1.8232,
+        0.0002
+      ],
+      "motion_detected": true,
+      "narration_correlation": 0.999887,
+      "best_alignment_offset_ms": 0.0
+    },
+    {
+      "scene_id": "02-product",
+      "sample_seconds": [
+        21.682,
+        24.064,
+        28.644,
+        32.308,
+        36.888
+      ],
+      "adjacent_frame_mean_differences": [
+        60.6932,
+        18.3144,
+        0.4329,
+        0.0001
+      ],
+      "motion_detected": true,
+      "narration_correlation": 0.999912,
+      "best_alignment_offset_ms": 0.0
+    },
+    {
+      "scene_id": "03-exact-math",
+      "sample_seconds": [
+        40.341,
+        43.352,
+        49.142,
+        53.774,
+        59.564
+      ],
+      "adjacent_frame_mean_differences": [
+        5.7974,
+        8.1421,
+        1.6097,
+        0.0853
+      ],
+      "motion_detected": true,
+      "narration_correlation": 0.999899,
+      "best_alignment_offset_ms": 0.0
+    },
+    {
+      "scene_id": "04-records",
+      "sample_seconds": [
+        63.47,
+        66.424,
+        72.104,
+        76.648,
+        82.328
+      ],
+      "adjacent_frame_mean_differences": [
+        62.1264,
+        5.1649,
+        9.3252,
+        2.7398
+      ],
+      "motion_detected": true,
+      "narration_correlation": 0.999885,
+      "best_alignment_offset_ms": 0.0
+    },
+    {
+      "scene_id": "05-scenarios",
+      "sample_seconds": [
+        86.05,
+        88.744,
+        93.924,
+        98.068,
+        103.248
+      ],
+      "adjacent_frame_mean_differences": [
+        0.2727,
+        3.1706,
+        3.1902,
+        0.1943
+      ],
+      "motion_detected": true,
+      "narration_correlation": 0.999818,
+      "best_alignment_offset_ms": 0.0
+    },
+    {
+      "scene_id": "06-options",
+      "sample_seconds": [
+        107.017,
+        110.168,
+        116.228,
+        121.076,
+        127.136
+      ],
+      "adjacent_frame_mean_differences": [
+        2.1658,
+        5.5309,
+        2.4904,
+        0.0225
+      ],
+      "motion_detected": true,
+      "narration_correlation": 0.999842,
+      "best_alignment_offset_ms": 0.0
+    },
+    {
+      "scene_id": "07-review",
+      "sample_seconds": [
+        131.136,
+        134.064,
+        139.694,
+        144.198,
+        149.828
+      ],
+      "adjacent_frame_mean_differences": [
+        2.128,
+        36.9123,
+        48.1858,
+        5.9456
+      ],
+      "motion_detected": true,
+      "narration_correlation": 0.999925,
+      "best_alignment_offset_ms": 0.0
+    },
+    {
+      "scene_id": "08-execute",
+      "sample_seconds": [
+        153.984,
+        157.52,
+        164.32,
+        169.76,
+        176.56
+      ],
+      "adjacent_frame_mean_differences": [
+        1.9089,
+        4.2812,
+        81.9511,
+        4.6937
+      ],
+      "motion_detected": true,
+      "narration_correlation": 0.9999,
+      "best_alignment_offset_ms": 0.0
+    },
+    {
+      "scene_id": "09-security",
+      "sample_seconds": [
+        180.823,
+        183.688,
+        189.198,
+        193.606,
+        199.116
+      ],
+      "adjacent_frame_mean_differences": [
+        0.8949,
+        1.2769,
+        81.2599,
+        1.7963
+      ],
+      "motion_detected": true,
+      "narration_correlation": 0.999849,
+      "best_alignment_offset_ms": 0.0
+    },
+    {
+      "scene_id": "10-assistant",
+      "sample_seconds": [
+        202.798,
+        205.544,
+        210.824,
+        215.048,
+        220.328
+      ],
+      "adjacent_frame_mean_differences": [
+        70.9412,
+        4.0491,
+        2.1225,
+        1.7339
+      ],
+      "motion_detected": true,
+      "narration_correlation": 0.999814,
+      "best_alignment_offset_ms": 0.0
+    },
+    {
+      "scene_id": "11-validation",
+      "sample_seconds": [
+        223.843,
+        226.448,
+        231.458,
+        235.466,
+        240.476
+      ],
+      "adjacent_frame_mean_differences": [
+        1.3294,
+        4.4859,
+        1.7924,
+        0.1769
+      ],
+      "motion_detected": true,
+      "narration_correlation": 0.999833,
+      "best_alignment_offset_ms": 0.0
+    },
+    {
+      "scene_id": "12-close",
+      "sample_seconds": [
+        243.642,
+        245.8,
+        249.95,
+        253.27,
+        257.42
+      ],
+      "adjacent_frame_mean_differences": [
+        2.2451,
+        1.0343,
+        0.8373,
+        0.477
+      ],
+      "motion_detected": true,
+      "narration_correlation": 0.999879,
+      "best_alignment_offset_ms": 0.0
+    }
+  ]
+}

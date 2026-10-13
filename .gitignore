@@ -5,3 +5,25 @@ __pycache__/
 evidence/private/
 .opencode/
 *.zip
+!demo/Probaho-presentation-source.zip
+
+# Presentation dependency caches and intermediate production files.
+/tmp/
+/demo/*-silent.mp4
+/demo/presentation-production/audio/
+/demo/presentation-production/audio-probe/
+/demo/presentation-production/**/packages/
+/demo/presentation-production/**/*.partial.*
+/demo/presentation-production/**/*.pending
+/demo/presentation-production/audio-ai/*cancelled*.mp3
+/demo/presentation-production/assets/browser-runtime/
+/demo/presentation-production/assets/recordings/
+/demo/presentation-production/assets/transcribe_probe.py
+/demo/presentation-production/assets/voice-probe-transcript.json
+/demo/presentation-production/render/work/
+/demo/presentation-production/render/frames/
+/demo/presentation-production/render/preview-frames/
+/demo/presentation-production/render/motion-preview.*
+/demo/presentation-production/render/intro-scenes.json
+/demo/presentation-production/qa/final-audio-decoded.wav
+.env.local

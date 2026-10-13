@@ -1,0 +1,78 @@
+{
+  "source": "demo/Probaho-presentation.mp4",
+  "samples": [
+    {
+      "scene": "01-problem",
+      "seconds": 16.32,
+      "file": "demo\\presentation-production\\render\\encoded-qa\\01-problem.png"
+    },
+    {
+      "scene": "02-product",
+      "seconds": 35.056,
+      "file": "demo\\presentation-production\\render\\encoded-qa\\02-product.png"
+    },
+    {
+      "scene": "03-exact-math",
+      "seconds": 57.248,
+      "file": "demo\\presentation-production\\render\\encoded-qa\\03-exact-math.png"
+    },
+    {
+      "scene": "04-records",
+      "seconds": 80.056,
+      "file": "demo\\presentation-production\\render\\encoded-qa\\04-records.png"
+    },
+    {
+      "scene": "05-scenarios",
+      "seconds": 101.176,
+      "file": "demo\\presentation-production\\render\\encoded-qa\\05-scenarios.png"
+    },
+    {
+      "scene": "06-options",
+      "seconds": 124.712,
+      "file": "demo\\presentation-production\\render\\encoded-qa\\06-options.png"
+    },
+    {
+      "scene": "07-review",
+      "seconds": 147.576,
+      "file": "demo\\presentation-production\\render\\encoded-qa\\07-review.png"
+    },
+    {
+      "scene": "08-execute",
+      "seconds": 173.84,
+      "file": "demo\\presentation-production\\render\\encoded-qa\\08-execute.png"
+    },
+    {
+      "scene": "09-security",
+      "seconds": 196.912,
+      "file": "demo\\presentation-production\\render\\encoded-qa\\09-security.png"
+    },
+    {
+      "scene": "10-assistant",
+      "seconds": 218.216,
+      "file": "demo\\presentation-production\\render\\encoded-qa\\10-assistant.png"
+    },
+    {
+      "scene": "11-validation",
+      "seconds": 238.472,
+      "file": "demo\\presentation-production\\render\\encoded-qa\\11-validation.png"
+    },
+    {
+      "scene": "12-close",
+      "seconds": 255.76,
+      "file": "demo\\presentation-production\\render\\encoded-qa\\12-close.png"
+    }
+  ],
+  "visual_review": {
+    "status": "passed",
+    "encoded_scene_frames_reviewed": 12,
+    "checks": [
+      "1920 x 1080 frames retain 16:9 geometry",
+      "Navy and blue gradient with teal and amber accents and clean white headings",
+      "Cash arithmetic and reserve label are correct and separate",
+      "Focused import, consent, read-back and permission captures are genuine and readable",
+      "No clipped annotation or empty visible bullet",
+      "Sandbox labels and ordinary AI narration provenance are accurate"
+    ],
+    "issues": []
+  }
+}

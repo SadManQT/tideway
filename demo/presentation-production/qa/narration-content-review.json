@@ -1,0 +1,168 @@
+{
+  "status": "passed_with_asr_spelling_variations",
+  "method": "All 12 takes transcribed independently with local faster-whisper base.en CPU int8; compared against script and generation manifest; PCM/waveform and scheduled placement checks.",
+  "numeric_date_checks": {
+    "opening120000_payroll80000_supplier70000_receivable20000": true,
+    "target_october31_closing_minus10000_reserve20000_gap30000": true,
+    "seven_day_delay_minus30000_gap50000": true,
+    "supplier_deferral40000_to_november7": true,
+    "recovery_closing30000_no_reserve_shortfall": true,
+    "thirty_backend_tests_eighteen_evaluation_cases": true
+  },
+  "literal_critical_matcher_notes": [
+    {
+      "scene_index": 8,
+      "checks": [
+        "no-reserve-shortfall"
+      ]
+    }
+  ],
+  "literal_matcher_review": "The only failed literal phrase is scene 08 \"no reserve shortfall\" recognized as \"no reserved shortfall\"; amount 30,000 and the meaning of no shortfall are retained. Do not interpret this ASR spelling as a financial discrepancy.",
+  "asr_word_boundary_notes": [
+    "cash is sometimes recognized as cache (homophones).",
+    "scene01 owner is recognized as owners.",
+    "scene08 idempotency is recognized as id and potency.",
+    "scene09 \"Changed details invalidate a pending action\" is segmented as \"Change details and validate appending action\".",
+    "scene10 live-model is recognized as Lit model; labelled as labeled.",
+    "scene11 backend is recognized as back-end.",
+    "scene12 consented is segmented as consent at."
+  ],
+  "audio_audition_performed": false,
+  "audition_note": "This model interface does not support audio input. ASR and deterministic waveform/manifest checks provide content/timing evidence; no claim of human listening or voice-identity matching is made.",
+  "all_scene_openings_endings_present": true,
+  "all_waveforms_unclipped": true,
+  "all_script_manifest_text_and_wav_hashes_match": true,
+  "combined_pcm_exactly_matches_ordered_takes": true,
+  "combined_duration_seconds": 247.464,
+  "scheduled_video_duration_seconds": 259.08,
+  "all_audio_takes_fit_scenes_without_trimming": true,
+  "minimum_leading_silence_seconds": 0.21,
+  "maximum_leading_silence_seconds": 0.24,
+  "minimum_trailing_silence_seconds": 0.92,
+  "maximum_trailing_silence_seconds": 0.974,
+  "combined_peak_dbfs": -1.22,
+  "combined_rms_dbfs": -20.55,
+  "normalized_asr_word_error_rate": 0.0409,
+  "timeline": [
+    {
+      "scene_index": 1,
+      "scene_start_seconds": 0,
+      "scene_end_seconds": 20.4,
+      "voice_lead_seconds": 0.3,
+      "audio_duration_seconds": 19.44,
+      "post_audio_room_seconds": 0.66,
+      "leading_silence_seconds": 0.23,
+      "trailing_silence_seconds": 0.93
+    },
+    {
+      "scene_index": 2,
+      "scene_start_seconds": 20.4,
+      "scene_end_seconds": 38.72,
+      "voice_lead_seconds": 0.3,
+      "audio_duration_seconds": 17.352,
+      "post_audio_room_seconds": 0.668,
+      "leading_silence_seconds": 0.23,
+      "trailing_silence_seconds": 0.942
+    },
+    {
+      "scene_index": 3,
+      "scene_start_seconds": 38.72,
+      "scene_end_seconds": 61.88,
+      "voice_lead_seconds": 0.3,
+      "audio_duration_seconds": 22.2,
+      "post_audio_room_seconds": 0.66,
+      "leading_silence_seconds": 0.23,
+      "trailing_silence_seconds": 0.95
+    },
+    {
+      "scene_index": 4,
+      "scene_start_seconds": 61.88,
+      "scene_end_seconds": 84.6,
+      "voice_lead_seconds": 0.3,
+      "audio_duration_seconds": 21.768,
+      "post_audio_room_seconds": 0.652,
+      "leading_silence_seconds": 0.21,
+      "trailing_silence_seconds": 0.938
+    },
+    {
+      "scene_index": 5,
+      "scene_start_seconds": 84.6,
+      "scene_end_seconds": 105.32,
+      "voice_lead_seconds": 0.3,
+      "audio_duration_seconds": 19.752,
+      "post_audio_room_seconds": 0.668,
+      "leading_silence_seconds": 0.22,
+      "trailing_silence_seconds": 0.932
+    },
+    {
+      "scene_index": 6,
+      "scene_start_seconds": 105.32,
+      "scene_end_seconds": 129.56,
+      "voice_lead_seconds": 0.3,
+      "audio_duration_seconds": 23.256,
+      "post_audio_room_seconds": 0.684,
+      "leading_silence_seconds": 0.23,
+      "trailing_silence_seconds": 0.966
+    },
+    {
+      "scene_index": 7,
+      "scene_start_seconds": 129.56,
+      "scene_end_seconds": 152.08,
+      "voice_lead_seconds": 0.3,
+      "audio_duration_seconds": 21.552,
+      "post_audio_room_seconds": 0.668,
+      "leading_silence_seconds": 0.21,
+      "trailing_silence_seconds": 0.932
+    },
+    {
+      "scene_index": 8,
+      "scene_start_seconds": 152.08,
+      "scene_end_seconds": 179.28,
+      "voice_lead_seconds": 0.3,
+      "audio_duration_seconds": 26.232,
+      "post_audio_room_seconds": 0.668,
+      "leading_silence_seconds": 0.21,
+      "trailing_silence_seconds": 0.952
+    },
+    {
+      "scene_index": 9,
+      "scene_start_seconds": 179.28,
+      "scene_end_seconds": 201.32,
+      "voice_lead_seconds": 0.3,
+      "audio_duration_seconds": 21.072,
+      "post_audio_room_seconds": 0.668,
+      "leading_silence_seconds": 0.22,
+      "trailing_silence_seconds": 0.932
+    },
+    {
+      "scene_index": 10,
+      "scene_start_seconds": 201.32,
+      "scene_end_seconds": 222.44,
+      "voice_lead_seconds": 0.3,
+      "audio_duration_seconds": 20.16,
+      "post_audio_room_seconds": 0.66,
+      "leading_silence_seconds": 0.22,
+      "trailing_silence_seconds": 0.92
+    },
+    {
+      "scene_index": 11,
+      "scene_start_seconds": 222.44,
+      "scene_end_seconds": 242.48,
+      "voice_lead_seconds": 0.3,
+      "audio_duration_seconds": 19.056,
+      "post_audio_room_seconds": 0.684,
+      "leading_silence_seconds": 0.23,
+      "trailing_silence_seconds": 0.926
+    },
+    {
+      "scene_index": 12,
+      "scene_start_seconds": 242.48,
+      "scene_end_seconds": 259.08,
+      "voice_lead_seconds": 0.3,
+      "audio_duration_seconds": 15.624,
+      "post_audio_room_seconds": 0.676,
+      "leading_silence_seconds": 0.24,
+      "trailing_silence_seconds": 0.974
+    }
+  ]
+}
