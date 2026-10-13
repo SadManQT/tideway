@@ -1,0 +1,5 @@
+record_type,business_id,id,date,description,amount,type,currency,due_date,status,customer,payee,issue_date,expected_collection_date,priority,reschedule_allowed
+transaction,shapla-services,txn-client-receipt-001,2026-10-10,Client service receipt,25000,income,BDT,,,,,,,,
+transaction,shapla-services,txn-payroll-demo-001,2026-10-31,October payroll,80000,expense,BDT,,,,,,,,
+invoice,shapla-services,inv-client-001,2026-10-01,Service receivable,35000,,BDT,2026-10-31,confirmed,Nila Traders,,2026-10-01,2026-10-31,,
+bill,shapla-services,bill-materials-001,,Supplier materials,12000,,BDT,2026-10-28,open,,,,,normal,true

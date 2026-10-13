@@ -1,0 +1,14 @@
+{
+  "project": "Probaho",
+  "track": "Topic E",
+  "backend_tests_passed": 30,
+  "http_and_domain_tests": "passed",
+  "browser_flow": "passed",
+  "deterministic_evaluation_cases": 18,
+  "deterministic_evaluation_passed": 18,
+  "javascript_syntax": "passed",
+  "live_model_tested": false,
+  "live_model_reason": "No provider key was used by the isolated verification run",
+  "fixture": "Shapla Services synthetic sandbox",
+  "source": "Local unittest and isolated Chrome verification; optional AI adapter uses simulated responses only"
+}

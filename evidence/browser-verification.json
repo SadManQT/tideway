@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "browser": "Installed Chrome via Playwright",
+  "viewport_desktop": [
+    1440,
+    1040
+  ],
+  "viewport_mobile": [
+    390,
+    844
+  ],
+  "live_ai_tested": false,
+  "synthetic_fixture": "shapla-services",
+  "checks": [
+    "exact Shapla opening cash and reserve gap",
+    "recovery plan comparison",
+    "approval requires separate supplier-consent simulation",
+    "execution receipt and actual read-back",
+    "records search",
+    "combined CSV import",
+    "literal HTML escaping",
+    "local assistant gap explanation",
+    "per-business evidence export",
+    "execution-results export",
+    "sandbox reset preserves records",
+    "mobile no horizontal overflow",
+    "no JavaScript errors"
+  ]
+}

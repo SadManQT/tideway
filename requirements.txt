@@ -1,0 +1,2 @@
+# Probaho runtime: Python 3.11+ standard library only.
+# Optional browser verification uses an installed Playwright package and Chrome.
