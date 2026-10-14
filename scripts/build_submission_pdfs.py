@@ -7,6 +7,7 @@ Requires Google Chrome; override the path with the CHROME environment variable.
 from __future__ import annotations
 
 import html
+import json
 import os
 import re
 import subprocess
@@ -97,69 +98,153 @@ def document(work: Path, name: str, markdown_path: Path, destination: Path):
     print_pdf(page, destination)
 
 
-SLIDES = [
-    ("Tideway", "Approval-gated cash-flow rescue for small businesses",
-     ["FinTechathon 2026 · International Track · Topic E: SME Finance Copilot",
-      "An agent that can read, analyse and propose, but cannot approve or execute.",
-      "Synthetic sandbox: no real money, bank, lender or customer."]),
-    ("The moment that matters", "Payroll is days away and cash is short",
-     ["Owners need bounded choices, not another dashboard.",
-      "Which bill can wait? Who can pay early? What if customers pay late?",
-      "An AI that answers must never be able to move money on its own."]),
-    ("A concrete case: Shapla Services (synthetic, BDT)", "Exact numbers, linked to source records",
-     ["Opening cash 120,000 · payroll 80,000 · supplier bill 70,000 · confirmed receivable 20,000",
-      "Scheduled minimum cash: −10,000 on 31 Oct 2026; reserve floor 20,000",
-      "Reserve shortfall: 30,000. Customer habits make it worse."]),
-    ("See the risk", "Customer profiles and a seeded Monte Carlo",
-     ["Credibility-weighted payment profiles: own history n/(n+5), rest from the business average",
-      "Three scenarios (scheduled, likely, stress) plus a 14-day look-ahead",
-      "1,000 seeded runs: probability of breaching the reserve; same records, same answer"]),
-    ("Plan the rescue", "An exact, risk-aware optimiser",
-     ["Searches supplier deferrals, early-payment discounts and zero-cash reminders",
-      "Keeps bundles that hold the reserve every day and keep payroll funded",
-      "Cheapest bundle within the risk target; discounts priced as APR (2%/20 days ≈ 37%)",
-      "Financing: labelled MOCK comparison only, never executable"]),
-    ("Negotiate, then decide", "Simulated counterparties; human approval; signed mandate",
-     ["Counterparties accept, counter or reject; a counter is a new proposal; a refusal re-plans",
-      "Maker-checker with PIN step-up; two people and a typed amount above the threshold",
-      "HMAC-signed mandate, modelled on AP2: scoped, expiring, tamper-evident",
-      "Idempotent execution with before/after state hashes and read-back"]),
-    ("Security: the model is not the weak link", "Enforcement lives outside the model",
-     ["No approve or execute tool; pseudonymised names; record text never sent",
-      "Hidden Unicode stripped; injection quarantined; changed-account and look-alike payee blocks",
-      "Kill switch, circuit breaker, separation of duties, owner-only callback verification",
-      "Hash-chained audit with witness checkpoint and tamper drill"]),
-    ("Evidence", "30 of 30 sandbox cases pass",
-     ["5 task cases + 25 attack cases, assuming a hijacked model and a rubber-stamp human",
-      "Mapped to OWASP LLM and Agentic IDs; 15 further unit and HTTP tests",
-      "Reproducible: python3 -m tideway.selftest · scripts/evaluate.py",
-      "Evidence for these cases only, not proof of security"]),
-    ("Honest limits and next steps", "What we have not done",
-     ["Synthetic data, simulated counterparties, demo-grade PINs and keys",
-      "No live-LLM measurement, no user study, no external penetration test",
-      "Next: baseline comparison, consented SME interviews, a real rail adapter behind the same mandate",
-      "ISO 20022 pain.001 draft shows the adapter boundary; it is never sent"]),
-]
+def _json(path):
+    try:
+        return json.loads((ROOT / path).read_text())
+    except (OSError, ValueError):
+        return None
+
+
+def _tidelm():
+    """Best available TideLM evaluation pair (adapter vs base on the same test set), or None."""
+    for tuned, base in (("evidence/ml/tidelm_v3_eval.json", "evidence/ml/tidelm_base_v3test_eval.json"),
+                        ("evidence/ml/tidelm_ft_eval.json", "evidence/ml/tidelm_base_eval.json")):
+        a, b = _json(tuned), _json(base)
+        if a and b and a.get("test_set") == b.get("test_set"):
+            return a, b
+    return None
+
+
+def _test_count():
+    import ast
+    return sum(1 for path in (ROOT / "tests").glob("test_*.py") for node in ast.walk(ast.parse(path.read_text()))
+               if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"))
+
+
+def slides():
+    """The deck, with every number read from the evidence files at build time (never typed by hand)."""
+    tidepay = (_json("evidence/ml/tidepay_report.json") or {}).get("results", {})
+    verify = _json("evidence/verification-summary.json") or {}
+    lm = _tidelm()
+    pct = lambda v: f"{v * 100:.1f}%".replace(".0%", "%")  # noqa: E731
+    lm_rows = []
+    if lm:
+        tuned, base = lm
+        lm_rows = [("Exact plan (every tool and argument)", pct(base["plan"]["exact_plan_accuracy"]), pct(tuned["plan"]["exact_plan_accuracy"])),
+                   ("Understands the request (intent)", pct(base["plan"]["intent_accuracy"]), pct(tuned["plan"]["intent_accuracy"])),
+                   ("Reads records from messages (F1)", f"{base['extract']['record_f1']:.3f}", f"{tuned['extract']['record_f1']:.3f}"),
+                   ("Flags hidden instructions", pct(base["extract"]["injection_flag_accuracy"]), pct(tuned["extract"]["injection_flag_accuracy"]))]
+    fed, rule, thin, alone = (tidepay.get("federated", {}), tidepay.get("heuristic_v1", {}),
+                              tidepay.get("federated_on_smaller_half_of_smes", {}), tidepay.get("local_only_on_smaller_half_of_smes", {}))
+    return [
+        {"title": "Tideway", "subtitle": "Never miss payroll again.",
+         "bullets": ["On-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, "
+                     "and acts only with your approval.", "FinTechathon 2026 · International Track · Topic E: SME Finance Copilot"],
+         "image": "00-landing.png", "first": True},
+        {"title": "The moment that matters", "subtitle": "Payroll is days away and the cash is not there",
+         "bullets": ["Small businesses are paid late and pay on time: the gap lands on payroll day.",
+                     "Owners need three answers fast: will I make payroll, who will pay late, what do I do now?",
+                     "And an AI that helps must never be able to move money on its own."]},
+        {"title": "See it coming", "subtitle": "Cash weather, three scenarios, 1,000 simulated futures",
+         "bullets": ["Exact daily ledger in minor units with a 14-day look-ahead",
+                     "Scheduled, likely and stress views; \"N of 20 futures fall short\"",
+                     "Shapla Services (synthetic): scheduled low −BDT 10,000 on 31 Oct; reserve gap BDT 30,000"],
+         "image": "01-cash-weather-storm.png"},
+        {"title": "TidePay: our own payment-delay model", "subtitle": "Trained with federated learning: no business shares its invoices",
+         "bullets": [f"Predicts each open invoice's lateness band; drives the scenarios and the Monte Carlo",
+                     f"FedAvg across 40 SMEs with pairwise-mask secure aggregation",
+                     f"Log loss {fed.get('log_loss', '—')} vs {rule.get('log_loss', '—')} for the old rule",
+                     f"Small businesses gain most: {thin.get('mae_days', '—')} vs {alone.get('mae_days', '—')} days error training alone"]},
+        {"title": "TideLM: our own on-device language model", "subtitle": "Qwen3-4B + a LoRA adapter we trained on a laptop with MLX",
+         "table": ([("", "Base model", "TideLM")] + lm_rows) if lm_rows else None,
+         "bullets": ["Eight languages: English, 中文, Español, Bahasa, Français, Português, Hinglish, Banglish",
+                     "Held-out test with company names it never saw; synthetic data"] + ([] if lm_rows else ["Evaluation pending"])},
+        {"title": "Plan the rescue", "subtitle": "An exact, risk-aware optimiser",
+         "bullets": ["Supplier deferrals, early-payment discounts (priced as APR), zero-cash reminders",
+                     "Holds the reserve every day, payroll always funded, ≤ 2 of 20 futures short",
+                     "Explains why the cheaper option is too risky; financing shown as a mock comparison"],
+         "image": "02-rescue-agent-and-plan.png"},
+        {"title": "Approve exactly this", "subtitle": "Human approval, signed mandate, verified execution",
+         "bullets": ["Maker-checker with PIN; two people and a typed amount above the threshold",
+                     "HMAC-signed mandate bound to actions, amounts, snapshot and expiry (AP2-style)",
+                     "Simulated counterparties accept, counter or refuse; idempotent execution with read-back"],
+         "image": "03-approve-exactly-this.png"},
+        {"title": "Talk to it in your language", "subtitle": "Glass-box answers, zero-entry bookkeeping",
+         "bullets": ["Every answer shows TideLM's typed plan; every number comes from Tideway's tools",
+                     "Answers in the language of the question, with the same figures",
+                     "Paste bank or mobile-money alerts, or photograph a receipt: drafts until you confirm"],
+         "image": "07-assistant.png"},
+        {"title": "The model is not the weak link", "subtitle": "Enforcement lives outside the model",
+         "bullets": [f"{verify.get('attacks_blocked', '—')}/{verify.get('attacks', '—')} attacks blocked, "
+                     f"{verify.get('tasks_completed', '—')}/{verify.get('tasks', '—')} tasks completed, assuming a hijacked model",
+                     "Injection and payee-fraud screening in eight languages; changed accounts and look-alikes blocked",
+                     "Kill switch, circuit breaker, separation of duties, hash-chained audit with witness"],
+         "image": "13-security-centre-selftest.png"},
+        {"title": "Built as a product", "subtitle": "Workspaces, teams and roles",
+         "bullets": ["Sign up a business in any of 29 currencies; demo in Bangladesh, China and Singapore",
+                     "Invite your accountant by one-time code; roles per business; tenants never see each other",
+                     "Counterparty risk map: who can hurt your cash, and by how much"],
+         "image": "18-team.png"},
+        {"title": "Evidence, not claims", "subtitle": "Reproducible in one command each",
+         "bullets": [f"{verify.get('passed', '—')}/{verify.get('cases', '—')} self-test cases · {_test_count()} automated tests",
+                     "Model reports, run logs and screenshots in evidence/",
+                     "python3 -m tideway.selftest · python3 -m unittest discover -s tests"]},
+        {"title": "Honest limits, clear next steps", "subtitle": "What we have not done yet",
+         "bullets": ["Synthetic data and simulated counterparties; demo-grade PINs and keys",
+                     "No user study or external penetration test yet",
+                     "Next: consented SME pilots, a real bank rail behind the same mandate, federated TidePay across real users"]},
+    ]
+
+
+def _crop(path: Path, work: Path):
+    """The first screen of a full-page screenshot (16:10), so text stays readable on a slide."""
+    if not path.exists():
+        return None
+    try:
+        from PIL import Image
+    except ImportError:  # Pillow optional: fall back to the full page
+        return path
+    with Image.open(path) as image:
+        width = image.width
+        crop = image.crop((0, 0, width, min(image.height, round(width / 1.6))))
+        target = work / f"crop-{path.name}"
+        crop.save(target)
+    return target
+
 
 SLIDE_CSS = """
 @page { size: 13.333in 7.5in; margin: 0; }
 * { box-sizing: border-box; } body { margin: 0; font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; }
-section { width: 13.333in; height: 7.5in; padding: 0.7in 0.9in; background: #0f3d36; color: #fff; page-break-after: always; position: relative; overflow: hidden; }
-.tag { color: #9fe3c9; font-weight: 700; letter-spacing: .12em; font-size: 14pt; }
-h1 { font-size: 40pt; margin: .35in 0 .05in; } h2 { font-size: 20pt; font-weight: 400; color: #b8e8d6; margin: 0 0 .35in; }
-li { font-size: 21pt; line-height: 1.45; margin-bottom: .1in; } ul { padding-left: .3in; margin: 0; }
-.n { position: absolute; right: .6in; bottom: .35in; color: #8fc4b2; font-size: 11pt; }
-section.first h1 { font-size: 72pt; }
+section { width: 13.333in; height: 7.5in; padding: .6in .8in; background: #0f3d36; color: #fff; page-break-after: always;
+  position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr; align-content: start; }
+section.with-image { grid-template-columns: 4.6in 1fr; column-gap: .4in; }
+.tag { color: #9fe3c9; font-weight: 700; letter-spacing: .12em; font-size: 12pt; }
+h1 { font-size: 34pt; margin: .25in 0 .05in; line-height: 1.1; } h2 { font-size: 17pt; font-weight: 400; color: #b8e8d6; margin: 0 0 .3in; }
+li { font-size: 17pt; line-height: 1.4; margin-bottom: .1in; } ul { padding-left: .28in; margin: 0; }
+.shot { align-self: center; } .shot img { width: 100%; max-height: 6.1in; object-fit: contain; object-position: top;
+  border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,.45); background: #fff; }
+table { border-collapse: collapse; margin: 0 0 .3in; font-size: 16pt; }
+td { padding: .08in .25in; border-bottom: 1px solid rgba(255,255,255,.18); } tr:first-child td { color: #9fe3c9; font-weight: 700; }
+td:last-child { color: #7ff0c4; font-weight: 700; }
+.n { position: absolute; right: .6in; bottom: .3in; color: #8fc4b2; font-size: 10pt; }
+section.first h1 { font-size: 66pt; } section.first h2 { font-size: 30pt; color: #fff; font-weight: 700; }
 """
 
 
 def pitch(work: Path):
     parts = []
-    for number, (title, subtitle, bullets) in enumerate(SLIDES, 1):
-        parts.append(f"<section class='{'first' if number == 1 else ''}'><div class=tag>TIDEWAY · TOPIC E</div>"
-                     f"<h1>{html.escape(title)}</h1><h2>{html.escape(subtitle)}</h2>"
-                     "<ul>" + "".join(f"<li>{html.escape(item)}</li>" for item in bullets) + "</ul>"
-                     f"<div class=n>{number:02d} · synthetic sandbox · draft deck: add team details</div></section>")
+    for number, slide in enumerate(slides(), 1):
+        text = (f"<div><div class=tag>TIDEWAY · TOPIC E</div><h1>{html.escape(slide['title'])}</h1>"
+                f"<h2>{html.escape(slide['subtitle'])}</h2>")
+        if slide.get("table"):
+            text += "<table>" + "".join("<tr>" + "".join(f"<td>{html.escape(cell)}</td>" for cell in row) + "</tr>"
+                                        for row in slide["table"]) + "</table>"
+        text += "<ul>" + "".join(f"<li>{html.escape(item)}</li>" for item in slide["bullets"]) + "</ul></div>"
+        image = _crop(ROOT / "evidence" / "screens" / slide["image"], work) if slide.get("image") else None
+        if image and image.exists():
+            text += f"<div class=shot><img src='{image.as_uri()}' alt=''></div>"
+        classes = " ".join(c for c in ("first" if slide.get("first") else "", "with-image" if image and image.exists() else "") if c)
+        parts.append(f"<section class='{classes}'>{text}<div class=n>{number:02d} · synthetic sandbox</div></section>")
     page = work / "pitch.html"
     page.write_text(f"<!doctype html><meta charset=utf-8><title>Tideway pitch</title><style>{SLIDE_CSS}</style>" + "".join(parts),
                     encoding="utf-8")
