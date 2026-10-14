@@ -6,14 +6,16 @@ always names who did what.
 """
 from __future__ import annotations
 
+import re
+import secrets
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 from . import analytics, counterparty, planner
-from .domain import CURRENCIES, MAX_AMOUNT_MINOR, OPEN_INVOICE_STATUSES, ValidationError, add_days, human_date, money_text, parse_combined_csv, valid_date
+from .domain import CURRENCIES, MAX_AMOUNT_MINOR, OPEN_INVOICE_STATUSES, ValidationError, add_days, human_date, money_text, parse_combined_csv, parse_nonnegative, valid_date
 from .fixtures import FIXTURE_VERSION, OPERATORS, fixtures
 from .projection import horizon_end, project, summary
-from .store import Store
+from .store import PLANS, Store
 
 
 MC_RUNS = 1000
@@ -38,8 +40,39 @@ class Tideway:
         self.store = Store(db_path, key_path, witness_path)
         if seed and not self.store.seeded():
             self.seed()
+        if seed:
+            self.ensure_demo_access()
 
     # ---- setup ---------------------------------------------------------------
+
+    def ensure_demo_access(self):
+        """Demo operators are members of the demo businesses only (also upgrades databases made before memberships)."""
+        existing = {item["id"] for item in self.store.list_businesses()}
+        for fixture in fixtures():
+            business_id = fixture["business"]["business_id"]
+            if business_id in existing:
+                for item in OPERATORS:
+                    self.store.ensure_membership(business_id, item["id"], item["role"])
+
+    def signup(self, body):
+        """A new workspace with sensible, editable safety defaults derived from the owner's own numbers."""
+        fields = ("business_name", "currency", "country", "sector", "opening_cash", "reserve_floor", "owner_name",
+                  "username", "pin", "plan")
+        if not isinstance(body, dict) or set(body) - set(fields):
+            raise ValidationError("Unexpected sign-up field.")
+        opening = parse_nonnegative(body.get("opening_cash"), "Current cash balance")
+        reserve = parse_nonnegative(body.get("reserve_floor"), "Safety reserve")
+        limit = max(reserve, opening // 4, 10_000)
+        name = str(body.get("business_name") or "").strip()
+        slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:40] or "business"
+        today = datetime.now(timezone.utc).date().isoformat()
+        business = {"business_id": f"{slug}-{secrets.token_hex(3)}", "name": name, "currency": body.get("currency"),
+                    "opening_cash_minor": opening, "opening_date": today, "default_target_date": add_days(today, 30),
+                    "country": str(body.get("country") or "").upper(), "sector": body.get("sector") or "", "synthetic": False}
+        policy = {"reserve_floor_minor": reserve, "action_limit_minor": limit, "daily_cap_minor": limit * 2,
+                  "dual_approval_threshold_minor": limit, "autonomy_level": "propose"}
+        return self.store.signup(business, policy, body.get("username"), body.get("owner_name"), body.get("pin"),
+                                 body.get("plan") or "starter")
 
     def seed(self):
         for item in OPERATORS:
@@ -56,8 +89,9 @@ class Tideway:
             self.store.import_records(business["business_id"], parsed, actor="system:seed", source="demo")
         self.store.mark_seeded(FIXTURE_VERSION)
 
-    def config(self):
-        businesses = self.store.list_businesses()
+    def config(self, operator=None):
+        """Public settings, plus only the businesses this operator is a member of (never other tenants)."""
+        businesses = self.store.businesses_for(operator["id"]) if operator else []
         stories = {item["business"]["business_id"]: item["story"] for item in fixtures()}
         return {"name": "Tideway", "tagline": "Approval-gated cash-flow rescue for small businesses",
                 "currencies": [{"code": code, "name": name, "illustrative_per_usd": rate}
@@ -66,9 +100,11 @@ class Tideway:
                 "businesses": [{"business_id": item["id"], "name": item["name"], "currency": item["currency"],
                                 "country": item["country"], "sector": item["sector"],
                                 "opening_date": item["opening_date"], "default_target_date": item["default_target_date"],
-                                "synthetic": item["synthetic"], "story": stories.get(item["id"], "")}
+                                "synthetic": item["synthetic"], "story": stories.get(item["id"], ""), "role": item["role"]}
                                for item in businesses],
-                "operators": self.store.operators(),
+                "demo_accounts": [{"id": item["id"], "name": item["name"], "role": item["role"], "pin": item["pin"]}
+                                  for item in OPERATORS],
+                "plans": [{"id": key, **value} for key, value in PLANS.items() if key != "demo"],
                 "permission_tiers": [
                     {"tier": "agent_read", "who": "Agent", "can": "Read records, project cash, simulate, analyse"},
                     {"tier": "agent_propose", "who": "Agent", "can": "Create plan proposals and message drafts"},

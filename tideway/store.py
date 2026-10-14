@@ -23,16 +23,20 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import analytics, security
-from .domain import (SecurityError, 
+from .domain import (
     OPEN_INVOICE_STATUSES,
+    SecurityError,
     ValidationError,
     canonical_json,
+    check_new_pin,
+    text_value,
     validate_bill,
     validate_business,
     validate_business_id,
     validate_invoice,
     validate_policy,
     validate_transaction,
+    validate_username,
 )
 from .projection import project, summary
 
@@ -47,6 +51,13 @@ BREAKER_WINDOW_MINUTES = 10  # ... within this window pause the agent automatica
 FAST_APPROVAL_MS = 2000
 APPROVER_ROLES = ("owner", "accountant")
 ROLES = ("owner", "accountant", "viewer")
+INVITE_DAYS = 7
+# Illustrative SaaS plans: the sandbox enforces seats; prices are shown, never charged.
+PLANS = {
+    "demo": {"label": "Demo", "price_usd_month": 0, "seats": 10, "businesses": 3},
+    "starter": {"label": "Starter", "price_usd_month": 0, "seats": 3, "businesses": 1},
+    "growth": {"label": "Growth", "price_usd_month": 19, "seats": 10, "businesses": 5},
+}
 BUNDLE_LIVE = ("active", "ready", "countered", "rejected")
 
 
@@ -101,6 +112,16 @@ CREATE TABLE IF NOT EXISTS operators (
     id TEXT PRIMARY KEY, name TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('owner','accountant','viewer')),
     pin_salt TEXT NOT NULL, pin_hash TEXT NOT NULL, failed_attempts INTEGER NOT NULL DEFAULT 0,
     locked_until TEXT, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS memberships (
+    business_id TEXT NOT NULL, operator_id TEXT NOT NULL REFERENCES operators(id),
+    role TEXT NOT NULL CHECK(role IN ('owner','accountant','viewer')), created_at TEXT NOT NULL,
+    PRIMARY KEY(business_id, operator_id));
+CREATE TABLE IF NOT EXISTS invites (
+    token_hash TEXT PRIMARY KEY, business_id TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('accountant','viewer','owner')),
+    display_name TEXT NOT NULL, created_by TEXT NOT NULL, created_at TEXT NOT NULL, expires_at TEXT NOT NULL,
+    used_by TEXT, used_at TEXT);
+CREATE TABLE IF NOT EXISTS subscriptions (
+    business_id TEXT PRIMARY KEY, plan TEXT NOT NULL, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS login_failures (
     key TEXT PRIMARY KEY, failures INTEGER NOT NULL DEFAULT 0, locked_until TEXT);
 CREATE TABLE IF NOT EXISTS sessions (
@@ -431,6 +452,151 @@ class Store:
     def logout(self, token):
         with self.connect() as db:
             db.execute("DELETE FROM sessions WHERE token_hash=?", (security.token_hash(token or ""),))
+
+    # ---- SaaS: workspaces, memberships, invites, plans ----------------------
+
+    def membership_role(self, operator_id, business_id):
+        """The operator's role in this business, or None: tenants never see each other's data."""
+        with self.connect() as db:
+            row = db.execute("SELECT role FROM memberships WHERE business_id=? AND operator_id=?",
+                             (business_id, operator_id)).fetchone()
+        return row["role"] if row else None
+
+    def businesses_for(self, operator_id):
+        with self.connect() as db:
+            rows = db.execute("SELECT b.*, m.role FROM businesses b JOIN memberships m ON m.business_id=b.id "
+                              "WHERE m.operator_id=? ORDER BY b.rowid", (operator_id,)).fetchall()
+        return [{**self._business_dict(row), "role": row["role"]} for row in rows]
+
+    def ensure_membership(self, business_id, operator_id, role):
+        with self.connect() as db:
+            db.execute("INSERT OR IGNORE INTO memberships(business_id,operator_id,role,created_at) VALUES (?,?,?,?)",
+                       (business_id, operator_id, role, utc_now()))
+
+    def subscription(self, business_id):
+        with self.connect() as db:
+            row = db.execute("SELECT plan FROM subscriptions WHERE business_id=?", (business_id,)).fetchone()
+            seats = db.execute("SELECT COUNT(*) FROM memberships WHERE business_id=?", (business_id,)).fetchone()[0]
+            pending = db.execute("SELECT COUNT(*) FROM invites WHERE business_id=? AND used_at IS NULL AND expires_at>?",
+                                 (business_id, utc_now())).fetchone()[0]
+        plan = row["plan"] if row else "demo"
+        return {"plan": plan, **PLANS[plan], "seats_used": seats, "pending_invites": pending}
+
+    def signup(self, business_raw, policy_raw, owner_id, owner_name, pin, plan="starter"):
+        """Create a workspace: the business, its owner account and membership, in one transaction."""
+        if plan not in ("starter", "growth"):
+            raise ValidationError("Choose the Starter or Growth plan.")
+        operator_id = validate_username(owner_id)
+        name = text_value({"name": owner_name}, "name", limit=80, label="Your name")
+        check_new_pin(pin)
+        salt, digest = security.hash_pin(pin)
+        business = validate_business(business_raw)
+        policy = validate_policy({**policy_raw, "business_id": business["business_id"]}, business["business_id"],
+                                 business["currency"])
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            if db.execute("SELECT 1 FROM operators WHERE id=?", (operator_id,)).fetchone():
+                raise ValidationError("That username is taken. Choose another.")
+            if db.execute("SELECT 1 FROM businesses WHERE id=?", (business["business_id"],)).fetchone():
+                raise ValidationError("A business with this id already exists.")
+            db.execute("INSERT INTO operators(id,name,role,pin_salt,pin_hash,created_at) VALUES (?,?,?,?,?,?)",
+                       (operator_id, name, "owner", salt, digest, utc_now()))
+            db.execute("INSERT INTO businesses(id,name,currency,opening_cash_minor,opening_date,default_target_date,country,sector,synthetic,created_at) "
+                       "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                       (business["business_id"], business["name"], business["currency"], business["opening_cash_minor"],
+                        business["opening_date"], business["default_target_date"], business["country"], business["sector"],
+                        0, utc_now()))
+            db.execute("INSERT INTO policies(business_id,policy_json,version,updated_at) VALUES (?,?,?,?)",
+                       (business["business_id"], canonical_json(policy), policy["version"], utc_now()))
+            db.execute("INSERT INTO sandbox_state(business_id,current_date,version,state_json,updated_at) VALUES (?,?,?,?,?)",
+                       (business["business_id"], business["opening_date"], 0, canonical_json(self._empty_state()), utc_now()))
+            db.execute("INSERT INTO memberships(business_id,operator_id,role,created_at) VALUES (?,?,?,?)",
+                       (business["business_id"], operator_id, "owner", utc_now()))
+            db.execute("INSERT INTO subscriptions(business_id,plan,created_at) VALUES (?,?,?)", (business["business_id"], plan, utc_now()))
+            self._audit(db, business["business_id"], "workspace.signup", f"operator:{operator_id}", "human_approval",
+                        {"business": business, "plan": plan, "owner": operator_id})
+        return business, {"id": operator_id, "name": name, "role": "owner"}
+
+    def create_invite(self, business_id, inviter, role, display_name):
+        if inviter["role"] != "owner":
+            raise ValidationError("Only the owner can invite people.")
+        if role not in ROLES:
+            raise ValidationError("Role must be owner, accountant or viewer.")
+        name = text_value({"name": display_name}, "name", limit=80, label="Name")
+        token = secrets.token_urlsafe(9)
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            self._business_row(db, business_id)
+            plan = (db.execute("SELECT plan FROM subscriptions WHERE business_id=?", (business_id,)).fetchone() or {"plan": "demo"})["plan"]
+            seats = db.execute("SELECT COUNT(*) FROM memberships WHERE business_id=?", (business_id,)).fetchone()[0]
+            pending = db.execute("SELECT COUNT(*) FROM invites WHERE business_id=? AND used_at IS NULL AND expires_at>?",
+                                 (business_id, utc_now())).fetchone()[0]
+            if seats + pending >= PLANS[plan]["seats"]:
+                raise ValidationError(f"The {PLANS[plan]['label']} plan includes {PLANS[plan]['seats']} seats. "
+                                      "Remove a member, cancel an invite or upgrade.")
+            expires = _later(days=INVITE_DAYS)
+            db.execute("INSERT INTO invites(token_hash,business_id,role,display_name,created_by,created_at,expires_at) VALUES (?,?,?,?,?,?,?)",
+                       (security.token_hash(token), business_id, role, name, inviter["id"], utc_now(), expires))
+            receipt = self._audit(db, business_id, "team.invite", f"operator:{inviter['id']}", "human_approval",
+                                  {"role": role, "name": name, "expires_at": expires})
+        return {"code": token, "role": role, "name": name, "expires_at": expires, **receipt}
+
+    def accept_invite(self, code, operator=None, username=None, name=None, pin=None):
+        """Join a business with an invite code: as the signed-in operator, or as a new account."""
+        if not isinstance(code, str) or not 8 <= len(code) <= 40:
+            raise ValidationError("That invite code is not valid.")
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            invite = db.execute("SELECT * FROM invites WHERE token_hash=?", (security.token_hash(code.strip()),)).fetchone()
+            if not invite or invite["used_at"] or _expired(invite["expires_at"]):
+                raise ValidationError("That invite code is not valid, was already used or has expired.")
+            if operator is None:
+                operator_id = validate_username(username)
+                display = text_value({"name": name or invite["display_name"]}, "name", limit=80, label="Your name")
+                check_new_pin(pin)
+                if db.execute("SELECT 1 FROM operators WHERE id=?", (operator_id,)).fetchone():
+                    raise ValidationError("That username is taken. Choose another, or sign in first and then join.")
+                salt, digest = security.hash_pin(pin)
+                db.execute("INSERT INTO operators(id,name,role,pin_salt,pin_hash,created_at) VALUES (?,?,?,?,?,?)",
+                           (operator_id, display, invite["role"], salt, digest, utc_now()))
+                operator = {"id": operator_id, "name": display, "role": invite["role"]}
+            if db.execute("SELECT 1 FROM memberships WHERE business_id=? AND operator_id=?",
+                          (invite["business_id"], operator["id"])).fetchone():
+                raise ValidationError("You are already a member of this business.")
+            db.execute("INSERT INTO memberships(business_id,operator_id,role,created_at) VALUES (?,?,?,?)",
+                       (invite["business_id"], operator["id"], invite["role"], utc_now()))
+            db.execute("UPDATE invites SET used_by=?,used_at=? WHERE token_hash=?", (operator["id"], utc_now(), invite["token_hash"]))
+            self._audit(db, invite["business_id"], "team.join", f"operator:{operator['id']}", "human_approval",
+                        {"role": invite["role"], "invited_by": invite["created_by"]})
+        return {"business_id": invite["business_id"], "role": invite["role"], "operator": operator}
+
+    def team(self, business_id):
+        with self.connect() as db:
+            self._business_row(db, business_id)
+            members = [dict(row) for row in db.execute(
+                "SELECT o.id, o.name, m.role, m.created_at FROM memberships m JOIN operators o ON o.id=m.operator_id "
+                "WHERE m.business_id=? ORDER BY CASE m.role WHEN 'owner' THEN 0 WHEN 'accountant' THEN 1 ELSE 2 END, o.name",
+                (business_id,))]
+            invites = [dict(row) for row in db.execute(
+                "SELECT display_name, role, created_by, expires_at FROM invites WHERE business_id=? AND used_at IS NULL "
+                "AND expires_at>? ORDER BY created_at", (business_id, utc_now()))]
+        return {"members": members, "pending_invites": invites, "subscription": self.subscription(business_id)}
+
+    def remove_member(self, business_id, owner, operator_id):
+        if owner["role"] != "owner":
+            raise ValidationError("Only the owner can remove people.")
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute("SELECT role FROM memberships WHERE business_id=? AND operator_id=?",
+                             (business_id, operator_id)).fetchone()
+            if not row:
+                raise ValidationError("That person is not a member of this business.")
+            owners = db.execute("SELECT COUNT(*) FROM memberships WHERE business_id=? AND role='owner'", (business_id,)).fetchone()[0]
+            if row["role"] == "owner" and owners <= 1:
+                raise ValidationError("A business must keep at least one owner.")
+            db.execute("DELETE FROM memberships WHERE business_id=? AND operator_id=?", (business_id, operator_id))
+            return self._audit(db, business_id, "team.remove", f"operator:{owner['id']}", "human_approval",
+                               {"operator_id": operator_id, "role": row["role"]})
 
     # ---- businesses, policy, records ---------------------------------------
 

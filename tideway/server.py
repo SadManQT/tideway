@@ -65,8 +65,15 @@ class Application:
             raise PermissionError(f"This action needs the {' or '.join(roles)} role.")
         return operator
 
+    def scoped(self, operator, business_id):
+        """Tenant isolation: the operator must be a member, and acts with their role in this business."""
+        role = self.store.membership_role(operator["id"], business_id)
+        if role is None:
+            raise PermissionError("You are not a member of this business.")
+        return {**operator, "role": role}
+
     def config(self, operator):
-        return {**self.tideway.config(), "csrf_token": self.csrf, "operator": operator,
+        return {**self.tideway.config(operator), "csrf_token": self.csrf, "operator": operator,
                 "ai_configured": bool(self.agent.key), "ai_model": self.agent.model if self.agent.key else None,
                 "tidelm": self.tidelm.status()}
 
@@ -87,6 +94,9 @@ class Application:
             return {"operator": operator}
         self.require(operator)
         business_id = validate_business_id(one("business_id", ""))
+        operator = self.scoped(operator, business_id)
+        if path == "/api/team":
+            return self.store.team(business_id)
         if path == "/api/dashboard":
             return self.tideway.dashboard(business_id, one("target_date"))
         if path == "/api/plan":
@@ -103,6 +113,7 @@ class Application:
         self.require(operator)
         kind = query.get("kind", ["evidence"])[0]
         business_id = validate_business_id(query.get("business_id", [""])[0])
+        self.scoped(operator, business_id)
         if kind == "evidence":
             return canonical_json(self.store.evidence(business_id)), "application/json", f"tideway-{business_id}-evidence.json"
         if kind == "iso20022":
@@ -152,11 +163,32 @@ class Application:
                 raise ValidationError("Operator and PIN must be text.")
             token, who = self.store.login(body["operator_id"], body["pin"], client)
             return {"operator": who, "_set_session": token}
+        if path == "/api/signup":
+            business, who = self.tideway.signup(body)
+            token, who = self.store.login(who["id"], body["pin"], client)
+            return {"operator": who, "business_id": business["business_id"], "_set_session": token}
+        if path == "/api/team/join":
+            self.fields(body, ("code", "username", "name", "pin"), ("code",))
+            joined = self.store.accept_invite(body["code"], operator, body.get("username"), body.get("name"), body.get("pin"))
+            if operator is None:
+                token, who = self.store.login(joined["operator"]["id"], body.get("pin"), client)
+                return {"operator": who, "business_id": joined["business_id"], "_set_session": token}
+            return {"operator": operator, "business_id": joined["business_id"]}
         if path == "/api/session/logout":
             self.store.logout(session_token)
             return {"operator": None, "_clear_session": True}
         self.require(operator)
         business_id = validate_business_id(body.get("business_id", "")) if "business_id" in body else None
+        if business_id:
+            operator = self.scoped(operator, business_id)
+        if path == "/api/team/invite":
+            self.fields(body, ("business_id", "role", "name"), ("business_id", "role", "name"))
+            return self.store.create_invite(business_id, operator, body["role"], body["name"])
+        if path == "/api/team/remove":
+            self.fields(body, ("business_id", "operator_id"), ("business_id", "operator_id"))
+            if not isinstance(body["operator_id"], str):
+                raise ValidationError("operator_id must be text.")
+            return self.store.remove_member(business_id, operator, body["operator_id"])
         if path == "/api/agent/run":
             self.fields(body, ("business_id", "target_date"), ("business_id",))
             self.require(operator, "owner", "accountant")
@@ -340,7 +372,7 @@ def make_handler(app):
                 return self.reply(415, {"error": "Use application/json."})
             path = urlsplit(self.path).path
             token, operator = self.session()
-            limiter = app.login_limiter if path == "/api/session/login" else app.post_limiter
+            limiter = app.login_limiter if path in ("/api/session/login", "/api/signup", "/api/team/join") else app.post_limiter
             if not limiter.allow(token or self.client_address[0]):
                 return self.reply(429, {"error": "Too many requests. Slow down and try again shortly."})
             business_id = None

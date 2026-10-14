@@ -96,6 +96,25 @@ def validate_business_id(value) -> str:
     return value
 
 
+USERNAME_RE = re.compile(r"[a-z0-9][a-z0-9._-]{2,31}\Z")
+
+
+def validate_username(value) -> str:
+    if not isinstance(value, str) or not USERNAME_RE.fullmatch(value.strip().lower()):
+        raise ValidationError("Username must be 3-32 characters: lowercase letters, digits, '.', '_' or '-'.")
+    return value.strip().lower()
+
+
+def check_new_pin(pin) -> str:
+    """New accounts need a 6-12 digit PIN that is not a repeated digit or a simple sequence."""
+    if not isinstance(pin, str) or not pin.isdigit() or not 6 <= len(pin) <= 12:
+        raise ValidationError("Choose a PIN of 6-12 digits.")
+    steps = {int(b) - int(a) for a, b in zip(pin, pin[1:])}
+    if len(set(pin)) == 1 or steps in ({1}, {-1}):
+        raise ValidationError("That PIN is too easy to guess (repeated or sequential digits).")
+    return pin
+
+
 def validate_record_id(value, label="Record id") -> str:
     if not isinstance(value, str) or not RECORD_ID_RE.fullmatch(value):
         raise ValidationError(f"{label} must contain 1-80 safe characters.")
