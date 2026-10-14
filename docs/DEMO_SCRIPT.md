@@ -6,7 +6,7 @@ Sign-in PINs (synthetic): owner Nadia `2468`, accountant Imran `1357`, viewer Gu
 
 | Time | Screen | Narration |
 |---|---|---|
-| 0:00–0:25 | Sign in as Nadia. Overview of Shapla Services: cash weather **Storm** | "Tideway is an approval-gated cash-flow rescue agent for small businesses. This is a synthetic BDT sandbox: no bank, no real money. Payroll is coming and the schedule is short." |
+| 0:00–0:25 | Sign in as Nadia. Overview of Shapla Services: cash weather **Storm** | "Tideway is an approval-gated cash-flow rescue agent for small businesses. This is a synthetic multi-currency sandbox (Bangladesh, China, Singapore): no bank, no real money. Payroll is coming and the schedule is short." |
 | 0:25–0:55 | Cash projection, scenario lines, "N of 20 futures fall short" | "Scheduled cash dips to minus BDT 10,000 on 31 October: BDT 30,000 under the reserve. Customer payment habits make it worse, and a seeded Monte Carlo of 1,000 runs shows how often the reserve breaks." |
 | 0:55–1:15 | Customer payment behaviour card | "Each customer's expected delay blends their own history with the business average, so one lucky payment doesn't make anyone look reliable." |
 | 1:15–1:50 | Rescue view: **Run the rescue agent** | "The agent runs visible steps: read, profile, project, simulate, check security, compare plans. It has read and propose tools only; there is no approve or execute tool." |
