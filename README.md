@@ -69,6 +69,8 @@ python3 -m mlx_lm lora --config tideway/ml/tidelm_lora.yaml
 python3 -m tideway.ml.tidelm_eval --adapter models/tidelm-adapter --out evidence/ml/tidelm_ft_eval.json
 ```
 
+To use the trained adapter without training it yourself: `python3 scripts/get_tidelm.py` (downloads it from the `tidelm-v1` release and checks its SHA-256), then `pip install mlx-lm`.
+
 Without the adapter the app still runs; the Assistant says TideLM is unavailable and uses the deterministic local agent.
 
 ## The demo businesses
