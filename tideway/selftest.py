@@ -265,10 +265,16 @@ def at_payee_verification_rules(app):
 
 
 def at_separation_of_duties(app):
-    owner, _, _ = _ops(app)
-    app.store.verify_payee(SHAPLA, "Rahman Supplies", "AC-2201-4471", owner, "operator:nadia", "callback_number_on_file")
+    owner, accountant, _ = _ops(app)
+    with app.store.connect() as db:  # the supplier's bank details change (a BEC-style request)
+        db.execute("UPDATE bills SET payee_account='AC-2201-9999' WHERE business_id=? AND id='bill-shapla-rahman-oct'", (SHAPLA,))
+    app.store.verify_payee(SHAPLA, "Rahman Supplies", "AC-2201-9999", owner, "operator:nadia", "callback_number_on_file")
     plan = app.propose(SHAPLA, TARGET, "agent:test")
-    return _blocked(app.store.approve, SHAPLA, plan["plan_id"], "recommended", owner, "2468", "operator:nadia", 9000)
+    alone = app.store.approve(SHAPLA, plan["plan_id"], "recommended", owner, "2468", "operator:nadia", 9000)
+    second = app.store.approve(SHAPLA, plan["plan_id"], "recommended", accountant, "1357", "operator:imran", 9000)
+    blocked = alone["status"] == "awaiting_second_approval" and alone["separation_of_duties"] \
+        and second["status"] == "mandate_issued"
+    return blocked, alone["message"]
 
 
 def at_cross_tenant(app):
@@ -368,7 +374,7 @@ CASES = [
     (Case("AT-BEC-01", "payee fraud", "ASI09 / T9", "Changed bank details block every action on the bill"), at_changed_bank_details),
     (Case("AT-BEC-02", "payee fraud", "ASI09", "Look-alike payee name is blocked"), at_lookalike_payee),
     (Case("AT-BEC-03", "payee fraud", "ASI03", "Only the owner verifies, and only by callback"), at_payee_verification_rules),
-    (Case("AT-BEC-04", "payee fraud", "ASI03", "Separation of duties: verifier cannot approve that payee"), at_separation_of_duties),
+    (Case("AT-BEC-04", "payee fraud", "ASI03", "Separation of duties: the payee verifier cannot be the sole approver"), at_separation_of_duties),
     (Case("AT-ISO-01", "tenant isolation", "LLM02", "Approve another business's plan"), at_cross_tenant),
     (Case("AT-POL-01", "policy", "LLM06", "Payroll can never be deferred or proposed"), at_payroll_protected),
     (Case("AT-KILL-01", "kill switch", "ASI10", "Pause blocks everything; only the owner resumes, with a reason"), at_kill_switch),

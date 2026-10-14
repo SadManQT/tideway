@@ -62,7 +62,7 @@ def respond(action, profile):
             return {**reply, "status": "accepted", "counter_terms": None,
                     "message": f"{name}: Accepted. We will pay {money_text(action['amount_minor'], currency)} by {human_date(action['to_date'], True)}."}
         return {**reply, "status": "countered", "counter_terms": {"discount_bps": rules["min_discount_bps"]},
-                "message": f"{name}: We would pay early for a {rules['min_discount_bps'] / 100:.0f}% discount."}
+                "message": f"{name}: We would pay early for a {rules['min_discount_bps'] / 100:g}% discount."}
     if kind == "collection_reminder":
         rules = customer_profile(profile)
         promised = add_days(action["from_date"], max(0, rules["typical_delay_days"]))

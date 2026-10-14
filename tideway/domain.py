@@ -20,6 +20,14 @@ class ValidationError(ValueError):
     """A user-correctable input, scope or policy error."""
 
 
+class SecurityError(ValidationError):
+    """A refusal that may indicate tampering or abuse; counts toward the circuit breaker."""
+
+    def __init__(self, code, message):
+        super().__init__(f"{code}: {message}")
+        self.code = code
+
+
 # ISO 4217 currencies with two minor digits that the sandbox accepts.  A
 # business still uses exactly one of them; mixed currencies are rejected.
 CURRENCIES = {
@@ -52,9 +60,11 @@ def valid_date(value, field="date") -> str:
     if not isinstance(value, str) or not DATE_RE.fullmatch(value):
         raise ValidationError(f"{field} must use YYYY-MM-DD.")
     try:
-        date.fromisoformat(value)
+        parsed = date.fromisoformat(value)
     except ValueError:
         raise ValidationError(f"{field} is not a real calendar date.") from None
+    if not 2000 <= parsed.year <= 2099:
+        raise ValidationError(f"{field} must be between 2000 and 2099.")
     return value
 
 
@@ -101,10 +111,10 @@ def _decimal(value, field):
         raise ValidationError(f"{field} must be a number.") from None
     if not amount.is_finite():
         raise ValidationError(f"{field} must be a finite number.")
+    if abs(amount) > MAX_UNITS:
+        raise ValidationError(f"{field} must be at most 100,000,000.")
     if amount != amount.quantize(Decimal("0.01")):
         raise ValidationError(f"{field} may have at most two decimal places.")
-    if amount > MAX_UNITS:
-        raise ValidationError(f"{field} must be at most 100,000,000.")
     return amount
 
 
@@ -230,6 +240,14 @@ INJECTION_PATTERNS = (
 )
 
 
+PAYROLL_WORDS = ("payroll", "salary", "salaries", "wage", "wages", "staff pay", "staff cost", "bonus")
+
+
+def is_payroll_text(*values) -> bool:
+    text = " ".join(str(value or "") for value in values).casefold()
+    return any(word in text for word in PAYROLL_WORDS)
+
+
 def scan_text(*values) -> list[str]:
     flags = []
     for value in values:
@@ -280,6 +298,8 @@ def validate_policy(raw: dict, business_id: str, currency: str) -> dict:
     limit = minor_value(raw, "action_limit", "Action limit", allow_zero=True)
     daily_cap = minor_value(raw, "daily_cap", "Daily cap", allow_zero=True, default=limit * 2)
     dual = minor_value(raw, "dual_approval_threshold", "Dual-approval threshold", allow_zero=True, default=limit)
+    if daily_cap < limit:
+        raise ValidationError("Daily cap must be at least the per-action limit.")
     if raw.get("payroll_priority", True) is not True:
         raise ValidationError("Payroll protection cannot be disabled.")
     autonomy = raw.get("autonomy_level", "propose")
@@ -382,6 +402,8 @@ def validate_bill(raw: dict, business_id: str, currency: str) -> dict:
     reschedule_allowed = bool_value(raw, "reschedule_allowed", False)
     if priority == "payroll" and reschedule_allowed:
         raise ValidationError("Payroll bills cannot be marked reschedulable.")
+    if priority != "payroll" and is_payroll_text(payee, description):
+        raise ValidationError("This bill looks like payroll (salary or wages). Set priority=payroll so it is never deferred.")
     return {"id": bill_id, "business_id": identifier, "payee": payee,
             "payee_account": account.strip() if account else None,
             "description": description, "due_date": due,
@@ -394,7 +416,15 @@ def validate_bill(raw: dict, business_id: str, currency: str) -> dict:
 CSV_COLUMNS = ("record_type", "business_id", "id", "date", "description", "amount", "amount_minor", "type",
                "currency", "category", "due_date", "status", "customer", "payee", "payee_account",
                "issue_date", "expected_collection_date", "paid_date", "priority", "reschedule_allowed",
-               "rescheduled_date")
+               "rescheduled_date", "risk_flags", "source")
+IGNORED_CSV_COLUMNS = ("risk_flags", "source")  # written by Tideway's export; recomputed on import, never trusted
+
+
+def _unguard(value):
+    """Undo the apostrophe Tideway's export adds before =, +, - or @ so an exported file re-imports unchanged."""
+    if isinstance(value, str) and value.startswith("'") and value[1:].lstrip()[:1] in ("=", "+", "-", "@"):
+        return value[1:]
+    return value
 
 
 def parse_combined_csv(text: str, business_id: str, currency: str) -> dict:
@@ -422,6 +452,7 @@ def parse_combined_csv(text: str, business_id: str, currency: str) -> dict:
                 raise ValidationError("Import at most 5,000 rows at a time.")
             if None in raw:
                 raise ValidationError(f"Row {line}: too many columns.")
+            raw = {key: _unguard(value) for key, value in raw.items() if key not in IGNORED_CSV_COLUMNS}
             kind = str(raw.get("record_type", "")).strip().lower()
             if kind not in ("transaction", "invoice", "bill"):
                 raise ValidationError(f"Row {line}: record_type must be transaction, invoice or bill.")
@@ -431,6 +462,9 @@ def parse_combined_csv(text: str, business_id: str, currency: str) -> dict:
                 if kind == "transaction":
                     record = validate_transaction(raw, business_id, currency)
                     identity = (kind, record["id"] or f"{record['date']}|{record['description']}|{record['amount_minor']}")
+                    if identity in seen and not record["id"]:
+                        raise ValidationError(f"Row {line}: same date, description and amount as an earlier row and no id. "
+                                              "If both are real, give each row a distinct id.")
                     rows["transactions"].append(record)
                 elif kind == "invoice":
                     record = validate_invoice(raw, business_id, currency)

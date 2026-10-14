@@ -2,10 +2,11 @@
 
 // Tideway UI: vanilla JS, no build step. Every server value is escaped before rendering.
 const $ = (selector) => document.querySelector(selector);
+const freshWhatIf = () => ({delays: {}, expense: "", expenseDate: "", drop: "", result: null});
 const state = {
   config: null, operator: null, businessId: "", targetDate: "", view: "overview",
-  dashboard: null, run: null, receipt: null, chat: [], audit: null, selftest: null, drill: null,
-  whatif: {delays: {}, expense: "", expenseDate: "", drop: "", result: null}, recordFilter: "all", recordQuery: "",
+  dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "", selftest: null, drill: null,
+  whatif: freshWhatIf(), recordFilter: "all", recordQuery: "", aiConsent: false,
   busy: false, approving: null, displayCurrency: ""
 };
 const VIEWS = {
@@ -26,12 +27,16 @@ const currency = () => state.dashboard?.business?.currency || "BDT";
 // Illustrative fixed rates (units per 1 USD) for display only. Not live FX; every
 // calculation, approval and mandate stays in the business's own currency.
 const FX_PER_USD = {USD: 1, BDT: 122, CNY: 7.1, HKD: 7.8, SGD: 1.29, EUR: 0.86, GBP: 0.75, INR: 88, MYR: 4.2};
+// The currency amounts in `code` are shown in, and the multiplier that converts them.
+function displayFx(code = currency()) {
+  const show = state.displayCurrency;
+  return show && show !== code && FX_PER_USD[show] && FX_PER_USD[code]
+    ? {code: show, rate: FX_PER_USD[show] / FX_PER_USD[code], converted: true} : {code, rate: 1, converted: false};
+}
 function money(minor, code = currency(), opts = {}) {
   if (!isNum(minor)) return "—";
-  const show = state.displayCurrency;
-  if (!opts.native && show && show !== code && FX_PER_USD[show] && FX_PER_USD[code]) {
-    return "≈ " + money(Math.round(minor / FX_PER_USD[code] * FX_PER_USD[show]), show, {...opts, native: true});
-  }
+  const fx = displayFx(code);
+  if (!opts.native && fx.converted) return "≈ " + money(Math.round(minor * fx.rate), fx.code, {...opts, native: true});
   const units = minor / 100;
   const decimals = opts.decimals ?? (Number.isInteger(units) ? 0 : 2);
   const text = Math.abs(units).toLocaleString("en-US", {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
@@ -50,6 +55,12 @@ function day(value, withYear = false) {
   return date.toLocaleDateString("en-GB", {day: "numeric", month: "short", ...(withYear ? {year: "numeric"} : {}), timeZone: "UTC"});
 }
 function pct(probability) { return isNum(probability) ? `${Math.round(probability * 100)}%` : "—"; }
+function days(count) { return isNum(count) ? `${count} days` : "—"; }
+function addDays(isoDate, count) {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + count);
+  return date.toISOString().slice(0, 10);
+}
 function parseMinor(text) {
   const clean = String(text ?? "").replace(/[,\s]/g, "").replace(/^[A-Za-z]{3}/, "");
   if (!/^\d+(\.\d{1,2})?$/.test(clean)) return null;
@@ -102,11 +113,18 @@ function showLogin() {
   setTimeout(() => $("#login-pin").focus(), 50);
 }
 
+// Everything one operator saw or did in this tab; never shown to the next operator.
+function resetSessionState() {
+  Object.assign(state, {view: "overview", dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "",
+    selftest: null, drill: null, whatif: freshWhatIf(), aiConsent: false, approving: null});
+}
+
 async function login(event) {
   event.preventDefault();
   const operatorId = new FormData(event.target).get("operator");
   try {
     const result = await api("/api/session/login", {operator_id: operatorId, pin: $("#login-pin").value});
+    if (result.operator?.id !== state.operator?.id) resetSessionState();
     state.operator = result.operator;
     $("#login-error").textContent = "";
     await startShell();
@@ -118,7 +136,7 @@ async function login(event) {
 async function logout() {
   try { await api("/api/session/logout", {}); } catch (_error) { /* already signed out */ }
   state.operator = null;
-  state.run = null;
+  resetSessionState();
   showLogin();
 }
 
@@ -134,26 +152,56 @@ async function startShell() {
   if (!businesses.some((item) => item.business_id === state.businessId)) state.businessId = businesses[0]?.business_id || "";
   $("#business-select").innerHTML = businesses.map((item) => `<option value="${esc(item.business_id)}" ${item.business_id === state.businessId ? "selected" : ""}>${esc(item.name)} · ${esc(item.currency)}</option>`).join("");
   $("#display-currency").innerHTML = `<option value="">Business currency</option>` + Object.keys(FX_PER_USD).map((code) => `<option value="${code}" ${state.displayCurrency === code ? "selected" : ""}>${code}</option>`).join("");
-  await loadDashboard(true);
+  render();
+  await act("Loading", () => loadDashboard({resetTarget: true}));
 }
 
 // ---------------------------------------------------------------------------- data
 
-async function loadDashboard(resetTarget = false) {
-  const business = state.config.businesses.find((item) => item.business_id === state.businessId);
-  if (resetTarget || !state.targetDate) state.targetDate = business?.default_target_date || "";
-  $("#target-date").value = state.targetDate;
-  if (business) { $("#target-date").min = business.opening_date; }
-  state.dashboard = await api(`/api/dashboard?business_id=${encodeURIComponent(state.businessId)}&target_date=${encodeURIComponent(state.targetDate)}`);
-  state.audit = null;
+// Loads the dashboard for a business and target date. State changes only after the
+// server accepted both, so a failed load leaves the previous context untouched.
+async function loadDashboard({businessId = state.businessId, targetDate = state.targetDate, resetTarget = false} = {}) {
+  const business = state.config.businesses.find((item) => item.business_id === businessId);
+  const requested = resetTarget || !targetDate ? business?.default_target_date || "" : targetDate;
+  const dashboard = await api(`/api/dashboard?business_id=${encodeURIComponent(businessId)}&target_date=${encodeURIComponent(requested)}`);
+  const target = dashboard.target_date || requested;
+  if (businessId !== state.businessId) {
+    Object.assign(state, {run: null, receipt: null, chat: [], selftest: null, drill: null, whatif: freshWhatIf()});
+  } else if (target !== state.targetDate) {
+    Object.assign(state, {run: null, receipt: null});
+    state.whatif.result = null;
+  }
+  Object.assign(state, {businessId, targetDate: target, dashboard, audit: null, auditError: ""});
+  syncContextControls();
   clearError();
   render();
+  if (state.view === "evidence") loadAudit();
+  return true;
+}
+
+function syncContextControls() {
+  $("#business-select").value = state.businessId;
+  const input = $("#target-date");
+  input.value = state.targetDate;
+  const opening = state.dashboard?.business?.opening_date;
+  if (!opening) return;
+  // The server projects target + look-ahead days, at most 366 days after opening.
+  const lookahead = state.dashboard.policy?.lookahead_days;
+  input.min = opening;
+  input.max = addDays(opening, 366 - (isNum(lookahead) ? lookahead : 14));
+}
+
+// While a request runs, context controls are disabled so no change is dropped or raced.
+function setBusy(busy) {
+  state.busy = busy;
+  document.body.classList.toggle("busy", busy);
+  document.body.setAttribute("aria-busy", String(busy));
+  for (const control of document.querySelectorAll("#business-select, #target-date, [data-action=refresh]")) control.disabled = busy;
 }
 
 async function act(label, work) {
-  if (state.busy) return;
-  state.busy = true;
-  document.body.classList.add("busy");
+  if (state.busy) return null;
+  setBusy(true);
   try {
     return await work();
   } catch (error) {
@@ -161,9 +209,18 @@ async function act(label, work) {
     if (error.status !== 401) showError(error);
     return null;
   } finally {
-    state.busy = false;
-    document.body.classList.remove("busy");
+    setBusy(false);
   }
+}
+
+// Runs a request and the dashboard reload it implies as one busy step, so stale
+// buttons from before the change cannot be clicked while the reload is in flight.
+function actAndReload(label, request) {
+  return act(label, async () => {
+    const result = await request();
+    await loadDashboard();
+    return result;
+  });
 }
 
 // ---------------------------------------------------------------------------- render
@@ -171,7 +228,7 @@ async function act(label, work) {
 function render() {
   const [title, subtitle] = VIEWS[state.view] || VIEWS.overview;
   $("#page-title").textContent = title;
-  $("#eyebrow").textContent = `${state.dashboard?.business?.name || ""} · ${subtitle}`;
+  $("#eyebrow").textContent = [state.dashboard?.business?.name, subtitle].filter(Boolean).join(" · ");
   document.querySelectorAll(".nav-item").forEach((item) => item.classList.toggle("active", item.dataset.view === state.view));
   const policy = state.dashboard?.policy || {};
   const agent = $("#agent-state");
@@ -200,7 +257,7 @@ function dotsHtml(short) {
 }
 
 function chartSvg({lines = [], fan = null, reserve = null, markers = [], height = 250}) {
-  const width = 760, left = 58, right = 14, top = 14, bottom = 26;
+  const width = 760, left = 58, right = 14, top = 24, bottom = 26;
   const dates = (lines[0]?.points || []).map((point) => point.date);
   if (!dates.length) return `<p class="muted">No projection days.</p>`;
   const values = [0, ...(reserve !== null ? [reserve] : [])];
@@ -211,12 +268,16 @@ function chartSvg({lines = [], fan = null, reserve = null, markers = [], height 
   const pad = (max - min) * 0.08; min -= pad; max += pad;
   const x = (index) => left + (index / Math.max(1, dates.length - 1)) * (width - left - right);
   const y = (value) => top + (1 - (value - min) / (max - min)) * (height - top - bottom);
-  const step = Math.pow(10, Math.floor(Math.log10((max - min) / 4)));
-  const nice = [1, 2, 2.5, 5, 10].map((m) => m * step).find((s) => (max - min) / s <= 5) || step * 10;
+  // Ticks are round numbers in the display currency, placed at their native-currency position.
+  const fx = displayFx();
+  const span = (max - min) * fx.rate;
+  const step = Math.pow(10, Math.floor(Math.log10(span / 4)));
+  const nice = [1, 2, 2.5, 5, 10].map((m) => m * step).find((s) => span / s <= 5) || step * 10;
   const ticks = [];
-  for (let value = Math.ceil(min / nice) * nice; value <= max; value += nice) ticks.push(value);
+  for (let shown = Math.ceil(min * fx.rate / nice) * nice; shown <= max * fx.rate; shown += nice) ticks.push(shown);
   const parts = [`<svg class="chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="Daily cash projection">`];
-  ticks.forEach((value) => parts.push(`<line class="grid-line" x1="${left}" x2="${width - right}" y1="${y(value)}" y2="${y(value)}"></line><text x="${left - 6}" y="${y(value) + 3}" text-anchor="end">${esc(compact(value))}</text>`));
+  parts.push(`<text class="axis-title" x="${left}" y="12">${esc(fx.converted ? `Cash, ≈ ${fx.code} (illustrative rate)` : `Cash, ${fx.code}`)}</text>`);
+  ticks.forEach((shown) => parts.push(`<line class="grid-line" x1="${left}" x2="${width - right}" y1="${y(shown / fx.rate)}" y2="${y(shown / fx.rate)}"></line><text x="${left - 6}" y="${y(shown / fx.rate) + 3}" text-anchor="end">${esc(compact(shown))}</text>`));
   parts.push(`<line class="zero-line" x1="${left}" x2="${width - right}" y1="${y(0)}" y2="${y(0)}"></line>`);
   if (fan && fan.length === dates.length) {
     const upper = fan.map((point, index) => `${x(index)},${y(point.p90_minor)}`);
@@ -288,8 +349,8 @@ function renderOverview() {
     </div>
     <div class="card"><div class="card-head"><div><h3>Business financial analysis</h3><p>From settled history and open balances.</p></div></div>
       <div class="kv">
-        <div><span>Days sales outstanding</span><strong>${esc(k.dso_days ?? "—")} days</strong></div>
-        <div><span>Average days late</span><strong>${esc(k.average_days_late ?? "—")} days</strong></div>
+        <div><span>Days sales outstanding</span><strong>${esc(days(k.dso_days))}</strong></div>
+        <div><span>Average days late</span><strong>${esc(days(k.average_days_late))}</strong></div>
         <div><span>Paid on time</span><strong>${pct(k.on_time_share)}</strong></div>
         <div><span>Open receivables</span><strong>${money(k.open_receivables_minor)}</strong></div>
         <div><span>Open payables</span><strong>${money(k.open_payables_minor)}</strong></div>
@@ -300,7 +361,7 @@ function renderOverview() {
   </section>
   <section class="card section-gap"><div class="card-head"><div><h3>Customer payment behaviour</h3><p>Lateness = paid date − due date. Thin histories borrow from the business-wide average (credibility weighting), so one lucky payment never makes a customer look perfect.</p></div></div>
     <div class="table-wrap"><table><thead><tr><th>Customer</th><th>Grade</th><th class="num">Settled</th><th class="num">Expected delay</th><th class="num">P80 delay</th><th class="num">Own-history weight</th><th class="num">Open balance</th><th>Why</th></tr></thead><tbody>
-    ${customers.map((item) => `<tr><td><strong>${esc(item.customer)}</strong></td><td><span class="pill ${item.grade <= "B" ? "ok" : item.grade === "C" ? "unsettled" : "storm"}">${esc(item.grade)}</span></td><td class="num">${esc(item.settled_invoices)}</td><td class="num">${esc(item.expected_delay_days)} days</td><td class="num">${esc(item.p80_delay_days)} days</td><td class="num">${pct(item.own_history_weight)}</td><td class="num">${money(item.open_exposure_minor)}</td><td class="small muted">${esc(item.explanation)}</td></tr>`).join("")}
+    ${customers.map((item) => `<tr><td><strong>${esc(item.customer)}</strong></td><td><span class="pill ${item.grade <= "B" ? "ok" : item.grade === "C" ? "unsettled" : "storm"}">${esc(item.grade)}</span></td><td class="num">${esc(item.settled_invoices)}</td><td class="num">${esc(days(item.expected_delay_days))}</td><td class="num">${esc(days(item.p80_delay_days))}</td><td class="num">${pct(item.own_history_weight)}</td><td class="num">${money(item.open_exposure_minor)}</td><td class="small muted">${esc(item.explanation)}</td></tr>`).join("")}
     </tbody></table></div></section>`;
 }
 
@@ -334,6 +395,8 @@ function bundleCard(plan, bundle, index) {
   const otherInProgress = (plan.approvals || []).some((item) => item.bundle_id !== bundle.bundle_id)
     || (state.dashboard.mandates || []).some((item) => item.mandate.plan_id === plan.plan_id && item.mandate.bundle_id !== bundle.bundle_id);
   const after = bundle.after || {};
+  const counter = bundle.bundle_id === "counter-offer";
+  const label = counter ? "Counter-offer" : index === 0 ? "Recommended" : bundle.bundle_id.replace("-", " ");
   const button = !canApprove() ? `<span class="pill">Viewer: cannot approve</span>`
     : !bundle.feasible ? `<span class="pill storm">Not safe: cannot be approved</span>`
     : live ? `<span class="pill ok">${icon("check")}Mandate issued</span>`
@@ -341,10 +404,10 @@ function bundleCard(plan, bundle, index) {
     : approvals.some((item) => item.operator_id === state.operator.id) ? `<span class="pill unsettled">You approved · waiting for a second person</span>`
     : `<button class="button teal" data-action="approve" data-plan="${esc(plan.plan_id)}" data-bundle="${esc(bundle.bundle_id)}">${icon("lock")}Review and approve</button>`;
   return `<article class="bundle ${index === 0 ? "recommended" : ""}">
-    <div class="bundle-head"><div><span class="eyebrow">${!bundle.feasible ? "Best partial option (not safe)" : index === 0 ? "Recommended" : esc(bundle.bundle_id.replace("-", " "))}</span><h3>${bundle.actions.map((action) => esc(action.counterparty)).join(" + ") || "No actions"}</h3></div>
+    <div class="bundle-head"><div><span class="eyebrow">${esc(bundle.feasible ? label : counter ? "Counter-offer (not safe)" : "Best partial option (not safe)")}</span><h3>${bundle.actions.map((action) => esc(action.counterparty)).join(" + ") || "No actions"}</h3></div>
       <div class="row">${bundle.feasible ? `<span class="pill ok">Holds the reserve</span>` : `<span class="pill storm">Shortfall remains</span>`}${isNum(bundle.futures_short_of_20_after) ? `<span class="pill ${bundle.risk_target_met ? "ok" : "unsettled"}">${esc(bundle.futures_short_of_20_after)} of 20 futures short</span>` : ""}${bundle.dual_approval_required ? `<span class="pill violet">Two approvers</span>` : ""}${button}</div></div>
     <div class="bundle-body">
-      <div class="compare"><div><span>Economic cost</span><strong>${money(bundle.economic_cost_minor)}</strong></div><div><span>Exposure</span><strong>${money(bundle.exposure_minor)}</strong></div><div><span>Lowest likely cash after</span><strong>${money(after.minimum_cash_minor)}</strong></div><div><span>Counterparties to agree</span><strong>${esc(bundle.counterparties)}</strong></div></div>
+      <div class="compare"><div><span>Economic cost</span><strong>${money(bundle.economic_cost_minor)}</strong></div><div><span>Exposure</span><strong>${money(bundle.exposure_minor)}</strong></div>${isNum(after.minimum_cash_minor) ? `<div><span>Lowest likely cash after</span><strong>${money(after.minimum_cash_minor)}</strong></div>` : `<div><span>Reserve shortfall after</span><strong>${money(bundle.remaining_shortfall_minor)}</strong></div>`}<div><span>Counterparties to agree</span><strong>${esc(bundle.counterparties)}</strong></div></div>
       ${bundle.why_not ? `<p class="why-not">${esc(bundle.why_not)}</p>` : ""}
       ${approvals.length ? `<p class="small">Approvals so far: ${approvals.map((item) => `${esc(item.operator_id)} (${esc(item.role)})`).join(", ")}</p>` : ""}
       ${bundle.actions.map(actionCard).join("")}
@@ -384,13 +447,35 @@ function mandateCard(view) {
     ${plan ? "" : ""}</section>`;
 }
 
+// A receipt's changes are in effect while the sandbox state still holds its adjustments;
+// a sandbox reset removes them (executed adjustments carry their mandate id).
+function receiptInEffect(receipt) {
+  return (state.dashboard?.state?.adjustments || []).some((item) => item.mandate_id === receipt.mandate_id);
+}
+
 function receiptCard(receipt, earlier = false) {
   const before = receipt.projection_before || {}, after = receipt.projection_after || {};
-  return `<section class="card receipt section-gap"><div class="card-head"><div><span class="eyebrow">${earlier ? "Latest sandbox receipt" : "Sandbox receipt"}</span><h3>Executed once · ${esc(receipt.actions.length)} action(s) · no money moved</h3><p>${esc(receipt.note)}</p></div><span class="pill ok">${icon("check")}read-back verified</span></div>
+  const actions = receipt.actions || [];
+  const inEffect = receiptInEffect(receipt);
+  const eyebrow = `${earlier ? "Latest sandbox receipt" : "Sandbox receipt"}${inEffect ? "" : " · reset afterwards"}`;
+  return `<section class="card receipt section-gap"><div class="card-head"><div><span class="eyebrow">${esc(eyebrow)}</span><h3>Executed once · ${esc(actions.length)} action(s) · no money moved</h3><p>${esc(receipt.note)}</p></div><span class="pill ok">${icon("check")}read-back verified</span></div>
+    ${inEffect ? "" : `<div class="alert warning">${icon("alert")}<div><strong>The sandbox was reset after this execution</strong><span>These schedule changes are no longer in effect; the current projection does not include them. The receipt is kept as evidence.</span></div></div>`}
     <div class="before-after"><div class="kv"><div><span>Likely low before</span><strong class="negative">${money(before.minimum_cash_minor)}</strong></div><div><span>Shortfall before</span><strong>${money(before.reserve_shortfall_minor)}</strong></div></div><span class="arrow">→</span><div class="kv"><div><span>Likely low after</span><strong class="positive">${money(after.minimum_cash_minor)}</strong></div><div><span>Shortfall after</span><strong>${money(after.reserve_shortfall_minor)}</strong></div></div></div>
-    <div class="status-strip section-gap"><span class="tag">receipt ${esc(receipt.receipt_id.slice(0, 10))}…</span><span class="tag">state v${esc(receipt.state_before.version)} → v${esc(receipt.state_after.version)}</span><span class="tag">idempotency ${esc(receipt.idempotency_key.slice(0, 18))}</span><span class="tag">audit ${esc((receipt.audit_hash || "").slice(0, 10))}…</span>${receipt.witness?.cosigned ? `<span class="tag good">witness cosigned ${esc(receipt.witness.size)} entries</span>` : ""}${receipt.replayed ? `<span class="tag">replayed: no second execution</span>` : ""}</div>
-    <div class="row section-gap"><a class="button ghost" href="/api/export?kind=iso20022&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}ISO 20022 pain.001 draft (never sent)</a><a class="button ghost" href="/api/export?kind=receipts&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Receipts CSV</a></div>
+    <div class="status-strip section-gap"><span class="tag">receipt ${esc((receipt.receipt_id || "").slice(0, 10))}…</span><span class="tag">state v${esc(receipt.state_before?.version ?? "—")} → v${esc(receipt.state_after?.version ?? "—")}</span><span class="tag">idempotency ${esc((receipt.idempotency_key || "").slice(0, 18))}</span><span class="tag">audit ${esc((receipt.audit_hash || "").slice(0, 10))}…</span>${receipt.witness?.cosigned ? `<span class="tag good">witness cosigned ${esc(receipt.witness.size)} entries</span>` : ""}${receipt.replayed ? `<span class="tag">replayed: no second execution</span>` : ""}</div>
+    <div class="row section-gap">${actions.some((action) => action.type === "supplier_deferral") ? `<a class="button ghost" href="/api/export?kind=iso20022&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}ISO 20022 pain.001 draft (never sent)</a>` : ""}<a class="button ghost" href="/api/export?kind=receipts&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Receipts CSV</a></div>
     <details class="section-gap"><summary>Full receipt</summary><pre>${esc(JSON.stringify(receipt, null, 2))}</pre></details></section>`;
+}
+
+// Only the search facts the plan actually reports; counter-offer plans are a re-check, not a search.
+function searchSummary(search = {}) {
+  const count = (value) => value.toLocaleString("en-US");
+  if (search.source === "counter-offer") {
+    return `Counter-offer terms, re-checked with ${isNum(search.monte_carlo_runs_each) ? `${count(search.monte_carlo_runs_each)} ` : ""}simulated futures.`;
+  }
+  const facts = [];
+  if (isNum(search.combinations_evaluated)) facts.push(`Searched ${count(search.combinations_evaluated)} combinations${isNum(search.records_considered) ? ` across ${count(search.records_considered)} records` : ""}`);
+  if (isNum(search.robustness_checked)) facts.push(`${count(search.robustness_checked)} re-checked${isNum(search.monte_carlo_runs_each) ? ` with ${count(search.monte_carlo_runs_each)} simulated futures each` : ""}`);
+  return [facts.length ? `${facts.join("; ")}.` : "", search.objective || ""].filter(Boolean).join(" ");
 }
 
 function renderRescue() {
@@ -404,8 +489,8 @@ function renderRescue() {
   const latest = state.receipt || (d.executions || []).slice(-1)[0];
   if (latest && !(d.mandates || []).length) parts.push(receiptCard(latest, !state.receipt));
   if (plan) {
-    parts.push(`<section class="card section-gap"><div class="card-head"><div><span class="eyebrow">Proposal ${esc(plan.plan_id.slice(0, 8))} · ${esc(plan.status)}</span><h3>${plan.action_needed ? `Gap of ${money(plan.gap_minor)} on the likely path` : "No action needed"}</h3><p>${esc(plan.explanation)}</p></div><span class="pill ${plan.futures_short_of_20_before > 2 ? "storm" : "ok"}">Before: ${esc(plan.futures_short_of_20_before ?? "—")} of 20 futures short</span></div>
-      <p class="small muted">Searched ${esc(plan.search?.combinations_evaluated ?? 0)} combinations across ${esc(plan.search?.records_considered ?? 0)} records; ${esc(plan.search?.robustness_checked ?? 0)} re-checked with ${esc(plan.search?.monte_carlo_runs_each ?? 0)} simulated futures each. ${esc(plan.search?.objective || "")}</p></section>`);
+    parts.push(`<section class="card section-gap"><div class="card-head"><div><span class="eyebrow">Proposal ${esc(plan.plan_id.slice(0, 8))} · ${esc(plan.status)}</span><h3>${plan.action_needed ? `Gap of ${money(plan.gap_minor)} on the likely path` : "No action needed"}</h3><p>${esc(plan.explanation)}</p></div><div class="row">${plan.action_needed && !plan.bundles.some((bundle) => bundle.feasible) ? `<span class="pill storm">No safe option found</span>` : ""}${isNum(plan.futures_short_of_20_before) ? `<span class="pill ${plan.futures_short_of_20_before > 2 ? "storm" : "ok"}">Before: ${esc(plan.futures_short_of_20_before)} of 20 futures short</span>` : ""}</div></div>
+      ${searchSummary(plan.search) ? `<p class="small muted">${esc(searchSummary(plan.search))}</p>` : ""}</section>`);
     parts.push(`<section class="stack section-gap">${plan.bundles.map((bundle, index) => bundleCard(plan, bundle, index)).join("")}</section>`);
     const levers = plan.levers || [];
     parts.push(`<section class="grid cols-2 section-gap">
@@ -414,7 +499,7 @@ function renderRescue() {
     parts.push(`<section class="card section-gap"><div class="card-head"><div><h3>Financing options compared (mock catalogue)</h3><p>Topic E financing-option matching: every option normalised to cost and annual rate. None is executable; no lender or credit decision is connected.</p></div><span class="pill mock">MOCK</span></div>
       <div class="table-wrap"><table><thead><tr><th>Option</th><th class="num">Principal</th><th class="num">Fee</th><th class="num">≈ APR</th><th class="num">Days to cash</th><th>Collateral</th><th>Eligibility</th></tr></thead><tbody>
       ${plan.financing.map((item) => `<tr><td><strong>${esc(item.label)}</strong></td><td class="num">${money(item.principal_minor)}</td><td class="num">${money(item.fee_minor)}</td><td class="num">${isNum(item.apr_bps) ? `${(item.apr_bps / 100).toFixed(1)}%` : "—"}</td><td class="num">${esc(item.days_to_cash)}</td><td>${esc(item.collateral)}</td><td class="small muted">${esc(item.eligibility)}</td></tr>`).join("")}
-      ${plan.bundles[0] ? `<tr><td><strong>Recommended bundle</strong> <span class="tag good">executable</span></td><td class="num">—</td><td class="num">${money(plan.bundles[0].economic_cost_minor)}</td><td class="num">—</td><td class="num">on agreement</td><td>None</td><td class="small muted">Counterparties must agree</td></tr>` : ""}
+      ${plan.bundles[0]?.feasible ? `<tr><td><strong>${plan.bundles[0].bundle_id === "counter-offer" ? "Counter-offer bundle" : "Recommended bundle"}</strong> <span class="tag good">executable</span></td><td class="num">—</td><td class="num">${money(plan.bundles[0].economic_cost_minor)}</td><td class="num">—</td><td class="num">on agreement</td><td>None</td><td class="small muted">Counterparties must agree</td></tr>` : ""}
       </tbody></table></div></section>`);
     if ((plan.reminders || []).length) {
       parts.push(`<section class="card section-gap"><div class="card-head"><div><h3>Collection reminders, ranked by risk to the plan</h3><p>Zero-cash messages. A reply is a promise to pay: tracked, never counted as cash.${policy.autonomy_level === "delegate" ? " Under delegated autonomy the agent may send these alone (5 a day)." : ""}</p></div></div>
@@ -422,7 +507,10 @@ function renderRescue() {
           ${isNum(item.late_risk) ? `<span class="small muted">Arrives after the first breach in ${pct(item.late_risk)} of breaching futures.</span>` : ""}<div class="message-preview">${esc(item.message)}</div>${sent?.reply ? `<div class="chat-bubble theirs">${esc(sent.reply.message)}<small>${esc(sent.reply.note || "")}</small></div>` : ""}</div>`; }).join("")}</section>`);
     }
   } else if (!(d.mandates || []).length) {
-    parts.push(`<section class="card section-gap"><p class="muted">${(d.executions || []).length ? "Nothing is pending. Run the agent again to re-check the month after the executed changes." : "No current proposal for this target date. Run the rescue agent to create one."}</p></section>`);
+    const message = !latest ? "No current proposal for this target date. Run the rescue agent to create one."
+      : receiptInEffect(latest) ? "Nothing is pending. Run the agent again to re-check the month after the executed changes."
+      : "Nothing is pending. The sandbox was reset after the last execution; run the agent to check the month again.";
+    parts.push(`<section class="card section-gap"><p class="muted">${message}</p></section>`);
   }
   return parts.join("");
 }
@@ -432,7 +520,7 @@ function renderRescue() {
 function renderAssistant() {
   if (!state.chat.length) state.chat.push({role: "agent", text: "Hi, I'm Tideway. Ask me whether payroll is safe, how risky the month looks, who to chase, a what-if such as \"what if Nila Traders pays 10 days late\", or ask me for a rescue plan. I can explain and propose; I can't approve or move money."});
   const prompts = ["Can I pay payroll on time?", "How risky is this month?", "Who should I chase first?", "Find me a rescue plan", "Why this plan?", "Approve the plan and pay the supplier"];
-  const consent = state.config.ai_configured ? `<label class="check small"><input id="ai-consent" type="checkbox"> Use the AI model for this message (names are pseudonymised; record text never leaves this computer)</label>` : `<p class="hint">Local agent mode: answers come from deterministic tools, no network. An optional LLM mode is available when a key is configured.</p>`;
+  const consent = state.config.ai_configured ? `<label class="check small"><input id="ai-consent" type="checkbox" ${state.aiConsent ? "checked" : ""}> Use the AI model for this message (names are pseudonymised; record text never leaves this computer)</label>` : `<p class="hint">Local agent mode: answers come from deterministic tools, no network. An optional LLM mode is available when a key is configured.</p>`;
   return `<section class="grid split"><div class="card chat"><div class="chat-log" id="chat-log">${state.chat.map((item) => `<div class="msg ${item.role === "user" ? "user" : "agent"} ${item.unverified?.length ? "warn" : ""}">${esc(item.text)}${item.trace?.length ? `<div class="trace">${item.trace.map((t) => `<span>${esc(t.tool)} · ${esc(t.permission)}</span>`).join("")}</div>` : ""}</div>`).join("")}</div>
     <form id="chat-form" class="chat-form"><input id="chat-input" maxlength="2000" placeholder="Ask about payroll, risk, a what-if or a plan…" autocomplete="off" required><button class="button primary" type="submit">${icon("send")}Ask</button></form></div>
     <div class="card"><h3>Try asking</h3><div class="chips">${prompts.map((prompt) => `<button class="chip" data-action="prompt" data-prompt="${esc(prompt)}">${esc(prompt)}</button>`).join("")}</div>
@@ -442,15 +530,16 @@ function renderAssistant() {
 
 async function ask(message) {
   const text = String(message || "").trim();
-  if (!text) return;
+  if (!text || state.busy) return;
+  // Earlier turns only: the server appends the current message itself.
+  const history = state.chat.slice(-8).map((item) => ({role: item.role === "user" ? "user" : "assistant", content: item.text}));
+  const consent = Boolean(state.config.ai_configured && state.aiConsent);
   state.chat.push({role: "user", text});
   render();
-  const history = state.chat.slice(-8).map((item) => ({role: item.role === "user" ? "user" : "assistant", content: item.text}));
-  const consent = Boolean($("#ai-consent")?.checked);
   const result = await act("Asking", () => api("/api/chat", {business_id: state.businessId, target_date: state.targetDate, message: text, history, consent}));
   if (result) {
     state.chat.push({role: "agent", text: result.text, trace: result.trace, unverified: result.unverified_numbers});
-    if ((result.trace || []).some((item) => item.tool === "compare_plans")) await loadDashboard();
+    if ((result.trace || []).some((item) => item.tool === "compare_plans")) await act("Reload", () => loadDashboard());
   }
   render();
 }
@@ -547,10 +636,11 @@ function renderSecurity() {
 function renderEvidence() {
   const audit = state.audit;
   const drill = state.drill;
-  if (!audit) { loadAudit(); return `<div class="loading">Loading the audit chain…</div>`; }
+  if (state.auditError) return `<div class="alert critical">${icon("alert")}<div><strong>Could not load the audit chain</strong><span>${esc(state.auditError)}</span><div class="row section-gap"><button class="button small ghost" data-action="reload-audit">${icon("refresh")}Try again</button></div></div></div>`;
+  if (!audit) return `<div class="loading">Loading the audit chain…</div>`;
   const witness = audit.witness || {};
   return `<section class="grid cols-2"><div class="card"><div class="card-head"><div><h3>Audit chain</h3><p>${esc(audit.hash_algorithm)}</p></div><span class="pill ${audit.hash_chain_valid ? "ok" : "storm"}">${audit.hash_chain_valid ? "Chain valid" : `Broken at entry ${esc(audit.first_invalid_entry)}`}</span></div>
-      <div class="kv"><div><span>Entries</span><strong>${esc(audit.entries.length)}</strong></div><div><span>Head hash</span><strong class="mono tiny">${esc(audit.head_hash.slice(0, 24))}…</strong></div><div><span>Witness</span><strong>${witness.present ? (witness.consistent ? `cosigned ${esc(witness.size)}` : "INCONSISTENT") : "not yet cosigned"}</strong></div><div><span>Signed checkpoint</span><strong class="mono tiny">${esc(audit.checkpoint.signature.slice(0, 20))}…</strong></div></div>
+      <div class="kv"><div><span>Entries</span><strong>${esc(audit.entries.length)}</strong></div><div><span>Head hash</span><strong class="mono tiny">${esc((audit.head_hash || "").slice(0, 24))}…</strong></div><div><span>Witness</span><strong>${witness.present ? (witness.consistent ? `cosigned ${esc(witness.size)}` : "INCONSISTENT") : "not yet cosigned"}</strong></div><div><span>Signed checkpoint</span><strong class="mono tiny">${esc((audit.checkpoint?.signature || "").slice(0, 20))}…</strong></div></div>
       ${witness.problem ? `<div class="alert critical section-gap">${icon("alert")}<div><strong>Witness mismatch</strong><span>${esc(witness.problem)}</span></div></div>` : ""}
       <div class="row section-gap"><button class="button ghost" data-action="drill">${icon("chain")}Tamper drill (safe copy)</button><a class="button ghost" href="/api/export?kind=evidence&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Evidence JSON</a><a class="button ghost" href="/api/export?kind=receipts&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Receipts CSV</a><a class="button ghost" href="/api/export?kind=records&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Records CSV</a></div>
       ${drill ? `<div class="alert ${drill.detected ? "success" : "critical"} section-gap">${icon(drill.detected ? "check" : "alert")}<div><strong>Edited entry ${esc(drill.edited_entry)} (${esc(drill.edited_action)}) → verification breaks at entry ${esc(drill.verification_breaks_at)}</strong><span>${esc(drill.explanation)} Live database modified: ${drill.live_database_modified ? "yes" : "no"}.</span></div></div>` : ""}
@@ -562,9 +652,18 @@ function renderEvidence() {
       </tbody></table></div></section>`;
 }
 
+// Not wrapped in act(): it runs after a busy dashboard load and must not be dropped by
+// the busy guard. A newer request (or a business change) supersedes an older one.
+let auditRequest = 0;
 async function loadAudit() {
-  const audit = await act("Audit", () => api(`/api/audit?business_id=${encodeURIComponent(state.businessId)}`));
-  if (audit) { state.audit = audit; if (state.view === "evidence") render(); }
+  const ticket = ++auditRequest, businessId = state.businessId;
+  state.auditError = "";
+  let audit = null, failure = "";
+  try { audit = await api(`/api/audit?business_id=${encodeURIComponent(businessId)}`); } catch (error) { failure = error.message; }
+  if (ticket !== auditRequest || businessId !== state.businessId) return;
+  state.audit = audit;
+  state.auditError = failure;
+  if (state.view === "evidence") render();
 }
 
 // ---------------------------------------------------------------------------- dialogs
@@ -604,7 +703,7 @@ async function submitApprove(event) {
     $("#approve-dialog").close();
     toast(result.status === "mandate_issued" ? "Signed mandate issued. Next: send requests to the counterparties." : "Approval recorded. A second person (including the owner) must approve: sign out and sign in as them.");
     if (result.fast_approval_flag) toast("Approved in under 2 seconds: flagged in the audit trail as a possible rubber stamp.");
-    await loadDashboard();
+    await act("Reload", () => loadDashboard());
   } catch (error) {
     $("#approve-error").textContent = error.message;
   }
@@ -633,29 +732,39 @@ async function runAgent() {
   state.view = "rescue";
   state.receipt = null;
   render();
-  const result = await act("Agent", () => api("/api/agent/run", {business_id: state.businessId, target_date: state.targetDate}));
-  if (result) { state.run = result; await loadDashboard(); toast(result.plan_id ? "Proposal ready for human review." : "The agent finished: see the timeline."); }
+  const result = await act("Agent", async () => {
+    const run = await api("/api/agent/run", {business_id: state.businessId, target_date: state.targetDate});
+    state.run = run;
+    await loadDashboard();
+    return run;
+  });
+  if (result) { toast(result.plan_id ? "Proposal ready for human review." : "The agent finished: see the timeline."); }
 }
 
 async function mandateAction(path, mandateId, extra = {}, message = "") {
-  const result = await act(path, () => api(path, {business_id: state.businessId, mandate_id: mandateId, ...extra}));
-  if (result) { if (message) toast(message); await loadDashboard(); }
+  const result = await actAndReload(path, () => api(path, {business_id: state.businessId, mandate_id: mandateId, ...extra}));
+  if (result && message) toast(message);
   return result;
 }
 
 async function execute(mandateId) {
   const key = `exec-${mandateId}`;
   const result = await act("Execute", async () => {
+    let receipt;
     try {
-      return await api("/api/mandate/execute", {business_id: state.businessId, mandate_id: mandateId, idempotency_key: key});
+      receipt = await api("/api/mandate/execute", {business_id: state.businessId, mandate_id: mandateId, idempotency_key: key});
     } catch (error) {
       if (error.status && error.status < 500) throw error;
       const check = await api(`/api/execution?business_id=${encodeURIComponent(state.businessId)}&idempotency_key=${encodeURIComponent(key)}`);
-      if (check.found) return check.receipt;
-      throw new Error("Execution status is uncertain and no receipt exists. Nothing was retried automatically.");
+      if (!check.found) throw new Error("Execution status is uncertain and no receipt exists. Nothing was retried automatically.");
+      receipt = check.receipt;
     }
+    state.receipt = receipt;
+    state.run = null;
+    await loadDashboard();
+    return receipt;
   });
-  if (result) { state.receipt = result; state.run = null; toast("Executed once in the sandbox. Receipt and read-back below."); await loadDashboard(); }
+  if (result) toast("Executed once in the sandbox. Receipt and read-back below.");
 }
 
 async function verifyMandate(mandateId, tamper) {
@@ -683,8 +792,8 @@ async function savePolicy(form) {
   if (!Object.keys(changes).length) return toast("No policy changes.");
   const answer = await askPin("Change policy", "Policy changes invalidate pending proposals and mandates.");
   if (!answer) return;
-  const result = await act("Policy", () => api("/api/policy", {business_id: state.businessId, changes, pin: answer.pin}));
-  if (result) { toast(`Policy ${result.version} saved.`); await loadDashboard(); }
+  const result = await actAndReload("Policy", () => api("/api/policy", {business_id: state.businessId, changes, pin: answer.pin}));
+  if (result) { toast(`Policy ${result.version} saved.`); }
 }
 
 function sampleCsv() {
@@ -707,7 +816,7 @@ async function importCsv(event) {
     const result = await api("/api/import", {business_id: state.businessId, csv: text, replace_demo: $("#replace-demo").checked});
     $("#import-dialog").close();
     toast(`Imported ${result.total_added} record(s); ${result.quarantined_text.length} quarantined as untrusted text.`);
-    await loadDashboard();
+    await act("Reload", () => loadDashboard());
   } catch (error) {
     $("#import-error").textContent = error.message;
   }
@@ -719,7 +828,7 @@ document.addEventListener("click", async (event) => {
   const close = target.closest("[data-close]");
   if (close) { document.getElementById(close.dataset.close)?.close(); return; }
   const nav = target.closest("[data-view]");
-  if (nav) { state.view = nav.dataset.view; render(); if (state.view === "evidence") loadAudit(); return; }
+  if (nav) { state.view = nav.dataset.view; render(); if (state.view === "evidence" && state.dashboard) loadAudit(); return; }
   const button = target.closest("[data-action]");
   if (!button) return;
   const data = button.dataset;
@@ -738,34 +847,35 @@ document.addEventListener("click", async (event) => {
       case "verify-mandate": await verifyMandate(data.mandate, false); break;
       case "tamper-mandate": await verifyMandate(data.mandate, true); break;
       case "remind": {
-        const result = await act("Remind", () => api("/api/reminder/send", {business_id: state.businessId, target_date: state.targetDate, action_id: data.id}));
-        if (result) { toast(result.promise_to_pay_date ? `Reminder delivered in the sandbox. Promise to pay: ${day(result.promise_to_pay_date)} (not cash).` : "Reminder delivered in the sandbox."); await loadDashboard(); }
+        const result = await actAndReload("Remind", () => api("/api/reminder/send", {business_id: state.businessId, target_date: state.targetDate, action_id: data.id}));
+        if (result) { toast(result.promise_to_pay_date ? `Reminder delivered in the sandbox. Promise to pay: ${day(result.promise_to_pay_date)} (not cash).` : "Reminder delivered in the sandbox."); }
         break;
       }
       case "prompt": await ask(data.prompt); break;
-      case "whatif-reset": state.whatif = {delays: {}, expense: "", expenseDate: "", drop: "", result: null}; render(); break;
+      case "whatif-reset": state.whatif = freshWhatIf(); render(); break;
+      case "reload-audit": state.audit = null; render(); loadAudit(); break;
       case "import": $("#import-form").reset(); $("#import-error").textContent = ""; $("#import-dialog").showModal(); break;
       case "sample-csv": { const url = URL.createObjectURL(new Blob([sampleCsv()], {type: "text/csv"})); const link = document.createElement("a"); link.href = url; link.download = "tideway-example.csv"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); break; }
-      case "pause": { const result = await act("Pause", () => api("/api/policy", {business_id: state.businessId, changes: {agent_paused: true}})); if (result) { toast("Agent paused. Pending proposals and mandates are void."); await loadDashboard(); } break; }
+      case "pause": { const result = await actAndReload("Pause", () => api("/api/policy", {business_id: state.businessId, changes: {agent_paused: true}})); if (result) { toast("Agent paused. Pending proposals and mandates are void."); } break; }
       case "resume": {
         const answer = await askPin("Resume the agent", "Explain why it is safe to resume. The reason is written to the audit trail.", true);
         if (!answer) break;
-        const result = await act("Resume", () => api("/api/policy", {business_id: state.businessId, changes: {agent_paused: false, resume_reason: answer.reason}, pin: answer.pin}));
-        if (result) { toast("Agent resumed."); await loadDashboard(); }
+        const result = await actAndReload("Resume", () => api("/api/policy", {business_id: state.businessId, changes: {agent_paused: false, resume_reason: answer.reason}, pin: answer.pin}));
+        if (result) { toast("Agent resumed."); }
         break;
       }
       case "autonomy": {
         const answer = await askPin(`Set autonomy to "${data.level}"`, data.level === "delegate" ? "Delegate issues a signed standing mandate: the agent may send zero-cash reminders alone, at most 5 a day. Money-related actions still need people." : "Changing autonomy invalidates pending proposals.");
         if (!answer) break;
-        const result = await act("Autonomy", () => api("/api/policy", {business_id: state.businessId, changes: {autonomy_level: data.level}, pin: answer.pin}));
-        if (result) { toast(`Autonomy set to ${data.level}.`); await loadDashboard(); }
+        const result = await actAndReload("Autonomy", () => api("/api/policy", {business_id: state.businessId, changes: {autonomy_level: data.level}, pin: answer.pin}));
+        if (result) { toast(`Autonomy set to ${data.level}.`); }
         break;
       }
       case "verify-payee": {
         const answer = await askPin(`Verify ${data.payee}`, "Confirm you called the phone number already on file (never a number from the request) and the payee confirmed the new account.");
         if (!answer) break;
-        const result = await act("Payee", () => api("/api/payee/verify", {business_id: state.businessId, payee: data.payee, account: data.account, method: "callback_number_on_file", pin: answer.pin}));
-        if (result) { toast(`${result.payee} verified. ${result.separation_of_duties}`); await loadDashboard(); }
+        const result = await actAndReload("Payee", () => api("/api/payee/verify", {business_id: state.businessId, payee: data.payee, account: data.account, method: "callback_number_on_file", pin: answer.pin}));
+        if (result) { toast(`${result.payee} verified. ${result.separation_of_duties}`); }
         break;
       }
       case "selftest": {
@@ -783,8 +893,10 @@ document.addEventListener("click", async (event) => {
 document.addEventListener("change", async (event) => {
   const target = event.target;
   try {
-    if (target.id === "business-select") { state.businessId = target.value; state.run = null; state.receipt = null; state.chat = []; state.selftest = null; state.drill = null; state.whatif = {delays: {}, expense: "", expenseDate: "", drop: "", result: null}; await act("Business", () => loadDashboard(true)); }
-    else if (target.id === "target-date") { if (!target.value) return; state.targetDate = target.value; state.run = null; await act("Date", () => loadDashboard()); }
+    // Context changes apply only after a successful load; on failure the control shows the current context again.
+    if (target.id === "business-select") { if (!await act("Business", () => loadDashboard({businessId: target.value, resetTarget: true}))) syncContextControls(); }
+    else if (target.id === "target-date") { if (!target.value || !await act("Date", () => loadDashboard({targetDate: target.value}))) syncContextControls(); }
+    else if (target.id === "ai-consent") { state.aiConsent = target.checked; }
     else if (target.id === "display-currency") { state.displayCurrency = target.value; render(); }
     else if (target.id === "record-filter") { state.recordFilter = target.value; render(); }
     else if (target.id === "whatif-drop") { state.whatif.drop = target.value; }

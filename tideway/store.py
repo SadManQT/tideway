@@ -23,7 +23,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import analytics, security
-from .domain import (
+from .domain import (SecurityError, 
     OPEN_INVOICE_STATUSES,
     ValidationError,
     canonical_json,
@@ -75,8 +75,9 @@ def json_hash(value):
 
 
 def _fingerprint(row):
+    """Duplicate detection.  Rows with their own ids are distinct even if date, text and amount match."""
     text = " ".join(row["description"].casefold().split())
-    return hashlib.sha256(f"{row['date']}|{text}|{row['type']}|{row['amount_minor']}".encode()).hexdigest()
+    return hashlib.sha256(f"{row['date']}|{text}|{row['type']}|{row['amount_minor']}|{row.get('id') or ''}".encode()).hexdigest()
 
 
 def idempotency_ok(value):
@@ -100,6 +101,8 @@ CREATE TABLE IF NOT EXISTS operators (
     id TEXT PRIMARY KEY, name TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('owner','accountant','viewer')),
     pin_salt TEXT NOT NULL, pin_hash TEXT NOT NULL, failed_attempts INTEGER NOT NULL DEFAULT 0,
     locked_until TEXT, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS login_failures (
+    key TEXT PRIMARY KEY, failures INTEGER NOT NULL DEFAULT 0, locked_until TEXT);
 CREATE TABLE IF NOT EXISTS sessions (
     token_hash TEXT PRIMARY KEY, operator_id TEXT NOT NULL REFERENCES operators(id),
     created_at TEXT NOT NULL, expires_at TEXT NOT NULL);
@@ -236,8 +239,10 @@ class Store:
 
     def _maybe_trip_breaker(self, db, business_id):
         since = (datetime.now(timezone.utc) - timedelta(minutes=BREAKER_WINDOW_MINUTES)).isoformat(timespec="seconds")
-        count = db.execute("SELECT COUNT(*) FROM audit WHERE business_id=? AND permission='denied' AND timestamp>=? "
-                           "AND details LIKE '%\"security_relevant\":true%'", (business_id, since)).fetchone()[0]
+        resumed = db.execute("SELECT MAX(id) FROM audit WHERE business_id=? AND action='policy.update' "
+                             "AND details LIKE '%\"resumed\":true%'", (business_id,)).fetchone()[0] or 0
+        count = db.execute("SELECT COUNT(*) FROM audit WHERE business_id=? AND permission='denied' AND timestamp>=? AND id>? "
+                           "AND details LIKE '%\"security_relevant\":true%'", (business_id, since, resumed)).fetchone()[0]
         policy = self._policy(db, business_id)
         if count >= BREAKER_DENIALS and not policy["agent_paused"]:
             policy = {**policy, "agent_paused": True, "paused_reason": f"Circuit breaker: {count} security denials "
@@ -365,30 +370,46 @@ class Store:
                     for row in db.execute("SELECT id,name,role FROM operators ORDER BY CASE role WHEN 'owner' THEN 0 "
                                           "WHEN 'accountant' THEN 1 ELSE 2 END,id")]
 
-    def verify_pin(self, operator_id, pin):
-        """Step-up check.  Wrong PINs count toward a lockout and are committed."""
+    def verify_pin(self, operator_id, pin, client=None):
+        """Check a PIN.  Wrong PINs count toward a lockout and are committed.
+
+        Sign-in failures are counted per (client, operator), so an anonymous caller guessing PINs
+        cannot lock a signed-in operator out of their own step-up checks; step-up failures are
+        counted on the operator.
+        """
+        if not isinstance(operator_id, str) or not isinstance(pin, str):
+            raise ValidationError("Operator and PIN must be text.")
+        key = f"{client}|{operator_id}"[:200] if client is not None else None
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             row = db.execute("SELECT * FROM operators WHERE id=?", (operator_id,)).fetchone()
-            if not row:
-                raise ValidationError("Unknown operator or wrong PIN.")
-            if row["locked_until"] and not _expired(row["locked_until"]):
-                raise ValidationError("Too many wrong PINs. This operator is locked for a few minutes.")
-            if not security.check_pin(pin, row["pin_salt"], row["pin_hash"]):
-                failures = row["failed_attempts"] + 1
-                locked = _later(minutes=LOCKOUT_MINUTES) if failures >= MAX_PIN_FAILURES else None
-                db.execute("UPDATE operators SET failed_attempts=?,locked_until=? WHERE id=?",
-                           (0 if locked else failures, locked, operator_id))
-                ok = None
+            if key is not None:
+                counter = db.execute("SELECT failures,locked_until FROM login_failures WHERE key=?", (key,)).fetchone()
+                failures, locked_until = (counter[0], counter[1]) if counter else (0, None)
             else:
-                db.execute("UPDATE operators SET failed_attempts=0,locked_until=NULL WHERE id=?", (operator_id,))
+                failures, locked_until = (row["failed_attempts"], row["locked_until"]) if row else (0, None)
+            if locked_until and not _expired(locked_until):
+                raise ValidationError("Too many wrong PINs. This sign-in is locked for a few minutes.")
+            ok = None
+            if row and security.check_pin(pin, row["pin_salt"], row["pin_hash"]):
                 ok = {"id": row["id"], "name": row["name"], "role": row["role"]}
+                failures, locked = 0, None
+            else:
+                failures += 1
+                locked = _later(minutes=LOCKOUT_MINUTES) if failures >= MAX_PIN_FAILURES else None
+                failures = 0 if locked else failures
+            if key is not None:
+                db.execute("INSERT INTO login_failures(key,failures,locked_until) VALUES (?,?,?) "
+                           "ON CONFLICT(key) DO UPDATE SET failures=excluded.failures,locked_until=excluded.locked_until",
+                           (key, failures, locked))
+            elif row:
+                db.execute("UPDATE operators SET failed_attempts=?,locked_until=? WHERE id=?", (failures, locked, operator_id))
         if ok is None:
             raise ValidationError("Unknown operator or wrong PIN.")
         return ok
 
-    def login(self, operator_id, pin):
-        operator = self.verify_pin(operator_id, pin)
+    def login(self, operator_id, pin, client="local"):
+        operator = self.verify_pin(operator_id, pin, client=client)
         token = secrets.token_urlsafe(32)
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
@@ -516,7 +537,9 @@ class Store:
         digest = json_hash({"business": {key: business[key] for key in ("id", "currency", "opening_cash_minor", "opening_date")},
                             "policy": policy, "records": stable,
                             "verified": sorted((key, item["verified_account"] or "") for key, item in counterparties.items()),
-                            "state": state["state_hash"]})
+                            # Promises-to-pay are excluded: a customer reply must not invalidate approvals.
+                            # Execution re-projects with the current promises and blocks if the reserve is breached.
+                            "state": json_hash({key: state[key] for key in ("adjustments", "executed_exposure", "version")})})
         return {"business": business, "policy": policy, "records": records, "counterparties": counterparties,
                 "state": state, "snapshot_hash": digest}
 
@@ -639,14 +662,16 @@ class Store:
                 raise ValidationError(f"Unknown policy field(s): {', '.join(sorted(unknown))}.")
             changes = dict(changes)
             reason = changes.pop("resume_reason", None)
-            if current["agent_paused"] and changes.get("agent_paused") is False:
-                if not isinstance(reason, str) or len(reason.strip()) < 5:
-                    raise ValidationError("Resuming a paused agent needs a written reason (at least 5 characters).")
             tail = current["version"].rsplit("-v", 1)[-1]
             version_label = f"policy-v{int(tail) + 1 if tail.isdigit() else 2}"
             base = {key: value for key, value in current.items() if key != "paused_reason"}
             policy = validate_policy({**base, **changes, "version": version_label}, business_id, business["currency"])
-            if policy["agent_paused"] and changes.get("agent_paused"):
+            resumed = current["agent_paused"] and not policy["agent_paused"]
+            if resumed and (not isinstance(reason, str) or len(reason.strip()) < 5):
+                raise ValidationError("Resuming a paused agent needs a written reason (at least 5 characters).")
+            if {k: v for k, v in policy.items() if k != "version"} == {k: v for k, v in base.items() if k != "version"}:
+                return {**current, "changed": False}  # nothing changed: keep plans, mandates and the version
+            if policy["agent_paused"] and not current["agent_paused"]:
                 policy["paused_reason"] = f"Paused by {operator['name']} ({operator['role']})"
             elif policy["agent_paused"] and current.get("paused_reason"):
                 policy["paused_reason"] = current["paused_reason"]
@@ -663,6 +688,7 @@ class Store:
                 standing = self._issue_standing(db, business_id, policy, operator)
             receipt = self._audit(db, business_id, "policy.update", actor, "human_approval",
                                   {"previous": current, "policy": policy, "state_version": version, "resume_reason": reason,
+                                   "resumed": resumed,
                                    "standing_mandate": standing["mandate_id"] if standing else None})
             return {**policy, "changed": True, "standing_mandate": standing, **receipt}
 
@@ -698,16 +724,20 @@ class Store:
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             self._business_row(db, business_id)
-            if not db.execute("SELECT 1 FROM bills WHERE business_id=? AND payee=? AND payee_account=?",
-                              (business_id, payee, account)).fetchone():
-                raise ValidationError("No bill uses this payee and account.")
+            if not all(isinstance(value, str) for value in (payee, account)):
+                raise ValidationError("Payee and account must be text.")
+            payees = self.derived(self._snapshot(db, business_id))["payees"]
+            if not any(item["payee"] == payee and item.get("account") == account
+                       for item in payees["flagged"] + payees["lookalikes"]):
+                raise ValidationError("Only a changed bank account or a look-alike payee needs verification; "
+                                      "this payee and account are not flagged.")
             db.execute("INSERT INTO counterparties(business_id,name,kind,profile_json,verified_account,verified_by,verified_at) "
                        "VALUES (?,?,?,?,?,?,?) ON CONFLICT(business_id,name,kind) DO UPDATE SET "
                        "verified_account=excluded.verified_account,verified_by=excluded.verified_by,verified_at=excluded.verified_at",
                        (business_id, payee, "supplier", "{}", account, operator["id"], utc_now()))
             version = self._bump(db, business_id)
             return {"payee": payee, "verified_account": analytics.mask_account(account), "state_version": version,
-                    "separation_of_duties": f"{operator['name']} can no longer approve actions for {payee}.",
+                    "separation_of_duties": f"{operator['name']} cannot be the only approver of actions for {payee}.",
                     **self._audit(db, business_id, "payee.verify", actor, "human_approval",
                                   {"payee": payee, "account": analytics.mask_account(account), "method": method})}
 
@@ -721,6 +751,10 @@ class Store:
         payees = analytics.payee_checks(records["bills"], verified)
         profiles = analytics.customer_profiles(records["invoices"])
         predictions = analytics.tidepay_predictions(records["invoices"], snapshot["state"]["current_date"])
+        for item in profiles["customers"].values():  # TidePay's view of each customer's open invoices
+            own = [p for p in predictions.values() if p["customer"] == item["customer"]]
+            item["tidepay_delay_days"] = max((p["likely_delay_days"] for p in own), default=None)
+            item["tidepay_p80_delay_days"] = max((p["p80_delay_days"] for p in own), default=None)
         blocked = {item["bill_id"]: "Bank details changed; the owner must verify the payee by callback first."
                    for item in payees["flagged"]}
         for item in payees.get("lookalikes", []):
@@ -731,14 +765,27 @@ class Store:
 
     # ---- plans, approvals and mandates -------------------------------------
 
-    def create_plan(self, business_id, payload, snapshot_hash, proposed_by, actor):
+    def create_plan(self, business_id, payload, snapshot_hash, proposed_by, actor, replaces_mandate=None):
+        """Store a proposal.  With replaces_mandate, that mandate is cancelled in the same transaction,
+        only after every check has passed, so a refused proposal never leaves it cancelled."""
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             snapshot = self._snapshot(db, business_id)
             if snapshot["policy"]["agent_paused"]:
                 raise ValidationError("The agent is paused (kill switch). Resume it to create new proposals.")
+            if snapshot["policy"]["autonomy_level"] == "advise" and proposed_by.startswith("agent"):
+                raise ValidationError("Autonomy is set to 'advise': the agent may explain but not create proposals.")
             if snapshot["snapshot_hash"] != snapshot_hash:
                 raise ValidationError("Records changed while planning; compare again.")
+            if replaces_mandate is not None:
+                old = db.execute("SELECT * FROM mandates WHERE business_id=? AND id=? AND kind='bundle'",
+                                 (business_id, replaces_mandate)).fetchone()
+                if not old or old["status"] not in BUNDLE_LIVE:
+                    raise ValidationError("The mandate being replaced is no longer live.")
+                db.execute("UPDATE mandates SET status='cancelled' WHERE id=?", (replaces_mandate,))
+                db.execute("UPDATE plans SET status='cancelled' WHERE id=? AND status IN ('pending','approved')", (old["plan_id"],))
+                self._audit(db, business_id, "mandate.cancel", actor, "agent_propose",
+                            {"mandate_id": replaces_mandate, "reason": "replaced by a new proposal"})
             identifier = uuid.uuid4().hex
             body = {**payload, "snapshot_hash": snapshot_hash, "policy_version": snapshot["policy"]["version"]}
             plan_hash = json_hash(body)
@@ -787,7 +834,7 @@ class Store:
             raise ValidationError("Records, policy or sandbox state changed since this plan; compare again.")
         return row, payload
 
-    def _check_bundle(self, snapshot, derived, bundle, operator=None):
+    def _check_bundle(self, snapshot, derived, bundle):
         """Deterministic checks outside the model: every bound value must trace to a ledger record."""
         policy = snapshot["policy"]
         if policy["agent_paused"]:
@@ -812,10 +859,6 @@ class Store:
                 if action["days"] > policy["max_deferral_days"] or action["amount_minor"] > bill["amount_minor"]:
                     raise ValidationError("Deferral terms exceed the bill or the policy.")
                 exposure += action["amount_minor"]
-                verifier = snapshot["counterparties"].get(f"supplier:{bill['payee']}", {}).get("verified_by")
-                if operator and verifier == operator["id"]:
-                    raise ValidationError("Separation of duties: the person who verified this payee's bank details "
-                                          "cannot approve actions for the same payee.")
             elif action["type"] == "early_payment_offer":
                 invoice = invoices.get(action["record_id"])
                 if not invoice or invoice["customer"] != action["counterparty"] or invoice["amount_minor"] != action["face_minor"] \
@@ -829,10 +872,16 @@ class Store:
                 raise ValidationError("Only supplier deferrals and early-payment offers can be bundled.")
             if action.get("face_minor", action["amount_minor"]) > policy["action_limit_minor"]:
                 raise ValidationError("An action is above the per-action limit.")
-        today = snapshot["state"]["current_date"]
-        if snapshot["state"]["executed_exposure"].get(today, 0) + exposure > policy["daily_cap_minor"]:
+        if self._exposure_today(snapshot["business"]["id"]) + exposure > policy["daily_cap_minor"]:
             raise ValidationError("This bundle would exceed the daily exposure cap.")
         return exposure
+
+    def _exposure_today(self, business_id):
+        """Exposure executed on the real UTC day.  Receipts survive sandbox resets, so a reset cannot lift the cap."""
+        with self.connect() as db:
+            rows = db.execute("SELECT receipt_json FROM executions WHERE business_id=? AND created_at LIKE ?",
+                              (business_id, utc_now()[:10] + "%")).fetchall()
+        return sum(json.loads(row["receipt_json"]).get("exposure_minor", 0) for row in rows)
 
     def approve(self, business_id, plan_id, bundle_id, operator, pin, actor, review_ms=None):
         if operator["role"] not in APPROVER_ROLES:
@@ -848,7 +897,13 @@ class Store:
             bundle = next((item for item in payload["bundles"] if item["bundle_id"] == bundle_id), None)
             if not bundle:
                 raise ValidationError("Bundle was not found in this plan.")
-            exposure = self._check_bundle(snapshot, derived, bundle, operator)
+            exposure = self._check_bundle(snapshot, derived, bundle)
+            for live in db.execute(f"SELECT id,document FROM mandates WHERE business_id=? AND plan_id=? AND kind='bundle' "
+                                   f"AND status IN {BUNDLE_LIVE}", (business_id, plan_id)).fetchall():
+                if _expired(json.loads(live["document"])["expires_at"]):
+                    db.execute("UPDATE mandates SET status='expired' WHERE id=?", (live["id"],))
+                else:
+                    raise ValidationError("This plan already has a live mandate. Use it, or cancel it first.")
             if db.execute("SELECT 1 FROM approvals WHERE plan_id=? AND bundle_id<>?", (plan_id, bundle_id)).fetchone():
                 raise ValidationError("Another bundle of this plan is already being approved.")
             if db.execute("SELECT 1 FROM approvals WHERE plan_id=? AND bundle_id=? AND operator_id=?",
@@ -864,17 +919,27 @@ class Store:
             dual = exposure > policy["dual_approval_threshold_minor"]
             people = {item["operator_id"] for item in approvals}
             satisfied = (len(people) >= 2 and any(item["role"] == "owner" for item in approvals)) if dual else True
+            # Separation of duties: whoever verified a payee's bank details cannot be the only approver
+            # of actions for that payee; someone else must also approve.
+            bills = {bill["id"]: bill for bill in snapshot["records"]["bills"]}
+            verifiers = {snapshot["counterparties"].get(f"supplier:{bills[action['record_id']]['payee']}", {}).get("verified_by")
+                         for action in bundle["actions"] if action["type"] == "supplier_deferral"} - {None}
+            sod = bool(verifiers & people) and not (people - verifiers)
+            satisfied = satisfied and not sod
             fast = review is not None and review < FAST_APPROVAL_MS
             db.execute("UPDATE plans SET status='approved' WHERE id=?", (plan_id,))
             details = {"plan_id": plan_id, "bundle_id": bundle_id, "exposure_minor": exposure,
                        "dual_approval_required": dual, "approvals": approvals, "step_up": "PIN re-entered",
-                       "review_ms": review, "fast_approval_flag": fast}
+                       "review_ms": review, "fast_approval_flag": fast, "separation_of_duties": sod}
             if not satisfied:
                 receipt = self._audit(db, business_id, "plan.approve", actor, "human_approval",
                                       {**details, "status": "awaiting_second_approval"})
-                return {"status": "awaiting_second_approval", "dual_approval_required": True, "approvals": approvals,
-                        "exposure_minor": exposure, "fast_approval_flag": fast,
-                        "message": "Maker-checker: a second person, including the owner, must approve this bundle.", **receipt}
+                message = ("Separation of duties: you verified this payee's bank details, so another approver must also "
+                           "approve this bundle." if sod else
+                           "Maker-checker: a second person, including the owner, must approve this bundle.")
+                return {"status": "awaiting_second_approval", "dual_approval_required": dual, "separation_of_duties": sod,
+                        "approvals": approvals, "exposure_minor": exposure, "fast_approval_flag": fast,
+                        "message": message, **receipt}
             document = {"version": security.MANDATE_VERSION, "kind": "bundle", "mandate_id": uuid.uuid4().hex,
                         "business_id": business_id, "currency": snapshot["business"]["currency"],
                         "plan_id": plan_id, "bundle_id": bundle_id, "plan_hash": row["plan_hash"],
@@ -891,13 +956,23 @@ class Store:
                        "VALUES (?,?,?,?,?,?,?,?,?,?)",
                        (document["mandate_id"], business_id, plan_id, bundle_id, "bundle", canonical_json(document),
                         "active", document["expires_at"], document["nonce"], utc_now()))
+            # Approvals are consumed by this mandate (they are kept in its signed document and the audit log),
+            # so if it later expires or is invalidated the same people can approve again.
+            db.execute("DELETE FROM approvals WHERE plan_id=? AND bundle_id=?", (plan_id, bundle_id))
             receipt = self._audit(db, business_id, "mandate.issue", actor, "human_approval",
                                   {**details, "mandate_id": document["mandate_id"], "signature": document["signature"],
                                    "expires_at": document["expires_at"]})
             return {"status": "mandate_issued", "mandate": document, "approvals": approvals, "fast_approval_flag": fast,
                     "dual_approval_required": dual, "exposure_minor": exposure, **receipt}
 
+    @staticmethod
+    def _mandate_id(mandate_id):
+        if not isinstance(mandate_id, str) or not re.fullmatch(r"[0-9a-f]{32}", mandate_id):
+            raise ValidationError("A valid mandate_id is required.")
+        return mandate_id
+
     def mandate(self, business_id, mandate_id):
+        self._mandate_id(mandate_id)
         with self.connect() as db:
             row = db.execute("SELECT * FROM mandates WHERE business_id=? AND id=?", (business_id, mandate_id)).fetchone()
             if not row:
@@ -937,7 +1012,7 @@ class Store:
             raise ValidationError("Mandate was not found for this business.")
         document = json.loads(row["document"])
         if not security.verify(self.key, document):
-            raise ValidationError("invalid_mandate: the signature does not verify; refusing to act.")
+            raise SecurityError("invalid_mandate", "the signature does not verify; refusing to act.")
         if row["status"] == "used":
             raise ValidationError("This mandate was already used. Its receipt is available with the original idempotency key.")
         if row["status"] not in BUNDLE_LIVE:
@@ -958,7 +1033,7 @@ class Store:
                 raise ValidationError("Records changed after approval; the mandate is stale.")
             bound = next((item for item in document["actions"] if item["action_id"] == action["action_id"]), None)
             if bound is None or bound != bound_terms(action):
-                raise ValidationError("unresolved_constraint: this request is outside the mandate's scope.")
+                raise SecurityError("unresolved_constraint", "this request is outside the mandate's scope.")
             identifier = uuid.uuid4().hex
             db.execute("INSERT INTO negotiations(id,business_id,mandate_id,action_id,counterparty,request_json,response_json,status,simulated_by,created_at) "
                        "VALUES (?,?,?,?,?,?,?,?,?,?)",
@@ -981,6 +1056,7 @@ class Store:
     def cancel_mandate(self, business_id, mandate_id, operator, actor):
         if operator["role"] not in APPROVER_ROLES:
             raise ValidationError("Viewers cannot cancel mandates.")
+        self._mandate_id(mandate_id)
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             row = db.execute("SELECT * FROM mandates WHERE business_id=? AND id=?", (business_id, mandate_id)).fetchone()
@@ -1013,7 +1089,7 @@ class Store:
                                (business_id, idempotency_key)).fetchone()
             if prior:
                 if prior["mandate_id"] != mandate_id:
-                    raise ValidationError("idempotency_conflict: this key already belongs to a different mandate.")
+                    raise SecurityError("idempotency_conflict", "this key already belongs to a different mandate.")
                 return {**json.loads(prior["receipt_json"]), "replayed": True}
             _row, document = self._load_bundle_mandate(db, business_id, mandate_id)
             snapshot = self._snapshot(db, business_id)
@@ -1028,7 +1104,7 @@ class Store:
             bundle = next(item for item in payload["bundles"] if item["bundle_id"] == document["bundle_id"])
             self._check_bundle(snapshot, derived, bundle)
             if [bound_terms(action) for action in bundle["actions"]] != document["actions"]:
-                raise ValidationError("unresolved_constraint: the bundle no longer matches the signed terms.")
+                raise SecurityError("unresolved_constraint", "the bundle no longer matches the signed terms.")
             latest = {}
             for item in db.execute("SELECT * FROM negotiations WHERE mandate_id=? ORDER BY created_at,rowid", (mandate_id,)):
                 latest[item["action_id"]] = self._negotiation_dict(item)
@@ -1114,11 +1190,12 @@ class Store:
                     raise ValidationError("The standing mandate is invalid or expired.")
                 if "collection_reminder" not in document["constraints"]["action.types"]:
                     raise ValidationError("The standing mandate does not cover reminders.")
-                sent_today = db.execute("SELECT COUNT(*) FROM messages WHERE business_id=? AND mandate_id=? AND created_at LIKE ?",
-                                        (business_id, standing_mandate_id, utc_now()[:10] + "%")).fetchone()[0]
+                # Per business and real UTC day, across re-issued standing mandates and sandbox resets.
+                sent_today = db.execute("SELECT COUNT(*) FROM messages WHERE business_id=? AND human_present=0 AND created_at LIKE ?",
+                                        (business_id, utc_now()[:10] + "%")).fetchone()[0]
                 if sent_today >= document["constraints"]["action.max_per_day"]:
                     raise ValidationError("The standing mandate's daily reminder limit is reached; escalating to a human.")
-            if db.execute("SELECT 1 FROM messages WHERE business_id=? AND record_id=? AND kind='reminder'",
+            if db.execute("SELECT 1 FROM messages WHERE business_id=? AND record_id=? AND kind='reminder' AND status<>'reset'",
                           (business_id, invoice["id"])).fetchone():
                 raise ValidationError("A reminder for this invoice was already recorded in the sandbox.")
             message_id = uuid.uuid4().hex
@@ -1133,7 +1210,7 @@ class Store:
             new_state = {"adjustments": state["adjustments"], "executed_exposure": state["executed_exposure"], "promises": promises}
             db.execute("UPDATE sandbox_state SET state_json=?,updated_at=? WHERE business_id=?",
                        (canonical_json(new_state), utc_now(), business_id))
-            version = self._bump(db, business_id)
+            version = state["version"]  # zero-cash: no bump, so approved plans and mandates stay valid
             receipt = {"message_id": message_id, "status": "delivered_in_sandbox", "invoice_id": invoice["id"],
                        "counterparty": invoice["customer"], "human_present": human_present,
                        "standing_mandate_id": standing_mandate_id, "cash_effect_minor": 0,
@@ -1162,7 +1239,8 @@ class Store:
         with self.connect() as db:
             self._business_row(db, business_id)
             result = []
-            for row in db.execute("SELECT * FROM messages WHERE business_id=? ORDER BY created_at,rowid", (business_id,)):
+            for row in db.execute("SELECT * FROM messages WHERE business_id=? AND status<>'reset' ORDER BY created_at,rowid",
+                                  (business_id,)):
                 item = dict(row)
                 item["reply"] = json.loads(item["reply"]) if item["reply"] else None
                 item["human_present"] = bool(item["human_present"])
@@ -1177,7 +1255,8 @@ class Store:
             business = self._business_row(db, business_id)
             db.execute("UPDATE sandbox_state SET current_date=?,state_json=?,reset_count=reset_count+1,updated_at=? WHERE business_id=?",
                        (business["opening_date"], canonical_json(self._empty_state()), utc_now(), business_id))
-            db.execute("DELETE FROM messages WHERE business_id=?", (business_id,))
+            # Kept (not deleted) so daily limits still count them; they no longer block a new reminder.
+            db.execute("UPDATE messages SET status='reset' WHERE business_id=?", (business_id,))
             version = self._bump(db, business_id)
             receipt = {"business_id": business_id, "sandbox_version": version, "reset": True,
                        "records_preserved": True, "receipts_preserved": True, "audit_preserved": True}

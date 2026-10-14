@@ -345,11 +345,13 @@ def payee_checks(bills, verified_accounts=None):
                             "account": row["payee_account"],
                             "reason": "Bank details differ from the account used or verified before. Verify by calling "
                                       "a number already on file before any action."})
-        if row["payee"] not in established:
+        cleared = bool(row.get("payee_account")) and verified_accounts.get(row["payee"]) == row["payee_account"]
+        if row["payee"] not in established and not cleared:
             for name in established:
                 ratio = difflib.SequenceMatcher(None, row["payee"].casefold(), name.casefold()).ratio()
                 if 0.85 <= ratio < 1:
-                    lookalikes.append({"bill_id": row["id"], "payee": row["payee"], "similar_to": name,
+                    lookalikes.append({"bill_id": row["id"], "payee": row["payee"], "account": row.get("payee_account"),
+                                       "similar_to": name,
                                        "similarity": round(ratio, 2),
                                        "reason": "New payee name is almost identical to an established supplier."})
                     break

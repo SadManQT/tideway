@@ -87,14 +87,13 @@ def _deferral_options(business, policy, bill, end, blocked):
     return options, None
 
 
-def _early_payment_options(business, policy, invoice, current_date, breach_date, end):
+def _early_payment_options(business, policy, invoice, expected, breach_date, end):
     if invoice["status"] not in OPEN_INVOICE_STATUSES or policy["max_discount_bps"] <= 0:
         return []
     if invoice["amount_minor"] > policy["action_limit_minor"]:
         return []
     anchor = breach_date or end
     pay_by = max(add_days(business["opening_date"], 2), add_days(anchor, -1))
-    expected = current_date or invoice["expected_collection_date"]
     if pay_by >= expected or pay_by > end:
         return []
     accelerated = days_between(pay_by, expected)
@@ -218,7 +217,7 @@ def reminder_for(invoice, profile, business_name, late_share=None):
 
 def plan_recovery(business, policy, records, target_date, *, accepted=(), promises=None, profiles=None,
                   basis_dates=None, basis="likely", blocked=None, excluded_counterparties=(),
-                  mc_seed=0, mc_runs=400, late_share=None, as_of=None):
+                  mc_seed=0, mc_runs=400, late_share=None, as_of=None, prefer="lowest_cost"):
     """Compare recovery bundles for one business and target date."""
     blocked = dict(blocked or {})
     excluded = set(excluded_counterparties)
@@ -253,7 +252,12 @@ def plan_recovery(business, policy, records, target_date, *, accepted=(), promis
             rejected.append({"record_id": invoice["id"], "counterparty": invoice["customer"], "code": "DECLINED",
                              "reason": "The customer declined in this sandbox; re-planned without them."})
             continue
-        options = _early_payment_options(business, policy, invoice, ledger.invoice_dates.get(invoice["id"]), breach, end)
+        # Price acceleration from the date cash is actually expected (likely or promised), even when that
+        # date falls after the horizon and so has no event in the ledger.
+        expected = ledger.invoice_dates.get(invoice["id"]) or (dates or {}).get(invoice["id"]) or invoice["expected_collection_date"]
+        if (promises or {}).get(invoice["id"]):
+            expected = max(promises[invoice["id"]], expected)
+        options = _early_payment_options(business, policy, invoice, expected, breach, end)
         if options:
             groups.append(options)
     groups.sort(key=lambda options: -max(option.get("face_minor", option["amount_minor"]) for option in options))
@@ -293,8 +297,14 @@ def plan_recovery(business, policy, records, target_date, *, accepted=(), promis
     # are compared in 5-point buckets (one simulated future in twenty).
     bucket = lambda item: round(item["probability_breach"] / 0.05)  # noqa: E731
     within = [item for item in shortlist if item["probability_breach"] <= RISK_TARGET]
-    ranked = within + sorted((item for item in shortlist if item not in within),
-                             key=lambda item: (bucket(item), item["cost"], item["counterparties"]))
+    if prefer == "lowest_risk":
+        ranked = sorted(shortlist, key=lambda item: (bucket(item), item["cost"], item["counterparties"]))
+    elif prefer == "fewest_asks":
+        ranked = sorted(within, key=lambda item: (item["counterparties"], item["cost"])) + sorted(
+            (item for item in shortlist if item not in within), key=lambda item: (bucket(item), item["counterparties"], item["cost"]))
+    else:
+        ranked = within + sorted((item for item in shortlist if item not in within),
+                                 key=lambda item: (bucket(item), item["cost"], item["counterparties"]))
     selected = []
     by_cost = sorted(shortlist, key=lambda item: (item["cost"], item["counterparties"]))
     names = lambda item: frozenset(option["counterparty"] for option in item["chosen"])  # noqa: E731

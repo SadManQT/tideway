@@ -14,7 +14,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from . import selftest
 from .agent import Agent
-from .domain import ValidationError, canonical_json, validate_business_id
+from .domain import SecurityError, ValidationError, canonical_json, validate_business_id
 from .security import RateLimiter
 from .service import Tideway
 
@@ -23,8 +23,6 @@ ROOT = Path(__file__).resolve().parent.parent
 STATIC = {"/": "index.html", "/index.html": "index.html", "/styles.css": "styles.css", "/app.js": "app.js",
           "/favicon.svg": "favicon.svg"}
 CONTENT_TYPES = {"html": "text/html", "css": "text/css", "js": "text/javascript", "svg": "image/svg+xml"}
-SECURITY_SIGNALS = ("invalid_mandate", "unresolved_constraint", "idempotency_conflict", "Separation of duties",
-                    "outside the mandate")
 COOKIE = "tideway_session"
 
 
@@ -143,13 +141,13 @@ class Application:
 
     # ---- POST ------------------------------------------------------------------
 
-    def post(self, path, body, operator, session_token):
+    def post(self, path, body, operator, session_token, client="local"):
         actor = f"operator:{operator['id']}" if operator else "anonymous"
         if path == "/api/session/login":
             self.fields(body, ("operator_id", "pin"), ("operator_id", "pin"))
             if not isinstance(body["operator_id"], str) or not isinstance(body["pin"], str):
                 raise ValidationError("Operator and PIN must be text.")
-            token, who = self.store.login(body["operator_id"], body["pin"])
+            token, who = self.store.login(body["operator_id"], body["pin"], client)
             return {"operator": who, "_set_session": token}
         if path == "/api/session/logout":
             self.store.logout(session_token)
@@ -166,7 +164,7 @@ class Application:
             if not isinstance(history, list) or len(history) > 20 or not isinstance(body.get("consent", False), bool):
                 raise ValidationError("Invalid chat request.")
             return self.agent.chat(business_id, body.get("target_date"), body["message"], history, body.get("consent", False),
-                                   "agent:llm" if body.get("consent") and self.agent.key else "agent:local")
+                                   "agent:llm" if body.get("consent") and self.agent.key else "agent:local", operator["role"])
         if path == "/api/plan/propose":
             self.fields(body, ("business_id", "target_date"), ("business_id",))
             self.require(operator, "owner", "accountant")
@@ -280,12 +278,13 @@ def make_handler(app):
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                 pass
 
-        def fail(self, exc, business_id=None, actor="anonymous", path=""):
+        def fail(self, exc, business_id=None, operator=None, path=""):
             message = str(exc)
-            if business_id:
-                app.store.reject(business_id, "api.rejected", actor, message, {"path": path},
-                                 security_relevant=any(signal in message for signal in SECURITY_SIGNALS))
-            self.reply(400, {"error": message, "code": "validation_error"})
+            code = exc.code if isinstance(exc, SecurityError) else "validation_error"
+            if business_id and operator:  # anonymous callers must not be able to fill the audit log or trip the breaker
+                app.store.reject(business_id, "api.rejected", f"operator:{operator['id']}", message, {"path": path},
+                                 security_relevant=isinstance(exc, SecurityError))
+            self.reply(400, {"error": message, "code": code})
 
         def do_GET(self):
             if not self.trusted_host():
@@ -318,7 +317,8 @@ def make_handler(app):
             origin = self.headers.get("Origin")
             if origin is not None and origin not in (f"http://127.0.0.1:{port}", f"http://localhost:{port}"):
                 return self.reply(403, {"error": "Cross-origin writes are not allowed."})
-            if not secrets.compare_digest(self.headers.get("X-Tideway-Token", ""), app.csrf):
+            if not secrets.compare_digest(self.headers.get("X-Tideway-Token", "").encode("utf-8", "surrogateescape"),
+                                          app.csrf.encode()):
                 return self.reply(403, {"error": "Missing or invalid CSRF token. Refresh the page."})
             if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
                 return self.reply(415, {"error": "Use application/json."})
@@ -329,7 +329,10 @@ def make_handler(app):
                 return self.reply(429, {"error": "Too many requests. Slow down and try again shortly."})
             business_id = None
             try:
-                length = int(self.headers.get("Content-Length", "0"))
+                raw_length = self.headers.get("Content-Length", "0").strip()
+                if not raw_length.isascii() or not raw_length.isdigit():
+                    return self.reply(400, {"error": "Invalid Content-Length.", "code": "validation_error"})
+                length = int(raw_length)
                 if not 0 < length <= 2_000_000:
                     return self.reply(413, {"error": "Request body must be 1 byte to 2 MB."})
                 body = json.loads(self.rfile.read(length), parse_constant=lambda _: (_ for _ in ()).throw(ValueError("Invalid number")))
@@ -338,7 +341,7 @@ def make_handler(app):
                 candidate = body.get("business_id")
                 if isinstance(candidate, str) and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", candidate):
                     business_id = candidate if any(item["id"] == candidate for item in app.store.list_businesses()) else None
-                result = app.post(path, body, operator, token)
+                result = app.post(path, body, operator, token, self.client_address[0])
                 cookie = None
                 if isinstance(result, dict) and "_set_session" in result:
                     cookie = f"{COOKIE}={result.pop('_set_session')}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800"
@@ -349,8 +352,10 @@ def make_handler(app):
                 self.reply(401 if operator is None else 403, {"error": str(exc)})
             except LookupError:
                 self.reply(404, {"error": "Not found."})
+            except RecursionError:
+                self.reply(400, {"error": "JSON is nested too deeply.", "code": "validation_error"})
             except (ValidationError, ValueError, UnicodeDecodeError) as exc:
-                self.fail(exc, business_id, f"operator:{operator['id']}" if operator else "anonymous", path)
+                self.fail(exc, business_id, operator, path)
             except Exception as exc:
                 print(f"POST {path} failed: {type(exc).__name__}: {exc}", file=sys.stderr)
                 self.reply(500, {"error": "Internal error. Check the server console."})

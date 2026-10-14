@@ -17,6 +17,7 @@ from .domain import (
     OPEN_INVOICE_STATUSES,
     ValidationError,
     days_between,
+    is_payroll_text,
     valid_date,
 )
 
@@ -25,7 +26,8 @@ ADJUSTMENT_KINDS = ("bill_deferral", "invoice_early_payment")
 
 
 def _is_payroll_transaction(row):
-    return row["type"] == "expense" and str(row.get("category", "")).strip().casefold() == "payroll"
+    """Payroll is protected however the owner labels it (category or description)."""
+    return row["type"] == "expense" and is_payroll_text(row.get("category"), row.get("description"))
 
 
 def check_adjustments(records, adjustments):
@@ -108,13 +110,15 @@ def build_events(business, records, end_date, adjustments=(), invoice_dates=None
                 {"kind": "invoice_early_payment", "id": row["id"], "amount_minor": agreement["amount_minor"],
                  "face_minor": row["amount_minor"], "certainty": "agreed"})
             continue
-        day = invoice_dates.get(row["id"]) or promises.get(row["id"]) or row["expected_collection_date"]
-        if day < opening:
-            excluded.append({"kind": "invoice", "id": row["id"], "date": day, "effect_minor": row["amount_minor"],
-                             "reason": "overdue with no future expected date"})
-            continue
+        day = invoice_dates.get(row["id"]) or row["expected_collection_date"]
+        promised = promises.get(row["id"])
+        if promised:  # the customer's own promise is new information; a scenario can still be later than it
+            day = max(promised, invoice_dates.get(row["id"], promised))
+        overdue = day < opening
+        if overdue:  # still unpaid after its expected date: the earliest it can arrive is the opening day
+            day = opening
         add(day, row["amount_minor"], {"kind": "invoice", "id": row["id"], "amount_minor": row["amount_minor"],
-                                       "certainty": "promised" if row["id"] in promises else "expected"})
+                                       "certainty": "promised" if promised else "overdue" if overdue else "expected"})
     for row in records["bills"]:
         if row["status"] not in OPEN_BILL_STATUSES:
             continue
@@ -139,10 +143,11 @@ def horizon_end(business, target_date, lookahead_days=0):
     target = valid_date(target_date, "target_date")
     if target < business["opening_date"]:
         raise ValidationError("target_date cannot be before the opening date.")
-    end = (date.fromisoformat(target) + timedelta(days=lookahead_days)).isoformat()
-    if days_between(business["opening_date"], end) > MAX_PROJECTION_DAYS:
-        raise ValidationError("The projection horizon is limited to 366 days after opening.")
-    return end
+    latest = MAX_PROJECTION_DAYS - lookahead_days
+    if days_between(business["opening_date"], target) > latest:
+        raise ValidationError(f"target_date must be within {latest} days of the opening date "
+                              f"({MAX_PROJECTION_DAYS}-day horizon including the {lookahead_days}-day look-ahead).")
+    return (date.fromisoformat(target) + timedelta(days=lookahead_days)).isoformat()
 
 
 def project(business, policy, records, target_date, adjustments=(), scenario="base",

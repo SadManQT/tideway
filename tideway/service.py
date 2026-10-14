@@ -10,9 +10,9 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 from . import analytics, counterparty, planner
-from .domain import ValidationError, add_days, human_date, money_text, parse_combined_csv, valid_date
+from .domain import OPEN_INVOICE_STATUSES, ValidationError, add_days, human_date, money_text, parse_combined_csv, valid_date
 from .fixtures import FIXTURE_VERSION, OPERATORS, fixtures
-from .projection import project, summary
+from .projection import horizon_end, project, summary
 from .store import Store
 
 
@@ -156,7 +156,8 @@ class Tideway:
 
     # ---- planning ----------------------------------------------------------------
 
-    def propose(self, business_id, target_date, actor, proposed_by="agent", excluded=()):
+    def propose(self, business_id, target_date, actor, proposed_by="agent", excluded=(), max_discount_bps=None,
+                prefer="lowest_cost", replaces_mandate=None):
         snapshot = self.store.snapshot(business_id)
         if snapshot["policy"]["agent_paused"]:
             raise ValidationError("The agent is paused (kill switch). Resume it to create new proposals.")
@@ -169,16 +170,22 @@ class Tideway:
         base_sim = analytics.monte_carlo(snapshot["business"], policy, snapshot["records"], target, state["adjustments"],
                                          state["promises"], runs=PLAN_MC_RUNS, seed=seed,
                                          lookahead_days=policy["lookahead_days"], as_of=state["current_date"])
-        payload = planner.plan_recovery(snapshot["business"], policy, snapshot["records"], target,
+        planning_policy = dict(policy)
+        if max_discount_bps is not None:
+            planning_policy["max_discount_bps"] = min(policy["max_discount_bps"], max_discount_bps)
+        payload = planner.plan_recovery(snapshot["business"], planning_policy, snapshot["records"], target,
                                         accepted=state["adjustments"], promises=state["promises"],
                                         profiles=derived["profiles"], basis_dates=derived["likely_dates"],
                                         blocked=derived["blocked"], excluded_counterparties=excluded,
                                         mc_seed=seed, mc_runs=PLAN_MC_RUNS,
-                                        late_share=base_sim["invoice_late_share"], as_of=state["current_date"])
+                                        late_share=base_sim["invoice_late_share"], as_of=state["current_date"],
+                                        prefer=prefer)
         payload["probability_breach_before"] = base_sim["probability_breach"]
         payload["futures_short_of_20_before"] = base_sim["futures_short_of_20"]
         payload["excluded_counterparties"] = sorted(excluded)
-        return self.store.create_plan(business_id, payload, snapshot["snapshot_hash"], proposed_by, actor)
+        payload["owner_constraints"] = {"max_discount_bps": planning_policy["max_discount_bps"], "prefer": prefer}
+        return self.store.create_plan(business_id, payload, snapshot["snapshot_hash"], proposed_by, actor,
+                                      replaces_mandate=replaces_mandate)
 
     def negotiate(self, business_id, mandate_id, actor):
         """Send the mandate's requests to the simulated counterparties (deterministic rules)."""
@@ -222,6 +229,9 @@ class Tideway:
         view = self.store.mandate(business_id, mandate_id)
         document = view["mandate"]
         latest = {item["action_id"]: item for item in view["negotiations"]}
+        if view["status"] != "countered" or not any(item["status"] == "countered" and item["response"].get("counter_terms")
+                                                    for item in latest.values()):
+            raise ValidationError("This mandate has no counter-offer to accept.")
         plan = self.store.plan(business_id, document["plan_id"])
         bundle = next(item for item in plan["bundles"] if item["bundle_id"] == document["bundle_id"])
         snapshot = self.store.snapshot(business_id)
@@ -256,13 +266,21 @@ class Tideway:
                                         basis_dates=derived["likely_dates"])
         exposure = sum(item.get("face_minor", item["amount_minor"]) for item in revised)
         state = snapshot["state"]
+        adjustments = state["adjustments"] + [item["adjustment"] for item in revised]
+        after = project(business, policy, snapshot["records"], document["target_date"], scenario="likely",
+                        invoice_dates=derived["likely_dates"], adjustments=adjustments, promises=state["promises"],
+                        lookahead_days=policy["lookahead_days"])
+        after_base = project(business, policy, snapshot["records"], document["target_date"], scenario="base",
+                             adjustments=adjustments, promises=state["promises"], lookahead_days=policy["lookahead_days"])
         simulation = analytics.monte_carlo(business, policy, snapshot["records"], document["target_date"],
-                                           state["adjustments"] + [item["adjustment"] for item in revised], state["promises"],
+                                           adjustments, state["promises"],
                                            runs=PLAN_MC_RUNS, seed=analytics.stable_seed(business_id, snapshot["snapshot_hash"]),
                                            lookahead_days=policy["lookahead_days"], as_of=state["current_date"])
         payload = {**{key: plan[key] for key in ("business_id", "target_date", "currency", "basis", "planning_horizon_end",
                                                  "risk_target", "baseline", "basis_projection", "gap_minor", "action_needed",
-                                                 "financing", "reminders", "rejected", "levers", "assumptions")},
+                                                 "financing", "reminders", "rejected", "levers", "assumptions",
+                                                 "probability_breach_before", "futures_short_of_20_before",
+                                                 "excluded_counterparties", "owner_constraints") if key in plan},
                    "bundles": [{"bundle_id": "counter-offer", "feasible": check["feasible"], "actions": revised,
                                 "economic_cost_minor": sum(item["economic_cost_minor"] for item in revised),
                                 "counterparties": len({item["counterparty"] for item in revised}),
@@ -270,25 +288,27 @@ class Tideway:
                                 "futures_short_of_20_after": simulation["futures_short_of_20"],
                                 "risk_target_met": simulation["probability_breach"] <= planner.RISK_TARGET,
                                 "dual_approval_required": exposure > policy["dual_approval_threshold_minor"],
+                                "after": summary(after), "after_base": summary(after_base),
                                 "remaining_shortfall_minor": check["shortfall_minor"]}],
                    "single_option_checks": [], "why_not": [],
                    "explanation": ("Counter-offer terms restore the reserve floor and need fresh approval: a signed mandate "
                                    "is never edited in place." if check["feasible"] else
                                    "The counter-offer terms do not restore the reserve floor; re-plan instead."),
-                   "search": {"source": "counter-offer", "from_mandate": mandate_id}}
-        self.store.cancel_mandate(business_id, mandate_id, {"role": "owner", "id": "system"}, actor)
-        return self.store.create_plan(business_id, payload, snapshot["snapshot_hash"], "agent:counter-offer", actor)
+                   "search": {"source": "counter-offer", "from_mandate": mandate_id, "monte_carlo_runs_each": PLAN_MC_RUNS}}
+        return self.store.create_plan(business_id, payload, snapshot["snapshot_hash"], "agent:counter-offer", actor,
+                                      replaces_mandate=mandate_id)
 
     def replan_without(self, business_id, mandate_id, actor):
         view = self.store.mandate(business_id, mandate_id)
-        refused = sorted({item["counterparty"] for item in view["negotiations"] if item["status"] == "rejected"})
+        if view["status"] not in ("rejected", "countered"):
+            raise ValidationError(f"This mandate is {view['status']}; re-planning is only for refused or countered requests.")
+        refused = sorted({item["counterparty"] for item in view["negotiations"] if item["status"] in ("rejected", "countered")})
         if not refused:
-            raise ValidationError("No counterparty refused this mandate.")
+            raise ValidationError("No counterparty refused or countered this mandate.")
         target = view["mandate"]["target_date"]
-        self.store.cancel_mandate(business_id, mandate_id, {"role": "owner", "id": "system"}, actor)
-        previous = self.store.latest_plan(business_id, target)
-        excluded = set(refused) | set((previous or {}).get("excluded_counterparties", []))
-        return self.propose(business_id, target, actor, "agent:replan", tuple(sorted(excluded)))
+        previous = self.store.plan(business_id, view["mandate"]["plan_id"])
+        excluded = set(refused) | set(previous.get("excluded_counterparties", []))
+        return self.propose(business_id, target, actor, "agent:replan", tuple(sorted(excluded)), replaces_mandate=mandate_id)
 
     def send_reminder(self, business_id, target_date, action_id, operator, actor, standing=False):
         snapshot = self.store.snapshot(business_id)
@@ -312,6 +332,10 @@ class Tideway:
         """Read-only scenario: delay customers, add an expense, or drop a receivable. Nothing is written."""
         if not isinstance(changes, dict):
             raise ValidationError("changes must be an object.")
+        unknown = sorted(set(changes) - {"customer_delays", "extra_expense", "drop_invoice"})
+        if unknown:
+            raise ValidationError(f"Unknown what-if change(s): {', '.join(unknown)[:120]}. "
+                                  "Use customer_delays, extra_expense or drop_invoice.")
         snapshot = self.store.snapshot(business_id)
         target = self._target(snapshot, target_date)
         derived = self.store.derived(snapshot)
@@ -321,7 +345,10 @@ class Tideway:
         delays = changes.get("customer_delays", {})
         if not isinstance(delays, dict) or len(delays) > 20:
             raise ValidationError("customer_delays must map up to 20 customers to extra days.")
+        customers = {row["customer"] for row in records["invoices"]}
         for customer, days in delays.items():
+            if customer not in customers:
+                raise ValidationError(f"No invoice belongs to a customer named {str(customer)[:80]!r}.")
             if isinstance(days, bool) or not isinstance(days, int) or not -30 <= days <= 90:
                 raise ValidationError("Each customer delay must be a whole number of days from -30 to 90.")
             for row in records["invoices"]:
@@ -334,13 +361,24 @@ class Tideway:
             amount = expense.get("amount_minor")
             if isinstance(amount, bool) or not isinstance(amount, int) or not 0 < amount <= 10_000_000_000:
                 raise ValidationError("extra_expense.amount_minor must be a positive integer.")
-            records["transactions"].append({"id": "what-if-expense", "date": valid_date(expense.get("date", ""), "extra_expense.date"),
+            if set(expense) - {"amount_minor", "date"}:
+                raise ValidationError("extra_expense takes only amount_minor and date.")
+            day = valid_date(expense.get("date", ""), "extra_expense.date")
+            end = horizon_end(business, target, policy["lookahead_days"])
+            if not business["opening_date"] <= day <= end:
+                raise ValidationError(f"extra_expense.date must be between {human_date(business['opening_date'])} and "
+                                      f"{human_date(end)} (the planning horizon).")
+            records["transactions"].append({"id": "what-if-expense", "date": day,
                                             "description": "What-if expense", "type": "expense", "amount_minor": amount,
                                             "currency": business["currency"], "category": "What-if"})
         drop = changes.get("drop_invoice")
         if drop is not None:
-            if not any(row["id"] == drop for row in records["invoices"]):
-                raise ValidationError("drop_invoice must name an invoice of this business.")
+            if not isinstance(drop, str) or not any(row["id"] == drop and row["status"] in OPEN_INVOICE_STATUSES
+                                                    for row in records["invoices"]):
+                raise ValidationError("drop_invoice must name an open invoice of this business.")
+            if any(item.get("invoice_id") == drop for item in state["adjustments"]):
+                raise ValidationError("This invoice already has an agreed early-payment deal, so it cannot be dropped "
+                                      "in a what-if. Reset the sandbox to try it.")
             records["invoices"] = [row for row in records["invoices"] if row["id"] != drop]
             dates.pop(drop, None)
         projection = project(business, policy, records, target, adjustments=state["adjustments"], scenario="what-if",
