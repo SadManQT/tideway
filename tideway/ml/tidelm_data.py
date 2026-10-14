@@ -58,8 +58,8 @@ TEST_SECOND = ["Holdings", "Exports", "Kitchen", "Optics", "Ceramics", "SARL", "
 CJK = ["华星贸易", "东方包装", "金龙物流", "长江纸业", "明珠电子", "新华五金", "天宇食品", "宏达纺织", "海川建材", "瑞丰药业"]
 TEST_CJK = ["青松科技", "海燕食品", "白鹭传媒", "紫荆陶瓷"]
 
-LANGS = (("en", 0.40), ("zh", 0.13), ("es", 0.10), ("id", 0.09), ("fr", 0.06), ("pt", 0.06), ("hinglish", 0.08),
-         ("banglish", 0.08))
+LANGS = (("en", 0.36), ("zh", 0.13), ("es", 0.09), ("id", 0.08), ("fr", 0.06), ("pt", 0.06), ("hinglish", 0.10),
+         ("banglish", 0.12))
 
 
 def pick(rng, weighted):
@@ -123,17 +123,20 @@ T = {
         "id": ["Tunjukkan proyeksi arus kas"], "fr": ["Montre-moi la prévision de trésorerie"],
         "pt": ["Mostre a previsão de caixa"], "hinglish": ["cash ka forecast dikhao"], "banglish": ["cash er obostha ki hobe"]},
     "stress": {
-        "en": ["What is the worst case?", "show the stress scenario", "if everyone pays slow what happens"],
+        "en": ["What is the worst case?", "show the stress scenario", "if everyone pays slow what happens",
+               "what if all customers pay late", "worst case if payments are slow"],
         "zh": ["最坏情况是什么？", "如果客户都晚付款会怎样"], "es": ["¿Cuál es el peor escenario?"],
         "id": ["Bagaimana skenario terburuknya?"], "fr": ["Quel est le pire scénario ?"], "pt": ["Qual é o pior cenário?"],
-        "hinglish": ["worst case mein kya hoga?"], "banglish": ["worst case e ki hobe"]},
+        "hinglish": ["worst case mein kya hoga?", "sab late pay karein to?"], "banglish": ["worst case e ki hobe", "shobai deri kore taka dile ki hobe?"]},
     "whatif_delay": {
         "en": ["What if {a} pays {days} days late?", "what happens if {a} is {days} days late",
                "Suppose {a} delays payment by {days} days"],
         "zh": ["如果{a}晚{days}天付款会怎样？", "假设{a}推迟{days}天付款"],
         "es": ["¿Qué pasa si {a} paga {days} días tarde?"], "id": ["Bagaimana kalau {a} telat bayar {days} hari?"],
         "fr": ["Et si {a} paie avec {days} jours de retard ?"], "pt": ["E se {a} pagar com {days} dias de atraso?"],
-        "hinglish": ["agar {a} {days} din late pay kare to?"], "banglish": ["{a} jodi {days} din pore taka dey?"]},
+        "hinglish": ["agar {a} {days} din late pay kare to?", "{a} {days} din der se de to kya hoga?"],
+        "banglish": ["{a} jodi {days} din pore taka dey?", "{a} {days} din deri korle ki hobe?", "jodi {a} {days} din late kore?",
+                     "{a} er payment {days} din pichiye gele?"]},
     "whatif_two": {
         "en": ["if {a} pays {days} days late and {b} pays {days2} days late?"],
         "zh": ["如果{a}晚{days}天、{b}晚{days2}天付款呢？"],
@@ -147,8 +150,9 @@ T = {
     "whatif_drop": {
         "en": ["What if {a} never pays?", "assume {a} defaults", "what if we lose the payment from {a}"],
         "zh": ["如果{a}一直不付款呢？"], "es": ["¿Y si {a} nunca paga?"], "id": ["Kalau {a} tidak bayar sama sekali?"],
-        "fr": ["Et si {a} ne paie jamais ?"], "pt": ["E se {a} nunca pagar?"], "hinglish": ["agar {a} paisa na de to?"],
-        "banglish": ["{a} jodi taka na dey?"]},
+        "fr": ["Et si {a} ne paie jamais ?"], "pt": ["E se {a} nunca pagar?"],
+        "hinglish": ["agar {a} paisa na de to?", "{a} kabhi pay na kare to?"],
+        "banglish": ["{a} jodi taka na dey?", "{a} jodi kokhono taka na dey?", "{a} er taka na pele ki hobe?", "dhoro {a} default korlo"]},
     "plan": {
         "en": ["Find me a rescue plan", "fix the cash gap", "what should I do?", "help me get through this month",
                "how do I avoid running short", "make a plan to cover payroll"],
@@ -170,7 +174,8 @@ T = {
         "en": [" with the lowest risk", ", safety first", " even if it costs more, I want it safe", ", as safe as possible",
                ", minimise the risk", ", I care about safety more than cost"], "zh": ["，风险越低越好"],
         "es": [", con el menor riesgo"], "id": [", risiko paling kecil"], "fr": [", avec le moins de risque"],
-        "pt": [", com o menor risco"], "hinglish": [", risk kam hona chahiye"], "banglish": [", jhuki kom hok"]},
+        "pt": [", com o menor risco"], "hinglish": [", risk kam hona chahiye", ", safe wala chahiye"],
+        "banglish": [", jhuki kom hok", ", jhuki jeno kom thake", ", safe plan chai", ", khoroch beshi holeo safe chai"]},
     "explain": {
         "en": ["Why this plan?", "explain the recommendation", "why not just take a loan?", "why is the cheaper option not recommended"],
         "zh": ["为什么推荐这个方案？"], "es": ["¿Por qué este plan?"], "id": ["Kenapa rencana ini?"],
@@ -190,7 +195,8 @@ T = {
         "en": ["Remind everyone who owes me", "chase all late customers", "send reminders to customers"],
         "zh": ["提醒所有欠款客户"], "es": ["Recuerda a todos los que me deben"], "id": ["Ingatkan semua pelanggan yang telat"],
         "fr": ["Relance tous les clients en retard"], "pt": ["Cobre todos os clientes atrasados"],
-        "hinglish": ["sab customers ko reminder bhejo"], "banglish": ["shobaike reminder dao"]},
+        "hinglish": ["sab customers ko reminder bhejo", "jo bhi baki hai sabko yaad dilao"],
+        "banglish": ["shobaike reminder dao", "jara taka dey ni shobaike reminder pathao", "shob customer ke mone koriye dao"]},
     "bank": {
         "en": ["Prepare documents for a bank loan", "make a bank pack", "create a loan application pack"],
         "zh": ["帮我准备银行贷款材料"], "es": ["Prepara los documentos para un préstamo"], "id": ["Siapkan dokumen pinjaman bank"],
@@ -199,12 +205,14 @@ T = {
     "customer_one": {
         "en": ["How does {a} usually pay?", "tell me about {a}"], "zh": ["{a}一般按时付款吗？"],
         "es": ["¿Cómo suele pagar {a}?"], "id": ["{a} biasanya bayar tepat waktu?"], "fr": ["Comment paie {a} d'habitude ?"],
-        "pt": ["Como {a} costuma pagar?"], "hinglish": ["{a} time pe pay karta hai?"], "banglish": ["{a} ki shomoymoto taka dey?"]},
+        "pt": ["Como {a} costuma pagar?"], "hinglish": ["{a} time pe pay karta hai?", "{a} ka payment record kaisa hai?"],
+        "banglish": ["{a} ki shomoymoto taka dey?", "{a} er payment er obhyash kemon?", "{a} shadharonoto kobe taka dey?"]},
     "customer_all": {
         "en": ["who are my slowest customers?", "which customers pay late?"], "zh": ["哪些客户付款最慢？"],
         "es": ["¿Qué clientes pagan tarde?"], "id": ["Pelanggan mana yang paling lambat bayar?"],
         "fr": ["Quels clients paient en retard ?"], "pt": ["Quais clientes pagam com atraso?"],
-        "hinglish": ["kaun se customers late pay karte hain?"], "banglish": ["kon customer der e taka dey?"]},
+        "hinglish": ["kaun se customers late pay karte hain?", "sabse late kaun deta hai?"],
+        "banglish": ["kon customer der e taka dey?", "ke shobcheye deri kore taka dey?", "kon kon customer late kore?"]},
     "network": {
         "en": ["Who is my biggest risk?", "which customer could hurt my cash the most", "who do I depend on too much?",
                "show my counterparty risk", "if one customer fails, who hurts me most?"],

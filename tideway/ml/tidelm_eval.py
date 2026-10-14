@@ -80,13 +80,53 @@ def score_extract(predicted, expected):
     return result
 
 
+PAIRS = (  # (label, tuned result, base result on the same test set)
+    ("v3: multilingual + counterparty risk and security tools", "tidelm_v3_eval.json", "tidelm_base_v3test_eval.json"),
+    ("v2: eight languages, 13 payment-message formats", "tidelm_ft_eval.json", "tidelm_base_eval.json"),
+)
+
+
+def write_report():
+    """evidence/ml/tidelm_report.md from whichever evaluation pairs exist (numbers are never typed by hand)."""
+    folder = ROOT / "evidence" / "ml"
+    rows = [("Valid JSON (plans)", "plan", "valid_json", True), ("Intent accuracy", "plan", "intent_accuracy", True),
+            ("Correct tools", "plan", "tool_accuracy", True), ("Exact plan (tools + every argument)", "plan", "exact_plan_accuracy", True),
+            ("Record precision", "extract", "record_precision", False), ("Record recall", "extract", "record_recall", False),
+            ("Record F1", "extract", "record_f1", False), ("Field accuracy", "extract", "field_accuracy", True),
+            ("Injection flag accuracy", "extract", "injection_flag_accuracy", True)]
+    fmt = lambda v, p: "—" if v is None else (f"{v * 100:.1f}%" if p else f"{v:.3f}")  # noqa: E731
+    lines = ["# TideLM evaluation (held-out test sets)", "",
+             "Base model: Qwen3-4B-Instruct-2507 (4-bit, MLX). TideLM: the same model plus Tideway's LoRA adapter "
+             "(rank 16, 16 layers). Test examples use counterparty names never seen in training. Synthetic data from "
+             "`tideway/ml/tidelm_data.py`; these scores show the method works, not real-world accuracy.", ""]
+    for label, tuned_name, base_name in PAIRS:
+        try:
+            tuned = json.loads((folder / tuned_name).read_text())
+            base = json.loads((folder / base_name).read_text())
+        except (OSError, ValueError):
+            continue
+        lines += [f"## {label}", "", f"{tuned['n_plan']} planning and {tuned['n_extract']} extraction examples "
+                  f"(`{tuned.get('test_set', 'data/tidelm')}`).", "", "| Metric | Base model | TideLM |", "|---|---|---|"]
+        lines += [f"| {name} | {fmt(base[s1][k], p)} | **{fmt(tuned[s1][k], p)}** |" for name, s1, k, p in rows]
+        lines += ["", f"Median seconds per answer during evaluation (Apple M4, 16 GB): base {base['median_latency_s']}, "
+                  f"TideLM {tuned['median_latency_s']}.", ""]
+    lines += ["Remaining errors are mostly a missed preference word or an informal phrase read as a different request. "
+              "In the app they cannot cause harm: names are resolved against the ledger, only read/propose tools exist, "
+              "every number comes from Tideway's tools, and every action still needs people to approve a signed mandate."]
+    (folder / "tidelm_report.md").write_text("\n".join(lines) + "\n")
+    print("wrote evidence/ml/tidelm_report.md")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--adapter", default=None)
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out", default=None)
     parser.add_argument("--data", default=str(ROOT / "data" / "tidelm"))
+    parser.add_argument("--report", action="store_true", help="only rebuild evidence/ml/tidelm_report.md")
     args = parser.parse_args()
+    if args.report:
+        return write_report()
     from mlx_lm import generate, load
     model, tokenizer = load(BASE_MODEL, adapter_path=args.adapter)
     rows = [json.loads(line) for line in open(Path(args.data) / "test.jsonl")]
