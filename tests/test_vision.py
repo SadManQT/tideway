@@ -60,3 +60,21 @@ class Vision(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Dates(unittest.TestCase):
+    def test_written_dates_become_iso_and_ambiguous_ones_are_flagged(self):
+        from tideway.tidelm import iso_date
+        self.assertEqual(iso_date("28/10/2026"), ("2026-10-28", False))
+        self.assertEqual(iso_date("10/28/2026"), ("2026-10-28", False))
+        self.assertEqual(iso_date("Oct 28, 2026"), ("2026-10-28", False))
+        self.assertEqual(iso_date("05/10/2026"), ("2026-10-05", True))
+        self.assertEqual(iso_date("31/02/2026"), ("31/02/2026", False))  # impossible: left for the validator to reject
+
+    def test_document_addressed_to_us_is_a_bill(self):
+        from tideway.tidelm import _draft
+        business = {"id": SHAPLA, "name": "Shapla Services", "currency": "BDT"}
+        draft = _draft({"record_type": "invoice", "counterparty": "Harbor Paper", "amount": 6200, "currency": "BDT",
+                        "due_date": "28/10/2026", "direction": "in", "reference": "BL-7731"}, 0,
+                       "Harbor Paper\nBill to: Shapla Services\nTOTAL DUE BDT 6,200.00", business)
+        self.assertEqual((draft["record"]["record_type"], draft["ready"]), ("bill", True))

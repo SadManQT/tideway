@@ -220,9 +220,57 @@ def _topic(plan, results):
     return TOPICS.get(tool), focus if isinstance(focus, str) else None
 
 
+_MONTHS = {name: number for number, names in enumerate(
+    ("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), 1) for name in [names]}
+
+
+def iso_date(value):
+    """Common written dates -> (YYYY-MM-DD, ambiguous?).  Day-first is assumed for 12/11-style dates (most of the
+    world); those are flagged so a person checks them.  Anything unreadable is returned unchanged for the validator."""
+    import re
+    from datetime import date
+    if not isinstance(value, str):
+        return value, False
+    text = value.strip()
+    try:
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
+            return date.fromisoformat(text).isoformat(), False
+        match = re.fullmatch(r"(\d{4})[/.](\d{1,2})[/.](\d{1,2})", text)
+        if match:
+            return date(int(match[1]), int(match[2]), int(match[3])).isoformat(), False
+        match = re.fullmatch(r"(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})", text)
+        if match:
+            first, second, year = int(match[1]), int(match[2]), int(match[3])
+            if first > 12:
+                return date(year, second, first).isoformat(), False
+            if second > 12:
+                return date(year, first, second).isoformat(), False
+            return date(year, second, first).isoformat(), first != second
+        match = re.fullmatch(r"(\d{1,2})\s+([A-Za-z]{3})[a-z]*\.?,?\s+(\d{4})", text) or None
+        if match and match[2].lower() in _MONTHS:
+            return date(int(match[3]), _MONTHS[match[2].lower()], int(match[1])).isoformat(), False
+        match = re.fullmatch(r"([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})", text)
+        if match and match[1].lower() in _MONTHS:
+            return date(int(match[3]), _MONTHS[match[1].lower()], int(match[2])).isoformat(), False
+    except ValueError:
+        pass
+    return value, False
+
+
 def _draft(row, index, text, business):
     """Map one extracted record to the ledger's raw import shape (validated again on confirm)."""
+    import re
+    row = dict(row)
+    checks = []
+    for field in ("date", "due_date"):
+        row[field], ambiguous = iso_date(row.get(field))
+        if ambiguous:
+            checks.append(f"{field} {row[field]} assumes day/month order: check it")
     kind = row.get("record_type") if row.get("record_type") in ("invoice", "bill", "transaction") else "transaction"
+    # A document addressed to this business ("Bill to: <us>") is a bill we pay, whatever the model called it.
+    if kind == "invoice" and re.search(r"\b(bill(ed)?|invoice|sold)\s+to\s*:?\s*" + re.escape(business["name"]), text, re.I):
+        kind = "bill"
+        checks.append("addressed to this business, so recorded as a bill to pay")
     reference = row.get("reference") if isinstance(row.get("reference"), str) else None
     digest = hashlib.sha256(canonical_json([text, index, row]).encode()).hexdigest()[:12]
     counterparty = str(row.get("counterparty") or "").strip()[:160]
@@ -244,7 +292,7 @@ def _draft(row, index, text, business):
         problem = None
     except ValidationError as exc:
         problem = str(exc)
-    return {"record": raw, "ready": problem is None, "problem": problem}
+    return {"record": raw, "ready": problem is None, "problem": problem, "checks": checks}
 
 
 def _validate(raw, business):

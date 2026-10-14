@@ -985,7 +985,7 @@ function editableDraft(draft) {
   const r = draft.record || {};
   return {id: r.id, type: r.record_type || "transaction", party: r.customer ?? r.payee ?? "", amount: String(r.amount ?? ""),
     currency: r.currency || currency(), date: r.issue_date ?? r.date ?? "", due: r.due_date ?? "", description: r.description ?? "",
-    direction: r.type === "income" ? "income" : "expense", ready: Boolean(draft.ready), problem: draft.problem || "", selected: Boolean(draft.ready), edited: false};
+    direction: r.type === "income" ? "income" : "expense", ready: Boolean(draft.ready), problem: draft.problem || "", checks: draft.checks || [], selected: Boolean(draft.ready), edited: false};
 }
 
 function draftRecord(e) {
@@ -999,13 +999,14 @@ function draftHtml(e, i) {
   const field = (label, name, value, attrs = "") => `<label class="field">${esc(label)}<input data-draft="${i}" data-field="${name}" value="${esc(value)}" ${attrs}></label>`;
   const status = e.edited ? `<span class="tag">edited · checked again when saved</span>`
     : e.ready ? `<span class="tag good">${icon("check")} ready</span>` : `<span class="tag bad">needs a fix</span> <span class="small">${esc(e.problem)}</span>`;
+  const checks = (e.checks || []).length ? `<span class="small muted"> · Please check: ${esc(e.checks.join("; "))}</span>` : "";
   const party = e.type === "transaction"
     ? `<label class="field">Money<select data-draft="${i}" data-field="direction"><option value="income" ${e.direction === "income" ? "selected" : ""}>In (income)</option><option value="expense" ${e.direction === "expense" ? "selected" : ""}>Out (expense)</option></select></label>`
     : field(e.type === "invoice" ? "Customer" : "Payee", "party", e.party, `maxlength="160"`);
   const dates = e.type === "invoice" ? field("Issue date", "date", e.date, `type="date"`) + field("Due date", "due", e.due, `type="date"`)
     : e.type === "bill" ? field("Due date", "due", e.due || e.date, `type="date"`) : field("Date", "date", e.date || e.due, `type="date"`);
   return `<fieldset class="draft ${e.ready && !e.edited ? "ready" : e.edited ? "" : "problem"}"><legend>Draft ${i + 1}</legend>
-    <div class="row between"><label class="check"><input type="checkbox" id="draft-sel-${i}" data-draft="${i}" data-field="selected" ${e.selected ? "checked" : ""}> Save this record</label><span>${status}</span></div>
+    <div class="row between"><label class="check"><input type="checkbox" id="draft-sel-${i}" data-draft="${i}" data-field="selected" ${e.selected ? "checked" : ""}> Save this record</label><span>${status}${checks}</span></div>
     <div class="draft-grid"><label class="field">Record type<select data-draft="${i}" data-field="type">${["invoice", "bill", "transaction"].map((t) => `<option value="${t}" ${e.type === t ? "selected" : ""}>${t}</option>`).join("")}</select></label>
     ${party}${field("Amount", "amount", e.amount, `inputmode="decimal"`)}${field("Currency", "currency", e.currency, `maxlength="3"`)}${dates}
     <label class="field draft-wide">Description<input data-draft="${i}" data-field="description" value="${esc(e.description)}" maxlength="300"></label></div></fieldset>`;
