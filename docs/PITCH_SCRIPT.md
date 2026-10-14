@@ -15,7 +15,7 @@ Slides match `slides/pitch.pdf`. Replace team details before presenting. Every n
 "Simulated suppliers and customers accept, counter or refuse. A counter-offer becomes a new proposal; a refusal triggers a re-plan. A human approves with a PIN step-up; high-value bundles need two people and a typed amount. That issues a signed mandate, modelled on the AP2 mandate idea, and execution happens once, with read-back."
 
 ## 5. Live demo (4:30–6:30)
-Run the demo script highlights: Shapla rescue and approval, Lotus counter-offer, Meghna blocks and honest failure.
+Run the demo script highlights: Shapla rescue and approval, Lotus counter-offer, Harbourline blocks and honest failure.
 
 ## 6. Security (6:30–8:00)
 "We assume the worst: a fully hijacked model and a rubber-stamp human. The model has no approve or execute tool, sees only pseudonyms, and cannot be the weak link. Hidden Unicode is stripped, injected instructions are quarantined, changed bank details and look-alike payees block the bill, and payee verification is owner-only by callback with separation of duties. A kill switch and a circuit breaker stop the agent. The audit log is hash-chained with an independent witness, so edits and truncation are detected. Our 30-case suite maps to OWASP LLM and Agentic IDs; all pass, and that is evidence for those cases, not proof."

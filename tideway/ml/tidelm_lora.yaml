@@ -7,12 +7,12 @@ adapter_path: "models/tidelm-adapter"
 fine_tune_type: lora
 num_layers: 16
 batch_size: 4
-iters: 900
+iters: 450
 learning_rate: 1.0e-4
 steps_per_report: 25
 steps_per_eval: 150
 val_batches: 25
-save_every: 300
+save_every: 150
 max_seq_length: 1024
 grad_checkpoint: true
 mask_prompt: true

@@ -170,14 +170,14 @@ try {
   await shot("10-lotus-cny-unsettled");
 
   // Poisoned records and the security centre on the tight wholesaler.
-  await evaluate(`(() => { const select = document.querySelector('#business-select'); select.value = 'meghna-traders'; select.dispatchEvent(new Event('change', {bubbles: true})); return true; })()`);
-  await until("document.querySelector('#eyebrow').textContent.includes('Meghna')", "Meghna loaded");
+  await evaluate(`(() => { const select = document.querySelector('#business-select'); select.value = 'harbourline-traders'; select.dispatchEvent(new Event('change', {bubbles: true})); return true; })()`);
+  await until("document.querySelector('#eyebrow').textContent.includes('Harbourline')", "Harbourline loaded");
   await view("records");
   await evaluate(`(() => { const select = document.querySelector('#record-filter'); select.value = 'flagged'; select.dispatchEvent(new Event('change', {bubbles: true})); return true; })()`);
   await shot("11-records-quarantine");
   await view("rescue");
   await click('[data-action="run-agent"]');
-  await until("!!document.querySelector('.timeline')", "Meghna agent run");
+  await until("!!document.querySelector('.timeline')", "Harbourline agent run");
   await sleep(1300);
   await shot("12-honest-failure-and-blocks");
   await view("security");

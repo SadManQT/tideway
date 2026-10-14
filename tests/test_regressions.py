@@ -46,10 +46,10 @@ class StoreRegressions(unittest.TestCase):
         self.assertEqual(second["status"], "mandate_issued")
 
     def test_verified_lookalike_is_cleared(self):  # bug 4
-        meghna = "meghna-traders"
-        self.app.store.verify_payee(meghna, "Jamuna Stee1", "AC-6666-4040", self.owner, "x", "callback_number_on_file")
-        derived = self.app.store.derived(self.app.store.snapshot(meghna))
-        self.assertNotIn("bill-meghna-lookalike-oct", derived["blocked"])
+        harbour = "harbourline-traders"
+        self.app.store.verify_payee(harbour, "Straits Stee1", "AC-6666-4040", self.owner, "x", "callback_number_on_file")
+        derived = self.app.store.derived(self.app.store.snapshot(harbour))
+        self.assertNotIn("bill-harbour-lookalike-oct", derived["blocked"])
 
     def test_advise_blocks_proposal_and_failed_replan_keeps_mandate(self):  # bug 7
         _plan, mandate = _mandate(self.app)
@@ -139,7 +139,7 @@ class StoreRegressions(unittest.TestCase):
 
     def test_csv_export_reimports_unchanged(self):  # bugs 12 and 27
         web = Application(":memory:")
-        for business in (SHAPLA, LOTUS, "meghna-traders"):
+        for business in (SHAPLA, LOTUS, "harbourline-traders"):
             body, _, _ = web.export({"kind": ["records"], "business_id": [business]}, self.owner)
             result = web.tideway.import_csv(business, body, "x", False)
             self.assertEqual(result["total_added"], 0, business)

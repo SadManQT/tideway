@@ -47,7 +47,7 @@ python3 scripts/build_submission_pdfs.py   # pitch, architecture and security PD
 11. **Optional cloud LLM mode.** Off by default; TideLM (below) is the on-device default. With a key and per-message consent, counterparty names are pseudonymised, record free text is never sent, and every number in the answer is checked against tool output (ungrounded numbers are flagged).
 12. **Proves what happened.** A hash-chained audit log with an independent witness checkpoint (truncation is detected), and a one-click tamper drill.
 13. **Dials autonomy.** Advise, Propose or Delegate. Under Delegate, a standing mandate lets the agent send zero-cash reminders only, capped per day. Moving money is never delegated.
-14. **Multi-currency fixtures.** Shapla Services and Meghna Traders in BDT, Lotus Print Studio in CNY; mixed currencies inside one business are rejected.
+14. **International by design.** 29 ISO 4217 currencies; demo businesses in Bangladesh (BDT), China (CNY) and Singapore (SGD); payment-detail-change and injection screening in English, Chinese, Spanish, French, Indonesian/Malay, Hindi, Bangla and Arabic, covering banks (IBAN, SWIFT, sort code) and wallets (PayPal, Wise, Alipay, WeChat Pay, UPI, PayNow, M-Pesa, GCash, Pix, bKash...). Mixed currencies inside one business are rejected.
 15. **Exports.** Evidence JSON, records and receipts CSV (spreadsheet-formula-safe), and a draft ISO 20022 `pain.001` for the deferred payments.
 
 ## Tideway's own AI (trained here, runs on-device)
@@ -57,7 +57,7 @@ Tideway does not depend on a third-party AI API. Both models are trained in this
 | Model | What it does | How it is trained | Evidence |
 |---|---|---|---|
 | **TidePay** | Probability that an open invoice is paid on time, 1-7, 8-15, 16-30 or 30+ days late | Pure-Python softmax trained with **federated learning** (FedAvg) across 40 synthetic SMEs, with pairwise-mask secure aggregation: no business shares raw invoices | [tidepay_report.md](evidence/ml/tidepay_report.md): log loss 1.036 vs 1.55 for the old rule; on the smaller half of SMEs, MAE 6.12 days vs 6.64 training alone |
-| **TideLM** | (1) Turns an owner's message (English, Banglish, typos) into a typed tool plan; (2) turns pasted SMS / WhatsApp / bank text into draft records and flags injection | LoRA fine-tune of Qwen3-4B-Instruct (4-bit) with MLX on Apple Silicon, on 3,600 generated training examples (400 validation); the 500 test examples use counterparty names never seen in training | [tidelm_report.md](evidence/ml/tidelm_report.md): exact plans 27% → **97.7%**, intent 13% → **100%**, extraction F1 0.91 → **0.989**, injection flags 95% → **100%** |
+| **TideLM** | (1) Turns an owner's message in English, Chinese, Spanish, Indonesian/Malay, French, Portuguese, Hinglish or Banglish into a typed tool plan; (2) turns pasted bank, card and mobile-money alerts (M-Pesa, UPI, WeChat Pay, Alipay, PayNow, DuitNow, GCash, Pix, SEPA, Faster Payments, Wise, bKash) and chat messages into draft records and flags injection | LoRA fine-tune of Qwen3-4B-Instruct (4-bit) with MLX on Apple Silicon, on 3,600 generated training examples (400 validation); the 500 test examples use counterparty names never seen in training | [tidelm_report.md](evidence/ml/tidelm_report.md): exact plans 27% → **97.7%**, intent 13% → **100%**, extraction F1 0.91 → **0.989**, injection flags 95% → **100%** |
 
 The language model never touches money or records. Its plan passes a validator (known tools, typed arguments, names resolved against the ledger, read/propose tools only); a forbidden tool counts toward the circuit breaker. Replies are written by code from tool output, so every number comes from Tideway. Extracted records are drafts until a person confirms them, and a deterministic scan flags injection even if the model misses it.
 
@@ -77,9 +77,9 @@ Without the adapter the app still runs; the Assistant says TideLM is unavailable
 
 | Business | Story |
 |---|---|
-| Shapla Services (BDT) | Payroll day. Scheduled minimum cash is BDT -10,000 on 31 Oct 2026; shortfall against the BDT 20,000 reserve is BDT 30,000. |
-| Lotus Print Studio (CNY) | The schedule looks fine; the customers' payment habits say it is not. Includes a counter-offer. |
-| Meghna Traders (BDT) | No safe plan exists. A changed bank account, a look-alike payee and a poisoned bill are blocked; Tideway says so and escalates. |
+| Shapla Services (BDT, Bangladesh) | Payroll day. Scheduled minimum cash is BDT -10,000 on 31 Oct 2026; shortfall against the BDT 20,000 reserve is BDT 30,000. |
+| Lotus Print Studio (CNY, China) | The schedule looks fine; the customers' payment habits say it is not. Includes a counter-offer. |
+| Harbourline Traders (SGD, Singapore) | No safe plan exists. A changed bank account, a look-alike payee and a poisoned bill are blocked; Tideway says so and escalates. |
 
 ## Layout
 

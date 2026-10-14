@@ -34,7 +34,7 @@ def main():
     summary = {"project": "Tideway", "track": "FinTechathon 2026 International, Topic E", "run_at": stamp,
                **report["summary"], "live_model_tested": False,
                "live_model_reason": "The suite uses simulated model transports; no provider key is used.",
-               "fixture": "Synthetic sandbox (Shapla Services, Lotus Print, Meghna Traders)"}
+               "fixture": "Synthetic sandbox (Shapla Services, Lotus Print, Harbourline Traders)"}
     (OUT / "verification-summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     print(f"{summary['passed']}/{summary['cases']} cases passed -> evidence/")
     sys.exit(0 if summary["passed"] == summary["cases"] else 1)

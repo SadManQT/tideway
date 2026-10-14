@@ -30,12 +30,23 @@ class SecurityError(ValidationError):
 
 # ISO 4217 currencies with two minor digits that the sandbox accepts.  A
 # business still uses exactly one of them; mixed currencies are rejected.
+# Zero-decimal currencies (JPY, KRW, VND...) are not supported yet: amounts are
+# stored in hundredths.  Rates are illustrative units per US dollar, used only to
+# show amounts in another currency for reading; they never enter any calculation.
 CURRENCIES = {
-    "BDT": "Bangladeshi taka", "CNY": "Chinese yuan", "HKD": "Hong Kong dollar",
-    "SGD": "Singapore dollar", "USD": "US dollar", "EUR": "Euro", "GBP": "Pound sterling",
-    "INR": "Indian rupee", "MYR": "Malaysian ringgit",
+    "USD": ("US dollar", 1), "EUR": ("Euro", 0.86), "GBP": ("Pound sterling", 0.75), "CHF": ("Swiss franc", 0.80),
+    "CNY": ("Chinese yuan", 7.1), "HKD": ("Hong Kong dollar", 7.8), "SGD": ("Singapore dollar", 1.29),
+    "MYR": ("Malaysian ringgit", 4.2), "THB": ("Thai baht", 33), "PHP": ("Philippine peso", 57),
+    "IDR": ("Indonesian rupiah", 16_300), "INR": ("Indian rupee", 88), "BDT": ("Bangladeshi taka", 122),
+    "PKR": ("Pakistani rupee", 282), "LKR": ("Sri Lankan rupee", 300), "NPR": ("Nepalese rupee", 140),
+    "AED": ("UAE dirham", 3.67), "SAR": ("Saudi riyal", 3.75), "QAR": ("Qatari riyal", 3.64),
+    "TRY": ("Turkish lira", 41), "EGP": ("Egyptian pound", 48), "KES": ("Kenyan shilling", 129),
+    "NGN": ("Nigerian naira", 1_500), "ZAR": ("South African rand", 18), "BRL": ("Brazilian real", 5.4),
+    "MXN": ("Mexican peso", 18.5), "CAD": ("Canadian dollar", 1.38), "AUD": ("Australian dollar", 1.52),
+    "NZD": ("New Zealand dollar", 1.68),
 }
-MAX_UNITS = Decimal("100000000")
+# Large enough for high-denomination currencies (IDR, NGN) while bounding integer sizes.
+MAX_UNITS = Decimal("1000000000000")
 MAX_AMOUNT_MINOR = int(MAX_UNITS * 100)
 MAX_PROJECTION_DAYS = 366
 BUSINESS_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}\Z")
@@ -112,7 +123,7 @@ def _decimal(value, field):
     if not amount.is_finite():
         raise ValidationError(f"{field} must be a finite number.")
     if abs(amount) > MAX_UNITS:
-        raise ValidationError(f"{field} must be at most 100,000,000.")
+        raise ValidationError(f"{field} must be at most {MAX_UNITS:,}.")
     if amount != amount.quantize(Decimal("0.01")):
         raise ValidationError(f"{field} may have at most two decimal places.")
     return amount
@@ -234,9 +245,22 @@ INJECTION_PATTERNS = (
     ("role_marker", re.compile(r"(^|\s)(system|assistant|developer|tool)\s*:", re.I)),
     ("action_command", re.compile(r"\b(approve|execute|transfer|wire|send|pay|release)\b.{0,60}\b(now|immediately|urgent|without|account|iban|wallet|attacker)\b", re.I)),
     ("control_bypass", re.compile(r"\b(override|bypass|disable|skip)\b.{0,30}\b(polic|limit|approval|security|check|consent)", re.I)),
-    ("payment_detail_change", re.compile(r"\b(new|updated|changed|different)\b.{0,20}\b(bank|account|iban|wallet|routing|bkash|nagad)\b", re.I)),
+    ("payment_detail_change", re.compile(r"\b(new|updated|changed|different)\b.{0,20}\b(bank|account|iban|swift|bic|sort code|routing|wallet|paypal|wise|payoneer|revolut|alipay|wechat ?pay|upi|paynow|duitnow|promptpay|gcash|m-?pesa|bkash|nagad|pix)\b", re.I)),
     ("hidden_markup", re.compile(r"<\s*/?\s*(script|system|instructions?|iframe)\b|\{\{|\}\}", re.I)),
     ("external_link", re.compile(r"https?://|www\.", re.I)),
+    # The same signals in other languages owners and counterparties actually write in.
+    ("instruction_override", re.compile(r"(忽略|无视|忘记|不要理会).{0,12}(指令|指示|说明|规则|提示|之前|以上)"
+                                        r"|\b(ignora|olvida|ignorez|oubliez|abaikan|lupakan)\b.{0,40}\b(instruc|regla|r[eè]gle|consigne|aturan|perintah|anterior|pr[eé]c[eé]dent|sebelum)"
+                                        r"|\b(ignore|bhool)\b.{0,20}\b(karo|kar do|koro|kore dao)\b"
+                                        r"|(تجاهل|انس).{0,20}(التعليمات|القواعد)|(আগের|পূর্বের).{0,20}(নির্দেশ).{0,20}(উপেক্ষা|ভুলে)"
+                                        r"|(पिछले|पहले).{0,20}(निर्देश).{0,20}(अनदेखा|भूल)", re.I)),
+    ("role_marker", re.compile(r"(^|\s)(系统|助手|sistema|syst[eè]me|asisten|النظام)\s*[:：]", re.I)),
+    ("action_command", re.compile(r"(立即|马上|立刻).{0,12}(转账|付款|支付|批准|汇款)|(转账|付款|汇款).{0,20}(新账户|新账号)"
+                                  r"|\b(transfiere|paga|aprueba|transf[eé]rez|payez|approuvez|transfer|bayar|setujui)\b.{0,60}\b(ahora|inmediatamente|maintenant|imm[eé]diatement|sekarang|segera)\b", re.I)),
+    ("payment_detail_change", re.compile(r"(新|更改|变更|更新).{0,6}(银行|账户|账号|收款码|支付宝|微信)"
+                                         r"|\b(rekening baru|akun baru|cuenta nueva|nouveau compte|nouveau rib)\b"
+                                         r"|\b(nueva|nuevo|cambiamos|nouveau|nouvelle|naya)\b.{0,20}\b(cuenta|banco|compte|banque|rekening|account)\b", re.I)),
+    ("control_bypass", re.compile(r"(绕过|跳过|关闭).{0,8}(审批|限制|安全|检查)|\b(omite|salta|contourne|lewati)\b.{0,30}\b(aprobaci|approbation|persetujuan|l[ií]mite|limit)", re.I)),
 )
 
 

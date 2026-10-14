@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 from . import analytics, counterparty, planner
-from .domain import OPEN_INVOICE_STATUSES, ValidationError, add_days, human_date, money_text, parse_combined_csv, valid_date
+from .domain import CURRENCIES, MAX_AMOUNT_MINOR, OPEN_INVOICE_STATUSES, ValidationError, add_days, human_date, money_text, parse_combined_csv, valid_date
 from .fixtures import FIXTURE_VERSION, OPERATORS, fixtures
 from .projection import horizon_end, project, summary
 from .store import Store
@@ -60,6 +60,8 @@ class Tideway:
         businesses = self.store.list_businesses()
         stories = {item["business"]["business_id"]: item["story"] for item in fixtures()}
         return {"name": "Tideway", "tagline": "Approval-gated cash-flow rescue for small businesses",
+                "currencies": [{"code": code, "name": name, "illustrative_per_usd": rate}
+                               for code, (name, rate) in CURRENCIES.items()],
                 "version": "3.0.0", "track": "FinTechathon 2026 International Track, Topic E: SME Finance Copilot",
                 "businesses": [{"business_id": item["id"], "name": item["name"], "currency": item["currency"],
                                 "country": item["country"], "sector": item["sector"],
@@ -359,7 +361,7 @@ class Tideway:
             if not isinstance(expense, dict):
                 raise ValidationError("extra_expense must be an object.")
             amount = expense.get("amount_minor")
-            if isinstance(amount, bool) or not isinstance(amount, int) or not 0 < amount <= 10_000_000_000:
+            if isinstance(amount, bool) or not isinstance(amount, int) or not 0 < amount <= MAX_AMOUNT_MINOR:
                 raise ValidationError("extra_expense.amount_minor must be a positive integer.")
             if set(expense) - {"amount_minor", "date"}:
                 raise ValidationError("extra_expense takes only amount_minor and date.")

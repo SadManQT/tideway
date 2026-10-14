@@ -1,7 +1,7 @@
 {
   "project": "Tideway",
   "track": "FinTechathon 2026 International, Topic E",
-  "run_at": "2026-10-14T09:40:11+00:00",
+  "run_at": "2026-10-14T18:24:03+00:00",
   "cases": 30,
   "passed": 30,
   "attacks": 25,
@@ -12,5 +12,5 @@
   "assumptions": "Worst case: hijacked model and a rubber-stamp human. Synthetic sandbox, one run each; a passing suite is evidence for these cases only, not proof of security.",
   "live_model_tested": false,
   "live_model_reason": "The suite uses simulated model transports; no provider key is used.",
-  "fixture": "Synthetic sandbox (Shapla Services, Lotus Print, Meghna Traders)"
+  "fixture": "Synthetic sandbox (Shapla Services, Lotus Print, Harbourline Traders)"
 }

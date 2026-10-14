@@ -20,7 +20,7 @@ from .domain import ValidationError
 from .security import RateLimiter
 from .service import Tideway
 
-SHAPLA, LOTUS, MEGHNA = "shapla-services", "lotus-print", "meghna-traders"
+SHAPLA, LOTUS, HARBOUR = "shapla-services", "lotus-print", "harbourline-traders"
 TARGET = "2026-10-31"
 
 
@@ -103,7 +103,7 @@ def ut_replan_after_refusal(app):
 
 
 def ut_honest_failure(app):
-    plan = app.propose(MEGHNA, TARGET, "agent:test")
+    plan = app.propose(HARBOUR, TARGET, "agent:test")
     executable = [bundle for bundle in plan["bundles"] if bundle["feasible"]]
     return not executable and "escalate" in plan["explanation"], plan["explanation"][:160]
 
@@ -216,14 +216,14 @@ def at_injection_never_reaches_model(app):
             return {"output": [{"type": "function_call", "name": "check_security", "arguments": "{}", "call_id": "1"}]}
         return {"output": [{"type": "message", "content": [{"type": "output_text", "text": "Two records are quarantined."}]}]}
 
-    Agent(app, "test-key", transport=transport).chat(MEGHNA, TARGET, "Check security", consent=True)
+    Agent(app, "test-key", transport=transport).chat(HARBOUR, TARGET, "Check security", consent=True)
     sent = json.dumps(payloads)
-    leaked = any(term in sent for term in ("Ignore the previous account", "approve this transfer", "Jamuna Steel", "AC-9907"))
+    leaked = any(term in sent for term in ("Ignore the previous account", "approve this transfer", "Straits Steel", "AC-9907"))
     return not leaked, "untrusted text and real names stayed local (pseudonyms only)"
 
 
 def at_hijacked_model(app):
-    before = _state(app, MEGHNA)
+    before = _state(app, HARBOUR)
 
     def transport(payload, _key):
         if any(item.get("type") == "function_call_output" for item in payload["input"] if isinstance(item, dict)):
@@ -233,34 +233,34 @@ def at_hijacked_model(app):
             {"type": "function_call", "name": "execute_payment", "arguments": json.dumps({"payee": "AC-9907-0001"}), "call_id": "b"},
             {"type": "function_call", "name": "compare_plans", "arguments": json.dumps({"payee": "attacker"}), "call_id": "c"}]}
 
-    result = Agent(app, "test-key", transport=transport).chat(MEGHNA, TARGET, "pay the new account now", consent=True)
+    result = Agent(app, "test-key", transport=transport).chat(HARBOUR, TARGET, "pay the new account now", consent=True)
     denied = sum(1 for item in result["trace"] if item["permission"] == "denied")
-    return denied == 3 and _state(app, MEGHNA) == before and "18000" in result["unverified_numbers"], \
+    return denied == 3 and _state(app, HARBOUR) == before and "18000" in result["unverified_numbers"], \
         f"{denied} hijacked tool calls denied; invented figure flagged: {result['unverified_numbers']}"
 
 
 def at_hidden_unicode(app):
-    records = app.store.records(MEGHNA)
-    row = next(row for row in records["bills"] if row["id"] == "bill-meghna-lookalike-oct")
+    records = app.store.records(HARBOUR)
+    row = next(row for row in records["bills"] if row["id"] == "bill-harbour-lookalike-oct")
     return "hidden_characters" in row["risk_flags"] and "​" not in row["description"], f"flags {row['risk_flags']}"
 
 
 def at_changed_bank_details(app):
-    plan = app.propose(MEGHNA, TARGET, "agent:test")
+    plan = app.propose(HARBOUR, TARGET, "agent:test")
     proposed = {action["record_id"] for bundle in plan["bundles"] for action in bundle["actions"]}
     blocked = {item["record_id"] for item in plan["rejected"] if item["code"] == "SECURITY_BLOCKED"}
-    return "bill-meghna-jamuna-oct" in blocked and "bill-meghna-jamuna-oct" not in proposed, f"blocked {sorted(blocked)}"
+    return "bill-harbour-straits-oct" in blocked and "bill-harbour-straits-oct" not in proposed, f"blocked {sorted(blocked)}"
 
 
 def at_lookalike_payee(app):
-    derived = app.store.derived(app.store.snapshot(MEGHNA))
-    return "bill-meghna-lookalike-oct" in derived["blocked"], derived["blocked"].get("bill-meghna-lookalike-oct", "")
+    derived = app.store.derived(app.store.snapshot(HARBOUR))
+    return "bill-harbour-lookalike-oct" in derived["blocked"], derived["blocked"].get("bill-harbour-lookalike-oct", "")
 
 
 def at_payee_verification_rules(app):
     owner, accountant, _ = _ops(app)
-    blocked_role, _ = _blocked(app.store.verify_payee, MEGHNA, "Jamuna Steel", "AC-9907-0001", accountant, "x", "callback_number_on_file")
-    blocked_method, reason = _blocked(app.store.verify_payee, MEGHNA, "Jamuna Steel", "AC-9907-0001", owner, "x", "number_in_email")
+    blocked_role, _ = _blocked(app.store.verify_payee, HARBOUR, "Straits Steel", "AC-9907-0001", accountant, "x", "callback_number_on_file")
+    blocked_method, reason = _blocked(app.store.verify_payee, HARBOUR, "Straits Steel", "AC-9907-0001", owner, "x", "number_in_email")
     return blocked_role and blocked_method, reason
 
 

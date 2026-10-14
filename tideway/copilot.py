@@ -12,7 +12,7 @@ import statistics
 from datetime import date, timedelta
 
 from . import analytics
-from .domain import (OPEN_INVOICE_STATUSES, SETTLED_INVOICE_STATUSES, SecurityError, ValidationError, add_days, days_between,
+from .domain import (MAX_UNITS, OPEN_INVOICE_STATUSES, SETTLED_INVOICE_STATUSES, SecurityError, ValidationError, add_days, days_between,
                      human_date, money_text)
 from .ml.model import BUCKETS, predict_for
 from .projection import summary
@@ -73,7 +73,7 @@ def credit_check(app, business_id, customer, amount_units, terms_days, target_da
     snapshot = app.store.snapshot(business_id)
     business, records = snapshot["business"], snapshot["records"]
     customer = resolve_name(customer, customers_of(snapshot))
-    if isinstance(amount_units, bool) or not isinstance(amount_units, (int, float)) or not 0 < amount_units <= 100_000_000:
+    if isinstance(amount_units, bool) or not isinstance(amount_units, (int, float)) or not 0 < amount_units <= MAX_UNITS:
         raise ValidationError("Amount must be a positive number.")
     if isinstance(terms_days, bool) or not isinstance(terms_days, int) or not 0 <= terms_days <= 180:
         raise ValidationError("Terms must be 0-180 days.")

@@ -19,7 +19,7 @@ class DomainTests(unittest.TestCase):
     def test_money_is_exact_minor_units(self):
         self.assertEqual(parse_amount("12.34"), 1234)
         self.assertEqual(minor_value({"amount": "5.00", "amount_minor": 500}, "amount"), 500)
-        for bad in ("0", "-1", "1.234", "abc", "NaN", "1e3x", True, None, "100000001"):
+        for bad in ("0", "-1", "1.234", "abc", "NaN", "1e3x", True, None, "1000000000001"):
             with self.assertRaises(ValidationError, msg=repr(bad)):
                 parse_amount(bad)
         with self.assertRaises(ValidationError):
@@ -51,7 +51,7 @@ class DomainTests(unittest.TestCase):
         ok = parse_combined_csv(head + "transaction,shapla-services,t1,2026-10-05,Sale,100.50,income,BDT\n", SHAPLA, "BDT")
         self.assertEqual(ok["transactions"][0]["amount_minor"], 10050)
         bad_rows = [
-            head + "transaction,meghna-traders,t1,2026-10-05,Sale,1,income,BDT\n",   # wrong tenant
+            head + "transaction,harbourline-traders,t1,2026-10-05,Sale,1,income,BDT\n",   # wrong tenant
             head + "transaction,shapla-services,t1,2026-10-05,Sale,1,income,USD\n",  # mixed currency
             head + "transaction,shapla-services,t1,2026-13-05,Sale,1,income,BDT\n",  # bad date
             "record_type,evil\ntransaction,x\n",                                      # unknown column
