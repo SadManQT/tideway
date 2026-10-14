@@ -11,7 +11,7 @@ import difflib
 import statistics
 from datetime import date, timedelta
 
-from . import analytics
+from . import analytics, conversation
 from .domain import (MAX_UNITS, OPEN_INVOICE_STATUSES, SETTLED_INVOICE_STATUSES, SecurityError, ValidationError, add_days, days_between,
                      human_date, money_text)
 from .ml.model import BUCKETS, predict_for
@@ -199,7 +199,8 @@ def run_plan(app, business_id, target_date, plan, actor):
                     raise ValidationError(f"{customer} has no open invoice to drop.")
                 changes["drop_invoice"] = invoice["id"]
             result = app.what_if(business_id, target_date, changes)
-            results.append({"tool": tool, "result": {"projection": result["projection"], "changes": changes}})
+            baseline = summary(app.analysis(business_id, target_date, snapshot)["projections"]["likely"])
+            results.append({"tool": tool, "result": {"projection": result["projection"], "baseline": baseline, "changes": changes}})
         elif tool == "propose_plan":
             everyone = names + suppliers_of(snapshot)
             excluded = [resolve_name(n, everyone) for n in (args.get("exclude_counterparties") or [])]
@@ -218,7 +219,7 @@ def run_plan(app, business_id, target_date, plan, actor):
                                                      "futures_short_of_20_after": best["futures_short_of_20_after"] if best else None}})
         elif tool == "explain_plan":
             plan_row = app.store.latest_plan(business_id, target_date or snapshot["business"]["default_target_date"])
-            results.append({"tool": tool, "result": {"explanation": plan_row["explanation"] if plan_row else None,
+            results.append({"tool": tool, "result": {"explanation": conversation.explain_choice(plan_row, snapshot["business"]["currency"]),
                                                      "why_not": (plan_row or {}).get("why_not", [])[:4]}})
         elif tool == "credit_check":
             results.append({"tool": tool, "result": credit_check(app, business_id, args.get("customer"), args.get("amount"),
@@ -246,7 +247,7 @@ def reply_from_results(results, currency):
         tool, r = item["tool"], item["result"]
         if tool == "refuse":
             lines.append("I can't approve, pay or transfer money; a person approves in the app with a PIN."
-                         if r["reason"] == "approve_or_move_money" else "That is outside what Tideway does. Ask me about cash, risk, customers or plans.")
+                         if r["reason"] == "approve_or_move_money" else conversation.out_of_scope())
         elif tool == "project_cash":
             lines.append(f"{r['scenario'].title()} view: lowest cash {money_text(r['minimum_cash_minor'], currency)} on "
                          f"{human_date(r['minimum_cash_date'])}; reserve shortfall {money_text(r['reserve_shortfall_minor'], currency)}"
@@ -255,9 +256,7 @@ def reply_from_results(results, currency):
             lines.append(f"{r['futures_short_of_20']} of 20 simulated futures breach the reserve; payroll unfunded in "
                          f"{round(r['probability_payroll_unfunded'] * 100)}% of {r['runs']} runs.")
         elif tool == "what_if":
-            p = r["projection"]
-            lines.append(f"With that change, lowest cash would be {money_text(p['minimum_cash_minor'], currency)} on "
-                         f"{human_date(p['minimum_cash_date'])} (shortfall {money_text(p['reserve_shortfall_minor'], currency)}). Nothing was saved.")
+            lines.append(conversation.whatif_text("With that change", r["projection"], r["baseline"], currency))
         elif tool == "propose_plan":
             lines.append(r["explanation"] + " It is waiting for human approval in the Rescue plan view.")
         elif tool == "explain_plan":

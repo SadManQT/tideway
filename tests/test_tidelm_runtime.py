@@ -35,8 +35,17 @@ class TideLMRuntime(unittest.TestCase):
         self.assertEqual(self.denials(), before + 1)
 
     def test_garbage_output_is_answered_not_guessed(self):
-        reply = model("sure! here you go").ask(self.app, SHAPLA, None, "hello", "owner")
-        self.assertTrue(reply["text"].startswith("I couldn't do that safely"))
+        reply = model("sure! here you go").ask(self.app, SHAPLA, None, "blorp the ledger", "owner")
+        self.assertTrue(reply["text"].startswith("I'm not sure what you mean"))
+        self.assertTrue(reply["suggestions"])
+
+    def test_small_talk_never_calls_the_model(self):
+        def boom(_system, _user):
+            raise AssertionError("model called")
+        for message in ("hi", "你好", "hola", "thanks", "what can you do?", "how is my business doing?"):
+            reply = TideLM(generator=boom).ask(self.app, SHAPLA, None, message, "owner", name="Nadia Rahman")
+            self.assertEqual(reply["routed"], "small_talk")
+            self.assertTrue(reply["suggestions"])
 
     def test_viewer_cannot_propose_through_tidelm(self):
         plan = {"intent": "plan", "calls": [{"tool": "propose_plan", "args": {}}]}

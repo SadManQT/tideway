@@ -21,6 +21,7 @@ import time
 import urllib.error
 import urllib.request
 
+from . import conversation, copilot
 from .domain import SecurityError, ValidationError, canonical_json, human_date, money_text
 from .projection import summary
 
@@ -306,24 +307,30 @@ class Agent:
 
     # ---- chat -----------------------------------------------------------------
 
-    def chat(self, business_id, target_date, message, history=None, consent=False, actor="agent", role="owner"):
+    def chat(self, business_id, target_date, message, history=None, consent=False, actor="agent", role="owner", name=None):
         if not isinstance(message, str) or not message.strip() or len(message) > 2000:
             raise ValidationError("Message must contain 1-2,000 characters.")
         try:
             if self.key and consent:
                 return self._llm(business_id, target_date, message, history or [], actor, role)
-            return self._local(business_id, target_date, message, actor, role)
+            return self._local(business_id, target_date, message, actor, role, name)
         except ValidationError as exc:  # answer like a colleague, not with an HTTP error
             return {"text": f"I couldn't do that: {exc}", "mode": "local", "trace": [], "unverified_numbers": []}
 
-    def _local(self, business_id, target_date, message, actor, role="owner"):
+    def _local(self, business_id, target_date, message, actor, role="owner", name=None):
         trace = []
         text = message.casefold()
         snapshot = self.store.snapshot(business_id)
         currency = snapshot["business"]["currency"]
         target = target_date or snapshot["business"]["default_target_date"]
         what_if = re.search(r"what if (.+?) pays? (\d{1,2}) (?:more )?days? late", message, re.I)
-        if re.search(r"\b(approve|execute|transfer|wire|send money|pay (the )?(supplier|bill|now|them)|release)\b", text):
+        customers = {row["customer"] for row in snapshot["records"]["invoices"]}
+        named = next((c for c in sorted(customers, key=len, reverse=True) if c.casefold() in text), None)
+        small = conversation.classify(message)
+        topic, focus = None, named
+        if small:
+            answer = conversation.small_talk(small, conversation.situation(self.app, business_id, target_date), name)
+        elif re.search(r"\b(approve|execute|transfer|wire|send money|pay (the )?(supplier|bill|now|them)|release)\b", text):
             answer = ("I can't approve, execute or move money; that is deliberate. I can build a proposal. A person must "
                       "review it, enter their PIN and approve. Above the dual-approval threshold a second person must approve too.")
         elif what_if:
@@ -335,47 +342,80 @@ class Agent:
                 result = self.app.what_if(business_id, target, {"customer_delays": {customer: int(what_if.group(2))}})
                 projection = result["projection"]
                 trace.append({"tool": "what_if", "permission": "agent_read"})
-                answer = (f"If {customer} pays {what_if.group(2)} days later than usual, the lowest likely cash is "
-                          f"{money_text(projection['minimum_cash_minor'], currency)} on {human_date(projection['minimum_cash_date'])} "
-                          f"(reserve shortfall {money_text(projection['reserve_shortfall_minor'], currency)}). Nothing was saved.")
+                topic, focus = "whatif", customer
+                baseline = summary(self.app.analysis(business_id, target_date)["projections"]["likely"])
+                answer = conversation.whatif_text(f"If {customer} pays {what_if.group(2)} days later than expected", projection,
+                                                  baseline, currency)
         elif re.search(r"payroll|salar|wages", text):
             projections = self.tool("project_cash", business_id, target, actor, trace)
             risk = self.tool("simulate_risk", business_id, target, actor, trace)
+            topic = "payroll"
             answer = (("Payroll is not fully funded on the schedule: cash goes negative on a payroll day. "
                        if projections["base"]["payroll_at_risk"] else "Payroll is funded on the schedule. ") +
                       f"In {round(risk['probability_payroll_unfunded'] * 20)} of 20 simulated futures payroll is unfunded. "
                       "Payroll is protected: I never propose deferring it.")
         elif re.search(r"risk|chance|probab|future", text):
             risk = self.tool("simulate_risk", business_id, target, actor, trace)
+            topic = "risk"
             answer = (f"{risk['futures_short_of_20']} of 20 simulated futures breach the reserve floor "
                       f"({round(risk['probability_breach'] * 100)}% of {risk['runs']} runs, seed {risk['seed']}). "
                       f"Most common first breach date: {human_date(risk['most_common_breach_date']) if risk['most_common_breach_date'] else 'none'}. These are model "
                       "estimates from synthetic history, not guarantees.")
-        elif re.search(r"chase|remind|collect|who owes", text):
+        elif re.search(r"\b(blocked|fraud|scam|security|suspicious|bank details|look-?alike|quarantin)", text):
+            security = self.tool("check_security", business_id, target, actor, trace)
+            blocked, topic = self.store.derived(snapshot)["blocked"], "security"
+            answer = (("The agent is paused by the kill switch. " if security["agent_paused"] else "") +
+                      (f"{len(blocked)} bill(s) are blocked: " + "; ".join(f"{bill_id}: {reason}" for bill_id, reason in blocked.items())
+                       if blocked else "No bills are blocked.") +
+                      f" {len(security['quarantined_records'])} record(s) contain instruction-like text and are quarantined; "
+                      "they never reach a model.")
+        elif named and re.search(r"\bcredit\b|\bterms?\b|on account|udhaar|\bbaki\b", text):
+            days = re.search(r"(\d{1,3})\s*-?\s*(?:days?|din)\b", text)
+            amounts = [float(n.replace(",", "")) * (1000 if k else 1) for n, k in re.findall(r"(\d[\d,]*(?:\.\d+)?)\s*(k)?\b", text)
+                       if not days or n != days.group(1)]
+            if not amounts:
+                answer = f"How much would {named} buy on credit, and for how many days? For example: \"{named}, 20,000 on 30 days\"."
+            else:
+                check = copilot.credit_check(self.app, business_id, named, max(amounts), int(days.group(1)) if days else 30, target_date)
+                trace.append({"tool": "credit_check", "permission": "agent_read"})
+                answer = copilot.reply_from_results([{"tool": "credit_check", "result": check}], currency)
+            topic = "credit"
+        elif named and re.search(r"\b(pay|pays|paid|usually|habit|reliable|tell me about|how is|how does)\b", text):
+            topic = "customer"
+            report = copilot.customer_report(self.app, business_id, named)
+            trace.append({"tool": "customer_report", "permission": "agent_read"})
+            answer = copilot.reply_from_results([{"tool": "customer_report", "result": report}], currency)
+        elif re.search(r"chase|remind|collect|who owes|pay late|paying late|late payers?|slow(est)? (payers?|customers?)", text):
             profiles = self.tool("profile_customers", business_id, target, actor, trace)
             ranked = sorted(profiles["customers"], key=lambda item: -item["open_exposure_minor"])
+            topic = "receivables"
             answer = "Open receivables: " + "; ".join(
                 f"{item['customer']} owes {money_text(item['open_exposure_minor'], currency)} (grade {item['grade']}, "
                 f"TidePay expects about {_delay(item)} days late)" for item in ranked if item["open_exposure_minor"]) + \
                 ". Reminders are drafts; they never count as cash."
         elif re.search(r"\bwhy\b|explain|reason", text):
             plan = self.store.latest_plan(business_id, target)
-            answer = plan["explanation"] if plan else "There is no current proposal. Ask me to find a rescue plan first."
+            topic = "plan"
+            answer = conversation.explain_choice(plan, currency)
         elif re.search(r"\b(plan|rescue|recovery)\b|\bwhat should (i|we) do\b|\b(close|fix|cover) (the|my|our|this) (gap|shortfall)\b",
                        text):
             if role not in PLANNER_ROLES:
                 answer = "Viewers can read forecasts and risk, but only an owner or accountant can ask me to build a plan."
             else:
                 plan = self.tool("compare_plans", business_id, target, actor, trace)
-                answer = plan["explanation"] + " The proposal is waiting for a human approval."
-        else:
+                answer, topic = plan["explanation"] + " The proposal is waiting for a human approval.", "plan"
+        elif re.search(r"forecast|balance|cash (flow|position)|projection|lowest cash", text):
             projections = self.tool("project_cash", business_id, target, actor, trace)
             likely = projections["likely"]
+            topic = "forecast"
             answer = (f"Scheduled lowest cash is {money_text(projections['base']['minimum_cash_minor'], currency)}; based on "
-                      f"customers' habits it is {money_text(likely['minimum_cash_minor'], currency)} on {human_date(likely['minimum_cash_date'])}. "
-                      "Ask about payroll, risk, who to chase, a what-if (\"what if Nila Traders pays 10 days late\") or a rescue plan.")
+                      f"customers' habits it is {money_text(likely['minimum_cash_minor'], currency)} on {human_date(likely['minimum_cash_date'])}.")
+        else:
+            answer = conversation.not_understood(conversation.situation(self.app, business_id, target_date))
         self.store.audit(business_id, "agent.answer", actor, "agent_read", {"mode": "local", "tools": [item["tool"] for item in trace]})
-        return {"text": answer, "mode": "local", "trace": trace, "unverified_numbers": []}
+        follow = conversation.suggestions(conversation.situation(self.app, business_id, target_date), topic, focus,
+                                          exclude=(message.strip(),))
+        return {"text": answer, "mode": "local", "trace": trace, "unverified_numbers": [], "suggestions": follow}
 
     def _llm(self, business_id, target_date, message, history, actor, role="owner"):
         allowed = TOOL_NAMES if role in PLANNER_ROLES else tuple(name for name in TOOL_NAMES if name != "compare_plans")

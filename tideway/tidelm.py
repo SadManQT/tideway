@@ -17,7 +17,7 @@ import threading
 import time
 from pathlib import Path
 
-from . import copilot
+from . import conversation, copilot
 from .domain import (SecurityError, ValidationError, canonical_json, scan_text, validate_bill, validate_invoice,
                      validate_transaction)
 from .ml.tidelm_data import EXTRACT_SYSTEM, PLAN_SYSTEM
@@ -56,6 +56,7 @@ class TideLM:
         self._generator = generator
         self._model = self._tokenizer = None
         self._lock = threading.Lock()  # MLX generation is not thread-safe; one request at a time
+        self._caches = {}
 
     # ---- model ---------------------------------------------------------------------
 
@@ -73,6 +74,30 @@ class TideLM:
                 "reason": None if ready else ("Install mlx-lm (Apple Silicon)." if not mlx else
                                               "Train the adapter: python3 -m mlx_lm lora --config tideway/ml/tidelm_lora.yaml")}
 
+    def _load(self):
+        if self._model is None:
+            from mlx_lm import load
+            self._model, self._tokenizer = load(BASE_MODEL, adapter_path=str(self.adapter))
+
+    def _prefix_cache(self, system):
+        """KV cache of the chat template up to where the user's text begins, computed once per skill.
+
+        Every request then processes only the user's own tokens instead of the ~300-token system
+        prompt again.  Returns (cache, prefix_tokens)."""
+        if system not in self._caches:
+            import mlx.core as mx
+            from mlx_lm.models.cache import make_prompt_cache
+            marker = "\u2063TIDEWAY_USER\u2063"
+            template = self._tokenizer.apply_chat_template(
+                [{"role": "system", "content": system}, {"role": "user", "content": marker}],
+                add_generation_prompt=True, tokenize=False)
+            prefix = self._tokenizer.encode(template.split(marker)[0], add_special_tokens=False)
+            cache = make_prompt_cache(self._model)
+            self._model(mx.array(prefix)[None], cache=cache)
+            mx.eval([entry.state for entry in cache])
+            self._caches[system] = (cache, prefix)
+        return self._caches[system]
+
     def _generate(self, system, user, max_tokens=400):
         if self._generator is not None:
             return self._generator(system, user)
@@ -80,21 +105,44 @@ class TideLM:
         if not status["available"]:
             raise TideLMUnavailable(f"TideLM is not available: {status['reason']}")
         with self._lock:
-            if self._model is None:
-                from mlx_lm import load
-                self._model, self._tokenizer = load(BASE_MODEL, adapter_path=str(self.adapter))
+            self._load()
             from mlx_lm import generate
+            from mlx_lm.models.cache import trim_prompt_cache
             prompt = self._tokenizer.apply_chat_template([{"role": "system", "content": system},
                                                           {"role": "user", "content": user}],
                                                          add_generation_prompt=True, tokenize=False)
-            return generate(self._model, self._tokenizer, prompt=prompt, max_tokens=max_tokens, verbose=False)
+            tokens = self._tokenizer.encode(prompt, add_special_tokens=False)
+            cache, prefix = self._prefix_cache(system)
+            if tokens[:len(prefix)] != prefix:  # tokenisation differs at the boundary: correctness first, no cache
+                return generate(self._model, self._tokenizer, prompt=tokens, max_tokens=max_tokens, verbose=False)
+            try:
+                return generate(self._model, self._tokenizer, prompt=tokens[len(prefix):], max_tokens=max_tokens,
+                                verbose=False, prompt_cache=cache)
+            finally:  # roll the shared cache back to the system prompt for the next request
+                trim_prompt_cache(cache, cache[0].offset - len(prefix))
+
+    def warm(self):
+        """Load the model and both prompt caches ahead of the first question (run in a background thread)."""
+        if self._generator is not None or not self.status()["available"]:
+            return False
+        with self._lock:
+            self._load()
+            for system in (PLAN_SYSTEM, EXTRACT_SYSTEM):
+                self._prefix_cache(system)
+        return True
 
     # ---- skill 1: plan and answer ---------------------------------------------------
 
-    def ask(self, app, business_id, target_date, message, role, actor="agent:tidelm"):
+    def ask(self, app, business_id, target_date, message, role, actor="agent:tidelm", name=None):
         if not isinstance(message, str) or not message.strip() or len(message) > MAX_INPUT:
             raise ValidationError(f"Message must contain 1-{MAX_INPUT:,} characters.")
         started = time.monotonic()
+        small = conversation.classify(message)
+        if small:  # greetings, thanks, help, status: answered instantly from live data, no model call
+            facts = conversation.situation(app, business_id, target_date)
+            return {"text": conversation.small_talk(small, facts, name), "mode": "tidelm", "plan": None, "results": [],
+                    "routed": "small_talk", "suggestions": conversation.suggestions(facts),
+                    "elapsed_ms": int((time.monotonic() - started) * 1000)}
         raw = self._generate(PLAN_SYSTEM, message.strip())
         plan = parse_json(raw)
         currency = app.store.get_business(business_id)["currency"]
@@ -102,7 +150,7 @@ class TideLM:
                  "plan": plan, "elapsed_ms": None}
         try:
             if plan is None:
-                raise ValidationError("TideLM did not return a valid plan.")
+                raise ValueError("unparseable")
             copilot.validate_plan(plan)
             if role not in PLANNER_ROLES and any(call["tool"] in PROPOSING_TOOLS for call in plan["calls"]):
                 text = "Viewers can read forecasts and reports, but only an owner or accountant can ask for plans or reminders."
@@ -111,15 +159,23 @@ class TideLM:
                 results = copilot.run_plan(app, business_id, target_date, plan, actor)
                 text = copilot.reply_from_results(results, currency)
             permission = "agent_read"
-        except ValidationError as exc:  # a refused or unparseable plan is answered, never guessed
-            text, results, permission = f"I couldn't do that safely: {exc}", [], "denied"
+        except ValueError as exc:  # a refused or unparseable plan is answered, never guessed
+            if not isinstance(exc, ValidationError):
+                exc = None
+            results, permission = [], "denied"
+            text = (f"I couldn't do that safely: {exc}" if exc else
+                    conversation.not_understood(conversation.situation(app, business_id, target_date)))
             if isinstance(exc, SecurityError):  # the model asked for a forbidden tool: counts toward the breaker
                 app.store.reject(business_id, "agent.tool_rejected", actor, exc, {"plan": plan}, security_relevant=True)
         trace["elapsed_ms"] = int((time.monotonic() - started) * 1000)
         app.store.audit(business_id, "agent.answer", actor, permission,
                         {**trace, "tools": [call.get("tool") for call in (plan or {}).get("calls", []) if isinstance(call, dict)],
                          "output_sha256": hashlib.sha256(text.encode()).hexdigest()})
-        return {"text": text, "mode": "tidelm", "plan": plan, "results": results, "elapsed_ms": trace["elapsed_ms"]}
+        topic, focus = _topic(plan, results)
+        follow = conversation.suggestions(conversation.situation(app, business_id, target_date), topic, focus,
+                                          exclude=(message.strip(),))
+        return {"text": text, "mode": "tidelm", "plan": plan, "results": results, "suggestions": follow,
+                "elapsed_ms": trace["elapsed_ms"]}
 
     # ---- skill 2: zero-entry inbox --------------------------------------------------
 
@@ -142,6 +198,24 @@ class TideLM:
                         {"input_sha256": hashlib.sha256(text.encode()).hexdigest(), "drafts": len(drafts),
                          "suspicious": result["suspicious"], "risk_flags": flags})
         return result
+
+
+TOPICS = {"project_cash": "forecast", "simulate_risk": "risk", "what_if": "whatif", "propose_plan": "plan",
+          "explain_plan": "plan", "credit_check": "credit", "draft_reminders": "receivables", "bank_pack": "risk"}
+
+
+def _topic(plan, results):
+    """The conversation topic and customer in focus, used to pick follow-up suggestions."""
+    calls = [call for call in (plan or {}).get("calls", []) if isinstance(call, dict)]
+    if not calls or not results:
+        return None, None
+    tool, args = calls[0].get("tool"), calls[0].get("args") or {}
+    if (plan or {}).get("intent") == "payroll_check":
+        return "payroll", None
+    if tool == "customer_report":
+        return ("customer", args.get("customer")) if args.get("customer") else ("receivables", None)
+    focus = args.get("customer") or next(iter((args.get("customer_delays") or {})), None)
+    return TOPICS.get(tool), focus if isinstance(focus, str) else None
 
 
 def _draft(row, index, text, business):

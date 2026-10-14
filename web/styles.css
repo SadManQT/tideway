@@ -374,3 +374,12 @@ li + li { margin-top: 4px; }
 .inbox-warning { border: 2px solid var(--storm); }
 .inbox-warning strong { font-size: 14px; }
 .tag .icon { width: 10px; height: 10px; vertical-align: -1px; }
+
+/* Conversation: follow-up suggestions and a "thinking" indicator. */
+.chat-log .msg .chips.follow { margin-top: 10px; white-space: normal; }
+.chat-log .msg.pending { display: flex; align-items: center; gap: 8px; color: var(--muted, #5b6470); font-style: italic; }
+.dots { display: inline-flex; gap: 3px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); opacity: .3; animation: dot 1.2s infinite ease-in-out; }
+.dots i:nth-child(2) { animation-delay: .15s; } .dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes dot { 0%, 80%, 100% { opacity: .3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .dots i { animation: none; opacity: .7; } }

@@ -167,10 +167,12 @@ class Application:
             if not isinstance(history, list) or len(history) > 20 or not isinstance(body.get("consent", False), bool):
                 raise ValidationError("Invalid chat request.")
             return self.agent.chat(business_id, body.get("target_date"), body["message"], history, body.get("consent", False),
-                                   "agent:llm" if body.get("consent") and self.agent.key else "agent:local", operator["role"])
+                                   "agent:llm" if body.get("consent") and self.agent.key else "agent:local", operator["role"],
+                                   operator["name"])
         if path == "/api/copilot/ask":
             self.fields(body, ("business_id", "target_date", "message"), ("business_id", "message"))
-            return self.tidelm.ask(self.tideway, business_id, body.get("target_date"), body["message"], operator["role"])
+            return self.tidelm.ask(self.tideway, business_id, body.get("target_date"), body["message"], operator["role"],
+                                   name=operator["name"])
         if path == "/api/inbox/extract":
             self.fields(body, ("business_id", "text"), ("business_id", "text"))
             self.require(operator, "owner", "accountant")
@@ -385,6 +387,10 @@ def make_handler(app):
 def serve(db_path, port=8787, key="", model="gpt-5-mini", seed=True):
     app = Application(db_path, key, model, seed)
     server = ThreadingHTTPServer(("127.0.0.1", port), make_handler(app))
+    if app.tidelm.status()["available"]:  # load TideLM in the background so the first question is fast
+        import threading
+        threading.Thread(target=app.tidelm.warm, name="tidelm-warmup", daemon=True).start()
+        print("TideLM: loading the on-device model in the background…", flush=True)
     print(f"Tideway is ready: http://127.0.0.1:{server.server_port}", flush=True)
     print("Demo sign-in (synthetic sandbox): owner Nadia PIN 2468 · accountant Imran PIN 1357 · viewer Guest PIN 0000", flush=True)
     print("AI provider connected (consent required per message)." if key else

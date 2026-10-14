@@ -577,8 +577,13 @@ function toolResultHtml({tool, result: r}) {
   return "";
 }
 
+function suggestionsHtml(items) {
+  return items?.length ? `<div class="chips follow" aria-label="Suggested next questions">${items.map((prompt) => `<button class="chip" type="button" data-action="prompt" data-prompt="${esc(prompt)}">${esc(prompt)}</button>`).join("")}</div>` : "";
+}
+
 // The "glass box": what TideLM decided (intent + typed tool calls); the numbers above come from tools.
 function copilotHtml(c) {
+  if (c.routed === "small_talk") return `<div class="copilot"><span class="tag">instant · live data, no model call</span></div>`;
   const calls = c.plan?.calls || [];
   return `<div class="copilot">${(c.results || []).map(toolResultHtml).join("")}
     <div class="glass" aria-label="TideLM plan"><div class="row between"><strong>TideLM plan${c.plan?.intent ? ` · intent: <code>${esc(c.plan.intent)}</code>` : ""}</strong>${isNum(c.elapsed_ms) ? `<span class="tag">${esc((c.elapsed_ms / 1000).toFixed(1))} s on-device</span>` : ""}</div>
@@ -594,7 +599,9 @@ function renderAssistant() {
   const prompts = on ? TIDELM_PROMPTS : LOCAL_PROMPTS;
   const consent = on ? "" : state.config.ai_configured ? `<label class="check small"><input id="ai-consent" type="checkbox" ${state.aiConsent ? "checked" : ""}> Use the AI model for this message (names are pseudonymised; record text never leaves this computer)</label>` : `<p class="hint">Local agent mode: answers come from deterministic tools, no network. An optional LLM mode is available when a key is configured.</p>`;
   const mode = on ? `<div class="row chat-mode"><span class="pill teal">${icon("spark")}${esc(TIDELM_LABEL)}</span></div>` : "";
-  return `<section class="grid split"><div class="card chat ${on ? "with-mode" : ""}">${mode}<div class="chat-log" id="chat-log" aria-live="polite">${state.chat.map((item) => `<div class="msg ${item.role === "user" ? "user" : "agent"} ${item.unverified?.length || item.rejected ? "warn" : ""}">${esc(item.text)}${item.trace?.length ? `<div class="trace">${item.trace.map((t) => `<span>${esc(t.tool)} · ${esc(t.permission)}</span>`).join("")}</div>` : ""}${item.copilot ? copilotHtml(item.copilot) : ""}</div>`).join("")}</div>
+  return `<section class="grid split"><div class="card chat ${on ? "with-mode" : ""}">${mode}<div class="chat-log" id="chat-log" aria-live="polite">${state.chat.map((item, index) => item.pending
+      ? `<div class="msg agent pending" role="status"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>${esc(item.text)}</div>`
+      : `<div class="msg ${item.role === "user" ? "user" : "agent"} ${item.unverified?.length || item.rejected ? "warn" : ""}">${esc(item.text)}${item.trace?.length ? `<div class="trace">${item.trace.map((t) => `<span>${esc(t.tool)} · ${esc(t.permission)}</span>`).join("")}</div>` : ""}${item.copilot ? copilotHtml(item.copilot) : ""}${index === state.chat.length - 1 && item.role !== "user" ? suggestionsHtml(item.suggestions || (index === 0 ? prompts.slice(0, 3) : [])) : ""}</div>`).join("")}</div>
     <form id="chat-form" class="chat-form"><label class="sr-only" for="chat-input">Your question</label><input id="chat-input" maxlength="2000" placeholder="${on ? "Ask in any language…" : "Ask about payroll, risk, a what-if or a plan…"}" autocomplete="off" required><button class="button primary" type="submit">${icon("send")}Ask</button></form></div>
     <div class="card">${on ? "" : `${tidelmStatusCard("Ask Tideway still works with the local tool agent.")}<div class="section-gap"></div>`}<h3>Try asking</h3><div class="chips">${prompts.map((prompt) => `<button class="chip" data-action="prompt" data-prompt="${esc(prompt)}">${esc(prompt)}</button>`).join("")}</div>
     ${consent ? `<div class="section-gap">${consent}</div>` : ""}
@@ -619,19 +626,22 @@ async function ask(message) {
   const history = state.chat.slice(-8).map((item) => ({role: item.role === "user" ? "user" : "assistant", content: item.text}));
   const consent = Boolean(state.config.ai_configured && state.aiConsent);
   state.chat.push({role: "user", text});
+  const pending = {role: "agent", pending: true, text: tidelmOn() ? "TideLM is reading your question on this computer…" : "Checking your numbers…"};
+  state.chat.push(pending);
   render();
   const result = await act("Asking", async () => {
     const answer = tidelmOn() ? await askTideLM(text) : null;
     return answer || {chat: await api("/api/chat", {business_id: state.businessId, target_date: state.targetDate, message: text, history, consent})};
   });
+  state.chat = state.chat.filter((item) => item !== pending);
   if (result?.copilot) {
-    state.chat.push({role: "agent", text: result.copilot.text, copilot: result.copilot});
+    state.chat.push({role: "agent", text: result.copilot.text, copilot: result.copilot, suggestions: result.copilot.suggestions});
     if ((result.copilot.results || []).some((item) => ["propose_plan", "draft_reminders"].includes(item.tool))) await act("Reload", () => loadDashboard());
   } else if (result?.rejected) {
     state.chat.push({role: "agent", text: result.rejected, rejected: true});
   } else if (result?.chat) {
     const chat = result.chat;
-    state.chat.push({role: "agent", text: chat.text, trace: chat.trace, unverified: chat.unverified_numbers});
+    state.chat.push({role: "agent", text: chat.text, trace: chat.trace, unverified: chat.unverified_numbers, suggestions: chat.suggestions});
     if ((chat.trace || []).some((item) => item.tool === "compare_plans")) await act("Reload", () => loadDashboard());
   }
   render();
