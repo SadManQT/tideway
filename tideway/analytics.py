@@ -1,0 +1,395 @@
+"""Explainable analytics: payment behaviour, stress tests, early warnings and KPIs.
+
+Everything here is deterministic for a given snapshot.  Monte Carlo runs use
+a seed derived from the business snapshot and only ``Random.random()`` (the
+one stream Python guarantees across versions), so the same records always
+give the same probabilities and tests can assert exact values.
+"""
+from __future__ import annotations
+
+import difflib
+import hashlib
+import random
+import statistics
+from collections import Counter, defaultdict
+from datetime import date, timedelta
+
+from .domain import OPEN_INVOICE_STATUSES, SETTLED_INVOICE_STATUSES, add_days, days_between, human_date
+from .projection import build_events, horizon_end
+
+
+PRIOR_WEIGHT = 5             # credibility weight k: own history counts n/(n+k)
+DEFAULT_DELAYS = (0, 3, 7, 10, 14)   # only when a business has no payment history at all
+GRADES = (("A", 2), ("B", 7), ("C", 15))
+OVERDUE_FALLBACK_DAYS = 7    # extra wait assumed when an overdue invoice is later than all history
+
+
+def _percentile(values, fraction):
+    ordered = sorted(values)
+    if not ordered:
+        return None
+    index = max(0, min(len(ordered) - 1, int(round(fraction * (len(ordered) - 1)))))
+    return ordered[index]
+
+
+def _pick(rng, items):
+    return items[int(rng.random() * len(items))]
+
+
+def _histories(invoices):
+    history = defaultdict(list)
+    for row in invoices:
+        if row["status"] in SETTLED_INVOICE_STATUSES and row.get("paid_date"):
+            history[row["customer"]].append(days_between(row["due_date"], row["paid_date"]))
+    return history
+
+
+def customer_profiles(invoices, as_of=None):
+    """Per-customer lateness from settled invoices, pooled with the portfolio.
+
+    days_late = paid_date - due_date.  A customer's own history gets weight
+    n/(n+k) (Buhlmann credibility); the rest comes from the business-wide
+    history, so one lucky payment never makes a customer look perfectly reliable.
+    """
+    history = _histories(invoices)
+    pool = [value for values in history.values() for value in values]
+    prior_mean = statistics.fmean(pool) if pool else statistics.fmean(DEFAULT_DELAYS)
+    open_exposure, open_count = defaultdict(int), Counter()
+    oldest_overdue = defaultdict(int)
+    for row in invoices:
+        if row["status"] in OPEN_INVOICE_STATUSES:
+            open_exposure[row["customer"]] += row["amount_minor"]
+            open_count[row["customer"]] += 1
+            if as_of and row["due_date"] < as_of:
+                oldest_overdue[row["customer"]] = max(oldest_overdue[row["customer"]], days_between(row["due_date"], as_of))
+    profiles = {}
+    for customer in sorted(set(history) | set(open_exposure)):
+        values = history.get(customer, [])
+        n = len(values)
+        weight = n / (n + PRIOR_WEIGHT)
+        shrunk = (sum(values) + PRIOR_WEIGHT * prior_mean) / (n + PRIOR_WEIGHT)
+        grade = next((label for label, limit in GRADES if shrunk <= limit), "D")
+        mixture = values + (pool or list(DEFAULT_DELAYS))
+        own = f"{n} settled invoice{'s' if n != 1 else ''}, average {statistics.fmean(values):.1f} days late" if values \
+            else "no settled history yet"
+        profiles[customer] = {
+            "customer": customer, "settled_invoices": n,
+            "mean_days_late": round(statistics.fmean(values), 1) if values else None,
+            "median_days_late": statistics.median(values) if values else None,
+            "on_time_rate": round(sum(1 for value in values if value <= 0) / n, 2) if n else None,
+            "expected_delay_days": max(0, round(shrunk)), "own_history_weight": round(weight, 2),
+            "p80_delay_days": max(0, _percentile(mixture, 0.8) or 0),
+            "p90_delay_days": max(0, _percentile(mixture, 0.9) or 0),
+            "grade": grade, "confidence": "low" if n < 3 else "medium" if n < 8 else "high",
+            "open_invoices": open_count[customer], "open_exposure_minor": open_exposure[customer],
+            "days_overdue": oldest_overdue.get(customer, 0),
+            "explanation": f"{own}; weighted {round(weight * 100)}% own history, {round((1 - weight) * 100)}% "
+                           f"business-wide average of {prior_mean:.1f} days.",
+        }
+    return {"customers": profiles, "portfolio_mean_days_late": round(prior_mean, 1),
+            "history_observations": len(pool), "prior_weight": PRIOR_WEIGHT}
+
+
+def scenario_dates(invoices, profiles, mode):
+    """Payment dates for open invoices: 'likely' uses the pooled mean, 'stress' the 80th percentile."""
+    customers = profiles["customers"]
+    key = "expected_delay_days" if mode == "likely" else "p80_delay_days"
+    result = {}
+    for row in invoices:
+        if row["status"] not in OPEN_INVOICE_STATUSES:
+            continue
+        profile = customers.get(row["customer"])
+        delay = profile[key] if profile else 0
+        result[row["id"]] = max(row["expected_collection_date"], add_days(row["due_date"], delay))
+    return result
+
+
+def _delay_sampler(invoices, as_of):
+    """Sample a customer's lateness; overdue invoices are conditioned on still being unpaid."""
+    history = {customer: [max(0, value) for value in values] for customer, values in _histories(invoices).items()}
+    pool = sorted(value for values in history.values() for value in values) or list(DEFAULT_DELAYS)
+
+    def sample(rng, customer, minimum_late):
+        own = history.get(customer, [])
+        source = own if own and rng.random() < len(own) / (len(own) + PRIOR_WEIGHT) else pool
+        eligible = [value for value in source if value >= minimum_late]
+        if not eligible:
+            return minimum_late + OVERDUE_FALLBACK_DAYS
+        return _pick(rng, eligible)
+    return sample
+
+
+def stable_seed(*parts):
+    return int(hashlib.sha256("|".join(str(part) for part in parts).encode()).hexdigest()[:12], 16)
+
+
+def monte_carlo(business, policy, records, target_date, adjustments=(), promises=None,
+                runs=1000, seed=0, lookahead_days=0, as_of=None):
+    """Probability of breaching the reserve floor under payment-timing uncertainty.
+
+    Only the timing of open customer invoices is uncertain; every other event
+    (payroll, bills, agreed adjustments) is fixed.  One delay is drawn per
+    customer per simulated future, so a slow customer is slow on all its
+    invoices (the cautious choice).  No invoice is paid before its expected date.
+    """
+    as_of = as_of or business["opening_date"]
+    end = horizon_end(business, target_date, lookahead_days)
+    events, _ = build_events(business, records, end, adjustments, promises=promises)
+    start = business["opening_date"]
+    length = days_between(start, end) + 1
+    fixed = [0] * length
+    payroll_index = set()
+    uncertain = []
+    invoices = {row["id"]: row for row in records["invoices"]}
+    for event in events:
+        index = days_between(start, event["date"])
+        if event["kind"] == "invoice":
+            row = invoices[event["id"]]
+            minimum_late = max(0, days_between(row["due_date"], as_of))
+            uncertain.append((event["id"], event["amount_minor"], event["date"], row["due_date"], row["customer"], minimum_late))
+        else:
+            fixed[index] += event["effect_minor"]
+            if event.get("payroll"):
+                payroll_index.add(index)
+    sample = _delay_sampler(records["invoices"], as_of)
+    rng = random.Random(seed)
+    reserve = policy["reserve_floor_minor"]
+    customers = sorted({item[4] for item in uncertain})
+    columns = [[] for _ in range(length)]
+    breaches = negatives = payroll_failures = 0
+    shortfalls, minimums, first_breaches = [], [], Counter()
+    late_after = Counter()
+    for _ in range(runs):
+        draws = {customer: rng.random() for customer in customers}
+        net = fixed[:]
+        arrivals = {}
+        for invoice_id, amount, expected, due, customer, minimum_late in uncertain:
+            local = random.Random(int(draws[customer] * 2 ** 53))
+            paid = max(expected, add_days(due, sample(local, customer, minimum_late)))
+            arrivals[invoice_id] = paid
+            offset = days_between(start, paid)
+            if offset < length:
+                net[offset] += amount
+        balance = business["opening_cash_minor"]
+        minimum, breach_day, payroll_failed = balance, start if balance < reserve else None, False
+        for index, change in enumerate(net):
+            balance += change
+            columns[index].append(balance)
+            if balance < minimum:
+                minimum = balance
+            if balance < reserve and breach_day is None:
+                breach_day = (date.fromisoformat(start) + timedelta(days=index)).isoformat()
+            if index in payroll_index and balance < 0:
+                payroll_failed = True
+        minimums.append(minimum)
+        if breach_day:
+            breaches += 1
+            shortfalls.append(reserve - minimum)
+            first_breaches[breach_day] += 1
+            for invoice_id, paid in arrivals.items():
+                if paid > breach_day:
+                    late_after[invoice_id] += 1
+        negatives += minimum < 0
+        payroll_failures += payroll_failed
+    fan = []
+    for index, values in enumerate(columns):
+        day = (date.fromisoformat(start) + timedelta(days=index)).isoformat()
+        fan.append({"date": day, "p10_minor": _percentile(values, 0.1),
+                    "p50_minor": _percentile(values, 0.5), "p90_minor": _percentile(values, 0.9)})
+    probability = breaches / runs
+    return {"runs": runs, "seed": seed, "uncertain_invoices": len(uncertain), "end_date": end,
+            "probability_breach": round(probability, 4),
+            "futures_short_of_20": round(probability * 20),
+            "probability_negative_cash": round(negatives / runs, 4),
+            "probability_payroll_unfunded": round(payroll_failures / runs, 4),
+            "expected_shortfall_if_breach_minor": int(statistics.fmean(shortfalls)) if shortfalls else 0,
+            "p90_shortfall_minor": _percentile(shortfalls, 0.9) or 0,
+            "minimum_cash_p10_minor": _percentile(minimums, 0.1),
+            "minimum_cash_p50_minor": _percentile(minimums, 0.5),
+            "most_common_breach_date": first_breaches.most_common(1)[0][0] if first_breaches else None,
+            "invoice_late_share": {invoice_id: round(count / runs, 3) for invoice_id, count in sorted(late_after.items())},
+            "fan": fan,
+            "method": "Seeded Monte Carlo over open-invoice payment dates. One delay per customer per future, resampled "
+                      "from that customer's settled history mixed with the business-wide history (credibility weight "
+                      "n/(n+5)); overdue invoices only draw delays at least as long as their current lateness. All other "
+                      "events are fixed. Estimates from synthetic data, not a guarantee."}
+
+
+def weather(probability_breach, scheduled_shortfall):
+    if scheduled_shortfall > 0 or probability_breach >= 0.5:
+        return {"label": "Storm", "level": "storm",
+                "text": "A reserve breach is scheduled or more likely than not. Act before the first breach date."}
+    if probability_breach >= 0.15:
+        return {"label": "Unsettled", "level": "unsettled",
+                "text": "Late customer payments could push cash below the reserve floor."}
+    return {"label": "Clear", "level": "clear", "text": "The reserve floor holds in almost every simulated future."}
+
+
+def apr_bps(cost_minor, principal_minor, days):
+    """Simple annualised cost in basis points: cost / principal x 365 / days."""
+    if principal_minor <= 0 or days <= 0:
+        return None
+    return int(round(cost_minor / principal_minor * 365 / days * 10_000))
+
+
+def discount_apr_bps(discount_bps, days_accelerated):
+    """Annualised cost of an early-payment discount, d/(1-d) x 365/days (2/10 net 30 ~ 37%)."""
+    if days_accelerated <= 0 or discount_bps <= 0:
+        return None
+    rate = discount_bps / 10_000
+    return int(round(rate / (1 - rate) * 365 / days_accelerated * 10_000))
+
+
+def mask_account(account):
+    if not account:
+        return None
+    digits = account.replace(" ", "")
+    return "•" * max(0, len(digits) - 4) + digits[-4:]
+
+
+def payee_checks(bills, verified_accounts=None):
+    """Bank-detail changes and look-alike payee names (business-email-compromise signals)."""
+    verified_accounts = dict(verified_accounts or {})
+    history = defaultdict(Counter)
+    for row in bills:
+        if row["status"] == "paid" and row.get("payee_account"):
+            history[row["payee"]][row["payee_account"]] += 1
+    known = {payee: counts.most_common(1)[0][0] for payee, counts in history.items()}
+    known.update({payee: account for payee, account in verified_accounts.items() if account})
+    established = sorted({row["payee"] for row in bills if row["status"] == "paid"})
+    flagged, lookalikes = [], []
+    for row in bills:
+        if row["status"] not in ("open", "scheduled", "rescheduled"):
+            continue
+        reference = known.get(row["payee"])
+        if row.get("payee_account") and reference and reference != row["payee_account"]:
+            flagged.append({"bill_id": row["id"], "payee": row["payee"],
+                            "expected_account": mask_account(reference), "new_account": mask_account(row["payee_account"]),
+                            "account": row["payee_account"],
+                            "reason": "Bank details differ from the account used or verified before. Verify by calling "
+                                      "a number already on file before any action."})
+        if row["payee"] not in established:
+            for name in established:
+                ratio = difflib.SequenceMatcher(None, row["payee"].casefold(), name.casefold()).ratio()
+                if 0.85 <= ratio < 1:
+                    lookalikes.append({"bill_id": row["id"], "payee": row["payee"], "similar_to": name,
+                                       "similarity": round(ratio, 2),
+                                       "reason": "New payee name is almost identical to an established supplier."})
+                    break
+    return {"known_accounts": {payee: mask_account(account) for payee, account in known.items()},
+            "flagged": flagged, "lookalikes": lookalikes}
+
+
+def financial_kpis(business, records, profiles):
+    """Business financial analysis (Topic E): DSO, days late, concentration and runway inputs."""
+    settled = [row for row in records["invoices"] if row["status"] in SETTLED_INVOICE_STATUSES and row.get("paid_date")]
+    open_rows = [row for row in records["invoices"] if row["status"] in OPEN_INVOICE_STATUSES]
+    dso = statistics.fmean(days_between(row["issue_date"], row["paid_date"]) for row in settled) if settled else None
+    terms = statistics.fmean(days_between(row["issue_date"], row["due_date"]) for row in settled) if settled else None
+    paid_bills = [row for row in records["bills"] if row["status"] == "paid"]
+    open_total = sum(row["amount_minor"] for row in open_rows)
+    shares = [item["open_exposure_minor"] / open_total for item in profiles["customers"].values()
+              if open_total and item["open_exposure_minor"]]
+    hhi = round(10_000 * sum(share * share for share in shares)) if shares else None
+    expenses = [row for row in records["transactions"] if row["type"] == "expense" and row["date"] < business["opening_date"]]
+    months = {row["date"][:7] for row in expenses}
+    burn = sum(row["amount_minor"] for row in expenses) // len(months) if months else None
+    late = [days_between(row["due_date"], row["paid_date"]) for row in settled]
+    return {"dso_days": round(dso, 1) if dso is not None else None,
+            "average_terms_days": round(terms, 1) if terms is not None else None,
+            "average_days_late": round(statistics.fmean(late), 1) if late else None,
+            "on_time_share": round(sum(1 for value in late if value <= 0) / len(late), 2) if late else None,
+            "open_receivables_minor": open_total,
+            "open_payables_minor": sum(row["amount_minor"] for row in records["bills"] if row["status"] in ("open", "scheduled", "rescheduled")),
+            "customer_hhi": hhi, "effective_customers": round(10_000 / hhi, 1) if hhi else None,
+            "top_customer_share": round(max(shares), 2) if shares else None,
+            "monthly_expense_run_rate_minor": burn,
+            "settled_invoices": len(settled), "paid_bills": len(paid_bills),
+            "notes": "DSO = average days from invoice issue to payment for settled invoices. HHI = 10,000 x sum of squared "
+                     "customer shares of open receivables (concentration analogy only)."}
+
+
+def backtest(invoices):
+    """Leave-one-out check of the pooled delay estimate on settled invoices (illustrative)."""
+    settled = [row for row in invoices if row["status"] in SETTLED_INVOICE_STATUSES and row.get("paid_date")]
+    if len(settled) < 8:
+        return {"available": False, "reason": "At least 8 settled invoices are needed for a backtest.", "n": len(settled)}
+    errors, inside = [], 0
+    for index, held in enumerate(settled):
+        rest = settled[:index] + settled[index + 1:]
+        profiles = customer_profiles(rest)
+        profile = profiles["customers"].get(held["customer"])
+        predicted = profile["expected_delay_days"] if profile else round(profiles["portfolio_mean_days_late"])
+        actual = days_between(held["due_date"], held["paid_date"])
+        errors.append(abs(actual - predicted))
+        if profile and actual <= profile["p80_delay_days"]:
+            inside += 1
+    return {"available": True, "n": len(settled), "mean_absolute_error_days": round(statistics.fmean(errors), 1),
+            "p80_coverage": round(inside / len(settled), 2),
+            "note": "Leave-one-out on synthetic history: shows internal consistency, not real-world accuracy."}
+
+
+def warnings(business, records, base_projection, stress, profiles, payee_report, kpis):
+    """Early-warning signals, most severe first."""
+    currency = business["currency"]
+    result = []
+    if base_projection["first_breach_date"]:
+        days = days_between(business["opening_date"], base_projection["first_breach_date"])
+        result.append({"severity": "critical", "code": "reserve_breach",
+                       "title": f"Reserve breached in {days} day{'s' if days != 1 else ''}",
+                       "detail": f"Scheduled cash falls below the reserve floor on {human_date(base_projection['first_breach_date'], True)}."})
+    if base_projection["payroll_at_risk"]:
+        result.append({"severity": "critical", "code": "payroll_at_risk", "title": "Payroll is not fully funded",
+                       "detail": "Cash would be negative on a payroll day without action. Payroll is never deferred."})
+    if payee_report["flagged"]:
+        result.append({"severity": "critical", "code": "payee_account_changed",
+                       "title": f"{len(payee_report['flagged'])} bill(s) with changed bank details",
+                       "detail": "Actions on these bills are blocked until the owner verifies the payee by callback."})
+    if payee_report["lookalikes"]:
+        item = payee_report["lookalikes"][0]
+        result.append({"severity": "critical", "code": "lookalike_payee",
+                       "title": f"Look-alike payee: '{item['payee']}'",
+                       "detail": f"Almost identical to '{item['similar_to']}'. Possible impostor; actions are blocked."})
+    flagged_text = sum(1 for kind in ("transactions", "invoices", "bills") for row in records[kind] if row.get("risk_flags"))
+    if flagged_text:
+        result.append({"severity": "warning", "code": "untrusted_text",
+                       "title": f"{flagged_text} record(s) contain instruction-like or hidden text",
+                       "detail": "Quarantined as data: the assistant never receives this text and it cannot change any action."})
+    if stress["probability_breach"] >= 0.15 and not base_projection["first_breach_date"]:
+        result.append({"severity": "warning", "code": "breach_probability",
+                       "title": f"{stress['futures_short_of_20']} of 20 simulated futures breach the reserve",
+                       "detail": "Based on customers' own payment history."})
+    if kpis["top_customer_share"] and kpis["top_customer_share"] >= 0.5:
+        top = max(profiles["customers"].values(), key=lambda item: item["open_exposure_minor"])
+        result.append({"severity": "info", "code": "concentration",
+                       "title": f"{round(kpis['top_customer_share'] * 100)}% of receivables depend on one customer",
+                       "detail": f"{top['customer']} holds the largest open balance; a delay there moves the whole forecast."})
+    overdue = [row for row in records["invoices"] if row["status"] == "overdue"]
+    if overdue:
+        total = sum(row["amount_minor"] for row in overdue)
+        result.append({"severity": "warning", "code": "overdue", "title": f"{len(overdue)} overdue invoice(s)",
+                       "detail": f"{currency} {total / 100:,.0f} is past due."})
+    seen = {}
+    for row in sorted(records["bills"], key=lambda item: item["due_date"]):
+        if row["status"] not in ("open", "scheduled"):
+            continue
+        key = (row["payee"].casefold(), row["amount_minor"])
+        if key in seen and abs(days_between(seen[key], row["due_date"])) <= 7:
+            result.append({"severity": "warning", "code": "duplicate_bill", "title": f"Possible duplicate bill from {row['payee']}",
+                           "detail": "Same payee and amount within seven days. Confirm before paying both."})
+            break
+        seen[key] = row["due_date"]
+    expenses = [row for row in records["transactions"] if row["type"] == "expense"
+                and str(row.get("category", "")).casefold() != "payroll"]
+    if len(expenses) >= 8:
+        amounts = [row["amount_minor"] for row in expenses]
+        median = statistics.median(amounts)
+        mad = statistics.median([abs(value - median) for value in amounts])
+        if mad:
+            unusual = [row for row in expenses if abs(0.6745 * (row["amount_minor"] - median) / mad) > 3.5]
+            if unusual:
+                result.append({"severity": "info", "code": "unusual_expense",
+                               "title": f"{len(unusual)} unusually large expense(s)",
+                               "detail": "Modified z-score above 3.5 against this business's own expense history."})
+    order = {"critical": 0, "warning": 1, "info": 2}
+    return sorted(result, key=lambda item: order[item["severity"]])

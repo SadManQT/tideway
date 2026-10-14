@@ -1,0 +1,386 @@
+"""Application service: composes the store, analytics, planner and counterparties.
+
+The HTTP layer calls this module; it never talks to SQLite directly.  Every
+method takes the acting operator (or the agent) explicitly so the audit trail
+always names who did what.
+"""
+from __future__ import annotations
+
+import xml.etree.ElementTree as ET
+from datetime import datetime, timezone
+
+from . import analytics, counterparty, planner
+from .domain import ValidationError, add_days, human_date, money_text, parse_combined_csv, valid_date
+from .fixtures import FIXTURE_VERSION, OPERATORS, fixtures
+from .projection import project, summary
+from .store import Store
+
+
+MC_RUNS = 1000
+PLAN_MC_RUNS = 400
+
+
+class Tideway:
+    def __init__(self, db_path, seed=True, key_path=None, witness_path=None):
+        self.store = Store(db_path, key_path, witness_path)
+        if seed and not self.store.seeded():
+            self.seed()
+
+    # ---- setup ---------------------------------------------------------------
+
+    def seed(self):
+        for item in OPERATORS:
+            self.store.ensure_operator(item["id"], item["name"], item["role"], item["pin"])
+        existing = {item["id"] for item in self.store.list_businesses()}
+        for fixture in fixtures():
+            business = fixture["business"]
+            if business["business_id"] in existing:
+                continue
+            self.store.create_business(business, fixture["policy"], fixture["counterparties"], actor="system:seed")
+            currency = business["currency"]
+            parsed = {kind: [{**row, "currency": row.get("currency") or currency} for row in fixture[kind]]
+                      for kind in ("transactions", "invoices", "bills")}
+            self.store.import_records(business["business_id"], parsed, actor="system:seed", source="demo")
+        self.store.mark_seeded(FIXTURE_VERSION)
+
+    def config(self):
+        businesses = self.store.list_businesses()
+        stories = {item["business"]["business_id"]: item["story"] for item in fixtures()}
+        return {"name": "Tideway", "tagline": "Approval-gated cash-flow rescue for small businesses",
+                "version": "3.0.0", "track": "FinTechathon 2026 International Track, Topic E: SME Finance Copilot",
+                "businesses": [{"business_id": item["id"], "name": item["name"], "currency": item["currency"],
+                                "country": item["country"], "sector": item["sector"],
+                                "opening_date": item["opening_date"], "default_target_date": item["default_target_date"],
+                                "synthetic": item["synthetic"], "story": stories.get(item["id"], "")}
+                               for item in businesses],
+                "operators": self.store.operators(),
+                "permission_tiers": [
+                    {"tier": "agent_read", "who": "Agent", "can": "Read records, project cash, simulate, analyse"},
+                    {"tier": "agent_propose", "who": "Agent", "can": "Create plan proposals and message drafts"},
+                    {"tier": "human_approval", "who": "Owner / accountant", "can": "Approve bundles with PIN step-up; "
+                                                                                 "two people above the dual-approval threshold"},
+                    {"tier": "sandbox_execute", "who": "Owner / accountant", "can": "Execute a signed, accepted mandate once"},
+                    {"tier": "delegated_execute", "who": "Agent under a standing mandate", "can": "Zero-cash reminders only, capped per day"},
+                    {"tier": "denied", "who": "Everyone", "can": "Moving money, credit decisions, payroll deferral, "
+                                                                  "acting on unverified bank details"},
+                ],
+                "autonomy_matrix": [
+                    {"action": "Read, project, simulate, explain", "advise": "agent", "propose": "agent", "delegate": "agent"},
+                    {"action": "Propose recovery bundles", "advise": "blocked", "propose": "agent", "delegate": "agent"},
+                    {"action": "Send collection reminders (zero cash)", "advise": "blocked", "propose": "human",
+                     "delegate": "agent (standing mandate, 5/day)"},
+                    {"action": "Supplier deferral / early-payment offer", "advise": "blocked", "propose": "human approval",
+                     "delegate": "human approval"},
+                    {"action": "Financing", "advise": "comparison only", "propose": "comparison only", "delegate": "comparison only"},
+                    {"action": "Pay, transfer or defer payroll", "advise": "never", "propose": "never", "delegate": "never"},
+                ]}
+
+    # ---- analysis --------------------------------------------------------------
+
+    def _target(self, snapshot, target_date):
+        business = snapshot["business"]
+        target = valid_date(target_date or business["default_target_date"], "target_date")
+        if target < business["opening_date"]:
+            raise ValidationError("target_date cannot be before the opening date.")
+        return target
+
+    def analysis(self, business_id, target_date=None, snapshot=None):
+        snapshot = snapshot or self.store.snapshot(business_id)
+        target = self._target(snapshot, target_date)
+        derived = self.store.derived(snapshot)
+        business, policy, records, state = snapshot["business"], snapshot["policy"], snapshot["records"], snapshot["state"]
+        common = {"adjustments": state["adjustments"], "promises": state["promises"], "lookahead_days": policy["lookahead_days"]}
+        base = project(business, policy, records, target, scenario="base", **common)
+        likely = project(business, policy, records, target, scenario="likely", invoice_dates=derived["likely_dates"], **common)
+        stress = project(business, policy, records, target, scenario="stress", invoice_dates=derived["stress_dates"], **common)
+        seed = analytics.stable_seed(business_id, snapshot["snapshot_hash"], target)
+        simulation = analytics.monte_carlo(business, policy, records, target, state["adjustments"], state["promises"],
+                                           runs=MC_RUNS, seed=seed, lookahead_days=policy["lookahead_days"],
+                                           as_of=state["current_date"])
+        kpis = analytics.financial_kpis(business, records, derived["profiles"])
+        alerts = analytics.warnings(business, records, base, simulation, derived["profiles"], derived["payees"], kpis)
+        weather = analytics.weather(simulation["probability_breach"], base["reserve_shortfall_minor"])
+        return {"snapshot": snapshot, "derived": derived, "target_date": target, "seed": seed,
+                "projections": {"base": base, "likely": likely, "stress": stress},
+                "simulation": simulation, "kpis": kpis, "warnings": alerts, "weather": weather,
+                "backtest": analytics.backtest(records["invoices"]),
+                "brief": self._brief(business, base, likely, simulation, weather)}
+
+    @staticmethod
+    def _brief(business, base, likely, simulation, weather):
+        currency = business["currency"]
+        payroll = next((event for event in base["source_references"] if event.get("payroll")), None)
+        head = f"{simulation['futures_short_of_20']} of 20 simulated futures breach the reserve floor"
+        if base["first_breach_date"]:
+            head = (f"Scheduled cash breaches the reserve on {human_date(base['first_breach_date'])}; "
+                    f"{simulation['futures_short_of_20']} of 20 simulated futures do too")
+        detail = (f"Lowest likely cash {money_text(likely['minimum_cash_minor'], currency)} on {human_date(likely['minimum_cash_date'])}.")
+        if payroll:
+            detail += f" Payroll of {money_text(-payroll['effect_minor'], currency)} is due {human_date(payroll['date'])}."
+        return {"headline": head, "detail": detail, "weather": weather["label"]}
+
+    def dashboard(self, business_id, target_date=None):
+        result = self.analysis(business_id, target_date)
+        snapshot, target = result.pop("snapshot"), result["target_date"]
+        derived = result.pop("derived")
+        records = snapshot["records"]
+        latest = self.store.latest_plan(business_id, target)
+        if latest and latest.get("snapshot_hash") != snapshot["snapshot_hash"]:
+            latest = None
+        evidence = self.store.evidence(business_id)
+        return {**result, "business": snapshot["business"], "policy": snapshot["policy"],
+                "state": {key: snapshot["state"][key] for key in ("version", "state_hash", "current_date", "adjustments",
+                                                                  "promises", "executed_exposure", "reset_count")},
+                "snapshot_hash": snapshot["snapshot_hash"], "records": records,
+                "profiles": derived["profiles"], "payees": derived["payees"], "blocked": derived["blocked"],
+                "counterparties": list(snapshot["counterparties"].values()),
+                "plan": latest, "mandates": self.store.live_mandates(business_id),
+                "standing_mandate": self.store.standing_mandate(business_id),
+                "messages": self.store.messages(business_id), "executions": self.store.executions(business_id),
+                "evidence_summary": {"hash_chain_valid": evidence["hash_chain_valid"], "entries": len(evidence["entries"]),
+                                     "head_hash": evidence["head_hash"], "witness": evidence["witness"]}}
+
+    # ---- planning ----------------------------------------------------------------
+
+    def propose(self, business_id, target_date, actor, proposed_by="agent", excluded=()):
+        snapshot = self.store.snapshot(business_id)
+        if snapshot["policy"]["agent_paused"]:
+            raise ValidationError("The agent is paused (kill switch). Resume it to create new proposals.")
+        if snapshot["policy"]["autonomy_level"] == "advise" and proposed_by == "agent":
+            raise ValidationError("Autonomy is set to 'advise': the agent may explain but not create proposals.")
+        target = self._target(snapshot, target_date)
+        derived = self.store.derived(snapshot)
+        state, policy = snapshot["state"], snapshot["policy"]
+        seed = analytics.stable_seed(business_id, snapshot["snapshot_hash"], target)
+        base_sim = analytics.monte_carlo(snapshot["business"], policy, snapshot["records"], target, state["adjustments"],
+                                         state["promises"], runs=PLAN_MC_RUNS, seed=seed,
+                                         lookahead_days=policy["lookahead_days"], as_of=state["current_date"])
+        payload = planner.plan_recovery(snapshot["business"], policy, snapshot["records"], target,
+                                        accepted=state["adjustments"], promises=state["promises"],
+                                        profiles=derived["profiles"], basis_dates=derived["likely_dates"],
+                                        blocked=derived["blocked"], excluded_counterparties=excluded,
+                                        mc_seed=seed, mc_runs=PLAN_MC_RUNS,
+                                        late_share=base_sim["invoice_late_share"], as_of=state["current_date"])
+        payload["probability_breach_before"] = base_sim["probability_breach"]
+        payload["futures_short_of_20_before"] = base_sim["futures_short_of_20"]
+        payload["excluded_counterparties"] = sorted(excluded)
+        return self.store.create_plan(business_id, payload, snapshot["snapshot_hash"], proposed_by, actor)
+
+    def negotiate(self, business_id, mandate_id, actor):
+        """Send the mandate's requests to the simulated counterparties (deterministic rules)."""
+        view = self.store.mandate(business_id, mandate_id)
+        document = view["mandate"]
+        plan = self.store.plan(business_id, document["plan_id"])
+        bundle = next(item for item in plan["bundles"] if item["bundle_id"] == document["bundle_id"])
+        snapshot = self.store.snapshot(business_id)
+        answered = {item["action_id"] for item in view["negotiations"]}
+        replies = []
+        for action in bundle["actions"]:
+            if action["action_id"] in answered:
+                continue
+            kind = action["counterparty_kind"]
+            profile = snapshot["counterparties"].get(f"{kind}:{action['counterparty']}", {}).get("profile")
+            response = counterparty.respond(action, profile)
+            replies.append(self.store.record_negotiation(business_id, mandate_id, action, response,
+                                                         counterparty.AGENT_VERSION, actor))
+        return {"replies": replies, **self.store.mandate(business_id, mandate_id)}
+
+    def simulate_decision(self, business_id, mandate_id, action_id, accept, operator, actor):
+        """Operator override for drills: force a counterparty to accept or reject (clearly labelled)."""
+        if operator["role"] not in ("owner", "accountant"):
+            raise ValidationError("Viewers cannot simulate counterparty decisions.")
+        if not isinstance(accept, bool):
+            raise ValidationError("accept must be true or false.")
+        document = self.store.mandate(business_id, mandate_id)["mandate"]
+        plan = self.store.plan(business_id, document["plan_id"])
+        bundle = next(item for item in plan["bundles"] if item["bundle_id"] == document["bundle_id"])
+        action = next((item for item in bundle["actions"] if item["action_id"] == action_id), None)
+        if not action:
+            raise ValidationError("Action is not part of this mandate.")
+        response = {"agent": "operator-simulation", "simulated": True, "counterparty": action["counterparty"],
+                    "action_id": action_id, "status": "accepted" if accept else "rejected", "counter_terms": None,
+                    "message": f"Operator-simulated {'acceptance' if accept else 'refusal'} by {action['counterparty']}. "
+                               "Not genuine counterparty consent."}
+        return self.store.record_negotiation(business_id, mandate_id, action, response, f"operator:{operator['id']}", actor)
+
+    def accept_counter(self, business_id, mandate_id, actor):
+        """Turn counter-offers into a new proposal; a signed mandate is never amended in place."""
+        view = self.store.mandate(business_id, mandate_id)
+        document = view["mandate"]
+        latest = {item["action_id"]: item for item in view["negotiations"]}
+        plan = self.store.plan(business_id, document["plan_id"])
+        bundle = next(item for item in plan["bundles"] if item["bundle_id"] == document["bundle_id"])
+        snapshot = self.store.snapshot(business_id)
+        derived = self.store.derived(snapshot)
+        policy, business = snapshot["policy"], snapshot["business"]
+        revised = []
+        for action in bundle["actions"]:
+            reply = latest.get(action["action_id"], {}).get("response", {})
+            terms = reply.get("counter_terms") if reply.get("status") == "countered" else None
+            item = {key: value for key, value in action.items() if key not in ("shortfall_without_minor",)}
+            if terms and action["type"] == "supplier_deferral":
+                item.update({"amount_minor": terms["amount_minor"], "days": terms["days"], "to_date": terms["to_date"]})
+                item["economic_cost_minor"] = terms["amount_minor"] * terms["days"] * planner.SUPPLIER_CREDIT_APR_BPS // (365 * 10_000)
+                item["adjustment"] = {**action["adjustment"], "amount_minor": terms["amount_minor"], "to_date": terms["to_date"]}
+            elif terms and action["type"] == "early_payment_offer":
+                bps = terms["discount_bps"]
+                if bps > policy["max_discount_bps"]:
+                    raise ValidationError("The customer's counter-offer is above the policy's maximum discount.")
+                discount = action["face_minor"] * bps // 10_000
+                item.update({"discount_bps": bps, "discount_minor": discount, "amount_minor": action["face_minor"] - discount,
+                             "economic_cost_minor": discount,
+                             "apr_equivalent_bps": analytics.discount_apr_bps(bps, action["days"])})
+                item["adjustment"] = {**action["adjustment"], "amount_minor": action["face_minor"] - discount}
+            if terms:
+                item["action_id"] = f"{action['action_id']}-counter"
+                item["counter_offer_from"] = action["counterparty"]
+            item["message"] = planner.message_for(item, business["name"])
+            revised.append(item)
+        check = planner.evaluate_bundle(business, policy, snapshot["records"], document["target_date"],
+                                        [dict(item, deltas=None) for item in revised],
+                                        accepted=snapshot["state"]["adjustments"], promises=snapshot["state"]["promises"],
+                                        basis_dates=derived["likely_dates"])
+        exposure = sum(item.get("face_minor", item["amount_minor"]) for item in revised)
+        state = snapshot["state"]
+        simulation = analytics.monte_carlo(business, policy, snapshot["records"], document["target_date"],
+                                           state["adjustments"] + [item["adjustment"] for item in revised], state["promises"],
+                                           runs=PLAN_MC_RUNS, seed=analytics.stable_seed(business_id, snapshot["snapshot_hash"]),
+                                           lookahead_days=policy["lookahead_days"], as_of=state["current_date"])
+        payload = {**{key: plan[key] for key in ("business_id", "target_date", "currency", "basis", "planning_horizon_end",
+                                                 "risk_target", "baseline", "basis_projection", "gap_minor", "action_needed",
+                                                 "financing", "reminders", "rejected", "levers", "assumptions")},
+                   "bundles": [{"bundle_id": "counter-offer", "feasible": check["feasible"], "actions": revised,
+                                "economic_cost_minor": sum(item["economic_cost_minor"] for item in revised),
+                                "counterparties": len({item["counterparty"] for item in revised}),
+                                "exposure_minor": exposure, "probability_breach_after": simulation["probability_breach"],
+                                "futures_short_of_20_after": simulation["futures_short_of_20"],
+                                "risk_target_met": simulation["probability_breach"] <= planner.RISK_TARGET,
+                                "dual_approval_required": exposure > policy["dual_approval_threshold_minor"],
+                                "remaining_shortfall_minor": check["shortfall_minor"]}],
+                   "single_option_checks": [], "why_not": [],
+                   "explanation": ("Counter-offer terms restore the reserve floor and need fresh approval: a signed mandate "
+                                   "is never edited in place." if check["feasible"] else
+                                   "The counter-offer terms do not restore the reserve floor; re-plan instead."),
+                   "search": {"source": "counter-offer", "from_mandate": mandate_id}}
+        self.store.cancel_mandate(business_id, mandate_id, {"role": "owner", "id": "system"}, actor)
+        return self.store.create_plan(business_id, payload, snapshot["snapshot_hash"], "agent:counter-offer", actor)
+
+    def replan_without(self, business_id, mandate_id, actor):
+        view = self.store.mandate(business_id, mandate_id)
+        refused = sorted({item["counterparty"] for item in view["negotiations"] if item["status"] == "rejected"})
+        if not refused:
+            raise ValidationError("No counterparty refused this mandate.")
+        target = view["mandate"]["target_date"]
+        self.store.cancel_mandate(business_id, mandate_id, {"role": "owner", "id": "system"}, actor)
+        previous = self.store.latest_plan(business_id, target)
+        excluded = set(refused) | set((previous or {}).get("excluded_counterparties", []))
+        return self.propose(business_id, target, actor, "agent:replan", tuple(sorted(excluded)))
+
+    def send_reminder(self, business_id, target_date, action_id, operator, actor, standing=False):
+        snapshot = self.store.snapshot(business_id)
+        plan = self.store.latest_plan(business_id, self._target(snapshot, target_date))
+        if not plan:
+            raise ValidationError("Compare plans first; reminders come from the current proposal.")
+        action = next((item for item in plan["reminders"] if item["action_id"] == action_id), None)
+        if not action:
+            raise ValidationError("That reminder is not part of the current proposal.")
+        profile = snapshot["counterparties"].get(f"customer:{action['counterparty']}", {}).get("profile")
+        reply = counterparty.respond(action, profile)
+        standing_id = None
+        if standing:
+            document = self.store.standing_mandate(business_id)
+            standing_id = document["mandate_id"] if document else None
+        return self.store.send_reminder(business_id, action, reply, None if standing else operator, actor, standing_id)
+
+    # ---- read-only tools -----------------------------------------------------------
+
+    def what_if(self, business_id, target_date, changes):
+        """Read-only scenario: delay customers, add an expense, or drop a receivable. Nothing is written."""
+        if not isinstance(changes, dict):
+            raise ValidationError("changes must be an object.")
+        snapshot = self.store.snapshot(business_id)
+        target = self._target(snapshot, target_date)
+        derived = self.store.derived(snapshot)
+        business, policy, state = snapshot["business"], snapshot["policy"], snapshot["state"]
+        records = {kind: [dict(row) for row in rows] for kind, rows in snapshot["records"].items()}
+        dates = dict(derived["likely_dates"])
+        delays = changes.get("customer_delays", {})
+        if not isinstance(delays, dict) or len(delays) > 20:
+            raise ValidationError("customer_delays must map up to 20 customers to extra days.")
+        for customer, days in delays.items():
+            if isinstance(days, bool) or not isinstance(days, int) or not -30 <= days <= 90:
+                raise ValidationError("Each customer delay must be a whole number of days from -30 to 90.")
+            for row in records["invoices"]:
+                if row["customer"] == customer and row["id"] in dates:
+                    dates[row["id"]] = max(business["opening_date"], add_days(dates[row["id"]], days))
+        expense = changes.get("extra_expense")
+        if expense is not None:
+            if not isinstance(expense, dict):
+                raise ValidationError("extra_expense must be an object.")
+            amount = expense.get("amount_minor")
+            if isinstance(amount, bool) or not isinstance(amount, int) or not 0 < amount <= 10_000_000_000:
+                raise ValidationError("extra_expense.amount_minor must be a positive integer.")
+            records["transactions"].append({"id": "what-if-expense", "date": valid_date(expense.get("date", ""), "extra_expense.date"),
+                                            "description": "What-if expense", "type": "expense", "amount_minor": amount,
+                                            "currency": business["currency"], "category": "What-if"})
+        drop = changes.get("drop_invoice")
+        if drop is not None:
+            if not any(row["id"] == drop for row in records["invoices"]):
+                raise ValidationError("drop_invoice must name an invoice of this business.")
+            records["invoices"] = [row for row in records["invoices"] if row["id"] != drop]
+            dates.pop(drop, None)
+        projection = project(business, policy, records, target, adjustments=state["adjustments"], scenario="what-if",
+                             invoice_dates=dates, promises=state["promises"], lookahead_days=policy["lookahead_days"])
+        return {"projection": summary(projection), "series": [{"date": day["date"], "closing_cash_minor": day["closing_cash_minor"]}
+                                                              for day in projection["days"]],
+                "changes": changes, "written": False}
+
+    def iso20022(self, business_id):
+        """Draft ISO 20022 pain.001 instructions for the deferred supplier payments. Never transmitted."""
+        snapshot = self.store.snapshot(business_id)
+        business, records = snapshot["business"], snapshot["records"]
+        bills = {row["id"]: row for row in records["bills"]}
+        adjustments = [item for item in snapshot["state"]["adjustments"] if item["kind"] == "bill_deferral"]
+        if not adjustments:
+            raise ValidationError("No executed supplier deferrals yet; nothing to schedule.")
+        ns = "urn:iso:std:iso:20022:tech:xsd:pain.001.001.09"
+        ET.register_namespace("", ns)
+        q = lambda tag: f"{{{ns}}}{tag}"  # noqa: E731
+        root = ET.Element(q("Document"))
+        initiation = ET.SubElement(root, q("CstmrCdtTrfInitn"))
+        header = ET.SubElement(initiation, q("GrpHdr"))
+        ET.SubElement(header, q("MsgId")).text = f"TW-{snapshot['state']['version']:04d}-{business_id[:20]}"[:35]
+        ET.SubElement(header, q("CreDtTm")).text = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        ET.SubElement(header, q("NbOfTxs")).text = str(len(adjustments))
+        ET.SubElement(header, q("CtrlSum")).text = f"{sum(item['amount_minor'] for item in adjustments) / 100:.2f}"
+        ET.SubElement(ET.SubElement(header, q("InitgPty")), q("Nm")).text = business["name"]
+        for index, item in enumerate(adjustments, 1):
+            bill = bills[item["bill_id"]]
+            info = ET.SubElement(initiation, q("PmtInf"))
+            ET.SubElement(info, q("PmtInfId")).text = f"{item['bill_id']}-{index}"[:35]
+            ET.SubElement(info, q("PmtMtd")).text = "TRF"
+            ET.SubElement(ET.SubElement(info, q("ReqdExctnDt")), q("Dt")).text = item["to_date"]
+            ET.SubElement(ET.SubElement(info, q("Dbtr")), q("Nm")).text = business["name"]
+            ET.SubElement(ET.SubElement(ET.SubElement(ET.SubElement(info, q("DbtrAcct")), q("Id")), q("Othr")), q("Id")).text = "SANDBOX-ACCOUNT"
+            ET.SubElement(ET.SubElement(ET.SubElement(info, q("DbtrAgt")), q("FinInstnId")), q("Nm")).text = "Sandbox bank (not connected)"
+            transfer = ET.SubElement(info, q("CdtTrfTxInf"))
+            ET.SubElement(ET.SubElement(transfer, q("PmtId")), q("EndToEndId")).text = f"{item['bill_id']}"[:35]
+            amount = ET.SubElement(ET.SubElement(transfer, q("Amt")), q("InstdAmt"), Ccy=business["currency"])
+            amount.text = f"{item['amount_minor'] / 100:.2f}"
+            creditor = ET.SubElement(transfer, q("Cdtr"))
+            ET.SubElement(creditor, q("Nm")).text = bill["payee"]
+            address = ET.SubElement(creditor, q("PstlAdr"))
+            ET.SubElement(address, q("TwnNm")).text = "Sandbox"
+            ET.SubElement(address, q("Ctry")).text = business["country"] or "BD"
+            ET.SubElement(ET.SubElement(ET.SubElement(ET.SubElement(transfer, q("CdtrAcct")), q("Id")), q("Othr")), q("Id")).text = \
+                bill["payee_account"] or "UNVERIFIED"
+            ET.SubElement(ET.SubElement(transfer, q("RmtInf")), q("Ustrd")).text = \
+                f"Deferred portion of bill {bill['id']} (sandbox draft; never sent)"[:140]
+        body = ET.tostring(root, encoding="unicode")
+        comment = "<!-- Tideway sandbox draft. Generated, never transmitted. Not schema-validated; modelled on pain.001.001.09. -->"
+        return '<?xml version="1.0" encoding="UTF-8"?>\n' + comment + "\n" + body + "\n"
+
+    def import_csv(self, business_id, text, actor, replace_demo=False):
+        business = self.store.get_business(business_id)
+        parsed = parse_combined_csv(text, business_id, business["currency"])
+        return self.store.import_records(business_id, parsed, actor, "csv", replace_demo)
