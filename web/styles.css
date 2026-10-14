@@ -351,3 +351,26 @@ ul { margin: 6px 0 0; padding-left: 18px; }
 li + li { margin-top: 4px; }
 
 .fx-note { color: var(--blue); border-color: #c9dcee; background: var(--blue-soft); }
+
+/* TideLM copilot and inbox */
+.pill.teal { color: var(--teal); background: var(--teal-soft); }
+.chat.with-mode { grid-template-rows: auto minmax(0, 1fr) auto; }
+.chat-mode { padding-bottom: 10px; }
+.chat-log .msg .copilot { display: grid; gap: 8px; margin-top: 10px; white-space: normal; }
+.result-card { display: grid; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); }
+.result-card .kv strong { font-size: 13px; }
+.glass { padding: 10px 12px; border: 1px dashed var(--line-2); border-radius: 10px; background: rgba(255, 255, 255, .6); font-size: 12px; }
+.plan-calls { margin: 6px 0; padding-left: 20px; }
+.plan-calls code, .glass code { color: var(--teal); font-weight: 700; }
+.plan-calls .arg { color: var(--ink-2); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; overflow-wrap: anywhere; }
+.result-card, .glass, .copilot { min-width: 0; overflow-wrap: anywhere; }
+#inbox-text { min-height: 140px; font-family: inherit; font-size: 13px; }
+.draft { min-width: 0; margin: 0; padding: 12px 14px; border: 1px solid var(--line); border-left: 4px solid var(--line-2); border-radius: 12px; background: #fbfcfd; }
+.draft.ready { border-left-color: var(--clear); }
+.draft.problem { border-left-color: var(--storm); }
+.draft legend { padding: 0 4px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .4px; text-transform: uppercase; }
+.draft-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px; }
+.draft-wide { grid-column: 1 / -1; }
+.inbox-warning { border: 2px solid var(--storm); }
+.inbox-warning strong { font-size: 14px; }
+.tag .icon { width: 10px; height: 10px; vertical-align: -1px; }

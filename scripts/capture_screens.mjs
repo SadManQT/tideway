@@ -137,12 +137,22 @@ try {
   await shot("06-cash-weather-after");
 
   // Assistant, what-if and evidence on the same business.
+  // When TideLM is not installed the assistant shows a status card and keeps the local agent.
+  // When it is, the chips change and asking would load the model, so this check only looks.
+  const tidelmAvailable = await evaluate("state.config.tidelm?.available === true");
   await view("assistant");
-  await click('[data-prompt="Can I pay payroll on time?"]');
-  await until("document.querySelectorAll('.chat-log .msg').length >= 3", "assistant answer");
-  await click('[data-prompt="Approve the plan and pay the supplier"]');
-  await until("document.querySelectorAll('.chat-log .msg').length >= 5", "refusal answer");
+  if (!tidelmAvailable) {
+    await until("document.body.textContent.includes('TideLM is not running on this computer')", "TideLM status card");
+    await click('[data-prompt="Can I pay payroll on time?"]');
+    await until("document.querySelectorAll('.chat-log .msg').length >= 3", "assistant answer");
+    await click('[data-prompt="Approve the plan and pay the supplier"]');
+    await until("document.querySelectorAll('.chat-log .msg').length >= 5", "refusal answer");
+  }
   await shot("07-assistant");
+  await view("inbox");
+  await click('[data-sample="injection"]');
+  await until("document.querySelector('#inbox-text').value.includes('Rahman Supplies')", "inbox sample");
+  await shot("07b-inbox");
   await view("whatif");
   await evaluate(`(() => { const slider = document.querySelector('input[type=range][data-customer="Bay Logistics"]'); slider.value = 12; slider.dispatchEvent(new Event('input', {bubbles: true})); document.querySelector('#whatif-form').requestSubmit(); return true; })()`);
   await until("!!document.querySelector('.line-what')", "what-if line");
@@ -179,6 +189,15 @@ try {
   await viewport(390, 844, true);
   await view("overview");
   await shot("14-mobile", false);
+  const clean = "!/\\b(undefined|NaN|null)\\b/.test(document.querySelector('#view').innerText)";
+  await viewport(375, 812, true);
+  for (const name of ["assistant", "inbox"]) {
+    await view(name);
+    const overflow = await evaluate("document.documentElement.scrollWidth - window.innerWidth");
+    if (overflow > 0) throw new Error(`${name} overflows by ${overflow}px at 375px`);
+    if (!await evaluate(clean)) throw new Error(`${name} shows undefined/NaN/null`);
+  }
+  await shot("15-mobile-inbox", false);
 
   if (errors.length) throw new Error(`Page errors: ${errors.join(" | ")}`);
   console.log("Browser end-to-end check passed with no page errors.");
