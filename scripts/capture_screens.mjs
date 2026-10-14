@@ -99,10 +99,23 @@ try {
   await viewport(1440, 900);
   await send("Page.navigate", {url: `http://127.0.0.1:${PORT}/`});
   await until("document.readyState === 'complete' && !document.querySelector('#login').hidden", "login screen");
-  await shot("00-sign-in", false);
+  const clean = (selector) => `!/\\b(undefined|NaN|null)\\b/.test(document.querySelector('${selector}').innerText)`;
+  async function phoneCheck(name, selector) {
+    const overflow = await evaluate("document.documentElement.scrollWidth - window.innerWidth");
+    if (overflow > 0) throw new Error(`${name} overflows by ${overflow}px at 375px`);
+    if (!await evaluate(clean(selector))) throw new Error(`${name} shows undefined/NaN/null`);
+  }
+  await until("document.querySelectorAll('[data-action=demo-login]').length === 3 && document.querySelectorAll('.plan-card').length >= 2", "landing content");
+  if (!await evaluate(clean("#login"))) throw new Error("landing shows undefined/NaN/null");
+  await shot("00-landing");
+  await viewport(375, 812, true);
+  await phoneCheck("landing", "#login");
+  await shot("00-landing-mobile");
+  await viewport(1440, 900);
 
-  // Accountant runs the agent and gives the first of two approvals.
-  await loginAs("imran", "1357"); await reload();
+  // Accountant signs in with the one-click demo button, runs the agent and gives the first of two approvals.
+  await click('[data-action="demo-login"][data-id="imran"]');
+  await until("!!document.querySelector('#view .metric') && document.querySelector('#operator-role').textContent === 'accountant'", "demo sign-in");
   await shot("01-cash-weather-storm");
   await click('[data-action="run-agent"]');
   await until("!!document.querySelector('.timeline') && !!document.querySelector('[data-action=approve]')", "agent run");
@@ -144,9 +157,9 @@ try {
   if (!tidelmAvailable) {
     await until("document.body.textContent.includes('TideLM is not running on this computer')", "TideLM status card");
     await click('[data-prompt="Can I pay payroll on time?"]');
-    await until("document.querySelectorAll('.chat-log .msg').length >= 3", "assistant answer");
+    await until("document.querySelectorAll('.chat-log .msg:not(.pending)').length >= 3", "assistant answer");
     await click('[data-prompt="Approve the plan and pay the supplier"]');
-    await until("document.querySelectorAll('.chat-log .msg').length >= 5", "refusal answer");
+    await until("document.querySelectorAll('.chat-log .msg:not(.pending)').length >= 5", "refusal answer");
   }
   await shot("07-assistant");
   await view("inbox");
@@ -189,15 +202,49 @@ try {
   await viewport(390, 844, true);
   await view("overview");
   await shot("14-mobile", false);
-  const clean = "!/\\b(undefined|NaN|null)\\b/.test(document.querySelector('#view').innerText)";
   await viewport(375, 812, true);
-  for (const name of ["assistant", "inbox"]) {
+  for (const name of ["assistant", "inbox", "team"]) {
     await view(name);
-    const overflow = await evaluate("document.documentElement.scrollWidth - window.innerWidth");
-    if (overflow > 0) throw new Error(`${name} overflows by ${overflow}px at 375px`);
-    if (!await evaluate(clean)) throw new Error(`${name} shows undefined/NaN/null`);
+    if (name === "team") await until("!!document.querySelector('.member-list')", "team (mobile)");
+    await phoneCheck(name, "#view");
   }
+  await view("inbox");
   await shot("15-mobile-inbox", false);
+
+  // A new owner signs up: inline validation, then an empty workspace with onboarding, then the team.
+  await viewport(1440, 900);
+  await click('[data-action="logout"]');
+  await until("!document.querySelector('#login').hidden && !!document.querySelector('[data-action=demo-login]')", "landing after sign-out");
+  const fill = (form, values) => evaluate(`(() => { const form = document.querySelector(${JSON.stringify(form)}); for (const [name, value] of Object.entries(${JSON.stringify(values)})) { const el = form.elements[name]; el.value = value; el.dispatchEvent(new Event('input', {bubbles: true})); el.dispatchEvent(new FocusEvent('focusout', {bubbles: true})); } return true; })()`);
+  await fill("#signup-form", {business_name: "Sunrise Bakery", country: "ke", sector: "Food and catering", opening_cash: "420,000",
+    reserve_floor: "80000", owner_name: "Amina Otieno", username: "Amina", pin: "123456"});
+  if (!await evaluate("(document.querySelector('#signup-currency').value = 'KES') && document.querySelector('#signup-currency').value === 'KES'")) throw new Error("KES missing from currencies");
+  await until("document.querySelector('[data-for=pin]').textContent.includes('Too easy')", "weak PIN flagged inline");
+  if (await evaluate("document.querySelector('[data-for=username]').textContent !== ''")) throw new Error("valid username was flagged");
+  await evaluate("document.querySelector('#signup').scrollIntoView(), true");
+  await shot("16-sign-up", false);
+  await fill("#signup-form", {pin: "582917"});
+  await evaluate("document.querySelector('#signup-form').requestSubmit(), true");
+  await until("!!document.querySelector('.onboarding') && document.querySelector('#operator-role').textContent === 'owner'", "new workspace onboarding");
+  if (!await evaluate(clean("#view"))) throw new Error("new workspace shows undefined/NaN/null");
+  await evaluate("window.scrollTo(0, 0), true");
+  await shot("17-new-business-onboarding");
+  await view("team");
+  await until("!!document.querySelector('#invite-form')", "team view");
+  await fill("#invite-form", {name: "Rina Akter"});
+  await evaluate("document.querySelector('#invite-form').elements.role.value = 'viewer', document.querySelector('#invite-form').requestSubmit(), true");
+  await until("!!document.querySelector('#invite-code') && document.querySelectorAll('.member-list li').length >= 2", "invite code");
+  if (!await evaluate(clean("#view"))) throw new Error("team view shows undefined/NaN/null");
+  await shot("18-team");
+
+  // The invitee joins with the code from the landing page and sees only that business, read-only.
+  const code = await evaluate("document.querySelector('#invite-code').textContent");
+  await click('[data-action="logout"]');
+  await until("!document.querySelector('#login').hidden", "landing (join)");
+  await fill("#join-form", {code, username: "rina", pin: "604913"});
+  await evaluate("document.querySelector('#join-form').requestSubmit(), true");
+  await until("!!document.querySelector('#view .metric') && document.querySelector('#operator-role').textContent === 'viewer'", "joined as viewer");
+  if (await evaluate("document.querySelector('#business-select').options.length") !== 1) throw new Error("joiner sees other businesses");
 
   if (errors.length) throw new Error(`Page errors: ${errors.join(" | ")}`);
   console.log("Browser end-to-end check passed with no page errors.");

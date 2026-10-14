@@ -8,7 +8,7 @@ const state = {
   config: null, operator: null, businessId: "", targetDate: "", view: "overview",
   dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "", selftest: null, drill: null,
   whatif: freshWhatIf(), inbox: freshInbox(), recordFilter: "all", recordQuery: "", aiConsent: false,
-  busy: false, approving: null, displayCurrency: ""
+  busy: false, approving: null, displayCurrency: "", team: null, teamError: "", invite: null, speaking: false
 };
 const VIEWS = {
   overview: ["Cash weather", "Where cash is heading, how likely a shortfall is, and why"],
@@ -17,6 +17,7 @@ const VIEWS = {
   inbox: ["Inbox", "Paste a message; TideLM drafts records; nothing is saved until you confirm"],
   whatif: ["What-if", "Move customers' payment dates or add an expense; nothing is saved"],
   records: ["Records", "The ledger behind every number, with untrusted text quarantined"],
+  team: ["Team", "Who can see and act for this business, pending invites and your plan"],
   security: ["Security centre", "Permission tiers, kill switch, policy, payee verification and the attack self-test"],
   evidence: ["Evidence", "Hash-chained audit trail, witness checkpoint, signed mandates and exports"]
 };
@@ -70,7 +71,11 @@ function parseMinor(text) {
   const [whole, fraction = ""] = clean.split(".");
   return Number(whole) * 100 + Number(fraction.padEnd(2, "0"));
 }
-const canApprove = () => ["owner", "accountant"].includes(state.operator?.role);
+// Roles are per business: the same person can own one business and only view another.
+const currentBusiness = () => state.config?.businesses?.find((item) => item.business_id === state.businessId);
+const role = () => currentBusiness()?.role || "";
+const canApprove = () => ["owner", "accountant"].includes(role());
+const isOwner = () => role() === "owner";
 
 async function api(path, body) {
   const options = {headers: {Accept: "application/json"}, credentials: "same-origin"};
@@ -107,40 +112,174 @@ function clearError() { $("#app-error").hidden = true; }
 // ---------------------------------------------------------------------------- session
 
 function showLogin() {
+  stopSpeaking();
   $("#shell").hidden = true;
   $("#login").hidden = false;
-  const operators = state.config?.operators || [];
-  $("#operator-choices").innerHTML = `<legend>Sign in as</legend>` + operators.map((op, index) =>
-    `<label class="operator-option"><input type="radio" name="operator" value="${esc(op.id)}" ${index === 0 ? "checked" : ""}><strong>${esc(op.name)}</strong><span>${esc(op.role)}</span></label>`).join("");
+  const config = state.config || {};
+  $("#demo-accounts").innerHTML = (config.demo_accounts || []).map((account) =>
+    `<button type="button" class="demo-account" data-action="demo-login" data-id="${esc(account.id)}" aria-label="Sign in to the demo as ${esc(account.name)}, ${esc(account.role)}">${icon("user")}<span><strong>${esc(account.name)}</strong><span class="pill ${ROLE_PILL[account.role] || ""}">${esc(account.role)}</span></span></button>`).join("")
+    || `<p class="small muted">The demo accounts are not available on this server.</p>`;
+  const plans = config.plans || [];
+  $("#plan-cards").innerHTML = plans.map((plan) => `<article class="plan-card"><h3>${esc(plan.label)}</h3>
+    <p class="plan-price"><strong>${plan.price_usd_month ? `$${esc(plan.price_usd_month)}` : "Free"}</strong>${plan.price_usd_month ? "<span> / month, illustrative</span>" : ""}</p>
+    <ul><li>${esc(plan.seats)} team seats</li><li>${esc(plan.businesses)} ${plan.businesses === 1 ? "business" : "businesses"}</li><li>Rescue agent, TideLM and audit trail</li></ul></article>`).join("");
+  $("#signup-plans").innerHTML = `<legend>Plan</legend>` + plans.map((plan, index) =>
+    `<label class="plan-option"><input type="radio" name="plan" value="${esc(plan.id)}" ${index === 0 ? "checked" : ""}><strong>${esc(plan.label)}</strong><span>${plan.price_usd_month ? `$${esc(plan.price_usd_month)}/mo (illustrative)` : "Free"} · ${esc(plan.seats)} seats</span></label>`).join("");
+  const currencies = config.currencies || [];
+  const select = $("#signup-currency");
+  if (!select.options.length) select.innerHTML = currencies.map((item) => `<option value="${esc(item.code)}" ${item.code === "USD" ? "selected" : ""}>${esc(item.code)} · ${esc(item.name)}</option>`).join("");
   $("#login-pin").value = "";
-  setTimeout(() => $("#login-pin").focus(), 50);
 }
+
+const ROLE_PILL = {owner: "teal", accountant: "info", viewer: ""};
 
 // Everything one operator saw or did in this tab; never shown to the next operator.
 function resetSessionState() {
+  stopSpeaking();
   Object.assign(state, {view: "overview", dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "",
-    selftest: null, drill: null, whatif: freshWhatIf(), inbox: freshInbox(), aiConsent: false, approving: null});
+    selftest: null, drill: null, whatif: freshWhatIf(), inbox: freshInbox(), aiConsent: false, approving: null,
+    team: null, teamError: "", invite: null});
+}
+
+// Signs in, replacing anything the previous operator left in this tab.
+async function enterAs(result, businessId) {
+  if (result.operator?.id !== state.operator?.id) { resetSessionState(); state.businessId = ""; }
+  state.operator = result.operator;
+  if (businessId) { resetSessionState(); state.businessId = businessId; }
+  for (const form of document.querySelectorAll("#login form")) { form.reset(); clearFieldErrors(form); }
+  await startShell();
 }
 
 async function login(event) {
   event.preventDefault();
-  const operatorId = new FormData(event.target).get("operator");
+  const form = event.target;
+  const username = $("#login-user").value.trim().toLowerCase();
+  const pin = $("#login-pin").value;
+  if (!username || !pin) { $("#login-error").textContent = "Enter your username and PIN."; return; }
+  await submitAuth(form, $("#login-error"), () => api("/api/session/login", {operator_id: username, pin}));
+}
+
+async function demoLogin(id) {
+  const account = (state.config?.demo_accounts || []).find((item) => item.id === id);
+  if (!account) return;
+  $("#demo-error").textContent = "";
+  try { await enterAs(await api("/api/session/login", {operator_id: account.id, pin: account.pin})); }
+  catch (error) { $("#demo-error").textContent = error.message; }
+}
+
+// ---- sign-up and join: the same rules the server enforces, checked as you type
+const USERNAME_RE = /^[a-z0-9][a-z0-9._-]{2,31}$/;
+const AMOUNT_RE = /^\d{1,13}(\.\d{1,2})?$/;
+function pinProblem(pin) {
+  if (!/^\d{6,12}$/.test(pin)) return "Choose a PIN of 6–12 digits.";
+  const steps = new Set([...pin].slice(1).map((digit, index) => Number(digit) - Number(pin[index])));
+  if (new Set(pin).size === 1 || (steps.size === 1 && (steps.has(1) || steps.has(-1)))) return "Too easy to guess: avoid repeated or sequential digits.";
+  return "";
+}
+const cleanAmount = (value) => String(value ?? "").replace(/[,\s]/g, "");
+const FIELD_RULES = {
+  business_name: (v) => v.trim() ? "" : "Enter your business name.",
+  owner_name: (v) => v.trim() ? "" : "Enter your name.",
+  currency: (v) => v ? "" : "Choose a currency.",
+  country: (v) => !v.trim() || /^[A-Za-z]{2}$/.test(v.trim()) ? "" : "Use a two-letter code such as BD, US or CN, or leave it empty.",
+  opening_cash: (v) => AMOUNT_RE.test(cleanAmount(v)) ? "" : "Enter an amount such as 250000 or 250000.50.",
+  reserve_floor: (v) => AMOUNT_RE.test(cleanAmount(v)) ? "" : "Enter an amount such as 50000.",
+  username: (v) => USERNAME_RE.test(v.trim().toLowerCase()) ? "" : "3–32 characters: lowercase letters, digits, '.', '_' or '-', starting with a letter or digit.",
+  pin: (v) => pinProblem(v),
+  code: (v) => v.trim().length >= 8 ? "" : "Paste the invite code you were given."
+};
+
+function setFieldError(form, name, message) {
+  const input = form.elements[name];
+  const slot = form.querySelector(`.field-error[data-for="${name}"]`);
+  if (!input || !slot) return false;
+  slot.textContent = message;
+  slot.id ||= `${form.id}-${name}-error`;
+  input.setAttribute("aria-invalid", message ? "true" : "false");
+  const described = (input.getAttribute("aria-describedby") || "").split(" ").filter((id) => id && id !== slot.id);
+  if (message) described.push(slot.id);
+  if (described.length) input.setAttribute("aria-describedby", described.join(" ")); else input.removeAttribute("aria-describedby");
+  return true;
+}
+function clearFieldErrors(form) { form.querySelectorAll(".field-error").forEach((slot) => setFieldError(form, slot.dataset.for, "")); }
+function checkField(form, name) {
+  const rule = FIELD_RULES[name];
+  const input = form.elements[name];
+  if (!rule || !input || !form.querySelector(`.field-error[data-for="${name}"]`)) return "";
+  const message = rule(input.value || "");
+  setFieldError(form, name, message);
+  return message;
+}
+function validateForm(form) {
+  const bad = [...form.querySelectorAll(".field-error")].map((slot) => slot.dataset.for).filter((name) => checkField(form, name));
+  if (bad.length) form.elements[bad[0]].focus();
+  return !bad.length;
+}
+// Puts a server error next to the field it is about, when we can tell which one.
+function placeServerError(form, message, fallback) {
+  const guesses = [[/username/i, "username"], [/\bPIN\b/, "pin"], [/invite code/i, "code"], [/cash balance/i, "opening_cash"],
+    [/reserve/i, "reserve_floor"], [/currency/i, "currency"], [/country/i, "country"], [/your name/i, form.elements.owner_name ? "owner_name" : "name"],
+    [/^name\b/i, "business_name"]];
+  const match = guesses.find(([pattern, name]) => pattern.test(message) && form.elements[name] && form.querySelector(`.field-error[data-for="${name}"]`));
+  if (match) { setFieldError(form, match[1], message); form.elements[match[1]].focus(); fallback.textContent = ""; }
+  else fallback.textContent = message;
+}
+async function submitAuth(form, errorBox, request) {
+  const button = form.querySelector("[type=submit]");
+  errorBox.textContent = "";
+  button.disabled = true;
   try {
-    const result = await api("/api/session/login", {operator_id: operatorId, pin: $("#login-pin").value});
-    if (result.operator?.id !== state.operator?.id) resetSessionState();
-    state.operator = result.operator;
-    $("#login-error").textContent = "";
-    await startShell();
+    const result = await request();
+    await enterAs(result, result.business_id);
   } catch (error) {
-    $("#login-error").textContent = error.message;
+    placeServerError(form, error.message, errorBox);
+  } finally { button.disabled = false; }
+}
+
+async function signup(event) {
+  event.preventDefault();
+  const form = event.target;
+  if (!validateForm(form)) return;
+  const v = (name) => String(form.elements[name]?.value ?? "").trim();
+  const body = {business_name: v("business_name"), currency: v("currency"), opening_cash: cleanAmount(v("opening_cash")),
+    reserve_floor: cleanAmount(v("reserve_floor")), owner_name: v("owner_name"), username: v("username").toLowerCase(),
+    pin: form.elements.pin.value, plan: new FormData(form).get("plan") || "starter"};
+  if (v("country")) body.country = v("country").toUpperCase();
+  if (v("sector")) body.sector = v("sector");
+  await submitAuth(form, $("#signup-error"), () => api("/api/signup", body));
+}
+
+async function joinTeam(event) {
+  event.preventDefault();
+  const form = event.target;
+  if (!validateForm(form)) return;
+  const body = {code: form.elements.code.value.trim()};
+  if (form.elements.username) {
+    body.username = form.elements.username.value.trim().toLowerCase();
+    body.pin = form.elements.pin.value;
+    if (form.elements.name.value.trim()) body.name = form.elements.name.value.trim();
   }
+  const errorBox = form.querySelector(".form-error");
+  if (state.operator) {  // already signed in: add this business to the account
+    errorBox.textContent = "";
+    try {
+      const result = await api("/api/team/join", body);
+      toast("You joined the business. It is now selected.");
+      await enterAs(result, result.business_id);
+    } catch (error) { placeServerError(form, error.message, errorBox); }
+    return;
+  }
+  await submitAuth(form, errorBox, () => api("/api/team/join", body));
 }
 
 async function logout() {
   try { await api("/api/session/logout", {}); } catch (_error) { /* already signed out */ }
   state.operator = null;
+  state.businessId = "";
   resetSessionState();
+  try { state.config = await api("/api/config"); } catch (_error) { /* keep the public config we have */ }
   showLogin();
+  window.scrollTo(0, 0);
 }
 
 async function startShell() {
@@ -150,12 +289,17 @@ async function startShell() {
   $("#login").hidden = true;
   $("#shell").hidden = false;
   $("#operator-name").textContent = state.operator.name;
-  $("#operator-role").textContent = state.operator.role;
-  const businesses = state.config.businesses;
+  const businesses = state.config.businesses || [];
   if (!businesses.some((item) => item.business_id === state.businessId)) state.businessId = businesses[0]?.business_id || "";
   $("#business-select").innerHTML = businesses.map((item) => `<option value="${esc(item.business_id)}" ${item.business_id === state.businessId ? "selected" : ""}>${esc(item.name)} · ${esc(item.currency)}</option>`).join("");
   FX_PER_USD = Object.fromEntries((state.config.currencies || []).map((item) => [item.code, item.illustrative_per_usd]));
   $("#display-currency").innerHTML = `<option value="">Business currency</option>` + (state.config.currencies || []).map((item) => `<option value="${esc(item.code)}" title="${esc(item.name)}" ${state.displayCurrency === item.code ? "selected" : ""}>${esc(item.code)}</option>`).join("");
+  if (!businesses.length) {  // e.g. removed from every business: offer a way back in
+    state.dashboard = null;
+    render();
+    $("#view").innerHTML = `<section class="card"><h3>You are not a member of any business yet</h3><p class="muted section-gap">Ask an owner for an invite code and paste it below, or sign out and start your own workspace.</p>${joinFormHtml()}</section>`;
+    return;
+  }
   render();
   await act("Loading", () => loadDashboard({resetTarget: true}));
 }
@@ -170,7 +314,9 @@ async function loadDashboard({businessId = state.businessId, targetDate = state.
   const dashboard = await api(`/api/dashboard?business_id=${encodeURIComponent(businessId)}&target_date=${encodeURIComponent(requested)}`);
   const target = dashboard.target_date || requested;
   if (businessId !== state.businessId) {
-    Object.assign(state, {run: null, receipt: null, chat: [], selftest: null, drill: null, whatif: freshWhatIf(), inbox: freshInbox()});
+    stopSpeaking();
+    Object.assign(state, {run: null, receipt: null, chat: [], selftest: null, drill: null, whatif: freshWhatIf(), inbox: freshInbox(),
+      team: null, teamError: "", invite: null});
   } else if (target !== state.targetDate) {
     Object.assign(state, {run: null, receipt: null});
     state.whatif.result = null;
@@ -180,6 +326,7 @@ async function loadDashboard({businessId = state.businessId, targetDate = state.
   clearError();
   render();
   if (state.view === "evidence") loadAudit();
+  if (state.view === "team" && !state.team) loadTeam();
   return true;
 }
 
@@ -231,6 +378,7 @@ function actAndReload(label, request) {
 
 function render() {
   const [title, subtitle] = VIEWS[state.view] || VIEWS.overview;
+  $("#operator-role").textContent = role();
   $("#page-title").textContent = title;
   $("#eyebrow").textContent = [state.dashboard?.business?.name, subtitle].filter(Boolean).join(" · ");
   document.querySelectorAll(".nav-item").forEach((item) => item.classList.toggle("active", item.dataset.view === state.view));
@@ -243,7 +391,7 @@ function render() {
   badge.hidden = !(plan && plan.bundles?.length) && !(state.dashboard?.mandates || []).length;
   badge.textContent = (state.dashboard?.mandates || []).length ? "mandate" : "plan";
   const renderers = {overview: renderOverview, rescue: renderRescue, assistant: renderAssistant, inbox: renderInbox, whatif: renderWhatIf,
-    records: renderRecords, security: renderSecurity, evidence: renderEvidence};
+    records: renderRecords, team: renderTeam, security: renderSecurity, evidence: renderEvidence};
   $("#fx-note").hidden = !state.displayCurrency || state.displayCurrency === currency();
   $("#view").innerHTML = state.dashboard ? (renderers[state.view] || renderOverview)() : `<div class="loading">Loading…</div>`;
   if (state.view === "assistant") { const log = $("#chat-log"); if (log) log.scrollTop = log.scrollHeight; }
@@ -324,11 +472,11 @@ function renderOverview() {
     fan: sim.fan, reserve: d.policy.reserve_floor_minor, markers});
   const customers = Object.values(d.profiles.customers || {});
   const k = d.kpis;
-  return `
+  return `${onboardingHtml(d)}
   <section class="brief ${esc(d.weather.level)}">
     <div class="weather-badge">${icon(weatherIcon(d.weather.level))}${esc(d.weather.label)}</div>
     <div><h2>${esc(d.brief.headline)}</h2><p>${esc(d.brief.detail)} ${esc(d.weather.text)}</p></div>
-    <div class="row">${canApprove() ? `<button class="button ghost" data-action="run-agent">${icon("play")}Run the rescue agent</button>` : `<span class="pill">Viewer: read only</span>`}</div>
+    <div class="row">${speakButtonHtml()}${canApprove() ? `<button class="button ghost" data-action="run-agent">${icon("play")}Run the rescue agent</button>` : `<span class="pill">Viewer: read only</span>`}</div>
   </section>
   <section class="metrics section-gap">
     ${metric("Opening cash", money(d.business.opening_cash_minor), `On ${day(d.business.opening_date, true)}`)}
@@ -365,8 +513,156 @@ function renderOverview() {
   </section>
   <section class="card section-gap"><div class="card-head"><div><h3>Customer payment behaviour</h3><p>Lateness = paid date − due date. Thin histories borrow from the business-wide average (credibility weighting), so one lucky payment never makes a customer look perfect.</p></div></div>
     <div class="table-wrap"><table><thead><tr><th>Customer</th><th>Grade</th><th class="num">Settled</th><th class="num">Expected delay</th><th class="num">P80 delay</th><th class="num">Own-history weight</th><th class="num">Open balance</th><th>Why</th></tr></thead><tbody>
+    ${customers.length ? "" : `<tr><td colspan="8" class="muted">No customer history yet. Add invoices to see who pays late.</td></tr>`}
     ${customers.map((item) => `<tr><td><strong>${esc(item.customer)}</strong></td><td><span class="pill ${item.grade <= "B" ? "ok" : item.grade === "C" ? "unsettled" : "storm"}">${esc(item.grade)}</span></td><td class="num">${esc(item.settled_invoices)}</td><td class="num">${esc(days(item.expected_delay_days))}</td><td class="num">${esc(days(item.p80_delay_days))}</td><td class="num">${pct(item.own_history_weight)}</td><td class="num">${money(item.open_exposure_minor)}</td><td class="small muted">${esc(item.explanation)}</td></tr>`).join("")}
     </tbody></table></div></section>`;
+}
+
+// A brand-new workspace has no records yet: point to the three ways to add them.
+function onboardingHtml(d) {
+  const r = d.records || {};
+  if ((r.transactions || []).length + (r.invoices || []).length + (r.bills || []).length) return "";
+  const editor = canApprove();
+  return `<section class="card onboarding section-gap-bottom" aria-labelledby="onboard-title"><div class="card-head"><div><span class="eyebrow">Getting started</span><h3 id="onboard-title">Welcome to ${esc(d.business.name)}: your ledger is empty</h3>
+    <p>The forecast below only knows your opening cash. Add invoices, bills and transactions and Tideway will start predicting late payments and gaps.</p></div></div>
+    <ol class="onboard-steps">
+      <li><strong>Import a CSV</strong><span>Export from your accounting tool or bank. Every row is validated before anything is saved.</span>${editor ? `<button class="button small primary" data-action="import">${icon("upload")}Import CSV</button>` : ""}</li>
+      <li><strong>Paste into the Inbox</strong><span>An invoice SMS, WhatsApp message or bank alert in any of 8 languages. TideLM drafts the records; you confirm.</span><button class="button small ghost" data-view="inbox">${icon("inbox")}Open the Inbox</button></li>
+      <li><strong>Invite your team</strong><span>Add your accountant so two people can approve larger rescues.</span><button class="button small ghost" data-view="team">${icon("user")}Open Team</button></li>
+    </ol>${editor ? "" : `<p class="hint">Only the owner or the accountant can add records.</p>`}</section>`;
+}
+
+// ---- daily brief read-aloud (the browser's own speech engine; nothing leaves the device)
+const canSpeak = () => "speechSynthesis" in window && typeof window.SpeechSynthesisUtterance === "function";
+function speakButtonHtml() {
+  if (!canSpeak()) return "";
+  return state.speaking
+    ? `<button class="button ghost speaking" data-action="speak-brief">${icon("pause")}<span class="speak-dot" aria-hidden="true"></span>Stop reading</button>`
+    : `<button class="button ghost" data-action="speak-brief">${icon("play")}Read my brief</button>`;
+}
+function briefText(d) {
+  const top = (d.warnings || [])[0];
+  return [`${d.business.name}.`, `Cash weather: ${d.weather.label}.`, d.brief.headline, d.brief.detail,
+    top ? `Top warning: ${top.title}. ${top.detail}` : "No warnings."].filter(Boolean).join(" ");
+}
+function updateSpeakButton() {
+  const button = document.querySelector("[data-action=speak-brief]");
+  if (button) button.outerHTML = speakButtonHtml();
+}
+function stopSpeaking() {
+  if (canSpeak()) window.speechSynthesis.cancel();
+  if (state.speaking) { state.speaking = false; updateSpeakButton(); }
+}
+function toggleSpeak() {
+  if (state.speaking) return stopSpeaking();
+  if (!state.dashboard) return;
+  const utterance = new SpeechSynthesisUtterance(briefText(state.dashboard));
+  utterance.lang = document.documentElement.lang || "en";
+  const done = () => { if (state.speaking) { state.speaking = false; updateSpeakButton(); } };
+  utterance.onend = done;
+  utterance.onerror = done;
+  window.speechSynthesis.cancel();
+  state.speaking = true;
+  window.speechSynthesis.speak(utterance);
+  updateSpeakButton();
+}
+
+// ---------------------------------------------------------------------------- team
+
+async function loadTeam() {
+  const businessId = state.businessId;
+  try {
+    const team = await api(`/api/team?business_id=${encodeURIComponent(businessId)}`);
+    if (businessId !== state.businessId) return;
+    Object.assign(state, {team, teamError: ""});
+  } catch (error) {
+    if (businessId !== state.businessId) return;
+    state.teamError = error.message;
+  }
+  if (state.view === "team") render();
+}
+
+function joinFormHtml() {
+  return `<form id="join-form-in" class="auth-form inline-join section-gap" novalidate autocomplete="off"><label class="field">Invite code<input name="code" required maxlength="40" autocapitalize="none" spellcheck="false"><span class="field-error" data-for="code"></span></label>
+    <button class="button ghost" type="submit">Join with this code</button><div class="form-error" role="alert"></div></form>`;
+}
+
+function renderTeam() {
+  if (state.teamError) return `<div class="alert critical">${icon("alert")}<div><strong>Could not load the team</strong><span>${esc(state.teamError)}</span><div class="row section-gap"><button class="button small ghost" data-action="reload-team">${icon("refresh")}Try again</button></div></div></div>`;
+  const team = state.team;
+  if (!team) return `<div class="loading">Loading the team…</div>`;
+  const owner = isOwner();
+  const sub = team.subscription || {};
+  const used = (sub.seats_used ?? 0) + (sub.pending_invites ?? 0);
+  const free = Math.max(0, (sub.seats ?? 0) - used);
+  const members = team.members || [];
+  const invites = team.pending_invites || [];
+  const invite = state.invite;
+  const owners = members.filter((member) => member.role === "owner").length;
+  const removable = (member) => owner && !(member.role === "owner" && owners <= 1);  // a business keeps at least one owner
+  return `<section class="grid split">
+    <div class="card"><div class="card-head"><div><h3>Members</h3><p>Each person signs in with their own username and PIN. Roles apply to this business only.</p></div></div>
+      <ul class="member-list">${members.map((member) => `<li><span class="avatar">${icon("user")}</span><div><strong>${esc(member.name)}</strong><span class="small muted">@${esc(member.id)}${member.id === state.operator?.id ? " · you" : ""} · joined ${esc(day(member.created_at, true))}</span></div>
+        <span class="pill ${ROLE_PILL[member.role] || ""}">${esc(member.role)}</span>${removable(member) ? `<button class="button small ghost" data-action="remove-member" data-id="${esc(member.id)}" data-name="${esc(member.name)}" aria-label="Remove ${esc(member.name)} from this business">Remove</button>` : ""}</li>`).join("")}</ul>
+      <h3 class="section-gap">Pending invites</h3>
+      ${invites.length ? `<ul class="member-list">${invites.map((item) => `<li><span class="avatar pending">${icon("send")}</span><div><strong>${esc(item.display_name)}</strong><span class="small muted">invited by @${esc(item.created_by)} · expires ${esc(day(item.expires_at, true))}</span></div><span class="pill ${ROLE_PILL[item.role] || ""}">${esc(item.role)}</span></li>`).join("")}</ul>`
+        : `<p class="small muted section-gap">No pending invites.</p>`}
+    </div>
+    <div class="stack">
+      <div class="card plan-summary"><span class="eyebrow">Your plan</span><h3>${esc(sub.label || sub.plan || "Plan")}</h3>
+        <p class="plan-price"><strong>${sub.price_usd_month ? `$${esc(sub.price_usd_month)}` : "Free"}</strong>${sub.price_usd_month ? "<span> / month, illustrative: never charged</span>" : "<span> in this sandbox</span>"}</p>
+        <meter class="seat-meter" min="0" max="${esc(sub.seats || 1)}" value="${esc(Math.min(used, sub.seats || 0))}" aria-label="${esc(used)} of ${esc(sub.seats ?? 0)} seats used or reserved"></meter>
+        <div class="kv section-gap"><div><span>Members</span><strong>${esc(sub.seats_used ?? 0)}</strong></div><div><span>Pending invites</span><strong>${esc(sub.pending_invites ?? 0)}</strong></div><div><span>Seats available</span><strong>${esc(free)} of ${esc(sub.seats ?? 0)}</strong></div><div><span>Businesses on this plan</span><strong>${esc(sub.businesses ?? "—")}</strong></div></div></div>
+      ${owner ? `<div class="card"><h3>Invite someone</h3><p class="small muted">They get a one-time code to create their account or add this business to an existing one.</p>
+        ${invite ? `<div class="invite-code section-gap" role="status"><span class="eyebrow">Invite code for ${esc(invite.name)} (${esc(invite.role)})</span><code id="invite-code">${esc(invite.code)}</code>
+          <button class="button small teal" data-action="copy-invite">Copy code</button>
+          <p class="small">Share this code privately. It works once and expires on ${esc(day(invite.expires_at, true))}. It is shown only now: Tideway stores only a hash of it.</p>
+          <button class="text-link" data-action="dismiss-invite">Done, hide the code</button></div>` : ""}
+        <form id="invite-form" class="auth-form section-gap" novalidate autocomplete="off">
+          <label class="field">Their name<input name="name" maxlength="80" required></label>
+          <label class="field">Role<select name="role"><option value="accountant">Accountant: can approve and execute</option><option value="viewer">Viewer: read only</option><option value="owner">Owner: full control, invites people</option></select></label>
+          <div class="form-error" id="invite-error" role="alert"></div>
+          <button class="button primary" type="submit" ${free ? "" : "disabled"}>${icon("send")}Create invite code</button>
+          ${free ? "" : `<p class="hint">All seats are used. Remove someone or move to a larger plan.</p>`}
+        </form></div>`
+      : `<div class="card"><h3>Invites</h3><p class="small muted section-gap">Only an owner of this business can invite or remove people.</p></div>`}
+      <div class="card"><h3>Join another business</h3><p class="small muted">Got an invite code for a different business? Add it to your account.</p>${joinFormHtml()}</div>
+    </div></section>`;
+}
+
+async function createInvite(form) {
+  const name = form.elements.name.value.trim();
+  const errorBox = $("#invite-error");
+  if (!name) { errorBox.textContent = "Enter the person's name."; form.elements.name.focus(); return; }
+  const result = await act("Invite", () => api("/api/team/invite", {business_id: state.businessId, role: form.elements.role.value, name}));
+  if (!result) return;
+  state.invite = result;
+  await loadTeam();
+  render();
+  $("#invite-code")?.closest(".invite-code")?.querySelector("[data-action=copy-invite]")?.focus();
+}
+
+async function removeMember(id, name) {
+  const self = id === state.operator?.id;
+  if (!window.confirm(self ? "Remove yourself from this business? You will lose access to it." : `Remove ${name} from this business? They lose access immediately.`)) return;
+  const result = await act("Remove", () => api("/api/team/remove", {business_id: state.businessId, operator_id: id}));
+  if (!result) return;
+  toast(`${name} was removed.`);
+  if (self) { resetSessionState(); state.businessId = ""; await startShell(); } else await loadTeam();
+}
+
+async function copyInvite() {
+  const code = state.invite?.code;
+  if (!code) return;
+  try { await navigator.clipboard.writeText(code); toast("Invite code copied."); }
+  catch (_error) {
+    const range = document.createRange();
+    range.selectNodeContents($("#invite-code"));
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    toast("Copying is blocked here: the code is selected, press Ctrl+C or ⌘C.");
+  }
 }
 
 // ---------------------------------------------------------------------------- rescue
@@ -749,7 +1045,8 @@ function renderWhatIf() {
       <div class="legend"><span><i></i>Likely</span><span><i class="what"></i>What-if</span><span><i class="reserve"></i>Reserve floor</span></div>
       ${result ? `<div class="kv section-gap"><div><span>Lowest cash</span><strong>${money(result.projection.minimum_cash_minor)}</strong></div><div><span>On</span><strong>${esc(day(result.projection.minimum_cash_date))}</strong></div><div><span>Reserve shortfall</span><strong class="${result.projection.reserve_shortfall_minor ? "negative" : "positive"}">${money(result.projection.reserve_shortfall_minor)}</strong></div><div><span>Payroll</span><strong>${result.projection.payroll_at_risk ? "at risk" : "funded"}</strong></div></div>` : ""}</div>
     <form class="card" id="whatif-form"><h3>Change the assumptions</h3>
-      ${customers.map((item) => `<div class="slider-row"><label for="delay-${esc(item.customer)}">${esc(item.customer)} pays later by</label><input type="range" min="-10" max="30" step="1" id="delay-${esc(item.customer)}" data-customer="${esc(item.customer)}" value="${esc(w.delays[item.customer] || 0)}"><output>${esc(w.delays[item.customer] || 0)} days</output></div>`).join("") || `<p class="muted small">No open receivables.</p>`}
+      ${customers.length ? "" : `<tr><td colspan="8" class="muted">No customer history yet. Add invoices to see who pays late.</td></tr>`}
+    ${customers.map((item) => `<div class="slider-row"><label for="delay-${esc(item.customer)}">${esc(item.customer)} pays later by</label><input type="range" min="-10" max="30" step="1" id="delay-${esc(item.customer)}" data-customer="${esc(item.customer)}" value="${esc(w.delays[item.customer] || 0)}"><output>${esc(w.delays[item.customer] || 0)} days</output></div>`).join("") || `<p class="muted small">No open receivables.</p>`}
       <div class="grid cols-2 section-gap"><label class="field">Extra expense (${esc(currency())})<input id="whatif-expense" inputmode="decimal" value="${esc(w.expense)}" placeholder="e.g. 15000"></label><label class="field">On date<input id="whatif-date" type="date" value="${esc(w.expenseDate || d.target_date)}"></label></div>
       <label class="field section-gap">Assume this invoice is never paid<select id="whatif-drop"><option value="">None</option>${openInvoices.map((row) => `<option value="${esc(row.id)}" ${w.drop === row.id ? "selected" : ""}>${esc(row.customer)} · ${esc(row.id)} · ${money(row.amount_minor)}</option>`).join("")}</select></label>
       <div class="row section-gap"><button class="button primary" type="submit">${icon("sliders")}Run what-if</button><button class="button ghost" type="button" data-action="whatif-reset">Reset</button></div></form></section>`;
@@ -793,7 +1090,7 @@ function renderRecords() {
 function renderSecurity() {
   const d = state.dashboard;
   const policy = d.policy;
-  const owner = state.operator.role === "owner";
+  const owner = isOwner();
   const selftest = state.selftest;
   const payees = d.payees;
   return `<section class="switch-card ${policy.agent_paused ? "paused" : ""}"><div><span class="eyebrow">Kill switch</span><h2>${policy.agent_paused ? "Agent paused" : "Agent active"}</h2><p class="small">${policy.agent_paused ? esc(policy.paused_reason || "Paused") + ". Proposals, negotiation and execution are blocked until the owner resumes with a written reason." : "Anyone who can approve can pause instantly. Only the owner can resume, with a reason. Repeated security denials trip it automatically."}</p></div>
@@ -1018,13 +1315,27 @@ document.addEventListener("click", async (event) => {
   const close = target.closest("[data-close]");
   if (close) { document.getElementById(close.dataset.close)?.close(); return; }
   const nav = target.closest("[data-view]");
-  if (nav) { state.view = nav.dataset.view; render(); if (state.view === "evidence" && state.dashboard) loadAudit(); return; }
+  if (nav) {
+    if (state.view === "team" && nav.dataset.view !== "team") state.invite = null;  // the code is shown once
+    state.view = nav.dataset.view;
+    render();
+    if (state.view === "evidence" && state.dashboard) loadAudit();
+    if (state.view === "team" && state.businessId) loadTeam();
+    window.scrollTo(0, 0);
+    return;
+  }
   const button = target.closest("[data-action]");
   if (!button) return;
   const data = button.dataset;
   try {
     switch (data.action) {
       case "logout": await logout(); break;
+      case "demo-login": await demoLogin(data.id); break;
+      case "speak-brief": toggleSpeak(); break;
+      case "copy-invite": await copyInvite(); break;
+      case "dismiss-invite": state.invite = null; render(); break;
+      case "remove-member": await removeMember(data.id, data.name); break;
+      case "reload-team": state.teamError = ""; render(); await loadTeam(); break;
       case "refresh": await act("Refresh", () => loadDashboard()); break;
       case "run-agent": await runAgent(); break;
       case "approve": openApprove(data.plan, data.bundle); break;
@@ -1106,8 +1417,14 @@ document.addEventListener("change", async (event) => {
   } catch (error) { toast(error.message); }
 });
 
+document.addEventListener("focusout", (event) => {
+  const target = event.target;
+  if (target.form && target.name && target.value && target.form.querySelector(`.field-error[data-for="${target.name}"]`)) checkField(target.form, target.name);
+});
+
 document.addEventListener("input", (event) => {
   const target = event.target;
+  if (target.form && target.getAttribute?.("aria-invalid") === "true") checkField(target.form, target.name);
   if (target.dataset?.customer !== undefined && target.type === "range") {
     state.whatif.delays[target.dataset.customer] = Number(target.value);
     const output = target.parentElement.querySelector("output");
@@ -1124,6 +1441,8 @@ document.addEventListener("input", (event) => {
 document.addEventListener("submit", async (event) => {
   const form = event.target;
   if (form.id === "login-form") return login(event);
+  if (form.id === "signup-form") return signup(event);
+  if (form.id === "join-form" || form.id === "join-form-in") return joinTeam(event);
   if (form.id === "approve-form") return submitApprove(event);
   if (form.id === "import-form") return importCsv(event);
   if (form.id === "pin-form") return;
@@ -1133,6 +1452,7 @@ document.addEventListener("submit", async (event) => {
     else if (form.id === "whatif-form") await runWhatIf();
     else if (form.id === "inbox-form") await extractInbox();
     else if (form.id === "policy-form") await savePolicy(form);
+    else if (form.id === "invite-form") await createInvite(form);
     else if (form.id === "verify-form") {
       let document;
       try { document = JSON.parse($("#verify-input").value); } catch (_error) { throw new Error("Paste valid JSON."); }

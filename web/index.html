@@ -35,19 +35,109 @@
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.3 6.2L21 12l-6.7 2.8L12 21l-2.3-6.2L3 12l6.7-2.8z"/></symbol>
   </svg>
 
-  <div id="login" class="login" hidden>
-    <div class="login-card">
-      <div class="login-brand"><span class="brand-mark"><svg class="icon"><use href="#i-wave"/></svg></span><span>Tideway</span></div>
-      <h1>Approval-gated cash-flow rescue</h1>
-      <p class="login-sub">An AI agent that finds a small business's cash shortfall, negotiates a fix with simulated suppliers and customers, and changes nothing until the right people approve. Synthetic sandbox: no real money, bank or counterparty.</p>
-      <form id="login-form" class="login-form" autocomplete="off">
-        <fieldset class="operator-choices" id="operator-choices"><legend>Sign in as</legend></fieldset>
-        <label class="pin-field">PIN<input id="login-pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4,12}" maxlength="12" required aria-describedby="pin-hint"></label>
-        <p id="pin-hint" class="hint">Demo PINs for this synthetic sandbox: owner 2468 · accountant 1357 · viewer 0000.</p>
-        <div id="login-error" class="form-error" role="alert"></div>
-        <button class="button primary wide" type="submit"><svg class="icon"><use href="#i-lock"/></svg>Sign in</button>
-      </form>
-    </div>
+  <div id="login" class="landing" hidden>
+    <header class="land-top">
+      <a class="land-brand" href="#top" aria-label="Tideway home"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-wave"/></svg></span><span>Tideway</span></a>
+      <nav class="land-nav" aria-label="Landing page">
+        <a href="#how">How it works</a><a href="#plans">Plans</a><a href="#signin">Sign in</a>
+        <a class="button teal small" href="#signup">Start free</a>
+      </nav>
+    </header>
+    <main class="land-main" id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <span class="eyebrow light">Cash-flow copilot for small businesses</span>
+          <h1 id="hero-title">Never miss payroll again.</h1>
+          <p class="hero-sub">On-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, and only acts with your approval.</p>
+          <div class="hero-ctas">
+            <a class="button teal" href="#signup">Start free</a>
+            <a class="button light" href="#demo">Try the live demo</a>
+            <a class="button outline" href="#join">Join your team</a>
+            <a class="button outline" href="#signin">Sign in</a>
+          </div>
+          <p class="hero-note">No card needed. Everything runs in a local sandbox: no real money, bank or counterparty.</p>
+        </div>
+        <section class="demo-card" id="demo" tabindex="-1" aria-labelledby="demo-title">
+          <h2 id="demo-title">Try the live demo</h2>
+          <p class="small muted">One click signs you in to three fictional businesses. Each account sees the same data with a different role.</p>
+          <div id="demo-accounts" class="demo-accounts"></div>
+          <div id="demo-error" class="form-error" role="alert"></div>
+          <p class="tag-note"><span class="pill mock">Synthetic demo data</span> Made-up businesses, customers and suppliers.</p>
+        </section>
+      </section>
+
+      <section class="land-section" aria-labelledby="value-title">
+        <h2 id="value-title" class="section-title">What Tideway does for you</h2>
+        <div class="value-grid">
+          <article class="value-card"><span class="value-icon"><svg class="icon" aria-hidden="true"><use href="#i-gauge"/></svg></span><h3>TidePay predicts lateness</h3><p>Learns each customer's real paying habits and shows how likely you are to fall short, weeks ahead.</p></article>
+          <article class="value-card"><span class="value-icon"><svg class="icon" aria-hidden="true"><use href="#i-chat"/></svg></span><h3>TideLM speaks your language</h3><p>Ask questions or paste an SMS in 8 languages: English, 中文, Español, Bahasa Indonesia, Français, Português, Hinglish and Banglish.</p></article>
+          <article class="value-card"><span class="value-icon"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg></span><h3>You approve every action</h3><p>Signed, PIN-approved mandates, two people for big amounts, and automatic blocks on changed bank details.</p></article>
+          <article class="value-card"><span class="value-icon"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg></span><h3>Private and works offline</h3><p>The AI runs on your own computer. Your ledger never leaves it unless you say so.</p></article>
+        </div>
+      </section>
+
+      <section class="land-section" id="how" tabindex="-1" aria-labelledby="how-title">
+        <h2 id="how-title" class="section-title">How it works</h2>
+        <ol class="how-steps">
+          <li><span class="step-no">1</span><div><h3>Connect</h3><p>Import a CSV or paste invoices and bank alerts into the Inbox.</p></div></li>
+          <li><span class="step-no">2</span><div><h3>See the gap</h3><p>Cash weather shows the day cash dips below your safety reserve, and why.</p></div></li>
+          <li><span class="step-no">3</span><div><h3>Approve the rescue</h3><p>The agent proposes supplier deferrals and early-payment offers. Nothing happens until you approve.</p></div></li>
+        </ol>
+      </section>
+
+      <section class="land-section" id="plans" tabindex="-1" aria-labelledby="plans-title">
+        <h2 id="plans-title" class="section-title">Plans</h2>
+        <p class="muted">Prices are illustrative. No card needed: this is a sandbox and nothing is ever charged.</p>
+        <div id="plan-cards" class="plan-grid section-gap"></div>
+      </section>
+
+      <section class="land-section auth-grid" aria-label="Get started">
+        <section class="card auth-card" id="signup" tabindex="-1" aria-labelledby="signup-title">
+          <h2 id="signup-title">Start free</h2>
+          <p class="small muted">Create your business workspace. You become its owner and can invite your team.</p>
+          <form id="signup-form" class="auth-form" novalidate autocomplete="off">
+            <div class="form-grid">
+              <label class="field wide-field">Business name<input name="business_name" maxlength="120" required autocomplete="organization"><span class="field-error" data-for="business_name"></span></label>
+              <label class="field">Currency<select name="currency" id="signup-currency" required></select><span class="field-error" data-for="currency"></span></label>
+              <label class="field">Country (optional)<input name="country" maxlength="2" placeholder="e.g. BD" autocomplete="country" aria-describedby="country-hint"><span id="country-hint" class="hint">Two-letter code</span><span class="field-error" data-for="country"></span></label>
+              <label class="field wide-field">Sector (optional)<input name="sector" maxlength="80" placeholder="e.g. Garments, catering, printing"><span class="field-error" data-for="sector"></span></label>
+              <label class="field">Cash in the bank today<input name="opening_cash" inputmode="decimal" required placeholder="250000"><span class="field-error" data-for="opening_cash"></span></label>
+              <label class="field">Safety reserve<input name="reserve_floor" inputmode="decimal" required placeholder="50000" aria-describedby="reserve-hint"><span id="reserve-hint" class="hint">Cash you never want to drop below</span><span class="field-error" data-for="reserve_floor"></span></label>
+              <label class="field wide-field">Your name<input name="owner_name" maxlength="80" required autocomplete="name"><span class="field-error" data-for="owner_name"></span></label>
+              <label class="field">Username<input name="username" maxlength="32" required autocapitalize="none" spellcheck="false" aria-describedby="username-hint"><span id="username-hint" class="hint">3–32: a–z, 0–9, . _ -</span><span class="field-error" data-for="username"></span></label>
+              <label class="field">PIN<input name="pin" type="password" inputmode="numeric" maxlength="12" required autocomplete="new-password" aria-describedby="pin-rule"><span id="pin-rule" class="hint">6–12 digits, not 111111 or 123456</span><span class="field-error" data-for="pin"></span></label>
+            </div>
+            <fieldset class="plan-choice" id="signup-plans"><legend>Plan</legend></fieldset>
+            <div class="form-error" id="signup-error" role="alert"></div>
+            <button class="button primary wide" type="submit">Create my workspace</button>
+          </form>
+        </section>
+        <div class="auth-side">
+          <section class="card auth-card" id="signin" tabindex="-1" aria-labelledby="signin-title">
+            <h2 id="signin-title">Sign in</h2>
+            <form id="login-form" class="auth-form" novalidate>
+              <label class="field">Username<input id="login-user" name="username" required autocapitalize="none" spellcheck="false" autocomplete="username"></label>
+              <label class="field">PIN<input id="login-pin" name="pin" type="password" inputmode="numeric" maxlength="12" required autocomplete="current-password"></label>
+              <div id="login-error" class="form-error" role="alert"></div>
+              <button class="button primary wide" type="submit"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>Sign in</button>
+            </form>
+          </section>
+          <section class="card auth-card" id="join" tabindex="-1" aria-labelledby="join-title">
+            <h2 id="join-title">Join your team</h2>
+            <p class="small muted">Got an invite code from your business owner? Create your account here.</p>
+            <form id="join-form" class="auth-form" novalidate autocomplete="off">
+              <label class="field">Invite code<input name="code" required maxlength="40" autocapitalize="none" spellcheck="false"><span class="field-error" data-for="code"></span></label>
+              <label class="field">Your name (optional)<input name="name" maxlength="80" autocomplete="name"><span class="field-error" data-for="name"></span></label>
+              <label class="field">Username<input name="username" maxlength="32" required autocapitalize="none" spellcheck="false"><span class="field-error" data-for="username"></span></label>
+              <label class="field">PIN<input name="pin" type="password" inputmode="numeric" maxlength="12" required autocomplete="new-password"><span class="hint">6–12 digits, not 111111 or 123456</span><span class="field-error" data-for="pin"></span></label>
+              <div class="form-error" id="join-error" role="alert"></div>
+              <button class="button teal wide" type="submit">Join the business</button>
+            </form>
+          </section>
+        </div>
+      </section>
+    </main>
+    <footer class="land-foot"><span>Tideway · FinTechathon 2026, International Track, Topic E</span><span>Synthetic sandbox. Projections are estimates, not bank balances. No real money moves.</span></footer>
   </div>
 
   <div id="shell" class="shell" hidden>
@@ -61,13 +151,14 @@
         <button class="nav-item" data-view="inbox"><svg class="icon"><use href="#i-inbox"/></svg><span>Inbox</span></button>
         <button class="nav-item" data-view="whatif"><svg class="icon"><use href="#i-sliders"/></svg><span>What-if</span></button>
         <button class="nav-item" data-view="records"><svg class="icon"><use href="#i-records"/></svg><span>Records</span></button>
+        <button class="nav-item" data-view="team"><svg class="icon"><use href="#i-user"/></svg><span>Team</span></button>
         <button class="nav-item" data-view="security"><svg class="icon"><use href="#i-shield"/></svg><span>Security centre</span></button>
         <button class="nav-item" data-view="evidence"><svg class="icon"><use href="#i-chain"/></svg><span>Evidence</span></button>
       </nav>
       <div class="sidebar-foot">
         <div class="agent-state" id="agent-state"></div>
         <div class="operator-card"><span class="avatar"><svg class="icon"><use href="#i-user"/></svg></span><div><strong id="operator-name">—</strong><span id="operator-role">—</span></div>
-          <button class="icon-button" data-action="logout" aria-label="Sign out" title="Switch operator / sign out"><svg class="icon"><use href="#i-x"/></svg></button></div>
+          <button class="icon-button" data-action="logout" aria-label="Sign out" title="Sign out"><svg class="icon"><use href="#i-x"/></svg></button></div>
         <p class="sandbox-note">Synthetic sandbox · no real money moves</p>
       </div>
     </aside>
