@@ -1,6 +1,19 @@
 # Tideway
 
-**Approval-gated cash-flow rescue for small businesses.**
+**Never miss payroll again.** On-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, and acts only with your approval.
+
+![Tideway landing page](evidence/screens/00-landing.png)
+
+## Two-minute tour for judges
+
+1. `python3 run.py` and open <http://127.0.0.1:8787>. Click **Nadia (Owner)** on the landing page.
+2. **Cash weather**: Shapla Services is in a storm; press **Read my brief**.
+3. **Ask Tideway**: say "hi", then ask in another language, e.g. "Nila Traders 晚20天付款会怎样？". Open the plan under the answer to see exactly which tools the model chose.
+4. **Rescue plan**: run the agent, then approve with PIN `2468` (and Imran `1357` for the second approval).
+5. **Inbox**: paste the injection sample and watch it get flagged.
+6. **Security centre**: run the self-test (every attack blocked). **Evidence**: run the tamper drill.
+
+Optional on Apple Silicon: `python3 scripts/get_tidelm.py && pip install mlx-lm` enables TideLM, our own fine-tuned on-device model; `pip install mlx-vlm` adds receipt photos. Without them, the deterministic local agent answers.
 
 Tideway is a working prototype for the FinTechathon 2026 International Track, **Topic E: SME Finance Copilot** (theme: *AI as a Financial Participant*). It finds a coming cash gap, plans a recovery with an exact, risk-aware optimiser, negotiates with simulated counterparties, and moves forward only through human approval and a signed, scoped mandate. The agent can read, analyse and propose. It cannot approve or execute.
 
