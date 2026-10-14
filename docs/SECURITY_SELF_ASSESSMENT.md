@@ -8,11 +8,12 @@
 |---|---|---|
 | Money movement (sandbox) | The only consequential action | Signed mandate, maker-checker approval, role checks in `store.py` |
 | Payee and account details | Business-email-compromise target | Changed-account and look-alike blocks; owner-only callback verification |
-| Business records | Private and tenant-scoped | Business id on every query; strict CSV validation; loopback-only server |
+| Business records | Private and tenant-scoped | Membership check on every API call (role per business, 403 otherwise); business id on every query; strict CSV validation; loopback-only server |
+| Accounts and invites | Who may act for a business | PBKDF2-hashed PINs (new accounts: 6-12 digits, no repeated or sequential PINs); invite codes stored hashed, single use, 7-day expiry, seat limits; per-client sign-in lockout |
 | Audit trail | Accountability | Hash chain plus independent witness |
 | Signing and witness keys | Mandate trust | Local key files, kept out of Git (`data/` is ignored) |
 
-Trust boundaries: (1) user to server (cookie, CSRF, Origin/Host checks); (2) model to tools (allow-list, read/propose only); (3) tools to store (the only code that can approve, sign or execute); (4) record text to anything that reasons (quarantine and pseudonymisation).
+Trust boundaries: (1) user to server (cookie, CSRF, Origin/Host checks, tenant membership); (2) model to tools (TideLM plans pass a typed validator; allow-list, read/propose only; a forbidden tool counts toward the circuit breaker); (3) tools to store (the only code that can approve, sign or execute); (4) record text to anything that reasons (quarantine and pseudonymisation).
 
 **Worst-case assumptions used in testing.** The model is fully hijacked and the human approver rubber-stamps whatever is proposed. The claim under test is that money cannot move on a fooled model's word, because enforcement lives outside the model.
 
@@ -27,7 +28,7 @@ Trust boundaries: (1) user to server (cookie, CSRF, Origin/Host checks); (2) mod
 | delegated_execute | Agent under a standing mandate | Zero-cash reminders only, five a day |
 | denied | Everyone | Moving real money, credit decisions, payroll deferral, acting on unverified bank details |
 
-Viewers can read only. The Autonomy dial (Advise, Propose, Delegate) only widens what is delegated within this table.
+Roles are per business: the same person can own one business and only view another. Viewers can read only. The Autonomy dial (Advise, Propose, Delegate) only widens what is delegated within this table.
 
 ## 3. Threat table
 
@@ -70,19 +71,20 @@ Latest run: **30/30 cases pass (5 task cases, 25 attack cases, 0 attacks not blo
 
 ## 4. Web-layer controls
 
-Loopback bind; Host and Origin allow-lists; CSRF token on every write; `HttpOnly; SameSite=Strict` cookie; JSON-only bodies with a 2 MB cap and per-endpoint field allow-lists; role checks; token-bucket rate limits; CSP `default-src 'none'`, `X-Frame-Options: DENY`, `nosniff`, `no-referrer`, `no-store`; internal errors never returned to the client; CSV export neutralises formula cells.
+Loopback bind; Host and Origin allow-lists; CSRF token on every write; `HttpOnly; SameSite=Strict` cookie; JSON-only bodies with a 2 MB cap and per-endpoint field allow-lists; role checks; token-bucket rate limits; CSP `default-src 'none'`, `X-Frame-Options: DENY`, `nosniff`, `no-referrer`, `no-store`; internal errors never returned to the client; malformed requests (bad Content-Length, deeply nested JSON, non-ASCII tokens) get 4xx, not 500; anonymous requests never write audit rows or trip the breaker; CSV export neutralises formula cells (and a Tideway export re-imports unchanged).
 
 ## 5. Privacy
 
-The default agent is local and sends nothing anywhere. In optional LLM mode (per-message consent) counterparty names are replaced with pseudonyms and record free text is never sent. Demo data is fictional. No credentials, passports or personal data are in the repository; `.env` and `data/` are ignored.
+TideLM, the default assistant, runs on the owner's machine: no question, record or extracted message leaves it. The deterministic local agent sends nothing anywhere either. In optional LLM mode (per-message consent) counterparty names are replaced with pseudonyms and record free text is never sent. Demo data is fictional. No credentials, passports or personal data are in the repository; `.env` and `data/` are ignored.
 
 ## 6. Known risks and residual limitations
 
 1. **Demo-grade identity.** PINs and a local signing key stand in for real authentication and hardware-backed keys.
 2. **Privileged attacker.** Someone who can rewrite the database and both key files can forge history; the witness raises the bar but is not a ledger anchored outside the host.
-3. **Rule-based injection scan.** Patterns catch known phrasing; new phrasing could slip past the scan. The structural defence (no approve or execute tool, quarantine, pseudonymisation, mandates) does not rely on it.
+3. **Rule-based injection scan.** Patterns (eight languages) catch known phrasing; new phrasing could slip past the scan. TideLM also flags injection in pasted text (100% on its synthetic test set), but a model is not a guarantee. The structural defence (no approve or execute tool, quarantine, pseudonymisation, mandates) does not rely on it.
 4. **Simulated counterparties.** Real suppliers and customers behave differently; real rails add failure modes (partial settlement, reversal).
 5. **Single process and SQLite.** Adequate for the sandbox; production needs a hardened service and database.
 6. **Human factors.** A rubber-stamp approver is assumed in testing, but fast approvals are only flagged, not blocked.
 7. **Not measured.** No live-LLM run, no user study, no external penetration test. We make no such claims.
-8. **Not a compliance certification.** No claim of PCI, SOC 2, local regulator or bank approval.
+8. **Small model, synthetic training data.** TideLM can misread a name or drop a constraint (see its report); names are resolved against the ledger and every plan is only a proposal, but a person must still read it before approving.
+9. **Not a compliance certification.** No claim of PCI, SOC 2, local regulator or bank approval.

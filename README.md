@@ -48,7 +48,11 @@ python3 scripts/build_submission_pdfs.py   # pitch, architecture and security PD
 12. **Proves what happened.** A hash-chained audit log with an independent witness checkpoint (truncation is detected), and a one-click tamper drill.
 13. **Dials autonomy.** Advise, Propose or Delegate. Under Delegate, a standing mandate lets the agent send zero-cash reminders only, capped per day. Moving money is never delegated.
 14. **International by design.** 29 ISO 4217 currencies; demo businesses in Bangladesh (BDT), China (CNY) and Singapore (SGD); payment-detail-change and injection screening in English, Chinese, Spanish, French, Indonesian/Malay, Hindi, Bangla and Arabic, covering banks (IBAN, SWIFT, sort code) and wallets (PayPal, Wise, Alipay, WeChat Pay, UPI, PayNow, M-Pesa, GCash, Pix, bKash...). Mixed currencies inside one business are rejected.
-15. **Exports.** Evidence JSON, records and receipts CSV (spreadsheet-formula-safe), and a draft ISO 20022 `pain.001` for the deferred payments.
+15. **Speaks your language.** Ask in English, 中文, Español, Français, Português or Bahasa Indonesia (Hinglish and Banglish too) and get the answer in that language, with the same numbers. Greetings and status questions are answered instantly with a personal briefing, and every answer suggests the next useful question.
+16. **SaaS workspaces.** Sign up a business, invite your team by one-time code with a role (owner, accountant, viewer) and seat limits per plan; every request is checked against your membership, so businesses never see each other.
+17. **Counterparty risk map.** Each customer is stressed alone (30 days late; never pays) and ranked by expected cash impact using TidePay's probabilities, with supplier deferral options and fraud blocks alongside.
+18. **Zero-entry Inbox.** Paste bank, card and mobile-money alerts or chat messages in many languages; TideLM drafts the records, flags injection, and nothing is saved until you confirm.
+19. **Exports.** Evidence JSON, records and receipts CSV (spreadsheet-formula-safe), and a draft ISO 20022 `pain.001` for the deferred payments.
 
 ## Tideway's own AI (trained here, runs on-device)
 
