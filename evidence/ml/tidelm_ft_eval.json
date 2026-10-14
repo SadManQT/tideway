@@ -1,0 +1,153 @@
+{
+ "model": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+ "adapter": "models/tidelm-adapter",
+ "n_plan": 300,
+ "n_extract": 200,
+ "plan": {
+  "valid_json": 1.0,
+  "intent_accuracy": 1.0,
+  "tool_accuracy": 1.0,
+  "exact_plan_accuracy": 0.9767
+ },
+ "extract": {
+  "valid_json": 1.0,
+  "record_precision": 0.9927,
+  "record_recall": 0.9856,
+  "record_f1": 0.9891,
+  "field_accuracy": 0.9853,
+  "injection_flag_accuracy": 1.0
+ },
+ "median_latency_s": 4.87,
+ "sample_failures": [
+  {
+   "input": "help me get through this month without involving Orchid Ceramics",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [
+        "Orchid Ceramics"
+       ],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [\"Orich Ceramics\"], \"max_discount_pct\": null, \"prefer\": \"lowest_cost\"}}]}"
+  },
+  {
+   "input": "ekta plan banao, but don't ask Comet Exports",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [
+        "Comet Exports"
+       ],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [], \"max_discount_pct\": null, \"prefer\": \"lowest_cost\"}}]}"
+  },
+  {
+   "input": "if Banyan Kitchen pays 7 days late and Banyan Kithen pays 12 days late?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {
+        "Banyan Kitchen": 12
+       },
+       "extra_expense": null,
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"Banyan Kitchen\": 7, \"Banyan Kithen\": 12}, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+  },
+  {
+   "input": "what should I do?, jhuki kom hok",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_risk"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [], \"max_discount_pct\": null, \"prefer\": \"lowest_cost\"}}]}"
+  },
+  {
+   "input": "fix th cash gap, jhuki kom hok",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_risk"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [], \"max_discount_pct\": null, \"prefer\": \"lowest_cost\"}}]}"
+  },
+  {
+   "input": "What if I spend 7500 on a new machine on 2026-10-18?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": {
+        "amount": 7500,
+        "date": "2026-10-18"
+       },
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {}, \"extra_expense\": {\"amount\": 7500, \"date\": \"2026-10-10\"}, \"drop_invoice_customer\": null}}]}"
+  },
+  {
+   "input": "Cedar Exports jodi 14 din pore taka dey?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {
+        "Cedar Exports": 14
+       },
+       "extra_expense": null,
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {}, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+  }
+ ]
+}
