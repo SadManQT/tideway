@@ -5,7 +5,6 @@ __pycache__/
 evidence/private/
 .opencode/
 *.zip
-!demo/Probaho-presentation-source.zip
 
 # Presentation dependency caches and intermediate production files.
 /tmp/

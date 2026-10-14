@@ -1,151 +1,84 @@
-# Probaho
+# Tideway
 
-**Approval-gated cash-flow recovery for small businesses**
+**Approval-gated cash-flow rescue for small businesses.**
 
-Probaho is a local-first prototype for the FinTechathon 2026 International Track, **Topic E — SME Finance Copilot**. It helps a small business owner inspect a scheduled cash gap, compare evidence-linked recovery options, approve one bounded action, and execute that action only inside a synthetic sandbox.
+Tideway is a working prototype for the FinTechathon 2026 International Track, **Topic E: SME Finance Copilot** (theme: *AI as a Financial Participant*). It finds a coming cash gap, plans a recovery with an exact, risk-aware optimiser, negotiates with simulated counterparties, and moves forward only through human approval and a signed, scoped mandate. The agent can read, analyse and propose. It cannot approve or execute.
 
-> **Important:** this repository contains a synthetic local sandbox. It does not connect to a bank, send money, contact suppliers, approve credit, or provide production financial advice. “Winning” cannot be guaranteed; competition rules, registration, user research, and live evaluation still require the team’s verification.
+> **Honest scope.** Everything runs in a **synthetic sandbox**: fictional businesses, no real money, no bank, lender, supplier or customer connected. Financing offers are labelled **MOCK** catalogue comparisons and are never executable. The payment file (ISO 20022 pain.001) is a draft that is never sent. A passing test suite is evidence for the listed cases only, not proof of security. The optional LLM mode has not been measured against a live provider.
 
-## What the prototype demonstrates
+## Quick start (Python 3.11+, standard library only)
 
-The default fixture is **Shapla Services**:
-
-- Opening cash: **BDT 120,000**
-- Payroll: **BDT 80,000**
-- Supplier bill: **BDT 70,000**
-- Confirmed receivable: **BDT 20,000**
-- Minimum reserve: **BDT 20,000**
-- Base closing cash: **BDT -10,000**
-- Reserve shortfall: **BDT 30,000**
-
-The main flow is:
-
-1. Import or inspect business-scoped transactions, invoices, and bills.
-2. Select a target date and view deterministic base, late-collection, and approved-recovery projections.
-3. Compare a collection reminder, supplier reschedule, and clearly labelled mock-financing alternatives.
-4. Review the payee, amount, dates, assumptions, constraints, and source records.
-5. Approve one bounded action as the local operator.
-6. For a supplier reschedule, separately simulate supplier acceptance. This is explicitly not genuine supplier consent.
-7. Execute once in the synthetic sandbox using a one-time approval and idempotency key.
-8. Read back the post-mutation state and export evidence.
-
-Reminders never count as collected cash. Mock financing is catalogue comparison only and is never executable.
-
-## Start locally
-
-Requires Python 3.11 or newer. Runtime code uses the Python standard library only.
-
-```powershell
-python run.py
+```bash
+python3 run.py
 ```
 
-Open **http://127.0.0.1:8787**. `start.ps1` and `start.cmd` run the same command. The default database is `data/probaho.sqlite3` and is ignored by Git.
+Open <http://127.0.0.1:8787>. The server binds to loopback only; do not expose it to a network.
 
-To start an empty local workspace:
+| Role | Operator | PIN |
+|---|---|---|
+| Owner | Nadia | `2468` |
+| Accountant | Imran | `1357` |
+| Viewer | Guest | `0000` |
 
-```powershell
-python run.py --no-demo --db data/probaho-empty.sqlite3
+These PINs belong to the synthetic demo only.
+
+```bash
+python3 -m unittest discover -s tests -v   # unit, HTTP and security tests
+python3 -m tideway.selftest                # 30-case scorecard (5 tasks, 25 attacks)
+python3 scripts/evaluate.py                # writes evidence/results.csv, run-log.jsonl, verification-summary.json
+node scripts/capture_screens.mjs           # drives headless Chrome through the demo, writes evidence/screens/
+python3 scripts/build_submission_pdfs.py   # pitch, architecture and security PDFs (headless Chrome)
 ```
 
-The app binds to loopback only. Do not expose this prototype to the public internet.
+`python3 run.py --no-demo --db data/empty.sqlite3` starts an empty workspace. Node 22+ and Google Chrome are needed only for screenshots and PDFs.
 
-## Optional AI provider
+## What it does
 
-The offline assistant is labelled **Local demo** and uses deterministic tools. It is not presented as a live model. To test the optional OpenAI Responses adapter locally, copy `.env.example` to `.env` and set your own key outside the repository:
+1. **Sees the gap.** Exact integer minor-unit cash projection with three scenarios (scheduled, likely, stress) and a 14-day look-ahead so a deferral cannot hide a problem just beyond the target date.
+2. **Models customers, not just invoices.** Per-customer payment profiles use credibility weighting (own history counts n/(n+5), the rest from the business-wide average), so one lucky payment never makes a customer look reliable.
+3. **Quantifies risk.** A seeded Monte Carlo (1,000 runs; the same records and seed give the same answer) estimates the chance of breaching the reserve floor and is shown as a "cash weather" read-out.
+4. **Optimises.** An exact search over supplier deferrals, early-payment discounts and zero-cash reminders finds the cheapest bundle that holds the reserve floor on every day and keeps payroll funded, then re-checks candidates with Monte Carlo. Early-payment discounts are priced as an annual rate (2% for 20 days is about 37% APR).
+5. **Negotiates.** Simulated suppliers and customers answer each request with accept, counter-offer or reject. A counter becomes a new proposal that needs fresh approval; a refusal triggers a re-plan without that counterparty.
+6. **Authorises like a bank.** Maker-checker approval with PIN step-up; high-value bundles need two people (including the owner) and a typed exposure amount. Approval issues an **HMAC-signed mandate** (modelled on the AP2 mandate idea: verifiable, scoped, expiring), bound to the exact actions, snapshot, policy and expiry.
+7. **Executes once, verifiably.** Idempotent execution against the sandbox, state hashes before and after, and a read-back check.
+8. **Stays stoppable.** A kill switch pauses the agent (only the owner resumes, with a reason). A circuit breaker pauses it automatically after repeated security denials.
+9. **Resists fraud.** Changed bank details and look-alike payee names block every action on the bill. Payees are verified only by the owner, only by callback to a number on file, and the verifier cannot then approve that payee (separation of duties).
+10. **Quarantines injection.** Hidden Unicode is stripped and flagged; instruction-like text in records is quarantined and never reaches a model.
+11. **Optional LLM mode.** Off by default. With a key and per-message consent, counterparty names are pseudonymised, record free text is never sent, and every number in the answer is checked against tool output (ungrounded numbers are flagged).
+12. **Proves what happened.** A hash-chained audit log with an independent witness checkpoint (truncation is detected), and a one-click tamper drill.
+13. **Dials autonomy.** Advise, Propose or Delegate. Under Delegate, a standing mandate lets the agent send zero-cash reminders only, capped per day. Moving money is never delegated.
+14. **Multi-currency fixtures.** Shapla Services and Meghna Traders in BDT, Lotus Print Studio in CNY; mixed currencies inside one business are rejected.
+15. **Exports.** Evidence JSON, records and receipts CSV (spreadsheet-formula-safe), and a draft ISO 20022 `pain.001` for the deferred payments.
 
-```dotenv
-OPENAI_API_KEY=your_key_here
-OPENAI_MODEL=gpt-5-mini
-PROBAHO_PORT=8787
-```
+## The demo businesses
 
-Restart the server and enable the per-message consent checkbox. A scoped AI request receives only redacted tool output; raw record descriptions, customer names, and payees are not automatically attached. `store: false` is not a zero-retention guarantee. Provider access, quota, pricing, and competition permission must be verified by the team.
-
-## Combined CSV format
-
-Imports are validated completely before any write and are scoped to the selected business. Required columns include `record_type`, `business_id`, `id`, `currency`, and the fields appropriate to each row. `record_type` is one of `transaction`, `invoice`, or `bill`.
-
-Download the example from the Records screen or use this shape:
-
-```csv
-record_type,business_id,id,date,description,amount,type,currency,due_date,status,customer,payee,issue_date,expected_collection_date,priority,reschedule_allowed
-transaction,shapla-services,txn-client-001,2026-10-10,Client service receipt,25000,income,BDT,,,,,,,,
-invoice,shapla-services,inv-client-001,2026-10-01,Service receivable,35000,,BDT,2026-10-31,confirmed,Nila Traders,,2026-10-01,2026-10-31,,
-bill,shapla-services,bill-materials-001,,Supplier materials,12000,,BDT,2026-10-28,open,,,,,normal,true
-```
-
-Amounts are positive BDT values with at most two decimal places. The system stores integer paisa. BDT is the only supported currency. Existing records with the same ID must match their financial fields exactly; conflicting records reject the whole file.
-
-## API outline
-
-All POST requests require the CSRF token returned by `GET /api/config` and same-origin/loopback headers.
-
-| Endpoint | Purpose |
+| Business | Story |
 |---|---|
-| `GET /api/config` | Businesses, default fixture, capabilities, permission tiers |
-| `GET /api/dashboard?business_id=...&target_date=...` | Scoped records, projections, plans, approvals, sandbox state |
-| `POST /api/plan/compare` | Persist a deterministic, snapshot-bound comparison |
-| `POST /api/plan/approve` | Create a short-lived, one-time scoped approval token |
-| `POST /api/sandbox/consent` | Record synthetic supplier acceptance/rejection for one action |
-| `POST /api/plan/execute` | Execute an approved reminder or supplier schedule change once |
-| `GET /api/execution` | Safely check an idempotent receipt after an uncertain request |
-| `POST /api/plan/cancel` | Cancel an unused approval; never reverses execution |
-| `POST /api/sandbox/reset` | Reset only synthetic schedules, preserving records and receipts |
-| `POST /api/policy` | Update reserve floor/action limit and invalidate stale proposals |
-| `POST /api/chat` | Local or consented, scoped read/proposal assistant |
-| `GET /api/audit` | Independently verifiable per-business audit chain |
-| `GET /api/export` | Evidence JSON, combined records CSV, or execution-results CSV |
+| Shapla Services (BDT) | Payroll day. Scheduled minimum cash is BDT -10,000 on 31 Oct 2026; shortfall against the BDT 20,000 reserve is BDT 30,000. |
+| Lotus Print Studio (CNY) | The schedule looks fine; the customers' payment habits say it is not. Includes a counter-offer. |
+| Meghna Traders (BDT) | No safe plan exists. A changed bank account, a look-alike payee and a poisoned bill are blocked; Tideway says so and escalates. |
 
-## Safety boundaries
+## Layout
 
-- Opening cash, projections, reserve gaps, and plan effects are deterministic integer-paisa calculations.
-- Historical records before opening date are retained for evidence but do not alter the opening balance.
-- Paid/collected invoices are not projected again.
-- Payroll-priority records cannot be deferred.
-- Plan, policy, record, target-date, and sandbox snapshot hashes are checked at approval and execution.
-- Supplier execution requires both human plan approval and a matching synthetic supplier-consent event.
-- Changed payee, amount, dates, currency, policy, records, or sandbox state invalidate the action.
-- The same idempotency key returns the original receipt; a different key cannot reuse a consumed approval.
-- The model has no approval, execution, shell, SQL, arbitrary HTTP, or payment tool.
-- Descriptions and imported text are treated as data, including prompt-injection-looking text.
-
-Known limitations are documented in `docs/SECURITY_SELF_ASSESSMENT.md`. This is not multi-user authentication, encrypted storage, bank connectivity, legal compliance certification, or an immutable external ledger.
-
-## Verification
-
-```powershell
-python -m unittest discover -s tests -v
-node --check web/app.js
-python -m py_compile finmate/*.py run.py
-python tests/browser_check.py
+```
+tideway/    domain, projection, analytics (profiles, Monte Carlo), planner, counterparty,
+            security (PIN, HMAC, rate limit), store (SQLite workflow + audit), service, agent, server, selftest
+web/        vanilla JS single-page UI (no build step)
+tests/      stdlib unittest suite
+scripts/    evaluate.py, capture_screens.mjs, build_submission_pdfs.py
+evidence/   results.csv, run-log.jsonl, verification-summary.json, screens/
+docs/       brief, technical documentation, security self-assessment, evaluation plan, demo and pitch scripts, checklist, roadmap
+slides/     pitch.pdf
 ```
 
-The browser check uses an isolated temporary database and installed Chrome/Playwright. It verifies the overview, exact Shapla gap, records view, combined import and escaping, comparison, approval, supplier-consent gate, execution receipt/read-back, reset, evidence export, assistant, desktop/mobile layout, and no page errors. It does **not** prove live-model quality or organizer acceptance.
+## Optional LLM mode
 
-## Motion presentation
+Copy `.env.example` to `.env`, set your own `OPENAI_API_KEY` (never commit it) and restart. The model sees only pseudonyms and tool output, can call six read/propose tools, and has no approval, execution, SQL, shell or URL tool.
 
-[Watch or download the narrated presentation](demo/Probaho-presentation.mp4) — **4:19**, 1080p, English AI voice, reference-inspired motion and genuine synthetic-sandbox UI captures.
+## Documents
 
-[Editable source ZIP](demo/Probaho-presentation-source.zip) and [production instructions](demo/presentation-production/README.md) include the scene script, final narration, motion renderer and QA reports. All twelve scenes were checked for motion and narration timing; the final audio/video decode without errors. The supplied visual reference is [reference.mp4](reference.mp4).
+[Technical documentation](docs/TECHNICAL_DOCUMENTATION.md) · [Security self-assessment](docs/SECURITY_SELF_ASSESSMENT.md) · [Evaluation plan](docs/EVALUATION_PLAN.md) · [Demo script](docs/DEMO_SCRIPT.md) · [Pitch script](docs/PITCH_SCRIPT.md) · [Submission checklist](docs/SUBMISSION_CHECKLIST.md) · [Project brief](docs/PROJECT_BRIEF.md) · [English roadmap](docs/Tideway_FinTechathon_2026_Roadmap.pdf)
 
-## Repository contents
+## Licence
 
-- `finmate/finance.py` — validation, deterministic projection, gap calculation, and plan comparison.
-- `finmate/store.py` — scoped SQLite records, snapshot-bound approvals, supplier consent, sandbox, receipts, and audit chain.
-- `finmate/agent.py` — bounded local/optional AI assistant with four scoped tools.
-- `finmate/server.py` — loopback HTTP API and security boundaries.
-- `web/` — responsive English competition-demo interface.
-- `tests/test_probaho_backend.py` — Topic E backend contract and safety tests.
-- `tests/browser_check.py` — isolated Chrome end-to-end verification.
-- `examples/probaho-sample-records.csv` — combined synthetic transaction/invoice/bill import example.
-- `docs/TECHNICAL_DOCUMENTATION.md` — architecture and algorithms.
-- `docs/SECURITY_SELF_ASSESSMENT.md` — controls, threat model, and limitations.
-- `docs/DEMO_SCRIPT.md` and `docs/PITCH_SCRIPT.md` — honest recording and pitch plans.
-- `docs/SUBMISSION_CHECKLIST.md` — competition deliverables still requiring team action.
-- `slides/pitch.pdf`, `docs/architecture.pdf`, and `docs/security-assessment.pdf` — generated draft PDFs; team review is required.
-- `demo/demo.mp4` — generated visual rehearsal from isolated screenshots; re-record a narrated running-app demo before submission.
-- `evidence/` — generated verification artifacts; never present offline evidence as live AI evidence.
-
-## Submission honesty
-
-The supplied roadmap lists organizer questions, deadline conversion, evidence expectations, and a suggested eight-day plan. Confirm the authoritative registration route, AI coding policy, dataset/API requirements, video rule, repository access, and post-deadline change policy with the organizer. Add actual team details, user feedback, measured results, final English deck, and recorded demo only after the team has produced them.
+MIT. See `LICENSE` and `THIRD_PARTY_NOTICES`.

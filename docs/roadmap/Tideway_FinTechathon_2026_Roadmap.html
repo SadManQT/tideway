@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>FinTechathon 2026 Research and Project Roadmap: Tideway</title>
+<style>
+@page { size: A4; margin: 16mm 15mm 18mm; @bottom-center { content: "FinTechathon 2026 | " counter(page); font-size: 8pt; color: #5b7069; } }
+body { font: 10pt/1.5 -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; color: #14221f; }
+h1 { font-size: 26pt; color: #0f3d36; margin: 0 0 4px; } h2 { font-size: 15pt; color: #0f3d36; border-bottom: 2px solid #1f8a70; padding-bottom: 3px; margin: 0 0 10px; break-after: avoid; }
+h3 { font-size: 11pt; color: #1f6b58; margin: 12px 0 4px; break-after: avoid; }
+section { break-before: page; } section.cover { break-before: auto; }
+table { border-collapse: collapse; width: 100%; margin: 6px 0 10px; font-size: 8.8pt; } th, td { border: 1px solid #c7d6d1; padding: 3px 6px; text-align: left; vertical-align: top; }
+th { background: #e6f2ee; } tr { break-inside: avoid; }
+.box { background: #eef6f3; border-left: 4px solid #1f8a70; padding: 6px 10px; margin: 8px 0; } .warn { background: #fff6e5; border-left-color: #d9961a; }
+code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding: 0 3px; border-radius: 3px; } ul, ol { margin: 4px 0 8px 18px; padding: 0; } a { color: #1f6b58; }
+.sub { color: #35504a; font-size: 12pt; } pre { background: #eef4f2; padding: 8px; font-size: 8pt; white-space: pre-wrap; }
+</style></head><body>
+
+<section class="cover">
+<h1>FinTechathon 2026</h1>
+<p class="sub"><strong>Research and Project Roadmap</strong><br>International Track · Preparation for a Bangladeshi student team</p>
+<p>Information verified on 12 October 2026; project sections updated on 14 October 2026 for <strong>Tideway</strong>. This report covers the competition rules, previous winners, project choice, technical design, testing, submission and final-round preparation in one place.</p>
+<div class="box"><strong>Recommendation.</strong> Choose <strong>Topic E: SME Finance Copilot</strong> and build <strong>Tideway</strong>, an approval-gated cash-flow rescue agent for small businesses. (Earlier working title: Probaho.) It finds a cash gap, plans a recovery with a risk-aware optimiser, negotiates with simulated counterparties and, after human approval and a signed mandate, completes the action inside a sandbox. There is no guarantee of winning; the aim is a tested project that matches the published judging criteria closely.</div>
+<p><strong>Planning assumptions.</strong> A team of 3 to 4 members, at least one of whom can build web and backend software. The implementation is now complete and committed; the remaining work (15 to 20 October) is evidence, documentation, the demo video and submission. Team composition, skills and data access are still unconfirmed. With less time, use the smaller scope in Section 10.
+<div class="box warn"><strong>Most urgent now.</strong> The deadline is <strong>20 October 2026, 21:59 Bangladesh time</strong>. Our own target is to submit by 20:00 on 19 October. Confirm registration first; registration may close early if seats fill. [S1–S3]</div>
+<h3>Contents</h3>
+<ol>
+<li>Competition and eligibility</li><li>Timeline, prizes and how to apply</li><li>What to submit and how it is judged</li><li>Previous winners and lessons</li><li>Comparing six ideas</li><li>Chosen project and the user's problem</li><li>Technical design and data</li><li>Security and permission model</li><li>Testing and evidence</li><li>Plan for 15 to 20 October</li><li>Pitch, demo and judges' questions</li><li>Final preparation and cost</li><li>Submission checklist and open questions</li><li>Sources and limits of verification</li></ol>
+</section>
+
+<section>
+<h2>1. Competition and eligibility</h2>
+<p><strong>Name:</strong> 2026 Shenzhen International FinTech Competition, known as FinTechathon. 2026 is the eighth edition and the first with a separate International Track. Theme: "AI as a Financial Participant", meaning you must build an AI agent that can complete tasks in a defined financial situation. [S1–S3]</p>
+<h3>Who can take part</h3>
+<table><tr><th>Condition</th><th>What we must do</th></tr>
+<tr><td>Full-time students</td><td>Bachelor's, master's or PhD; current enrolment at a recognised eligible institution must be confirmed.</td></tr>
+<tr><td>Institution location</td><td>Outside Mainland China, Hong Kong SAR, Macao SAR and Chinese Taipei. Students in Bangladesh are eligible if they meet the other conditions.</td></tr>
+<tr><td>Team size</td><td>2 to 5 members; members may come from different departments, years, universities and countries. Solo submissions are not allowed.</td></tr>
+<tr><td>At least 60% non-Chinese nationals</td><td>Teams of 2 need 2; of 3 need 2; of 4 need 3; of 5 need 3 (rounded up to a whole number).</td></tr>
+<tr><td>One team only</td><td>A person cannot be in more than one team across the Domestic and International tracks.</td></tr>
+<tr><td>Language</td><td>Submission, presentation and review are in English. A Bangla UI could be a bonus, but a judgeable English flow is essential.</td></tr></table>
+<h3>Organiser naming mismatch</h3>
+<p>The CMU announcement names Tsinghua PBC School of Finance and WeBank as hosts. The IEEE CIS Singapore page lists Shenzhen University WeBank Institute of Financial Technology as host and a Tsinghua research institute as technical guidance institution. Do not paraphrase organiser names in the application; use the prescribed form. [S1, S3]</p>
+<h3>Four team decisions before taking part</h3>
+<ol><li>Verify every member's enrolment and nationality.</li><li>Does at least one member have the means and a passport to travel to Shenzhen for the final?</li><li>Does everyone have the right to use the code and data?</li><li>One team lead controls the application, revisions and the deadline.</li></ol>
+<div class="box warn">The short rules do not give detailed permission for AI coding tools. Do not assume that "independently completed" either bans or allows all AI use. Ask the organiser for a written answer, and keep a record of the tools used and the human contribution. [S2]</div>
+</section>
+
+<section>
+<h2>2. Timeline, prizes and how to apply</h2>
+<table><tr><th>Stage</th><th>Published date</th><th>Our decision</th></tr>
+<tr><td>Registration opens</td><td>31 August 2026</td><td>Finalise the roster now.</td></tr>
+<tr><td>Registration and submission close</td><td>20 October, 23:59 Beijing (UTC+8)</td><td>Bangladesh: 20 October, 21:59.</td></tr>
+<tr><td>Compliance screening</td><td>21 to 22 October</td><td>Detailed schedule from IEEE.</td></tr>
+<tr><td>Online review</td><td>23 to 28 October</td><td>CMU gives a wider window, 20 to 31 October.</td></tr>
+<tr><td>Finalists announced</td><td>31 October</td><td>IEEE: invitation letters the same day.</td></tr>
+<tr><td>Check-in and WeBank visit</td><td>20 November</td><td>Learn the travel approval and booking rules first.</td></tr>
+<tr><td>Grand Final and awards</td><td>21 to 23 November</td><td>At least one member must attend in person.</td></tr></table>
+<p>Dates are based on [S1–S3]. In the original ITS web announcement the intermediate dates are shifted by one step; the attached rules and the IEEE schedule are more consistent. Treat any later written update from the organiser as the latest instruction. <strong>Dhaka is two hours behind Beijing</strong> (UTC+6 against UTC+8). Do not use the London, Tokyo or Sydney conversion examples in the PDF; they contain conversion errors.</p>
+<h3>International Track prizes</h3>
+<table><tr><th>Prize</th><th>Amount</th></tr><tr><td>First (1)</td><td>RMB 100,000</td></tr><tr><td>Second (1)</td><td>RMB 80,000</td></tr><tr><td>Third (1)</td><td>RMB 50,000</td></tr><tr><td>Best Innovation (1)</td><td>RMB 20,000</td></tr><tr><td>Excellence (several)</td><td>Certificates</td></tr></table>
+<p>Total RMB 250,000, all before tax. Prizes go to the team, not to each member. There is no registration fee. The organiser pays for or arranges round-trip international travel and accommodation for invited finalist members; the invitation states how many members. Do not assume that visa fees, meals, local transport or the costs of all members are covered. [S2]</p>
+<h3>Where to apply</h3>
+<p>CMU and the attached PBCSF rules: wangyr@pbcsf.tsinghua.edu.cn; CMU asks for a completed form and each member's passport bio page. IEEE Singapore: fintechathon@ican-x.com, with a confirmation reply promised within 48 hours. Confirm in writing now which route applies to your team. Do not send passports to several addresses unnecessarily. [S1–S3]</p>
+<p>IEEE registration subject: <code>International Track Registration – Bangladesh – [Team Name] – [Team Leader's Full Name]</code>. Save the confirmation or team ID; do not hold back registration until the project is finished.</p>
+</section>
+
+<section>
+<h2>3. What to submit and how it is judged</h2>
+<p>The list below comes from pages 2 to 4 of PBCSF Appendix 2 as published on ITS. It is a competition-branded rules document; the full terms on the official website and later notices also apply. [S2]</p>
+<table><tr><th>Material</th><th>What we will prepare</th></tr>
+<tr><td>Technical documentation</td><td>Architecture, core algorithm and security design, with data flow and limitations.</td></tr>
+<tr><td>Presentation deck</td><td>A deck suitable for a presentation of at most 10 minutes. No fixed slide count was found.</td></tr>
+<tr><td>Demo video</td><td>Optional on a separate checklist, at most 5 minutes, but requested under execution evidence, so we will make one.</td></tr>
+<tr><td>Source code</td><td>GitHub repository link, README, deployment instructions and test cases. Confirm repository visibility.</td></tr>
+<tr><td>Security self-assessment</td><td>How permission tiers are enforced, and a known-risk list.</td></tr>
+<tr><td>Execution evidence</td><td>A to E: operation logs from a simulated account or sandbox, and the demo video. F: real on-chain transaction hashes.</td></tr></table>
+<h3>Published scoring</h3>
+<table><tr><th>Category</th><th>Weight</th><th>Our evidence</th></tr>
+<tr><td>Task completion</td><td>40%</td><td>A workflow that runs to the end; tool logs; sandbox state before and after.</td></tr>
+<tr><td>Security and compliance</td><td>30%</td><td>Permission enforcement, tenant isolation, attack tests, self-assessment.</td></tr>
+<tr><td>Innovation and interaction</td><td>30%</td><td>Accuracy of the problem, comparable alternatives, easy explanation, real user feedback.</td></tr></table>
+<p>Topic F has a 0 to 5 on-chain exploration challenge bonus; the core rubric is the same. The exact way the bonus is added and its cap are unclear. Choosing a wallet only for the bonus could damage the core 100 points. Whether testnet transactions are acceptable must be confirmed in writing. [S2]</p>
+<h3>Our submission package</h3>
+<p><code>README.md; docs/architecture.pdf; docs/security-assessment.pdf; slides/pitch.pdf; demo video; evidence/run-log.jsonl; evidence/results.csv; tests/; LICENSE; THIRD_PARTY_NOTICES; .env.example</code>. These are our proposed names, not mandatory organiser names. No secrets, passports or private customer data in the repository.</p>
+<p>The latest submission before the deadline prevails, and changes after it are said not to be accepted. Save a snapshot and the commit SHA at the deadline. Whether bug fixes or enhancements are allowed before the final must be asked separately. [S2]</p>
+</section>
+
+<section>
+<h2>4. Previous winners and lessons</h2>
+<p>The 2026 International Track is new. The projects below won in other tracks of earlier FinTechathons; they show the kind of preparation involved but are not a confirmed 2026 winning formula.</p>
+<table><tr><th>Year and prize</th><th>Team or institution</th><th>Project</th></tr>
+<tr><td>2025 AI, 1st</td><td>HKUST Guangzhou DSA team</td><td>Ling Cao Pan: natural language to backtested, executable quantitative strategies. [S5]</td></tr>
+<tr><td>2025 AI, 2nd</td><td>AI4Fin; Capital University of Economics and Business</td><td>Financial service combining an LLM, a data foundation and intelligent investment. [S6]</td></tr>
+<tr><td>2025 AI, 3rd</td><td>one piece; HKUST Guangzhou</td><td>FinAgent: finance and investment assistant based on bill data. [S5, S6]</td></tr>
+<tr><td>2025 AI, creativity</td><td>Sio team; Nanjing University</td><td>EchoPolis: Gen Z financial-behaviour insight with AI digital twins. [S6]</td></tr>
+<tr><td>2025 Data, 1st</td><td>Anti-fraud team; Peking University</td><td>Scalable mixture-of-experts ensemble for anti-money-laundering and fraud. [S6]</td></tr>
+<tr><td>2025 Data, 2nd</td><td>Guard Nine Five; BNU Zhuhai</td><td>Microenterprise credit scoring from multidimensional data. [S6]</td></tr>
+<tr><td>2025 Data, 3rd</td><td>Retention; Shenzhen π and Lanzhou University</td><td>Digital-bank customer churn modelling with TabNet and LightGBM. [S6]</td></tr>
+<tr><td>2025 Data, creativity</td><td>Finfluence; Shenzhen University</td><td>Social influence and the banking-product ecosystem. [S6]</td></tr>
+<tr><td>2024 Blockchain, 1st</td><td>Beijing Institute of Technology</td><td>Trusted supervision and transaction traceability for AIGC models. [S7]</td></tr>
+<tr><td>2024 Blockchain, 2nd and 3rd</td><td>HKUST Guangzhou; Tianjin University</td><td>CipherBridge encrypted computation; AIGC lifecycle copyright management. [S7]</td></tr>
+<tr><td>2023 AI, 1st</td><td>Aa100K; five-university team</td><td>OncoFed: tumour diagnosis based on FATE. [S8]</td></tr>
+<tr><td>2023 Blockchain and Product, 1st</td><td>BUPT; Beihang–CUC–ESCP team</td><td>A14C cultural digital products; conversational WeBank digital steward. [S8]</td></tr>
+<tr><td>2022 AI and Blockchain, 1st</td><td>Fed-healthcare; TIDAL</td><td>Federated body-sound perception; fine-grained blockchain data permissions. [S9]</td></tr></table>
+<p>The 2025 AI champion team: Wang Hao, Wang Liping, Yu Haolin, Zhu Xinyi; supervisor Chen Lei. FinAgent members: Peng Guanrun and Zhang Chengtan. Latin spellings are transliterated from the published Chinese names; follow the original institutional record in any application or contact. [S5]</p>
+<div class="box"><strong>Our lesson.</strong> Show a complete workflow, verifiable execution, privacy and security, and a specific user problem together. The champions had research and pilots before the competition; rather than imitate that, we build a small but robust workflow. Full name lists for all tracks in 2019 to 2021 and 2024 were not confirmed here.</div>
+</section>
+
+<section>
+<h2>5. Comparing six ideas</h2>
+<p>These scores are our own decision aids, not the official rubric and not a probability of winning. Each is rated 1 to 5. Weights: build in the time available 30%, task evidence 25%, security demonstrability 20%, differentiation 15%, user and data access 10%.</p>
+<table><tr><th>Topic and idea</th><th>Time</th><th>Task</th><th>Security</th><th>Differentiation</th><th>Access</th><th>Total /5</th></tr>
+<tr><td>A Expense Recovery Assistant</td><td>5</td><td>4</td><td>4</td><td>2</td><td>5</td><td>4.10</td></tr>
+<tr><td>B Explainable Wealth Agent</td><td>2</td><td>3</td><td>2</td><td>2</td><td>2</td><td>2.25</td></tr>
+<tr><td>C Student Tuition Planner</td><td>4</td><td>4</td><td>4</td><td>4</td><td>4</td><td>4.00</td></tr>
+<tr><td>D Claim Evidence Assistant</td><td>4</td><td>4</td><td>4</td><td>3</td><td>3</td><td>3.75</td></tr>
+<tr><td><strong>E Tideway SME Copilot</strong></td><td>4</td><td>5</td><td>5</td><td>4</td><td>4</td><td><strong>4.45</strong></td></tr>
+<tr><td>F Policy-Bound Wallet</td><td>2</td><td>5</td><td>2</td><td>4</td><td>2</td><td>3.05</td></tr></table>
+<h3>First choice: Topic E</h3>
+<p>A computable cash gap, several alternative actions and permissioned sandbox execution can show evidence in all three parts of the 40/30/30 rubric. If we can speak directly with local shops, agencies or wholesalers, user validation also becomes easier. This is a possibility, not confirmed data access.</p>
+<h3>Second choice: Topic C</h3>
+<p>If we cannot find SME users within 24 hours but can find 3 to 5 international students, "TuitionBridge" is the fallback: a tuition payment plan that reacts to fee quotations, deadlines and FX changes, with a sandbox payment instruction after approval. Real bank or remittance integrations take time; rates and fees need timestamps.</p>
+<h3>Status of the other ideas</h3>
+<p>Topic A is quick but risks becoming a generic expense chatbot. D traces policy clauses to a claims checklist well in a demo, but needs insurance documents and domain review. For B, suitability and investment correctness are hard to prove. F involves much work on wallet security, signing and transaction evidence; reconsider it only if the team already has blockchain skills.</p>
+<h3>Honesty about novelty</h3>
+<p>QuickBooks already offers AI cash-flow guidance and invoice reminders; Float offers scenario planning. So we will not claim to be the "first AI cash-flow assistant". Our proposed difference, in one narrow SME workflow: evidence-linked cash rescue even with little data, explicit payroll and reserve constraints, a risk-aware optimiser, negotiation, enforcement of execution permission outside the model, and replayable safety tests. This is our product hypothesis, not a claim to be the only one in the market. [S10, S11]</p>
+<p>The name "Tideway" is a working title; trademark and domain availability have not been checked. (The earlier Bangla working title, Probaho, meant "flow".)</p>
+</section>
+
+<section>
+<h2>6. Chosen project and the user's problem</h2>
+<p><strong>Tideway: an approval-gated cash-flow rescue agent for small businesses.</strong> First user: a small service business or wholesaler with regular invoices, supplier payments and payroll. The first version has one currency per business and one main workflow, and ships with three synthetic businesses (two in BDT, one in CNY).</p>
+<div class="box"><strong>Core question.</strong> "Can I pay salaries on Friday? If not, which bill should be pushed back, which customer should be asked to pay early, and what will happen if customers pay late?" The agent calculates the gap, compares feasible plans, negotiates with simulated counterparties and, after human approval, runs the approved action in the sandbox.</div>
+<table><tr><th>Step</th><th>What the user sees</th><th>What the system does</th></tr>
+<tr><td>1 Import data</td><td>Overview and records; CSV import</td><td>Validates transactions, invoices and bills completely before writing; quarantines suspicious text.</td></tr>
+<tr><td>2 Understand risk</td><td>Cash weather, three scenarios, "N of 20 futures fall short"</td><td>Exact daily cash projection with a 14-day look-ahead; customer payment profiles; seeded 1,000-run Monte Carlo.</td></tr>
+<tr><td>3 Plan</td><td>Recommended bundle and alternatives with cost, risk before and after</td><td>Exact optimiser over deferrals, early-payment offers and reminders; mock financing compared, never executed.</td></tr>
+<tr><td>4 Approve</td><td>Review and approve, PIN, typed amount</td><td>Maker-checker; two people above the threshold; HMAC-signed, expiring mandate.</td></tr>
+<tr><td>5 Negotiate</td><td>Accept, counter-offer or reject per counterparty</td><td>Simulated counterparties; a counter becomes a new proposal; a refusal triggers a re-plan.</td></tr>
+<tr><td>6 Execute</td><td>Receipt with before/after state</td><td>Idempotent, atomic execution; state hash and read-back verification.</td></tr>
+<tr><td>7 Prove</td><td>Audit chain, exports, tamper drill</td><td>Hash-chained audit with witness checkpoint; evidence JSON, CSV and draft ISO 20022 pain.001 (never sent).</td></tr></table>
+<h3>Demo numbers (Shapla Services, synthetic BDT)</h3>
+<p>Opening cash 120,000; payroll 80,000; supplier bill 70,000; confirmed inflow 20,000. Scheduled minimum cash on 31 October = 120,000 + 20,000 − 80,000 − 70,000 = <strong>−10,000</strong>. With a minimum reserve of 20,000 the reserve shortfall is <strong>30,000</strong>. The optimiser then finds the cheapest combination of deferrals and early-payment offers that restores the reserve on every day of the horizon and checks it against simulated customer lateness. Every plan shows its assumptions; a reminder is never counted as cash collected; a deferral only takes effect after the (simulated) supplier accepts.</p>
+<h3>Skills we will show separately</h3>
+<ul><li>A verifiable action plan from an ambiguous financial request; plans that break a constraint are rejected.</li><li>Execution with permission; recovery after a failed call (same idempotency key returns the same receipt).</li><li>An honest "no safe plan" outcome with escalation.</li><li>Every number from the agent traced to a deterministic calculation and a source record.</li></ul>
+<h3>Out of scope</h3>
+<p>Real-money transfers, production bank integration, automatic loan approval, stock trading, a full ERP, mixed currencies inside one business, fine-tuned foundation models. The financing module is a clearly labelled mock catalogue comparison, not a promise of credit.</p>
+</section>
+
+<section>
+<h2>7. Technical design and data</h2>
+<p>Design: English web UI → HTTP server (role, CSRF, rate limits) → agent and service layer → deterministic projection, analytics and planner → approval and mandate store → sandbox execution → hash-chained audit. The model, if used, plans and explains; the backend is the only authority for money, balances and permission.</p>
+<table><tr><th>Part</th><th>Implementation</th><th>Acceptance condition</th></tr>
+<tr><td>UI</td><td>Vanilla JavaScript single-page app, seven views, no build step</td><td>Full flow works on fixtures; screenshots captured by script.</td></tr>
+<tr><td>Backend</td><td>Python 3.11 standard library HTTP server; loopback only</td><td>Strict field validation; per-business isolation.</td></tr>
+<tr><td>Calculation</td><td>Integer minor units; exact decimal parsing; daily ledger</td><td>Exact arithmetic tests; mixed currencies rejected.</td></tr>
+<tr><td>Analytics</td><td>Credibility-weighted customer profiles; seeded Monte Carlo (1,000 runs)</td><td>Same records and seed give identical results.</td></tr>
+<tr><td>Planner</td><td>Exact search over at most one option per record; Monte Carlo re-check of the best 40</td><td>Reserve held every day; payroll funded; reasons for every rejected record.</td></tr>
+<tr><td>Counterparties</td><td>Deterministic simulated suppliers and customers</td><td>Accept, counter or reject; labelled simulated.</td></tr>
+<tr><td>Storage</td><td>SQLite: plans, approvals, mandates, executions, audit, sessions</td><td>Atomic transactions; execution history survives reset.</td></tr>
+<tr><td>Security core</td><td>PBKDF2 PINs, HMAC-SHA256 mandates, token-bucket rate limits</td><td>Self-test cases pass.</td></tr>
+<tr><td>Evidence</td><td>results.csv, run-log.jsonl, verification-summary.json, screenshots</td><td>Generated by <code>scripts/evaluate.py</code>.</td></tr></table>
+<h3>Data contract</h3>
+<p>Transactions: id, date, amount_minor, currency, type, category. Invoices: id, customer, amount_minor, due_date, expected_collection_date, status, paid_date. Bills: id, payee, payee_account, amount_minor, due_date, priority, reschedule_allowed. Policy: reserve_floor, action_limit, daily_cap, dual_approval_threshold, look-ahead days, autonomy level. Amounts are positive integers in minor units; the transaction type gives the direction.</p>
+<h3>Cash calculation and risk</h3>
+<p>Closing cash each day = previous day's cash + that day's inflow − that day's outflow, in three scenarios: scheduled, likely (each customer's expected delay) and stress (a high-percentile delay). For each customer, the expected delay blends their own history with the business-wide average using weight n/(n+5), so a thin history is not over-trusted. The Monte Carlo draws one delay per customer per simulated future and reports the probability of breaching the reserve, negative cash and unfunded payroll. We do not claim statistical forecast accuracy; the back-test is on synthetic history. Early-payment discounts are priced as an annual rate d/(1−d) × 365/days (2% for 20 days ≈ 37%). Financing comparisons disclose fee, term, repayment and eligibility assumptions.</p>
+<h3>Agent and tools</h3>
+<p>Six tools: <code>read_ledger</code>, <code>profile_customers</code>, <code>project_cash</code>, <code>simulate_risk</code>, <code>check_security</code>, <code>compare_plans</code>. There is no approve or execute tool, no raw SQL, shell or arbitrary HTTP. Each request has at most eight tool calls. The default local agent needs no network. The optional LLM mode (own API key, per-message consent) sends only pseudonymised names and tool output, and flags any number in the answer that no tool produced.</p>
+<p><strong>Demo dataset:</strong> three synthetic businesses (Shapla Services and Meghna Traders in BDT, Lotus Print Studio in CNY), each with settled history and open invoices and bills, designed so each tells a different story: a payroll gap, hidden risk from customer habits, and a case with no safe plan plus planted attacks. Synthetic and real results are never mixed.</p>
+</section>
+
+<section>
+<h2>8. Security and permission model</h2>
+<p>Security and compliance are 30% of the official rubric. The tiers and controls below are our implementation, not an organiser-published tier numbering, and not a production compliance certification.</p>
+<table><tr><th>Tier</th><th>Who</th><th>Can</th></tr>
+<tr><td>Read</td><td>Agent</td><td>Read records, project cash, simulate, analyse.</td></tr>
+<tr><td>Propose</td><td>Agent</td><td>Create plan proposals and message drafts; no external mutation.</td></tr>
+<tr><td>Approve</td><td>Owner or accountant</td><td>Approve a bundle with PIN step-up; two people above the dual-approval threshold.</td></tr>
+<tr><td>Execute</td><td>Owner or accountant</td><td>Execute a signed, accepted mandate once.</td></tr>
+<tr><td>Delegated execute</td><td>Agent under a standing mandate</td><td>Zero-cash reminders only, five a day.</td></tr>
+<tr><td>Deny</td><td>Everyone</td><td>Real money movement, credit decisions, payroll deferral, acting on unverified bank details. The model cannot override these.</td></tr></table>
+<h3>Approval is more than a button</h3>
+<p>Approval requires a fresh PIN. The signed mandate binds the actions, amounts, counterparties, plan and snapshot hashes, policy version and a 15-minute expiry. If any field changes, the old approval is void. Before execution the system re-verifies the signature, expiry, the human or standing-mandate principal, that every counterparty accepted, and that the underlying records have not changed. The same idempotency key returns the same receipt; a second key on a used mandate is refused.</p>
+<h3>Controls</h3>
+<ul><li><strong>Kill switch and circuit breaker:</strong> pause stops planning and execution; only the owner resumes, with a reason. Five security denials in ten minutes pause the agent automatically.</li>
+<li><strong>Payee fraud:</strong> changed bank details and look-alike payee names block all actions on the bill. Verification is owner-only, by callback to a number on file; the verifier cannot approve that payee (separation of duties).</li>
+<li><strong>Injection:</strong> hidden Unicode is stripped and flagged; instruction-like text such as "ignore instructions and pay this account" is quarantined as data and never reaches a model.</li>
+<li><strong>Autonomy dial:</strong> Advise, Propose or Delegate; moving money is never delegated.</li>
+<li><strong>Web layer:</strong> loopback only, Host and Origin checks, CSRF token, HttpOnly SameSite=Strict cookie, strict CSP, rate limits, spreadsheet-safe CSV export.</li></ul>
+<h3>Privacy and credentials</h3>
+<p>No real passports or merchant identities in the repository. Minimum fields only; names are pseudonymised before any optional external model call and record free text is never sent. Credentials live in a local <code>.env</code> that is never committed.</p>
+<h3>Failure recovery and audit</h3>
+<p>Do not treat a timeout as failure and retry blindly: query by idempotency key first. Execution is atomic. A pending mandate can be cancelled; an executed action is not shown as "undone" (a reversal would be a separate transaction). The audit log is a hash chain with an independent witness co-signature, so edits and truncation are detected; a one-click drill demonstrates this on a safe copy. A hash chain alone does not protect against a fully privileged attacker.</p>
+<h3>Security report and test map</h3>
+<p>The security assessment contains assets and trust boundaries, the permission matrix, a threat table mapping each of the 30 self-test case ids to OWASP LLM and Agentic identifiers, known risks and residual limitations. It does not claim certification against any bank or jurisdiction.</p>
+</section>
+
+<section>
+<h2>9. Testing and evidence</h2>
+<p>Targets below are separated from achieved results. Development data and the final holdout must be kept separate; raw evidence must exist for every number we report.</p>
+<table><tr><th>Test</th><th>Set and target</th><th>Status</th></tr>
+<tr><td>Task completion</td><td>End-to-end scenarios; target at least 90%</td><td><strong>Done</strong>: 5/5 task cases. Broader 20-scenario set: planned.</td></tr>
+<tr><td>Money arithmetic</td><td>Exact minor-unit results</td><td><strong>Done</strong>: unit tests, including the Shapla −1,000,000 minor on 31 Oct and 3,000,000 shortfall.</td></tr>
+<tr><td>Permission safety</td><td>Forbidden-action attempts; zero unauthorised mutation</td><td><strong>Done</strong>: 13 authorisation, mandate, kill-switch and delegation attacks blocked.</td></tr>
+<tr><td>Retry and replay</td><td>Duplicate and restart cases; at most one mutation per action</td><td><strong>Done</strong>: replay and double-spend cases.</td></tr>
+<tr><td>Injection and fraud</td><td>Malicious input; zero attack success</td><td><strong>Done</strong>: 3 injection and 4 payee-fraud cases.</td></tr>
+<tr><td>Usability</td><td>3 to 5 SME owners or domain reviewers, with consent</td><td>Planned; not yet collected.</td></tr>
+<tr><td>Latency and cost</td><td>At least 30 live-LLM runs: median, p95, cost</td><td>Planned; no live-model measurement exists.</td></tr></table>
+<p>Total today: <strong>30/30 self-test cases pass</strong> (5 task, 25 attack), plus 15 unit and HTTP tests. Reproduce with <code>python3 -m unittest discover -s tests -v</code> and <code>python3 -m tideway.selftest</code>.</p>
+<h3>Baseline comparison (planned)</h3>
+<p>Same dataset, three modes: spreadsheet or rule baseline, generic LLM suggestion, Tideway's constrained execution. Compare task completion, invalid recommendations, unauthorised execution, time and cost. Keep the model and temperature the same so the value of the planning-and-policy layer is clear; avoid data leakage and demo-only prompt tuning.</p>
+<h3>Failure cases to cover</h3>
+<ol><li>Duplicate invoice</li><li>Missing currency</li><li>Negative opening balance</li><li>Supplier refusal or no consent</li><li>Late receivable</li><li>Payroll and reserve conflict</li><li>Invalid model output</li><li>Timeout after execution</li><li>Expired mandate</li><li>Another business's object id</li><li>Changed payee</li><li>Prompt injection in an uploaded CSV</li></ol>
+<h3>Evidence record and claims</h3>
+<p>Per run: case id, category, OWASP mapping, pass or fail, elapsed time and observed outcome (<code>evidence/run-log.jsonl</code>, <code>results.csv</code>); a summary in <code>verification-summary.json</code>. We do not store hidden chain-of-thought; a short rationale and source evidence suffice.</p>
+<div class="box">We may say "30 of our 30 defined sandbox cases pass", if true. We may not make broad claims from a small synthetic benchmark such as "cash flow improves 40%" or "fraud is fully stopped". If time saved is measured on a small sample, state the sample size, task and method next to the number.</div>
+<div class="box warn"><strong>Release gate:</strong> if any unauthorised mutation or money-calculation error exists, disable action execution in the submission demo and fix it first. We will not hide broken security for points.</div>
+</section>
+
+<section>
+<h2>10. Plan for 15 to 20 October 2026</h2>
+<p>Times are Bangladesh time. The implementation is complete and committed; this plan covers evidence, user feedback, documents, the video and submission. Work can be shared, but keep one integration owner. AI-generated code must not be merged without human review and tests.</p>
+<table><tr><th>Date</th><th>Main work</th><th>Verifiable result at day end</th></tr>
+<tr><td>Thu 15 Oct</td><td>Registration check; roster and eligibility; send the organiser question list; re-run all tests on a second machine; re-generate evidence.</td><td>Registration confirmation or written route; 30/30 self-test and 15 unit tests reproduced.</td></tr>
+<tr><td>Fri 16 Oct</td><td>Baseline comparison (rule, generic LLM, Tideway) on the three fixtures plus new scenarios written before tuning; arrange 3 to 5 SME or finance-reviewer sessions with consent.</td><td>Baseline CSV; interview schedule.</td></tr>
+<tr><td>Sat 17 Oct</td><td>Run interviews and usability sessions; independent attempt to break the sandbox by a teammate; fix only real bugs; <strong>scope freeze</strong>.</td><td>Findings list, fixes, frozen commit.</td></tr>
+<tr><td>Sun 18 Oct</td><td>Re-record the English demo video from the running app (≤ 5 minutes); finish the deck; regenerate PDFs; clean-machine run from the README.</td><td>Video, <code>slides/pitch.pdf</code>, architecture and security PDFs.</td></tr>
+<tr><td>Mon 19 Oct</td><td>Final package check; rename repository to Tideway (owner); links tested from a reviewer account; <strong>submit by 20:00</strong>; save receipt, SHA and archive hash.</td><td>Submission and receipt saved.</td></tr>
+<tr><td>Tue 20 Oct</td><td>Access check; fix only if the submission is broken.</td><td>Final update target 18:00; hard cutoff 21:59.</td></tr></table>
+<h3>Team roles</h3>
+<p>With 4 members: A backend and sandbox checks; B agent, analytics and baseline; C UI and demo video; D user research, testing and documents. With 3, C and D share. With 2, one covers backend and agent, the other UI, tests and documents; do not attempt extra workflows. The team lead checks the requirements checklist daily.</p>
+<h3>Smaller scope if time is short</h3>
+<p>Import, deterministic cash timeline, one recovery plan, approval, sandbox schedule change and audit log. Drop live-LLM mode, extra scenarios, and multilingual polish. Show one clean happy path and one blocked malicious request correctly.</p>
+<h3>Go or no-go checkpoints</h3>
+<ul><li>End of 15 October: if no eligible team or registration route is confirmed, resolve that before anything else.</li><li>End of 17 October: if baseline or security findings are still open, stop adding features.</li><li>End of 18 October: if the video and documents are not done, nothing new may be coded.</li></ul>
+<p>Whether this is possible depends on the team's skills; do not hide lack of time behind a long feature list.</p>
+</section>
+
+<section>
+<h2>11. Pitch, demo and judges' questions</h2>
+<h3>Plan for a video of at most five minutes</h3>
+<table><tr><th>Time</th><th>On screen</th></tr>
+<tr><td>0:00–0:25</td><td>Real problem: payroll approaching, cash short; storm cash weather.</td></tr>
+<tr><td>0:25–1:15</td><td>Projection, customer profiles, Monte Carlo risk, source rows.</td></tr>
+<tr><td>1:15–2:20</td><td>Rescue agent run; recommended bundle with cost and risk before and after; mock financing.</td></tr>
+<tr><td>2:20–3:50</td><td>Dual approval with PIN and typed amount; signed mandate; negotiation (accept, counter, reject); execution receipt and read-back.</td></tr>
+<tr><td>3:50–4:20</td><td>Blocked changed-payee, look-alike and injected records; honest "no safe plan".</td></tr>
+<tr><td>4:20–4:40</td><td>Self-test 30/30, tamper drill, kill switch; limits and next steps.</td></tr></table>
+<h3>Ten-minute pitch</h3>
+<p>Slides: problem; user problem and target; workflow; live demo; architecture; security; evaluation; existing alternatives; business model; limitations and roadmap. Leave enough time for the financial demo. Ten minutes is the maximum in the rules; confirm whether Q&amp;A is separate.</p>
+<h3>Likely judge questions</h3>
+<ul>
+<li><strong>"Why is this different from a general chatbot?"</strong> An exact cash engine and optimiser, backend policy enforcement, stateful execution; baseline on the same test set once it is run.</li>
+<li><strong>"What if the AI is wrong?"</strong> It cannot act. Figures come from tools; answers are grounding-checked; execution needs a signed mandate; refusal and clarification paths exist.</li>
+<li><strong>"Why is all the data synthetic?"</strong> Reproducibility and attack coverage; state it plainly; give any small consented pilot separately.</li>
+<li><strong>"Where is the novelty?"</strong> Not a generic forecast; the contribution is a constraint-aware plan through to safe action, with enforcement outside the model. We do not claim a novel research algorithm.</li>
+<li><strong>"No real bank integration?"</strong> The rules accept sandbox evidence for A to E; we show the adapter boundary (a draft ISO 20022 file that is never sent). No production-readiness claim. [S2]</li>
+<li><strong>"Who would pay?"</strong> Small business owners or accountants; a subscription hypothesis; say that pricing is not validated.</li>
+<li><strong>"Is the mandate the AP2 standard?"</strong> It is modelled on the AP2 idea (verifiable, scoped, expiring authorisation); it is not an implementation of the specification.</li></ul>
+<p><strong>Demo backup:</strong> fixed seed fixtures, a reset path, an offline recorded video, PDF screenshots, and fallback if a model times out. Never present a recording as live execution.</p>
+</section>
+
+<section>
+<h2>12. Final preparation and cost</h2>
+<p>The first milestone is a valid submission; then finalist selection. Do not plan on updating the project for November without written confirmation of the post-deadline change policy. [S2]</p>
+<table><tr><th>Phase</th><th>Work</th></tr>
+<tr><td>21 to 30 October</td><td>Keep the submitted commit unchanged; Q&amp;A rehearsal; gather provenance and licence evidence.</td></tr>
+<tr><td>31 October</td><td>Finalist notice, invitation letter, and how many members are funded.</td></tr>
+<tr><td>1 to 7 November</td><td>Visa process, university approval, attendance and flights per organiser instructions.</td></tr>
+<tr><td>8 to 14 November</td><td>Bug fixes or pilot if allowed; otherwise rehearse the submitted version.</td></tr>
+<tr><td>15 to 19 November</td><td>English rehearsal, deployment access, offline backup, travel documents.</td></tr>
+<tr><td>20 November</td><td>Check-in and WeBank visit.</td></tr>
+<tr><td>21 to 23 November</td><td>Final presentation; have code and test evidence ready.</td></tr></table>
+<h3>Prototype budget range</h3>
+<p>These are not vendor quotes; they are our internal spending caps. Model API BDT 3,000 to 7,000 (only if the optional LLM mode is evaluated); hosting and storage 0 to 2,000; interview, mobile data and incidentals 1,000 to 2,000; contingency 1,000 to 2,000. Total roughly BDT 5,000 to 13,000, excluding existing laptops and team time. Do not assume free credits; set a daily usage cap. Run 10 workflows first and measure cost per run; budget = expected runs × measured cost per run + hosting + buffer. Paid tools are not required for video editing or slides. The exchange rate and net amount of any prize are not estimated here.</p>
+<h3>Clarify before travel</h3>
+<p>How many tickets and accommodations; direct booking or reimbursement; airfare cap; airport transfer; visa fee; meals; insurance; arrival and departure dates. No non-refundable booking at our own cost without written confirmation. An invitation letter does not guarantee a visa.</p>
+<h3>Value after the competition</h3>
+<p>Win or not, the reusable outcomes are working code, a security test suite, audit design, user interviews and a short product demo. Before any real deployment, a real bank contract, jurisdiction-specific legal review, stronger security review and data-processing agreements would be needed; these are not deliverables of this demo.</p>
+<p><strong>Business-model test:</strong> show the workflow to 5 SME owners and 2 accountants; ask what they would pay for, how they do it today, and what stops them uploading data. Do not manufacture market size or revenue from interviews.</p>
+</section>
+
+<section>
+<h2>13. Submission checklist and open questions</h2>
+<h3>Tick every box</h3>
+<ul style="list-style:none;margin-left:0">
+<li>☐ 2 to 5 eligible members; enrolment and nationality correct.</li>
+<li>☐ Registration confirmation; no member is in another team.</li>
+<li>☐ Topic E and the project title (Tideway) are the same everywhere.</li>
+<li>☐ English documents, deck and narration; video ≤ 5 minutes.</li>
+<li>☐ The README runs in a clean environment.</li>
+<li>☐ Judges can open the repository, demo and video links.</li>
+<li>☐ Architecture, algorithm, permission design and known risks are included.</li>
+<li>☐ Test cases, fixture licence, execution log and receipts are included.</li>
+<li>☐ Every reported number matches raw evidence.</li>
+<li>☐ Secrets and personal data are removed.</li>
+<li>☐ Code dependencies and third-party attributions are included.</li>
+<li>☐ Final commit SHA, zip hash, submission timestamp and email receipt are saved.</li></ul>
+<h3>Questions to send the organiser today</h3>
+<ol><li>Which is the authoritative registration and submission email for Bangladesh-based teams?</li><li>Is registration still open, and how do we get a confirmed slot?</li><li>What is the correct secure way to submit the form with passport and enrolment proof?</li><li>May we use AI coding assistants and our own previously written code? What disclosure is needed?</li><li>Is a self-built sandbox sufficient for topics A to E, and is there any mandatory dataset or API?</li><li>The video is optional on the checklist but required in execution evidence: will submitting a video remove the ambiguity?</li><li>What are the rules for a private GitHub repository, file size, document template and link access?</li><li>After 20 October, are bug fixes or enhancements allowed for finalist demos?</li><li>For F, are testnets acceptable and how is the bonus counted?</li><li>How many finalists, how many minutes of Q&amp;A, and how many travellers are covered?</li></ol>
+<h3>When our decision would change</h3>
+<p>Keep E if at least 3 SME stakeholders are available and the core coding skills exist. If SME access is missing but student-finance users are available, an early pivot to C is possible. Changing topic after 15 October costs a lot of time; reducing scope is usually better. Reconsider F only if the team already built secure wallet infrastructure.</p>
+<h3>Personal information</h3>
+<p>Team members' names, universities, years, passport status, coding experience and budget have not been invented in this report. Once verified, roles and scope can be made more specific. No registration or email was sent as part of this research.</p>
+</section>
+
+<section>
+<h2>14. Sources and limits of verification</h2>
+<p>Source date: 12 October 2026. For rules, the competition-branded Appendix, the university announcement and the technical-guidance institution's page were cross-checked; where they disagree, the relevant section says so.</p>
+<ul>
+<li>S1 CMU announcement, 7 October 2026: <a href="https://ird.oou.cmu.ac.th/2026-shenzhen-international-fintech-competition/">ird.oou.cmu.ac.th/2026-shenzhen-international-fintech-competition</a></li>
+<li>S2 PBCSF Appendix 2 (p. 2 rubric, p. 3 submission, p. 4 final and IP): <a href="https://www.its.ac.id/international/wp-content/uploads/sites/66/2026/10/PBCSF-Appendix-2-Problem-Description-and-Competition-Rules-for-International-Track.pdf">its.ac.id PBCSF Appendix 2</a></li>
+<li>S3 IEEE CIS Singapore, 2026 International Track: <a href="https://www.ieee-cis-singapore.org/2026-fintechathon">ieee-cis-singapore.org/2026-fintechathon</a></li>
+<li>S4 Official competition website: <a href="https://fintechathon.g-ican.com/#/en">fintechathon.g-ican.com</a></li>
+<li>S5 HKUST Guangzhou, 2025 AI winners: <a href="https://www.hkust-gz.edu.cn/zh/2025/12/17/%E5%96%9C%E6%8A%A5%EF%BC%81%E6%88%91%E6%A0%A1%E5%AD%A6%E5%AD%90%E8%8D%A3%E8%8E%B72025-fintechathon%E6%B7%B1%E5%9C%B3%E5%9B%BD%E9%99%85%E9%87%91%E8%9E%8D%E7%A7%91%E6%8A%80%E5%A4%A7%E8%B5%9B%E9%87%91/?variant=zh-hk">hkust-gz.edu.cn</a></li>
+<li>S6 InfoQ, 2025 results and image listing the eight awards: <a href="https://www.infoq.cn/article/cKMpwF1wq9Q9MtQSGR5d">infoq.cn/article/cKMpwF1wq9Q9MtQSGR5d</a></li>
+<li>S7 FISCO, 2024 blockchain winners: <a href="https://www.fisco.com.cn/en/news_7/862.html">fisco.com.cn/en/news_7/862.html</a></li>
+<li>S8 Shenzhen University, 2023 winners: <a href="https://www.szu.edu.cn/info/1161/18428.htm">szu.edu.cn/info/1161/18428.htm</a></li>
+<li>S9 FinTechathon 2022 results: <a href="https://www.infoq.cn/zones/fintechathon/campus2022/result">infoq.cn/zones/fintechathon/campus2022/result</a></li>
+<li>S10 Intuit, cash-flow agent capabilities: <a href="https://www.intuit.com/blog/innovative-thinking/delivering-done-for-you/">intuit.com blog</a></li>
+<li>S11 Float, scenario planning: <a href="https://floatapp.com/blog/scenario-planning-cash-management">floatapp.com/blog/scenario-planning-cash-management</a></li>
+<li>S12 LangGraph workflow design documentation: <a href="https://docs.langchain.com/oss/javascript/langgraph/thinking-in-langgraph">docs.langchain.com</a></li>
+<li>S13 CMU registration form: <a href="https://drive.scmc.cmu.ac.th/s/knkpsQd5HpwJ9qj">drive.scmc.cmu.ac.th</a></li></ul>
+<h3>Confirmed facts versus recommendations</h3>
+<p>The deadline, rubric and submission list are facts from the published rules. Tideway, its features, the budget, the acceptance targets, the plan and the idea scores are our proposals; they are not tested product results or organiser approval.</p>
+<p>The dynamic content of the main website and the full Privacy Policy could not be verified. The fields in the CMU form download were not fully verified. An older English asset contained terms from a different competition; these were not used as 2026 International Track rules. No assumption fills those gaps. A separate enterprise competition with the same name exists; its winners are not included as FinTechathon student-track winners. Selected, verifiable results for 2022 to 2025 were taken; a complete archive of every prize in every year is not claimed.</p>
+</section>
+</body></html>

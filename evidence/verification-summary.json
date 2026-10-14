@@ -1,14 +1,16 @@
 {
-  "project": "Probaho",
-  "track": "Topic E",
-  "backend_tests_passed": 30,
-  "http_and_domain_tests": "passed",
-  "browser_flow": "passed",
-  "deterministic_evaluation_cases": 18,
-  "deterministic_evaluation_passed": 18,
-  "javascript_syntax": "passed",
+  "project": "Tideway",
+  "track": "FinTechathon 2026 International, Topic E",
+  "run_at": "2026-10-14T09:40:11+00:00",
+  "cases": 30,
+  "passed": 30,
+  "attacks": 25,
+  "attacks_blocked": 25,
+  "tasks": 5,
+  "tasks_completed": 5,
+  "attacks_not_blocked": 0,
+  "assumptions": "Worst case: hijacked model and a rubber-stamp human. Synthetic sandbox, one run each; a passing suite is evidence for these cases only, not proof of security.",
   "live_model_tested": false,
-  "live_model_reason": "No provider key was used by the isolated verification run",
-  "fixture": "Shapla Services synthetic sandbox",
-  "source": "Local unittest and isolated Chrome verification; optional AI adapter uses simulated responses only"
+  "live_model_reason": "The suite uses simulated model transports; no provider key is used.",
+  "fixture": "Synthetic sandbox (Shapla Services, Lotus Print, Meghna Traders)"
 }

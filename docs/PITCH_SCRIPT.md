@@ -1,67 +1,32 @@
-# Probaho — English pitch draft
+# Tideway: pitch script (about 9 minutes, limit 10)
 
-Target: 8–9 minutes of speaking within a 10-minute maximum. Replace team details and measured results before presenting. This is a speaking draft, not a finished slide deck.
+Slides match `slides/pitch.pdf`. Replace team details before presenting. Every number below is from the synthetic fixtures or the self-test; say so.
 
-## 1. Problem — 0:00–0:55
+## 1. Problem (0:00–0:50)
+"A small business does not need another dashboard. When payroll is days away and cash is short, the owner needs to know: what can I safely defer, who can I ask, and what happens if my customers pay late? And an AI that answers that must never be able to move money on its own."
 
-“A small business owner does not need another dashboard that only reports what already happened. When payroll is approaching and cash is tight, the real question is: which receivable, supplier obligation, or recovery option can be considered without breaking the business’s reserve and payroll constraints?
+## 2. A concrete case (0:50–1:40)
+"Shapla Services: BDT 120,000 in the bank, BDT 80,000 payroll, a BDT 70,000 supplier bill, BDT 20,000 coming in, and a BDT 20,000 reserve. The schedule says cash falls to minus BDT 10,000 on 31 October, BDT 30,000 short of the reserve. These figures are exact integer arithmetic linked to source records, not a model's guess."
 
-We built Probaho, an approval-gated cash-flow recovery copilot for small businesses. It turns a business-scoped ledger into an evidence-linked cash gap, compares bounded alternatives, and executes only an approved action in a sandbox.”
+## 3. What Tideway does (1:40–3:30)
+"It profiles each customer's payment behaviour with credibility weighting, projects three scenarios with a 14-day look-ahead, and runs a seeded 1,000-run Monte Carlo for the chance of breaching the reserve. An exact optimiser then searches supplier deferrals and early-payment discounts, keeps only bundles that hold the reserve every day and protect payroll, and recommends the cheapest one whose simulated risk is acceptable. Early-payment discounts are priced as an annual rate: two percent for twenty days is about 37% APR. Financing is a labelled mock comparison."
 
-Visual: Shapla Services problem statement and `Records → Projection → Plan → Approval → Sandbox → Evidence`.
+## 4. Negotiate and decide (3:30–4:30)
+"Simulated suppliers and customers accept, counter or refuse. A counter-offer becomes a new proposal; a refusal triggers a re-plan. A human approves with a PIN step-up; high-value bundles need two people and a typed amount. That issues a signed mandate, modelled on the AP2 mandate idea, and execution happens once, with read-back."
 
-## 2. Concrete scenario — 0:55–1:45
+## 5. Live demo (4:30–6:30)
+Run the demo script highlights: Shapla rescue and approval, Lotus counter-offer, Meghna blocks and honest failure.
 
-“Our synthetic Shapla Services fixture starts with BDT 120,000. It has BDT 80,000 payroll, a BDT 70,000 supplier bill, and a confirmed BDT 20,000 receivable. The base closing cash is BDT -10,000. With a BDT 20,000 reserve floor, the reserve shortfall is BDT 30,000.
+## 6. Security (6:30–8:00)
+"We assume the worst: a fully hijacked model and a rubber-stamp human. The model has no approve or execute tool, sees only pseudonyms, and cannot be the weak link. Hidden Unicode is stripped, injected instructions are quarantined, changed bank details and look-alike payees block the bill, and payee verification is owner-only by callback with separation of duties. A kill switch and a circuit breaker stop the agent. The audit log is hash-chained with an independent witness, so edits and truncation are detected. Our 30-case suite maps to OWASP LLM and Agentic IDs; all pass, and that is evidence for those cases, not proof."
 
-Those numbers are not an LLM guess. They are deterministic minor-unit calculations linked to source rows.”
+## 7. Honest limits and what is different (8:00–9:00)
+"This is a synthetic sandbox with simulated counterparties; PINs and keys are demo-grade; we have not measured a live model or run a user study. We are not the first cash-flow assistant; incumbents offer forecasting and reminders. Our contribution is a complete, replayable loop from gap to safe action, with enforcement outside the model. Next: baseline comparison, consented SME interviews, a real rail adapter behind the same mandate."
 
-Visual: four metrics and the source-linked records.
-
-## 3. End-to-end workflow — 1:45–3:30
-
-“The user first imports or reviews transactions, invoices, and bills. Probaho validates the complete file before writing anything and rejects mixed currencies, conflicting IDs, invalid dates, and malformed amounts.
-
-The projection shows base, late-collection, and approved-recovery scenarios. A collection reminder is useful as a draft, but it never counts the receivable as collected. A supplier reschedule can move only a bounded amount to a later date and must protect payroll and the minimum reserve. Mock financing is displayed as a comparison catalogue, not a lender or executable action.
-
-The user reviews the action’s payee, amount, currency, source record, original due date, deferred date, assumptions, and risks. A human creates the approval. For a supplier scenario, the interface then requires a separate synthetic supplier-consent simulation. Only then can the sandbox action execute.”
-
-Visual: plan cards → approval panel → consent gate.
-
-## 4. What makes it different — 3:30–4:25
-
-“We are not claiming to be the first cash-flow assistant. Existing products already provide guidance and scenario planning. Probaho focuses on a narrow, demonstrable workflow: evidence-linked cash recovery under explicit payroll and reserve constraints, with an approval boundary and replayable safety checks.
-
-The model plans and explains. The backend owns money arithmetic, policy enforcement, state mutation, and receipts. This separation makes the demo auditable instead of asking judges to trust a chat response.”
-
-Visual: architecture diagram and comparison with a generic LLM suggestion.
-
-## 5. Security and failure recovery — 4:25–5:45
-
-“The assistant receives only four scoped tools: read the ledger, project cash, compare plans, and create a reminder draft. It has no approval, execution, payment, shell, SQL, or arbitrary HTTP tool.
-
-Every proposal is bound to a business, policy version, records snapshot, target date, and plan hash. Execution rechecks the payee, amount, dates, policy, expiry, nonce, current state, and supplier-consent binding. The same idempotency key returns the same receipt, and an uncertain client checks the receipt rather than blindly retrying.
-
-Imported descriptions are treated as data, even when they contain prompt-injection text. The audit export has an independent per-business hash chain. It is internal evidence, not third-party certification, and we say that plainly.”
-
-Visual: permission matrix, blocked-action test, read-back receipt, audit page.
-
-## 6. Evaluation plan — 5:45–7:05
-
-“Our evaluation separates development fixtures from holdout scenarios. We measure deterministic calculation correctness, terminal task completion, unauthorized mutation attempts, duplicate and restart behavior, prompt injection, latency, provider cost, and usability with consenting SME owners or domain reviewers.
-
-We compare a rule/spreadsheet baseline, a generic LLM suggestion, and Probaho’s constrained workflow on the same scenarios. We will report exact counts and raw evidence rather than claiming business improvement from a small synthetic dataset.”
-
-Visual: results table with actual measured values only; leave placeholders until measured.
-
-## 7. Limitations and next step — 7:05–8:20
-
-“This is a local synthetic prototype. It does not connect to a bank, contact a supplier, make a credit decision, or provide multi-user authentication. The next deployment step would require contracts, jurisdiction-specific legal review, encrypted storage, stronger authentication, and a professional security assessment.
-
-Our next product step is not adding more features. It is validating the workflow with small-business owners, measuring whether the source-linked plan is understandable, and testing the adapter boundary against real but consented provider behavior.”
-
-## 8. Close — 8:20–8:50
-
-“Probaho’s contribution is a complete and honest financial-agent loop: records become a deterministic gap; the gap becomes bounded alternatives; a human controls approval; the sandbox produces a receipt; and the evidence can be replayed.
-
-The agent participates in the financial workflow without becoming the authority over money. Thank you.”
+## Likely judge questions
+- **How is this different from a general chatbot?** Exact projection, optimiser, enforcement and state outside the model; a baseline comparison is planned, not yet run.
+- **What if the AI is wrong?** It cannot act: figures come from tools, answers are grounded-checked, and execution needs a signed mandate.
+- **Why synthetic data?** Reproducibility and attack coverage; we report no real-user results.
+- **Is the mandate AP2?** Modelled on the idea; not an implementation of the AP2 specification.
+- **Who pays?** Hypothesis: small businesses or their accountants; unvalidated.
+- **Why no real bank?** The rules accept sandbox evidence; the ISO 20022 pain.001 draft shows the adapter boundary and is never sent.
