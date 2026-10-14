@@ -346,3 +346,5 @@ body.busy .button { pointer-events: none; }
 .search { min-width: 240px; }
 ul { margin: 6px 0 0; padding-left: 18px; }
 li + li { margin-top: 4px; }
+
+.fx-note { color: var(--blue); border-color: #c9dcee; background: var(--blue-soft); }

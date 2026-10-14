@@ -73,10 +73,12 @@
       <header class="topbar">
         <div class="title-block"><span class="eyebrow" id="eyebrow">FINTECHATHON 2026 · TOPIC E</span><h1 id="page-title">Cash weather</h1></div>
         <div class="topbar-controls">
+          <label class="control-field"><span>Show amounts in</span><select id="display-currency" aria-label="Display currency"></select></label>
           <label class="control-field"><span>Target date</span><input id="target-date" type="date" aria-label="Target date"></label>
           <button class="button ghost" data-action="refresh" title="Reload"><svg class="icon"><use href="#i-refresh"/></svg></button>
         </div>
       </header>
+      <div id="fx-note" class="error-banner fx-note" hidden>Amounts marked ≈ are converted for display with illustrative fixed rates, not live exchange rates. Every calculation, approval and mandate stays in the business's own currency.</div>
       <div id="app-error" class="error-banner" role="alert" hidden></div>
       <div id="view" class="view" aria-live="polite"><div class="loading">Loading…</div></div>
       <footer class="footer"><span>Tideway · approval-gated cash-flow rescue for small businesses</span><span>Synthetic sandbox. Projections are scheduled estimates, not bank balances. Financing is a mock comparison.</span></footer>

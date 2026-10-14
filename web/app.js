@@ -6,7 +6,7 @@ const state = {
   config: null, operator: null, businessId: "", targetDate: "", view: "overview",
   dashboard: null, run: null, receipt: null, chat: [], audit: null, selftest: null, drill: null,
   whatif: {delays: {}, expense: "", expenseDate: "", drop: "", result: null}, recordFilter: "all", recordQuery: "",
-  busy: false, approving: null
+  busy: false, approving: null, displayCurrency: ""
 };
 const VIEWS = {
   overview: ["Cash weather", "Where cash is heading, how likely a shortfall is, and why"],
@@ -23,8 +23,15 @@ const icon = (name) => `<svg class="icon" aria-hidden="true"><use href="#i-${nam
 const isNum = (value) => typeof value === "number" && Number.isFinite(value);
 const currency = () => state.dashboard?.business?.currency || "BDT";
 
+// Illustrative fixed rates (units per 1 USD) for display only. Not live FX; every
+// calculation, approval and mandate stays in the business's own currency.
+const FX_PER_USD = {USD: 1, BDT: 122, CNY: 7.1, HKD: 7.8, SGD: 1.29, EUR: 0.86, GBP: 0.75, INR: 88, MYR: 4.2};
 function money(minor, code = currency(), opts = {}) {
   if (!isNum(minor)) return "—";
+  const show = state.displayCurrency;
+  if (!opts.native && show && show !== code && FX_PER_USD[show] && FX_PER_USD[code]) {
+    return "≈ " + money(Math.round(minor / FX_PER_USD[code] * FX_PER_USD[show]), show, {...opts, native: true});
+  }
   const units = minor / 100;
   const decimals = opts.decimals ?? (Number.isInteger(units) ? 0 : 2);
   const text = Math.abs(units).toLocaleString("en-US", {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
@@ -126,6 +133,7 @@ async function startShell() {
   const businesses = state.config.businesses;
   if (!businesses.some((item) => item.business_id === state.businessId)) state.businessId = businesses[0]?.business_id || "";
   $("#business-select").innerHTML = businesses.map((item) => `<option value="${esc(item.business_id)}" ${item.business_id === state.businessId ? "selected" : ""}>${esc(item.name)} · ${esc(item.currency)}</option>`).join("");
+  $("#display-currency").innerHTML = `<option value="">Business currency</option>` + Object.keys(FX_PER_USD).map((code) => `<option value="${code}" ${state.displayCurrency === code ? "selected" : ""}>${code}</option>`).join("");
   await loadDashboard(true);
 }
 
@@ -175,6 +183,7 @@ function render() {
   badge.textContent = (state.dashboard?.mandates || []).length ? "mandate" : "plan";
   const renderers = {overview: renderOverview, rescue: renderRescue, assistant: renderAssistant, whatif: renderWhatIf,
     records: renderRecords, security: renderSecurity, evidence: renderEvidence};
+  $("#fx-note").hidden = !state.displayCurrency || state.displayCurrency === currency();
   $("#view").innerHTML = state.dashboard ? (renderers[state.view] || renderOverview)() : `<div class="loading">Loading…</div>`;
   if (state.view === "assistant") { const log = $("#chat-log"); if (log) log.scrollTop = log.scrollHeight; }
 }
@@ -566,8 +575,9 @@ function openApprove(planId, bundleId) {
   const bundle = plan?.bundles.find((item) => item.bundle_id === bundleId);
   if (!bundle) return toast("That proposal changed. Run the agent again.");
   state.approving = {planId, bundleId, bundle, opened: Date.now()};
-  const lines = bundle.actions.map((action) => `<div class="line"><span>${esc(action.counterparty)} · ${action.type === "supplier_deferral" ? `move ${money(action.amount_minor)} to ${esc(day(action.to_date))}` : `${esc(action.discount_bps / 100)}% off, pay ${money(action.amount_minor)} by ${esc(day(action.to_date))}`}</span><b>${money(action.economic_cost_minor)}</b></div>`);
-  lines.push(`<div class="line"><span>Total exposure</span><b>${money(bundle.exposure_minor)}</b></div>`);
+  const nat = (minor) => money(minor, currency(), {native: true});
+  const lines = bundle.actions.map((action) => `<div class="line"><span>${esc(action.counterparty)} · ${action.type === "supplier_deferral" ? `move ${nat(action.amount_minor)} to ${esc(day(action.to_date))}` : `${esc(action.discount_bps / 100)}% off, pay ${nat(action.amount_minor)} by ${esc(day(action.to_date))}`}</span><b>${nat(action.economic_cost_minor)}</b></div>`);
+  lines.push(`<div class="line"><span>Total exposure</span><b>${nat(bundle.exposure_minor)}</b></div>`);
   lines.push(`<div class="line"><span>Simulated futures still short after</span><b>${esc(bundle.futures_short_of_20_after ?? "—")} of 20</b></div>`);
   $("#approve-summary").innerHTML = lines.join("") + `<p class="small muted">You approve these exact terms. Any change to the records, policy, payee, amount or dates voids this approval before execution. ${bundle.dual_approval_required ? "This exceeds the dual-approval threshold: a second person, including the owner, must approve too." : ""}</p>`;
   $("#confirm-amount-label").hidden = !bundle.dual_approval_required;
@@ -775,6 +785,7 @@ document.addEventListener("change", async (event) => {
   try {
     if (target.id === "business-select") { state.businessId = target.value; state.run = null; state.receipt = null; state.chat = []; state.selftest = null; state.drill = null; state.whatif = {delays: {}, expense: "", expenseDate: "", drop: "", result: null}; await act("Business", () => loadDashboard(true)); }
     else if (target.id === "target-date") { if (!target.value) return; state.targetDate = target.value; state.run = null; await act("Date", () => loadDashboard()); }
+    else if (target.id === "display-currency") { state.displayCurrency = target.value; render(); }
     else if (target.id === "record-filter") { state.recordFilter = target.value; render(); }
     else if (target.id === "whatif-drop") { state.whatif.drop = target.value; }
     else if (target.id === "whatif-date") { state.whatif.expenseDate = target.value; }
