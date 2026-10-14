@@ -35,20 +35,41 @@ python3 scripts/build_submission_pdfs.py   # pitch, architecture and security PD
 ## What it does
 
 1. **Sees the gap.** Exact integer minor-unit cash projection with three scenarios (scheduled, likely, stress) and a 14-day look-ahead so a deferral cannot hide a problem just beyond the target date.
-2. **Models customers, not just invoices.** Per-customer payment profiles use credibility weighting (own history counts n/(n+5), the rest from the business-wide average), so one lucky payment never makes a customer look reliable.
+2. **Predicts when each invoice will really be paid.** TidePay, Tideway's own model (below), gives every open invoice a probability for each lateness band. The likely and stress scenarios and the Monte Carlo use it; credibility-weighted customer profiles remain as the explainable fallback.
 3. **Quantifies risk.** A seeded Monte Carlo (1,000 runs; the same records and seed give the same answer) estimates the chance of breaching the reserve floor and is shown as a "cash weather" read-out.
 4. **Optimises.** An exact search over supplier deferrals, early-payment discounts and zero-cash reminders finds the cheapest bundle that holds the reserve floor on every day and keeps payroll funded, then re-checks candidates with Monte Carlo. Early-payment discounts are priced as an annual rate (2% for 20 days is about 37% APR).
 5. **Negotiates.** Simulated suppliers and customers answer each request with accept, counter-offer or reject. A counter becomes a new proposal that needs fresh approval; a refusal triggers a re-plan without that counterparty.
 6. **Authorises like a bank.** Maker-checker approval with PIN step-up; high-value bundles need two people (including the owner) and a typed exposure amount. Approval issues an **HMAC-signed mandate** (modelled on the AP2 mandate idea: verifiable, scoped, expiring), bound to the exact actions, snapshot, policy and expiry.
 7. **Executes once, verifiably.** Idempotent execution against the sandbox, state hashes before and after, and a read-back check.
 8. **Stays stoppable.** A kill switch pauses the agent (only the owner resumes, with a reason). A circuit breaker pauses it automatically after repeated security denials.
-9. **Resists fraud.** Changed bank details and look-alike payee names block every action on the bill. Payees are verified only by the owner, only by callback to a number on file, and the verifier cannot then approve that payee (separation of duties).
+9. **Resists fraud.** Changed bank details and look-alike payee names block every action on the bill. Only flagged payees can be verified: by the owner, by callback to a number on file. Whoever verified a payee cannot be the only approver of actions for it (separation of duties).
 10. **Quarantines injection.** Hidden Unicode is stripped and flagged; instruction-like text in records is quarantined and never reaches a model.
-11. **Optional LLM mode.** Off by default. With a key and per-message consent, counterparty names are pseudonymised, record free text is never sent, and every number in the answer is checked against tool output (ungrounded numbers are flagged).
+11. **Optional cloud LLM mode.** Off by default; TideLM (below) is the on-device default. With a key and per-message consent, counterparty names are pseudonymised, record free text is never sent, and every number in the answer is checked against tool output (ungrounded numbers are flagged).
 12. **Proves what happened.** A hash-chained audit log with an independent witness checkpoint (truncation is detected), and a one-click tamper drill.
 13. **Dials autonomy.** Advise, Propose or Delegate. Under Delegate, a standing mandate lets the agent send zero-cash reminders only, capped per day. Moving money is never delegated.
 14. **Multi-currency fixtures.** Shapla Services and Meghna Traders in BDT, Lotus Print Studio in CNY; mixed currencies inside one business are rejected.
 15. **Exports.** Evidence JSON, records and receipts CSV (spreadsheet-formula-safe), and a draft ISO 20022 `pain.001` for the deferred payments.
+
+## Tideway's own AI (trained here, runs on-device)
+
+Tideway does not depend on a third-party AI API. Both models are trained in this repository and run on the owner's machine.
+
+| Model | What it does | How it is trained | Evidence |
+|---|---|---|---|
+| **TidePay** | Probability that an open invoice is paid on time, 1-7, 8-15, 16-30 or 30+ days late | Pure-Python softmax trained with **federated learning** (FedAvg) across 40 synthetic SMEs, with pairwise-mask secure aggregation: no business shares raw invoices | [tidepay_report.md](evidence/ml/tidepay_report.md): log loss 1.036 vs 1.55 for the old rule; on the smaller half of SMEs, MAE 6.12 days vs 6.64 training alone |
+| **TideLM** | (1) Turns an owner's message (English, Banglish, typos) into a typed tool plan; (2) turns pasted SMS / WhatsApp / bank text into draft records and flags injection | LoRA fine-tune of Qwen3-4B-Instruct (4-bit) with MLX on Apple Silicon, on 3,600 generated training examples (400 validation); the 500 test examples use counterparty names never seen in training | [tidelm_base_eval.json](evidence/ml/tidelm_base_eval.json) (before fine-tuning: 27% exact plans, 13% intent accuracy, extraction F1 0.91) |
+
+The language model never touches money or records. Its plan passes a validator (known tools, typed arguments, names resolved against the ledger, read/propose tools only); a forbidden tool counts toward the circuit breaker. Replies are written by code from tool output, so every number comes from Tideway. Extracted records are drafts until a person confirms them, and a deterministic scan flags injection even if the model misses it.
+
+```bash
+python3 -m tideway.ml.train                               # TidePay: federated training + report
+python3 -m tideway.ml.tidelm_data                         # TideLM: generate train/valid/test data
+pip install mlx-lm                                        # Apple Silicon only
+python3 -m mlx_lm lora --config tideway/ml/tidelm_lora.yaml
+python3 -m tideway.ml.tidelm_eval --adapter models/tidelm-adapter --out evidence/ml/tidelm_ft_eval.json
+```
+
+Without the adapter the app still runs; the Assistant says TideLM is unavailable and uses the deterministic local agent.
 
 ## The demo businesses
 
@@ -62,7 +83,9 @@ python3 scripts/build_submission_pdfs.py   # pitch, architecture and security PD
 
 ```
 tideway/    domain, projection, analytics (profiles, Monte Carlo), planner, counterparty,
-            security (PIN, HMAC, rate limit), store (SQLite workflow + audit), service, agent, server, selftest
+            security (PIN, HMAC, rate limit), store (SQLite workflow + audit), service, agent, copilot, tidelm,
+            server, selftest
+tideway/ml/ TidePay (synthetic data, federated training) and TideLM (data, LoRA config, evaluation)
 web/        vanilla JS single-page UI (no build step)
 tests/      stdlib unittest suite
 scripts/    evaluate.py, capture_screens.mjs, build_submission_pdfs.py
