@@ -202,7 +202,8 @@ class TideLM:
 
 
 TOPICS = {"project_cash": "forecast", "simulate_risk": "risk", "what_if": "whatif", "propose_plan": "plan",
-          "explain_plan": "plan", "credit_check": "credit", "draft_reminders": "receivables", "bank_pack": "risk"}
+          "explain_plan": "plan", "credit_check": "credit", "draft_reminders": "receivables", "bank_pack": "risk",
+          "counterparty_risk": "receivables", "security_check": "security"}
 
 
 def _topic(plan, results):

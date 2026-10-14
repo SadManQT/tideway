@@ -27,6 +27,8 @@ TOOLS = {
     "draft_reminders": {"customers"},
     "bank_pack": set(),
     "customer_report": {"customer"},
+    "counterparty_risk": set(),
+    "security_check": set(),
     "refuse": {"reason"},
 }
 MAX_CALLS = 4
@@ -236,6 +238,19 @@ def run_plan(app, business_id, target_date, plan, actor, lang="en"):
             results.append({"tool": tool, "result": {"ready": True, "summary": bank_pack(app, business_id, target_date)["kpis"]}})
         elif tool == "customer_report":
             results.append({"tool": tool, "result": customer_report(app, business_id, args.get("customer"))})
+        elif tool == "counterparty_risk":
+            network = app.network(business_id, target_date)
+            results.append({"tool": tool, "result": {"customers": network["customers"][:3], "suppliers": network["suppliers"],
+                                                     "end_date": network["baseline"]["end_date"]}})
+        elif tool == "security_check":
+            derived = app.store.derived(snapshot)
+            quarantined = sum(bool(row["risk_flags"]) for rows in snapshot["records"].values() for row in rows)
+            results.append({"tool": tool, "result": {"agent_paused": snapshot["policy"]["agent_paused"],
+                                                     "blocked": [{"bill_id": item["bill_id"], "payee": item["payee"], "kind": "changed_account"}
+                                                                 for item in derived["payees"]["flagged"]] +
+                                                                [{"bill_id": item["bill_id"], "payee": item["payee"], "kind": "lookalike",
+                                                                  "similar_to": item["similar_to"]} for item in derived["payees"]["lookalikes"]],
+                                                     "quarantined_records": quarantined}})
     return results
 
 
@@ -267,6 +282,25 @@ def reply_from_results(results, currency, lang="en"):
             lines.append(t(lang, "drafts", n=len(r["drafts"]), names=", ".join(d["customer"] for d in r["drafts"]) or "—"))
         elif tool == "bank_pack":
             lines.append(t(lang, "bank_pack"))
+        elif tool == "counterparty_risk":
+            top = r["customers"][0] if r["customers"] else None
+            if not top:
+                lines.append(t(lang, "network_empty"))
+            elif top["impact_if_never_pays_minor"] == 0:
+                lines.append(t(lang, "network_outside", who=top["name"], p30=round(top["p_over_30_days"] * 100), date=day(lang, r["end_date"])))
+            else:
+                lines.append(t(lang, "network_top", who=top["name"], p30=round(top["p_over_30_days"] * 100),
+                               loss=money_text(top["impact_if_never_pays_minor"], currency), date=day(lang, r["end_date"]),
+                               days=top["if_never_pays"]["extra_days_below_reserve"]))
+        elif tool == "security_check":
+            parts = [t(lang, "paused")] if r["agent_paused"] else []
+            items = [t(lang, "b_changed", payee=b["payee"]) if b["kind"] == "changed_account"
+                     else t(lang, "b_lookalike", payee=b["payee"], similar=b["similar_to"]) for b in r["blocked"]]
+            parts.append(t(lang, "blocked_list", n=len(items), items=("；" if lang == "zh" else "; ").join(items))
+                         if items else t(lang, "nothing_blocked"))
+            if r["quarantined_records"]:
+                parts.append(t(lang, "quarantined", n=r["quarantined_records"]))
+            lines.append(("" if lang == "zh" else " ").join(parts))
         elif tool == "customer_report":
             parts = []
             for c in r["customers"]:

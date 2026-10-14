@@ -85,10 +85,11 @@ def main():
     parser.add_argument("--adapter", default=None)
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out", default=None)
+    parser.add_argument("--data", default=str(ROOT / "data" / "tidelm"))
     args = parser.parse_args()
     from mlx_lm import generate, load
     model, tokenizer = load(BASE_MODEL, adapter_path=args.adapter)
-    rows = [json.loads(line) for line in open(ROOT / "data" / "tidelm" / "test.jsonl")]
+    rows = [json.loads(line) for line in open(Path(args.data) / "test.jsonl")]
     if args.limit:
         rows = rows[:args.limit // 2] + rows[-args.limit // 2:]
     plan_scores, extract_scores, latencies, failures = [], [], [], []
@@ -112,7 +113,7 @@ def main():
     precision = tp / (tp + fp) if tp + fp else 0
     recall = tp / (tp + fn) if tp + fn else 0
     mean = lambda items, key: round(sum(1 for s in items if s[key]) / len(items), 4) if items else None  # noqa: E731
-    report = {"model": BASE_MODEL, "adapter": args.adapter, "n_plan": len(plan_scores), "n_extract": len(extract_scores),
+    report = {"model": BASE_MODEL, "adapter": args.adapter, "test_set": str(Path(args.data).relative_to(ROOT)) if Path(args.data).is_relative_to(ROOT) else args.data, "n_plan": len(plan_scores), "n_extract": len(extract_scores),
               "plan": {"valid_json": mean(plan_scores, "valid_json"), "intent_accuracy": mean(plan_scores, "intent"),
                        "tool_accuracy": mean(plan_scores, "tools"), "exact_plan_accuracy": mean(plan_scores, "exact")},
               "extract": {"valid_json": mean(extract_scores, "valid_json"), "record_precision": round(precision, 4),

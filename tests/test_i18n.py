@@ -30,6 +30,8 @@ class Phrasebook(unittest.TestCase):
                 for template in templates:
                     text = template.format(a="Nila Traders", b="Bay Logistics", days=10, days2=15, value=5000, terms=30,
                                            pct=2, d="2026-10-20")
+                    if key in ("exclude", "discount", "safe"):  # fragments are appended to a plan request
+                        text = T["plan"].get(lang, T["plan"]["en"])[0] + text
                     expected = "en" if lang in ("hinglish", "banglish") else lang
                     self.assertEqual(i18n.detect(text), expected, text)
 

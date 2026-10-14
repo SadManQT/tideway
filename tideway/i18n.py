@@ -18,7 +18,9 @@ _WORDS = {
     "en": "the is are am my me what how can i to of for do does will show who which why if this a an and with on late days "
           "pay pays find make give should it our we you your salaries payroll customers risk risky cash forecast worst case "
           "remind everyone owes approve transfer wire money now write poem tell joke book flight weather prepare documents "
-          "loan bank credit terms safe chances short month never spend expense happens suppose usually slowest chase",
+          "loan bank credit terms safe chances short month never spend expense happens suppose usually slowest chase "
+          "as possible most more less than care about keep out contact exclude skip minimise minimize biggest blocked any "
+          "fraud alerts suspicious check security did change changed details hurt depend too much one fails",
     "es": "el la los las un una de del y si en por para con sin qué cómo cuánto cuál puedo mi me te le es está este esta "
           "ahora nunca hazme págale aprueba cuéntame prepara muéstrame recuerda recuérdale sueldos nómina riesgo caja días "
           "tarde clientes factura crédito plan rescate descuento máximo préstamo documentos hola gracias gasto máquina mes "
@@ -26,11 +28,11 @@ _WORDS = {
     "pt": "o os as um uma de do da dos das e se em por para com sem que qual quais como quem posso consigo meu minha é está "
           "este esta agora nunca faça pague aprove cobre mostre prepare salários folha risco caixa dias atraso atrasados "
           "clientes plano desconto máximo empréstimo documentos olá obrigado obrigada eu gastar pior cenário vender prazo "
-          "costuma pagar ganhou jogo todos previsão garantida envolver",
+          "costuma pagar ganhou jogo todos previsão garantida envolver tem algum alerta bloqueadas dependo demais",
     "fr": "le la les un une de des du et si en pour avec sans que quel quels quelle comment combien pourquoi je moi mon ma "
           "mes est ce cette maintenant jamais propose propose-moi paie payez approuve relance montre montre-moi prépare "
           "salaires risque trésorerie jours retard clients plan sauvetage remise maximale prêt dossier bancaire bonjour merci "
-          "ne pas d'habitude dépense scénario pire puis-je accorder couverte",
+          "ne pas d'habitude dépense scénario pire puis-je accorder couverte y a-t-il alertes fraude bloquées dépends",
     "id": "yang dan di ke dari ini itu saya kami apa bagaimana kenapa berapa bisa tidak sudah akan untuk dengan tanpa kalau "
           "jika sekarang bayar gaji karyawan bulan risiko kas hari telat pelanggan rencana penyelamatan diskon maksimal "
           "pinjaman dokumen bank siapkan tunjukkan ingatkan setujui rencananya pesankan tiket pesawat halo terima kasih "
@@ -361,6 +363,41 @@ M = {
                   "fr": "Votre dossier bancaire est prêt : historique de trésorerie, balance âgée, prévision, risque et plan. Ouvrez-le depuis la météo de trésorerie.",
                   "pt": "Seu dossiê para o banco está pronto: histórico de caixa, aging de recebíveis, previsão, risco e plano. Abra pelo clima do caixa.",
                   "id": "Berkas siap-bank Anda sudah disiapkan: riwayat kas, umur piutang, proyeksi, risiko, dan rencana. Buka dari cuaca kas."},
+    "network_top": {"en": "{who} is your biggest counterparty risk: TidePay gives a {p30}% chance of paying more than 30 days late, and if they never pay you lose {loss} of cash by {date} ({days} more day(s) under the reserve).",
+                    "zh": "{who}是你最大的交易对手风险：TidePay预计其逾期超过30天的概率为{p30}%；如果对方一直不付款，到{date}你将损失{loss}现金（低于储备的天数增加{days}天）。",
+                    "es": "{who} es tu mayor riesgo de contraparte: TidePay estima un {p30}% de probabilidad de pagar con más de 30 días de retraso, y si nunca paga pierdes {loss} de caja antes del {date} ({days} día(s) más bajo la reserva).",
+                    "fr": "{who} est votre plus grand risque de contrepartie : TidePay estime à {p30} % le risque d'un retard de plus de 30 jours, et s'il ne paie jamais vous perdez {loss} de trésorerie d'ici le {date} ({days} jour(s) de plus sous la réserve).",
+                    "pt": "{who} é o seu maior risco de contraparte: o TidePay estima {p30}% de chance de pagar com mais de 30 dias de atraso, e se nunca pagar você perde {loss} de caixa até {date} ({days} dia(s) a mais abaixo da reserva).",
+                    "id": "{who} adalah risiko pihak lawan terbesar Anda: TidePay memperkirakan peluang {p30}% telat lebih dari 30 hari, dan jika tidak membayar sama sekali Anda kehilangan kas {loss} sebelum {date} ({days} hari lagi di bawah cadangan)."},
+    "network_outside": {"en": "{who} is the riskiest payer (TidePay: {p30}% chance of more than 30 days late), but its payment is not expected before {date}, so your forecast already does not count on it.",
+                        "zh": "{who}是风险最高的付款方（TidePay：逾期超过30天的概率为{p30}%），但其付款预计不会在{date}前到账，因此你的预测本就没有计入这笔钱。",
+                        "es": "{who} es el pagador más arriesgado (TidePay: {p30}% de probabilidad de más de 30 días de retraso), pero su pago no se espera antes del {date}, así que tu previsión ya no cuenta con él.",
+                        "fr": "{who} est le payeur le plus risqué (TidePay : {p30} % de risque de plus de 30 jours de retard), mais son paiement n'est pas attendu avant le {date} ; votre prévision ne compte donc déjà pas dessus.",
+                        "pt": "{who} é o pagador mais arriscado (TidePay: {p30}% de chance de mais de 30 dias de atraso), mas o pagamento não é esperado antes de {date}, então sua previsão já não conta com ele.",
+                        "id": "{who} adalah pembayar paling berisiko (TidePay: peluang {p30}% telat lebih dari 30 hari), tetapi pembayarannya tidak diharapkan sebelum {date}, jadi proyeksi Anda memang tidak mengandalkannya."},
+    "network_empty": {"en": "No open receivables, so no customer can delay your cash.", "zh": "没有未收账款，因此没有客户会拖延你的现金。",
+                      "es": "No hay cobros pendientes, así que ningún cliente puede retrasar tu caja.", "fr": "Aucune créance ouverte : aucun client ne peut retarder votre trésorerie.",
+                      "pt": "Não há recebíveis em aberto, então nenhum cliente pode atrasar seu caixa.", "id": "Tidak ada piutang terbuka, jadi tidak ada pelanggan yang bisa menunda kas Anda."},
+    "paused": {"en": "The agent is paused by the kill switch.", "zh": "代理已被紧急开关暂停。", "es": "El agente está en pausa por el interruptor de emergencia.",
+               "fr": "L'agent est en pause (arrêt d'urgence).", "pt": "O agente está pausado pelo botão de emergência.", "id": "Agen sedang dihentikan oleh tombol darurat."},
+    "blocked_list": {"en": "{n} bill(s) are blocked: {items}.", "zh": "有{n}张账单被冻结：{items}。", "es": "{n} factura(s) bloqueada(s): {items}.",
+                     "fr": "{n} facture(s) bloquée(s) : {items}.", "pt": "{n} conta(s) bloqueada(s): {items}.", "id": "{n} tagihan diblokir: {items}."},
+    "b_changed": {"en": "{payee} (bank details changed: verify by calling a number already on file)", "zh": "{payee}（银行账户被更改：请拨打档案中的号码核实）",
+                  "es": "{payee} (cambiaron sus datos bancarios: verifica llamando a un número que ya tengas)",
+                  "fr": "{payee} (coordonnées bancaires modifiées : vérifiez en appelant un numéro déjà connu)",
+                  "pt": "{payee} (dados bancários alterados: confirme ligando para um número já cadastrado)",
+                  "id": "{payee} (rekening berubah: verifikasi dengan menelepon nomor yang sudah tercatat)"},
+    "b_lookalike": {"en": "{payee} (name looks like {similar}: possible impostor)", "zh": "{payee}（名称与{similar}极为相似：可能是冒充者）",
+                    "es": "{payee} (nombre casi igual a {similar}: posible impostor)", "fr": "{payee} (nom presque identique à {similar} : imposteur possible)",
+                    "pt": "{payee} (nome quase igual a {similar}: possível impostor)", "id": "{payee} (nama mirip {similar}: kemungkinan penipu)"},
+    "nothing_blocked": {"en": "No bills are blocked.", "zh": "没有被冻结的账单。", "es": "No hay facturas bloqueadas.", "fr": "Aucune facture n'est bloquée.",
+                        "pt": "Nenhuma conta está bloqueada.", "id": "Tidak ada tagihan yang diblokir."},
+    "quarantined": {"en": "{n} record(s) contain instruction-like text and are quarantined; they never reach a model.",
+                    "zh": "有{n}条记录含有类似指令的文字，已被隔离，永远不会发送给模型。",
+                    "es": "{n} registro(s) contienen texto con apariencia de instrucciones y están en cuarentena; nunca llegan a un modelo.",
+                    "fr": "{n} enregistrement(s) contiennent un texte ressemblant à des instructions et sont en quarantaine ; ils n'atteignent jamais un modèle.",
+                    "pt": "{n} registro(s) contêm texto com cara de instrução e estão em quarentena; nunca chegam a um modelo.",
+                    "id": "{n} catatan berisi teks mirip perintah dan dikarantina; tidak pernah sampai ke model."},
 }
 
 SUGGESTIONS = {
@@ -385,6 +422,8 @@ SUGGESTIONS = {
                "id": "Bagaimana kalau {who} telat bayar {days} hari?"},
     "habit": {"en": "How does {who} usually pay?", "zh": "{who}一般按时付款吗？", "es": "¿Cómo suele pagar {who}?", "fr": "Comment paie {who} d'habitude ?",
               "pt": "Como {who} costuma pagar?", "id": "{who} biasanya bayar tepat waktu?"},
+    "network": {"en": "Who is my biggest risk?", "zh": "谁是我最大的风险？", "es": "¿Quién es mi mayor riesgo?", "fr": "Qui est mon plus grand risque ?",
+                "pt": "Quem é o meu maior risco?", "id": "Siapa risiko terbesar saya?"},
     "credit": {"en": "Should I give {who} 30 days credit on 20,000?", "zh": "{who}要赊账20000，账期30天，可以吗？",
                "es": "¿Le doy a {who} crédito de 20000 a 30 días?", "fr": "Puis-je accorder à {who} 20000 à 30 jours ?",
                "pt": "Posso vender 20000 para {who} com 30 dias de prazo?", "id": "Aman tidak kasih {who} kredit 20000 tempo 30 hari?"},

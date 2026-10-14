@@ -30,7 +30,8 @@ PLAN_SYSTEM = (
     "what_if{customer_delays: {name: days}, extra_expense: {amount: number, date: YYYY-MM-DD}|null, drop_invoice_customer: str|null}; "
     "propose_plan{exclude_counterparties: [str], max_discount_pct: number|null, prefer: lowest_cost|lowest_risk|fewest_asks}; "
     "explain_plan{}; credit_check{customer: str, amount: number, terms_days: int}; draft_reminders{customers: [str]}; "
-    "bank_pack{}; customer_report{customer: str|null}; refuse{reason: approve_or_move_money|out_of_scope}. "
+    "bank_pack{}; customer_report{customer: str|null}; counterparty_risk{}; security_check{}; "
+    "refuse{reason: approve_or_move_money|out_of_scope}. "
     "The owner may write in any language; keep names exactly as written. Never invent amounts. "
     "You cannot approve, pay or transfer: use refuse. Output only the JSON."
 )
@@ -51,7 +52,8 @@ FIRST = ["Nila", "Bay", "Atlas", "Nova", "Sakura", "Lotus", "Jade", "Andes", "Sa
 SECOND = ["Traders", "Logistics", "Supplies", "Packaging", "Retail", "Paper", "Media", "Foods", "Textiles", "Electric",
           "Pharma", "Builders", "Agro", "Studio", "Garments", "Hardware", "Motors", "Mart", "Enterprise", "Fabrics",
           "GmbH", "S.A.", "Ltd", "Pte Ltd", "Sdn Bhd", "Imports", "Trading Co"]
-TEST_FIRST = ["Orchid", "Falcon", "Banyan", "Cedar", "Tulip", "Comet", "Fjord", "Quartz", "Kestrel"]
+FIRST += ["Xylo", "Qwik", "Brightt", "Zephyr", "Kaizen", "Ngozi", "Oyelaran", "Thuy", "Szabo", "Llewellyn", "Marlowe & Finch"]
+TEST_FIRST = ["Orchid", "Falcon", "Banyan", "Cedar", "Tulip", "Comet", "Fjord", "Quartz", "Kestrel", "Wrenn", "Achebe"]
 TEST_SECOND = ["Holdings", "Exports", "Kitchen", "Optics", "Ceramics", "SARL", "Tbk"]
 CJK = ["华星贸易", "东方包装", "金龙物流", "长江纸业", "明珠电子", "新华五金", "天宇食品", "宏达纺织", "海川建材", "瑞丰药业"]
 TEST_CJK = ["青松科技", "海燕食品", "白鹭传媒", "紫荆陶瓷"]
@@ -155,7 +157,8 @@ T = {
         "pt": ["Faça um plano para cobrir o caixa"], "hinglish": ["ek plan banao", "cash gap kaise bharein?"],
         "banglish": ["ekta plan banao"]},
     "exclude": {
-        "en": [", but don't ask {a}", " without involving {a}", ". leave {a} out"], "zh": ["，不要找{a}", "，别动{a}"],
+        "en": [", but don't ask {a}", " without involving {a}", ". leave {a} out", ", exclude {a}", ", and do not contact {a}",
+               " but keep {a} out of it", ", skip {a}"], "zh": ["，不要找{a}", "，别动{a}"],
         "es": [", pero sin {a}"], "id": [", tanpa melibatkan {a}"], "fr": [", sans {a}"], "pt": [", sem envolver {a}"],
         "hinglish": [", {a} ko mat poochho"], "banglish": [", {a} ke bad dao"]},
     "discount": {
@@ -164,7 +167,8 @@ T = {
         "pt": [", desconto máximo de {pct}%"], "hinglish": [", discount {pct}% se zyada nahi"],
         "banglish": [", discount {pct}% er beshi na"]},
     "safe": {
-        "en": [" with the lowest risk", ", safety first", " even if it costs more, I want it safe"], "zh": ["，风险越低越好"],
+        "en": [" with the lowest risk", ", safety first", " even if it costs more, I want it safe", ", as safe as possible",
+               ", minimise the risk", ", I care about safety more than cost"], "zh": ["，风险越低越好"],
         "es": [", con el menor riesgo"], "id": [", risiko paling kecil"], "fr": [", avec le moins de risque"],
         "pt": [", com o menor risco"], "hinglish": [", risk kam hona chahiye"], "banglish": [", jhuki kom hok"]},
     "explain": {
@@ -201,6 +205,20 @@ T = {
         "es": ["¿Qué clientes pagan tarde?"], "id": ["Pelanggan mana yang paling lambat bayar?"],
         "fr": ["Quels clients paient en retard ?"], "pt": ["Quais clientes pagam com atraso?"],
         "hinglish": ["kaun se customers late pay karte hain?"], "banglish": ["kon customer der e taka dey?"]},
+    "network": {
+        "en": ["Who is my biggest risk?", "which customer could hurt my cash the most", "who do I depend on too much?",
+               "show my counterparty risk", "if one customer fails, who hurts me most?"],
+        "zh": ["谁是我最大的风险？", "哪个客户对我的现金影响最大", "我是不是太依赖某个客户了？"],
+        "es": ["¿Quién es mi mayor riesgo?", "¿de qué cliente dependo demasiado?"], "id": ["Siapa risiko terbesar saya?", "pelanggan mana yang paling berbahaya bagi kas saya?"],
+        "fr": ["Qui est mon plus grand risque ?", "de quel client je dépends trop ?"], "pt": ["Quem é o meu maior risco?", "de qual cliente eu dependo demais?"],
+        "hinglish": ["sabse bada risk kaun hai?", "kis customer pe sabse zyada depend hoon?"], "banglish": ["shobcheye boro risk ke?", "kon customer er upor beshi nirbhor?"]},
+    "security": {
+        "en": ["Which bills are blocked and why?", "any fraud alerts?", "is anything suspicious?", "check security",
+               "did any supplier change bank details?"],
+        "zh": ["哪些账单被冻结了，为什么？", "有没有可疑的付款？", "有供应商改过银行账户吗？"],
+        "es": ["¿Qué facturas están bloqueadas y por qué?", "¿hay alertas de fraude?"], "id": ["Tagihan mana yang diblokir dan kenapa?", "ada yang mencurigakan?"],
+        "fr": ["Quelles factures sont bloquées et pourquoi ?", "y a-t-il des alertes de fraude ?"], "pt": ["Quais contas estão bloqueadas e por quê?", "tem algum alerta de fraude?"],
+        "hinglish": ["kaun se bills block hain aur kyun?", "koi fraud alert hai?"], "banglish": ["kon bill block ache ar keno?", "kono fraud alert ache?"]},
     "refuse_pay": {
         "en": ["Pay {a} {value} now", "transfer {value} to {a}", "wire money to {a} immediately", "send the supplier payment"],
         "zh": ["马上给{a}转{value}", "现在付款给{a}"], "es": ["Págale {value} a {a} ahora"], "id": ["Transfer {value} ke {a} sekarang"],
@@ -225,8 +243,9 @@ def phrase(rng, key, lang, **values):
 
 def plan_example(rng, test=False):
     kind = rng.choice(["payroll", "risk", "whatif_delay", "whatif_two", "whatif_expense", "whatif_drop", "plan", "plan_exclude",
-                       "plan_discount", "plan_risk", "explain", "credit", "remind_one", "remind_all", "bank", "customer_one",
-                       "customer_all", "refuse_pay", "refuse_approve", "out_of_scope", "forecast", "stress"])
+                       "plan_exclude", "plan_discount", "plan_risk", "plan_risk", "explain", "credit", "remind_one", "remind_all",
+                       "bank", "customer_one", "customer_all", "refuse_pay", "refuse_approve", "out_of_scope", "forecast", "stress",
+                       "network", "network", "security", "security"])
     lang = pick(rng, LANGS)
     if kind == "whatif_two" and lang not in T["whatif_two"]:
         lang = "en"
@@ -284,6 +303,10 @@ def plan_example(rng, test=False):
     elif kind in ("customer_one", "customer_all"):
         out = {"intent": "customer_insight", "calls": [{"tool": "customer_report",
                                                         "args": {"customer": a if kind == "customer_one" else None}}]}
+    elif kind == "network":
+        out = {"intent": "counterparty_risk", "calls": [{"tool": "counterparty_risk", "args": {}}]}
+    elif kind == "security":
+        out = {"intent": "security_check", "calls": [{"tool": "security_check", "args": {}}]}
     elif kind in ("refuse_pay", "refuse_approve"):
         out = {"intent": "move_money" if kind == "refuse_pay" else "approve",
                "calls": [{"tool": "refuse", "args": {"reason": "approve_or_move_money"}}]}
@@ -409,7 +432,8 @@ def extract_example(rng, test=False):
                          {"role": "assistant", "content": json.dumps(out, ensure_ascii=False)}]}
 
 
-def build(n_plan=3000, n_extract=2000, seed=11):
+def build(n_plan=3600, n_extract=2000, seed=11, out=None):
+    out = Path(out) if out else OUT
     rng = random.Random(seed)
     train, valid = [], []
     for i in range(n_plan):
@@ -421,13 +445,14 @@ def build(n_plan=3000, n_extract=2000, seed=11):
     test_rng = random.Random(seed + 1000)
     test = [plan_example(test_rng, test=True)[0] for _ in range(300)] + [extract_example(test_rng, test=True) for _ in range(200)]
     rng.shuffle(train)
-    OUT.mkdir(parents=True, exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
     for label, rows in (("train", train), ("valid", valid), ("test", test)):
-        with open(OUT / f"{label}.jsonl", "w") as handle:
+        with open(out / f"{label}.jsonl", "w") as handle:
             for row in rows:
                 handle.write(json.dumps(row, ensure_ascii=False) + "\n")
-    print(f"train {len(train)}, valid {len(valid)}, test {len(test)} (test uses unseen names) -> {OUT}")
+    print(f"train {len(train)}, valid {len(valid)}, test {len(test)} (test uses unseen names) -> {out}")
 
 
 if __name__ == "__main__":
-    build()
+    import sys
+    build(out=sys.argv[1] if len(sys.argv) > 1 else None)

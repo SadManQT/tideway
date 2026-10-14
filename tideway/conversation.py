@@ -76,7 +76,7 @@ def suggestions(facts, topic=None, customer=None, exclude=(), lang="en"):
         "forecast": [q("risk"), rescue, q("late")],
         "customer": [who and q("whatif", who=who, days=15), who and q("credit", who=who), q("remind")],
         "credit": [who and q("habit", who=who), who and q("whatif", who=who, days=15), q("late")],
-        "receivables": [q("remind"), big and q("habit", who=big), slow and q("whatif", who=slow, days=15)],
+        "receivables": [q("remind"), q("network"), big and q("habit", who=big)],
         "whatif": [rescue, q("risk"), big and big != customer and q("whatif", who=big, days=10)],
         "plan": [q("why"), q("risk"), q("remind")],
         "security": [q("risk"), rescue, q("late")],
