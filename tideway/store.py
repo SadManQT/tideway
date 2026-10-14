@@ -1,0 +1,1206 @@
+"""SQLite persistence and the approval-gated workflow for Tideway.
+
+Every read is scoped to one business and every mutation runs inside a
+``BEGIN IMMEDIATE`` transaction.  The sandbox is synthetic: no bank,
+payment rail, lender, supplier or customer is connected to this store.
+
+Workflow: plan (agent proposal) -> approvals (one or two humans, PIN
+step-up) -> signed mandate -> simulated counterparty negotiation ->
+idempotent execution with read-back -> receipt.  Each step re-checks the
+snapshot hash so nothing approved on stale data can execute.
+"""
+from __future__ import annotations
+
+import hashlib
+import hmac
+import json
+import re
+import secrets
+import sqlite3
+import uuid
+from contextlib import contextmanager
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+from . import analytics, security
+from .domain import (
+    OPEN_INVOICE_STATUSES,
+    ValidationError,
+    canonical_json,
+    validate_bill,
+    validate_business,
+    validate_business_id,
+    validate_invoice,
+    validate_policy,
+    validate_transaction,
+)
+from .projection import project, summary
+
+
+SESSION_HOURS = 8
+MANDATE_MINUTES = 15
+STANDING_MANDATE_DAYS = 7
+MAX_PIN_FAILURES = 5
+LOCKOUT_MINUTES = 5
+BREAKER_DENIALS = 5          # security denials ...
+BREAKER_WINDOW_MINUTES = 10  # ... within this window pause the agent automatically
+FAST_APPROVAL_MS = 2000
+APPROVER_ROLES = ("owner", "accountant")
+ROLES = ("owner", "accountant", "viewer")
+BUNDLE_LIVE = ("active", "ready", "countered", "rejected")
+
+
+def utc_now():
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _later(**delta):
+    return (datetime.now(timezone.utc) + timedelta(**delta)).isoformat(timespec="seconds")
+
+
+def _parse_time(value):
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        return parsed if parsed.tzinfo else datetime.min.replace(tzinfo=timezone.utc)
+    except ValueError:
+        return datetime.min.replace(tzinfo=timezone.utc)
+
+
+def _expired(value):
+    return _parse_time(value) <= datetime.now(timezone.utc)
+
+
+def json_hash(value):
+    return hashlib.sha256(canonical_json(value).encode()).hexdigest()
+
+
+def _fingerprint(row):
+    text = " ".join(row["description"].casefold().split())
+    return hashlib.sha256(f"{row['date']}|{text}|{row['type']}|{row['amount_minor']}".encode()).hexdigest()
+
+
+def idempotency_ok(value):
+    return isinstance(value, str) and bool(re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.:-]{0,119}", value))
+
+
+def _entry_digest(previous, business_id, row):
+    return hashlib.sha256(f"{previous}|{business_id}|{row['timestamp']}|{row['action']}|{row['actor']}|"
+                          f"{row['permission']}|{row['details']}".encode()).hexdigest()
+
+
+SCHEMA = """
+PRAGMA foreign_keys=ON;
+CREATE TABLE IF NOT EXISTS businesses (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, currency TEXT NOT NULL,
+    opening_cash_minor INTEGER NOT NULL CHECK(opening_cash_minor >= 0),
+    opening_date TEXT NOT NULL, default_target_date TEXT NOT NULL,
+    country TEXT NOT NULL DEFAULT '', sector TEXT NOT NULL DEFAULT '',
+    synthetic INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS operators (
+    id TEXT PRIMARY KEY, name TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('owner','accountant','viewer')),
+    pin_salt TEXT NOT NULL, pin_hash TEXT NOT NULL, failed_attempts INTEGER NOT NULL DEFAULT 0,
+    locked_until TEXT, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS sessions (
+    token_hash TEXT PRIMARY KEY, operator_id TEXT NOT NULL REFERENCES operators(id),
+    created_at TEXT NOT NULL, expires_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS transactions (
+    business_id TEXT NOT NULL, id TEXT NOT NULL, date TEXT NOT NULL, description TEXT NOT NULL,
+    type TEXT NOT NULL CHECK(type IN ('income','expense')), amount_minor INTEGER NOT NULL CHECK(amount_minor > 0),
+    currency TEXT NOT NULL, category TEXT NOT NULL, fingerprint TEXT NOT NULL,
+    risk_flags TEXT NOT NULL DEFAULT '[]', source TEXT NOT NULL, created_at TEXT NOT NULL,
+    PRIMARY KEY(business_id,id), UNIQUE(business_id,fingerprint));
+CREATE TABLE IF NOT EXISTS invoices (
+    business_id TEXT NOT NULL, id TEXT NOT NULL, customer TEXT NOT NULL, description TEXT NOT NULL,
+    issue_date TEXT NOT NULL, due_date TEXT NOT NULL, expected_collection_date TEXT NOT NULL,
+    status TEXT NOT NULL, paid_date TEXT, amount_minor INTEGER NOT NULL CHECK(amount_minor > 0),
+    currency TEXT NOT NULL, risk_flags TEXT NOT NULL DEFAULT '[]', source TEXT NOT NULL, created_at TEXT NOT NULL,
+    PRIMARY KEY(business_id,id));
+CREATE TABLE IF NOT EXISTS bills (
+    business_id TEXT NOT NULL, id TEXT NOT NULL, payee TEXT NOT NULL, payee_account TEXT,
+    description TEXT NOT NULL, due_date TEXT NOT NULL, amount_minor INTEGER NOT NULL CHECK(amount_minor > 0),
+    currency TEXT NOT NULL, status TEXT NOT NULL, priority TEXT NOT NULL,
+    reschedule_allowed INTEGER NOT NULL DEFAULT 0, rescheduled_date TEXT,
+    risk_flags TEXT NOT NULL DEFAULT '[]', source TEXT NOT NULL, created_at TEXT NOT NULL,
+    PRIMARY KEY(business_id,id));
+CREATE TABLE IF NOT EXISTS counterparties (
+    business_id TEXT NOT NULL, name TEXT NOT NULL, kind TEXT NOT NULL CHECK(kind IN ('supplier','customer')),
+    profile_json TEXT NOT NULL DEFAULT '{}', verified_account TEXT, verified_by TEXT, verified_at TEXT,
+    PRIMARY KEY(business_id,name,kind));
+CREATE TABLE IF NOT EXISTS policies (
+    business_id TEXT PRIMARY KEY, policy_json TEXT NOT NULL, version TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS sandbox_state (
+    business_id TEXT PRIMARY KEY, current_date TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 0,
+    state_json TEXT NOT NULL, reset_count INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS plans (
+    id TEXT PRIMARY KEY, business_id TEXT NOT NULL, target_date TEXT NOT NULL, plan_hash TEXT NOT NULL,
+    snapshot_hash TEXT NOT NULL, payload TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending',
+    proposed_by TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS approvals (
+    id TEXT PRIMARY KEY, business_id TEXT NOT NULL, plan_id TEXT NOT NULL, bundle_id TEXT NOT NULL,
+    operator_id TEXT NOT NULL, role TEXT NOT NULL, review_ms INTEGER, created_at TEXT NOT NULL,
+    UNIQUE(plan_id,bundle_id,operator_id));
+CREATE TABLE IF NOT EXISTS mandates (
+    id TEXT PRIMARY KEY, business_id TEXT NOT NULL, plan_id TEXT, bundle_id TEXT, kind TEXT NOT NULL,
+    document TEXT NOT NULL, status TEXT NOT NULL, expires_at TEXT NOT NULL, nonce TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL, used_at TEXT);
+CREATE TABLE IF NOT EXISTS negotiations (
+    id TEXT PRIMARY KEY, business_id TEXT NOT NULL, mandate_id TEXT NOT NULL, action_id TEXT NOT NULL,
+    counterparty TEXT NOT NULL, request_json TEXT NOT NULL, response_json TEXT NOT NULL, status TEXT NOT NULL,
+    simulated_by TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS executions (
+    id TEXT PRIMARY KEY, business_id TEXT NOT NULL, mandate_id TEXT NOT NULL, idempotency_key TEXT NOT NULL,
+    receipt_json TEXT NOT NULL, created_at TEXT NOT NULL, UNIQUE(business_id,idempotency_key));
+CREATE TABLE IF NOT EXISTS messages (
+    id TEXT PRIMARY KEY, business_id TEXT NOT NULL, mandate_id TEXT, action_id TEXT NOT NULL,
+    record_id TEXT NOT NULL, counterparty TEXT NOT NULL, kind TEXT NOT NULL, body TEXT NOT NULL,
+    reply TEXT, status TEXT NOT NULL, human_present INTEGER NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS audit (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, business_id TEXT NOT NULL, timestamp TEXT NOT NULL,
+    action TEXT NOT NULL, actor TEXT NOT NULL, permission TEXT NOT NULL, details TEXT NOT NULL,
+    previous_hash TEXT NOT NULL, entry_hash TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS audit_business ON audit(business_id,id);
+CREATE INDEX IF NOT EXISTS plan_business ON plans(business_id,status,created_at);
+CREATE INDEX IF NOT EXISTS mandate_business ON mandates(business_id,status,created_at);
+"""
+
+
+class Store:
+    def __init__(self, path, key_path=None, witness_path=None):
+        self._memory = str(path) == ":memory:"
+        self.path = None if self._memory else Path(path)
+        self._uri = f"file:tideway_{id(self)}_{secrets.token_hex(4)}?mode=memory&cache=shared" if self._memory else None
+        self._keepalive = sqlite3.connect(self._uri, uri=True) if self._memory else None
+        if self.path:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            key_path = key_path or self.path.with_suffix(".key")
+            witness_path = witness_path or self.path.with_suffix(".witness.json")
+        self.key = security.load_key(key_path)
+        # The witness has its own key and file.  Someone who can rewrite the
+        # database (and recompute the chain) still cannot forge a cosigned
+        # checkpoint without this second secret.
+        self.witness_key = security.load_key(Path(witness_path).with_suffix(".key") if witness_path else None)
+        self.witness_path = Path(witness_path) if witness_path else None
+        self._witness_memory = {}
+        with self.connect() as db:
+            db.executescript(SCHEMA)
+
+    @contextmanager
+    def connect(self):
+        db = sqlite3.connect(self._uri, uri=True, timeout=10) if self._memory else sqlite3.connect(self.path, timeout=10)
+        db.row_factory = sqlite3.Row
+        db.execute("PRAGMA busy_timeout=10000")
+        db.execute("PRAGMA foreign_keys=ON")
+        try:
+            with db:
+                yield db
+        finally:
+            db.close()
+
+    # ---- audit, witness and circuit breaker ---------------------------------
+
+    @staticmethod
+    def _audit(db, business_id, action, actor, permission, details):
+        row = {"timestamp": utc_now(), "action": action, "actor": actor, "permission": permission,
+               "details": canonical_json(details)}
+        previous = db.execute("SELECT entry_hash FROM audit WHERE business_id=? ORDER BY id DESC LIMIT 1",
+                              (business_id,)).fetchone()
+        previous_hash = previous[0] if previous else "0" * 64
+        digest = _entry_digest(previous_hash, business_id, row)
+        cursor = db.execute("INSERT INTO audit(business_id,timestamp,action,actor,permission,details,previous_hash,entry_hash) "
+                            "VALUES (?,?,?,?,?,?,?,?)",
+                            (business_id, row["timestamp"], action, actor, permission, row["details"], previous_hash, digest))
+        return {"audit_id": cursor.lastrowid, "audit_hash": digest}
+
+    def audit(self, business_id, action, actor, permission, details):
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            self._business_row(db, business_id)
+            return self._audit(db, business_id, action, actor, permission, details)
+
+    def reject(self, business_id, action, actor, reason, details=None, security_relevant=False):
+        """Record a denied request and trip the circuit breaker on repeated security denials.
+
+        Never raises: a failed audit must not mask the original error.
+        """
+        try:
+            with self.connect() as db:
+                db.execute("BEGIN IMMEDIATE")
+                self._business_row(db, business_id)
+                self._audit(db, business_id, action, actor, "denied",
+                            {"reason": str(reason)[:300], "security_relevant": security_relevant, **(details or {})})
+                if security_relevant:
+                    self._maybe_trip_breaker(db, business_id)
+        except Exception:
+            pass
+
+    def _maybe_trip_breaker(self, db, business_id):
+        since = (datetime.now(timezone.utc) - timedelta(minutes=BREAKER_WINDOW_MINUTES)).isoformat(timespec="seconds")
+        count = db.execute("SELECT COUNT(*) FROM audit WHERE business_id=? AND permission='denied' AND timestamp>=? "
+                           "AND details LIKE '%\"security_relevant\":true%'", (business_id, since)).fetchone()[0]
+        policy = self._policy(db, business_id)
+        if count >= BREAKER_DENIALS and not policy["agent_paused"]:
+            policy = {**policy, "agent_paused": True, "paused_reason": f"Circuit breaker: {count} security denials "
+                                                                         f"in {BREAKER_WINDOW_MINUTES} minutes"}
+            db.execute("UPDATE policies SET policy_json=?,updated_at=? WHERE business_id=?",
+                       (canonical_json(policy), utc_now(), business_id))
+            self._bump(db, business_id)
+            self._audit(db, business_id, "circuit_breaker.trip", "system", "system_control",
+                        {"denials": count, "window_minutes": BREAKER_WINDOW_MINUTES,
+                         "effect": "agent paused; pending plans and mandates invalidated; owner must resume with a reason"})
+
+    def _witness_read(self):
+        if self.witness_path is None:
+            return dict(self._witness_memory)
+        try:
+            return json.loads(self.witness_path.read_text())
+        except (OSError, ValueError):
+            return {}
+
+    def _witness_write(self, data):
+        if self.witness_path is None:
+            self._witness_memory = dict(data)
+            return
+        self.witness_path.write_text(json.dumps(data, sort_keys=True, indent=1))
+
+    def _witness_signature(self, item):
+        body = canonical_json({key: item[key] for key in ("business_id", "size", "head_hash", "cosigned_at")})
+        return hmac.new(self.witness_key, body.encode(), hashlib.sha256).hexdigest()
+
+    def witness_cosign(self, business_id):
+        """Cosign the current chain head only if the previous head is still in place."""
+        with self.connect() as db:
+            rows = db.execute("SELECT id,entry_hash FROM audit WHERE business_id=? ORDER BY id", (business_id,)).fetchall()
+        data = self._witness_read()
+        previous = data.get(business_id)
+        if previous and (len(rows) < previous["size"] or rows[previous["size"] - 1]["entry_hash"] != previous["head_hash"]):
+            return {"cosigned": False, "reason": "The chain no longer contains the previously witnessed head."}
+        item = {"business_id": business_id, "size": len(rows), "head_hash": rows[-1]["entry_hash"] if rows else "0" * 64,
+                "cosigned_at": utc_now()}
+        item["signature"] = self._witness_signature(item)
+        data[business_id] = item
+        self._witness_write(data)
+        return {"cosigned": True, **item}
+
+    def evidence(self, business_id):
+        with self.connect() as db:
+            self._business_row(db, business_id)
+            rows = [dict(row) for row in db.execute("SELECT * FROM audit WHERE business_id=? ORDER BY id", (business_id,))]
+        valid, previous, first_bad = True, "0" * 64, None
+        for index, row in enumerate(rows):
+            ok = row["previous_hash"] == previous and row["entry_hash"] == _entry_digest(previous, business_id, row)
+            if not ok and first_bad is None:
+                first_bad = index + 1
+            valid = valid and ok
+            previous = row["entry_hash"]
+            row["details_json"] = row["details"]
+            try:
+                row["details"] = json.loads(row["details"])
+            except ValueError:
+                valid = False
+        witnessed = self._witness_read().get(business_id)
+        witness = {"present": bool(witnessed)}
+        if witnessed:
+            signature_ok = hmac.compare_digest(self._witness_signature(witnessed), witnessed.get("signature", ""))
+            in_place = len(rows) >= witnessed["size"] and witnessed["size"] > 0 and \
+                rows[witnessed["size"] - 1]["entry_hash"] == witnessed["head_hash"]
+            witness.update({"size": witnessed["size"], "head_hash": witnessed["head_hash"],
+                            "cosigned_at": witnessed["cosigned_at"], "signature_valid": signature_ok,
+                            "consistent": signature_ok and in_place})
+            if not in_place:
+                valid = False
+                witness["problem"] = (f"Chain has {len(rows)} entries but the witness cosigned {witnessed['size']}; "
+                                      "entries were truncated or rewritten.")
+        checkpoint = {"business_id": business_id, "entries": len(rows), "head_hash": previous, "signed_at": utc_now()}
+        checkpoint["signature"] = security.sign(self.key, checkpoint)
+        return {"project": "Tideway", "track": "FinTechathon 2026 International Track, Topic E",
+                "environment": "local SQLite sandbox (synthetic)", "business_id": business_id,
+                "exported_at": utc_now(), "hash_chain_valid": valid, "first_invalid_entry": first_bad,
+                "genesis_hash": "0" * 64, "head_hash": previous, "checkpoint": checkpoint, "witness": witness,
+                "hash_algorithm": "sha256(previous_hash|business_id|timestamp|action|actor|permission|details_json)",
+                "entries": rows,
+                "note": "Synthetic local evidence. The per-business hash chain, signed checkpoint and separately keyed "
+                        "witness make edits and truncation detectable. Tamper-evident, not tamper-proof; not third-party "
+                        "certification."}
+
+    def tamper_drill(self, business_id):
+        """Flip one byte in an in-memory copy of the chain and show where verification breaks.
+
+        The live database is never modified; this demonstrates tamper evidence safely.
+        """
+        with self.connect() as db:
+            self._business_row(db, business_id)
+            rows = [dict(row) for row in db.execute("SELECT * FROM audit WHERE business_id=? ORDER BY id", (business_id,))]
+        if len(rows) < 2:
+            raise ValidationError("The audit chain is too short for a drill.")
+        victim = len(rows) // 2
+        original = rows[victim]["details"]
+        rows[victim]["details"] = original.replace("0", "1", 1) if "0" in original else original + " "
+        previous, broken = "0" * 64, None
+        for index, row in enumerate(rows):
+            if row["previous_hash"] != previous or row["entry_hash"] != _entry_digest(previous, business_id, row):
+                broken = index + 1
+                break
+            previous = row["entry_hash"]
+        return {"entries": len(rows), "edited_entry": victim + 1, "edited_action": rows[victim]["action"],
+                "verification_breaks_at": broken, "detected": broken == victim + 1,
+                "live_database_modified": False,
+                "explanation": f"Changing one character in entry {victim + 1} ({rows[victim]['action']}) makes its hash differ, "
+                               "so verification stops exactly there. Every later entry depends on it."}
+
+    # ---- operators and sessions --------------------------------------------
+
+    def ensure_operator(self, operator_id, name, role, pin):
+        if role not in ROLES:
+            raise ValidationError("Unknown role.")
+        salt, digest = security.hash_pin(pin)
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            db.execute("INSERT OR IGNORE INTO operators(id,name,role,pin_salt,pin_hash,created_at) VALUES (?,?,?,?,?,?)",
+                       (operator_id, name, role, salt, digest, utc_now()))
+
+    def operators(self):
+        with self.connect() as db:
+            return [{"id": row["id"], "name": row["name"], "role": row["role"]}
+                    for row in db.execute("SELECT id,name,role FROM operators ORDER BY CASE role WHEN 'owner' THEN 0 "
+                                          "WHEN 'accountant' THEN 1 ELSE 2 END,id")]
+
+    def verify_pin(self, operator_id, pin):
+        """Step-up check.  Wrong PINs count toward a lockout and are committed."""
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute("SELECT * FROM operators WHERE id=?", (operator_id,)).fetchone()
+            if not row:
+                raise ValidationError("Unknown operator or wrong PIN.")
+            if row["locked_until"] and not _expired(row["locked_until"]):
+                raise ValidationError("Too many wrong PINs. This operator is locked for a few minutes.")
+            if not security.check_pin(pin, row["pin_salt"], row["pin_hash"]):
+                failures = row["failed_attempts"] + 1
+                locked = _later(minutes=LOCKOUT_MINUTES) if failures >= MAX_PIN_FAILURES else None
+                db.execute("UPDATE operators SET failed_attempts=?,locked_until=? WHERE id=?",
+                           (0 if locked else failures, locked, operator_id))
+                ok = None
+            else:
+                db.execute("UPDATE operators SET failed_attempts=0,locked_until=NULL WHERE id=?", (operator_id,))
+                ok = {"id": row["id"], "name": row["name"], "role": row["role"]}
+        if ok is None:
+            raise ValidationError("Unknown operator or wrong PIN.")
+        return ok
+
+    def login(self, operator_id, pin):
+        operator = self.verify_pin(operator_id, pin)
+        token = secrets.token_urlsafe(32)
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            db.execute("DELETE FROM sessions WHERE expires_at < ?", (utc_now(),))
+            db.execute("INSERT INTO sessions(token_hash,operator_id,created_at,expires_at) VALUES (?,?,?,?)",
+                       (security.token_hash(token), operator["id"], utc_now(), _later(hours=SESSION_HOURS)))
+        return token, operator
+
+    def session_operator(self, token):
+        if not isinstance(token, str) or not token or len(token) > 200:
+            return None
+        with self.connect() as db:
+            row = db.execute("SELECT o.id,o.name,o.role,s.expires_at FROM sessions s JOIN operators o ON o.id=s.operator_id "
+                             "WHERE s.token_hash=?", (security.token_hash(token),)).fetchone()
+        if not row or _expired(row["expires_at"]):
+            return None
+        return {"id": row["id"], "name": row["name"], "role": row["role"]}
+
+    def logout(self, token):
+        with self.connect() as db:
+            db.execute("DELETE FROM sessions WHERE token_hash=?", (security.token_hash(token or ""),))
+
+    # ---- businesses, policy, records ---------------------------------------
+
+    def _business_row(self, db, business_id):
+        validate_business_id(business_id)
+        row = db.execute("SELECT * FROM businesses WHERE id=?", (business_id,)).fetchone()
+        if not row:
+            raise ValidationError("Business was not found in this sandbox.")
+        return row
+
+    @staticmethod
+    def _business_dict(row):
+        result = dict(row)
+        result["business_id"] = result["id"]
+        result["synthetic"] = bool(result["synthetic"])
+        return result
+
+    def list_businesses(self):
+        with self.connect() as db:
+            return [self._business_dict(row) for row in db.execute("SELECT * FROM businesses ORDER BY rowid")]
+
+    def get_business(self, business_id):
+        with self.connect() as db:
+            return self._business_dict(self._business_row(db, business_id))
+
+    def create_business(self, raw, policy_raw, counterparties=(), actor="system"):
+        business = validate_business(raw)
+        policy = validate_policy({**policy_raw, "business_id": business["business_id"]}, business["business_id"],
+                                 business["currency"])
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            if db.execute("SELECT 1 FROM businesses WHERE id=?", (business["business_id"],)).fetchone():
+                raise ValidationError("A business with this id already exists.")
+            db.execute("INSERT INTO businesses(id,name,currency,opening_cash_minor,opening_date,default_target_date,country,sector,synthetic,created_at) "
+                       "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                       (business["business_id"], business["name"], business["currency"], business["opening_cash_minor"],
+                        business["opening_date"], business["default_target_date"], business["country"], business["sector"],
+                        int(business["synthetic"]), utc_now()))
+            db.execute("INSERT INTO policies(business_id,policy_json,version,updated_at) VALUES (?,?,?,?)",
+                       (business["business_id"], canonical_json(policy), policy["version"], utc_now()))
+            db.execute("INSERT INTO sandbox_state(business_id,current_date,version,state_json,updated_at) VALUES (?,?,?,?,?)",
+                       (business["business_id"], business["opening_date"], 0, canonical_json(self._empty_state()), utc_now()))
+            for item in counterparties:
+                db.execute("INSERT OR REPLACE INTO counterparties(business_id,name,kind,profile_json,verified_account) VALUES (?,?,?,?,?)",
+                           (business["business_id"], item["name"], item["kind"], canonical_json(item.get("profile", {})),
+                            item.get("verified_account")))
+            self._audit(db, business["business_id"], "business.create", actor, "system_seed",
+                        {"business": business, "policy_version": policy["version"]})
+        return business
+
+    @staticmethod
+    def _empty_state():
+        return {"adjustments": [], "promises": {}, "executed_exposure": {}}
+
+    def _policy(self, db, business_id):
+        row = db.execute("SELECT policy_json FROM policies WHERE business_id=?", (business_id,)).fetchone()
+        if not row:
+            raise ValidationError("A policy is not configured for this business.")
+        return json.loads(row["policy_json"])
+
+    def _records(self, db, business_id):
+        def rows(query):
+            result = []
+            for row in db.execute(query, (business_id,)):
+                item = dict(row)
+                item["risk_flags"] = json.loads(item.get("risk_flags") or "[]")
+                item["synthetic"] = item.get("source") == "demo"
+                result.append(item)
+            return result
+        transactions = rows("SELECT * FROM transactions WHERE business_id=? ORDER BY date,id")
+        invoices = rows("SELECT * FROM invoices WHERE business_id=? ORDER BY due_date,id")
+        bills = rows("SELECT * FROM bills WHERE business_id=? ORDER BY due_date,id")
+        for bill in bills:
+            bill["reschedule_allowed"] = bool(bill["reschedule_allowed"])
+        return {"transactions": transactions, "invoices": invoices, "bills": bills}
+
+    def _counterparties(self, db, business_id):
+        result = {}
+        for row in db.execute("SELECT * FROM counterparties WHERE business_id=? ORDER BY kind,name", (business_id,)):
+            result[f"{row['kind']}:{row['name']}"] = {
+                "name": row["name"], "kind": row["kind"], "profile": json.loads(row["profile_json"]),
+                "verified_account": row["verified_account"], "verified_by": row["verified_by"],
+                "verified_at": row["verified_at"]}
+        return result
+
+    def _state(self, db, business_id):
+        row = db.execute("SELECT * FROM sandbox_state WHERE business_id=?", (business_id,)).fetchone()
+        if not row:
+            raise ValidationError("Sandbox state is not configured for this business.")
+        state = {**self._empty_state(), **json.loads(row["state_json"])}
+        state.update({"business_id": business_id, "current_date": row["current_date"], "version": row["version"],
+                      "reset_count": row["reset_count"]})
+        state["state_hash"] = json_hash({key: state[key] for key in ("adjustments", "promises", "executed_exposure", "version")})
+        return state
+
+    def _snapshot(self, db, business_id):
+        business = self._business_dict(self._business_row(db, business_id))
+        policy = self._policy(db, business_id)
+        records = self._records(db, business_id)
+        counterparties = self._counterparties(db, business_id)
+        state = self._state(db, business_id)
+        stable = {kind: [{key: value for key, value in row.items() if key not in ("created_at", "synthetic")}
+                         for row in rows] for kind, rows in records.items()}
+        digest = json_hash({"business": {key: business[key] for key in ("id", "currency", "opening_cash_minor", "opening_date")},
+                            "policy": policy, "records": stable,
+                            "verified": sorted((key, item["verified_account"] or "") for key, item in counterparties.items()),
+                            "state": state["state_hash"]})
+        return {"business": business, "policy": policy, "records": records, "counterparties": counterparties,
+                "state": state, "snapshot_hash": digest}
+
+    def snapshot(self, business_id):
+        with self.connect() as db:
+            db.execute("BEGIN")
+            return self._snapshot(db, business_id)
+
+    def records(self, business_id):
+        with self.connect() as db:
+            self._business_row(db, business_id)
+            return self._records(db, business_id)
+
+    def import_records(self, business_id, parsed, actor, source="csv", replace_demo=False):
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            business = self._business_row(db, business_id)
+            currency = business["currency"]
+            transactions = [validate_transaction(row, business_id, currency) for row in parsed.get("transactions", [])]
+            invoices = [validate_invoice(row, business_id, currency) for row in parsed.get("invoices", [])]
+            bills = [validate_bill(row, business_id, currency) for row in parsed.get("bills", [])]
+            if not (transactions or invoices or bills):
+                raise ValidationError("At least one transaction, invoice or bill is required.")
+            state = self._state(db, business_id)
+            if replace_demo and state["adjustments"]:
+                raise ValidationError("Reset the sandbox before replacing demo records that have accepted adjustments.")
+            fields = {"transactions": ("date", "description", "type", "amount_minor", "category"),
+                      "invoices": ("customer", "description", "issue_date", "due_date", "expected_collection_date",
+                                   "status", "paid_date", "amount_minor"),
+                      "bills": ("payee", "payee_account", "description", "due_date", "amount_minor", "status",
+                                "priority", "rescheduled_date")}
+            planned = []
+            # Check every identity before deleting or inserting anything, so a
+            # conflict rejects the whole file and never half-imports.
+            for row in transactions:
+                row["fingerprint"] = _fingerprint(row)
+                row["id"] = row["id"] or "txn-" + row["fingerprint"][:16]
+                existing = (db.execute("SELECT * FROM transactions WHERE business_id=? AND id=?", (business_id, row["id"])).fetchone()
+                            or db.execute("SELECT * FROM transactions WHERE business_id=? AND fingerprint=?",
+                                          (business_id, row["fingerprint"])).fetchone())
+                planned.append(("transactions", row, existing))
+            for kind, collection in (("invoices", invoices), ("bills", bills)):
+                for row in collection:
+                    planned.append((kind, row, db.execute(f"SELECT * FROM {kind} WHERE business_id=? AND id=?",
+                                                          (business_id, row["id"])).fetchone()))
+            keep = []
+            skipped = {"transactions": 0, "invoices": 0, "bills": 0}
+            for kind, row, existing in planned:
+                if existing is not None:
+                    replaceable = replace_demo and existing["source"] == "demo"
+                    same = all(existing[field] == row[field] for field in fields[kind])
+                    if kind == "bills":
+                        same = same and bool(existing["reschedule_allowed"]) == row["reschedule_allowed"]
+                    if not same and not replaceable:
+                        raise ValidationError(f"{kind[:-1].title()} {row['id']} conflicts with an existing record; nothing was imported.")
+                    if same and not replaceable:
+                        skipped[kind] += 1
+                        continue
+                keep.append((kind, row))
+            removed = {"transactions": 0, "invoices": 0, "bills": 0}
+            if replace_demo:
+                for kind in removed:
+                    removed[kind] = db.execute(f"DELETE FROM {kind} WHERE business_id=? AND source='demo'", (business_id,)).rowcount
+            added = {"transactions": 0, "invoices": 0, "bills": 0}
+            now = utc_now()
+            for kind, row in keep:
+                flags = canonical_json(row["risk_flags"])
+                if kind == "transactions":
+                    db.execute("INSERT INTO transactions(business_id,id,date,description,type,amount_minor,currency,category,fingerprint,risk_flags,source,created_at) "
+                               "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                               (business_id, row["id"], row["date"], row["description"], row["type"], row["amount_minor"],
+                                currency, row["category"], row["fingerprint"], flags, source, now))
+                elif kind == "invoices":
+                    db.execute("INSERT INTO invoices(business_id,id,customer,description,issue_date,due_date,expected_collection_date,status,paid_date,amount_minor,currency,risk_flags,source,created_at) "
+                               "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                               (business_id, row["id"], row["customer"], row["description"], row["issue_date"], row["due_date"],
+                                row["expected_collection_date"], row["status"], row["paid_date"], row["amount_minor"],
+                                currency, flags, source, now))
+                else:
+                    db.execute("INSERT INTO bills(business_id,id,payee,payee_account,description,due_date,amount_minor,currency,status,priority,reschedule_allowed,rescheduled_date,risk_flags,source,created_at) "
+                               "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                               (business_id, row["id"], row["payee"], row["payee_account"], row["description"], row["due_date"],
+                                row["amount_minor"], currency, row["status"], row["priority"], int(row["reschedule_allowed"]),
+                                row["rescheduled_date"], flags, source, now))
+                added[kind] += 1
+            quarantined = [{"kind": kind[:-1], "id": row["id"], "flags": row["risk_flags"]} for kind, row in keep if row["risk_flags"]]
+            result = {"business_id": business_id, "added": added, "duplicates_skipped": skipped,
+                      "sample_records_removed": removed, "total_added": sum(added.values()),
+                      "total_removed": sum(removed.values()), "quarantined_text": quarantined, "source": source}
+            if result["total_added"] or result["total_removed"]:
+                result["state_version"] = self._bump(db, business_id)
+            result.update(self._audit(db, business_id, "ledger.import", actor, "user_write",
+                                      {key: result[key] for key in ("added", "duplicates_skipped", "sample_records_removed",
+                                                                    "quarantined_text", "source")}))
+            return result
+
+    def _bump(self, db, business_id):
+        """Advance the sandbox version and invalidate anything approved earlier."""
+        row = db.execute("SELECT version FROM sandbox_state WHERE business_id=?", (business_id,)).fetchone()
+        version = row["version"] + 1
+        db.execute("UPDATE sandbox_state SET version=?,updated_at=? WHERE business_id=?", (version, utc_now(), business_id))
+        db.execute("UPDATE plans SET status='invalidated' WHERE business_id=? AND status IN ('pending','approved')", (business_id,))
+        db.execute(f"UPDATE mandates SET status='invalidated' WHERE business_id=? AND kind='bundle' AND status IN {BUNDLE_LIVE}",
+                   (business_id,))
+        return version
+
+    def set_policy(self, business_id, changes, operator, actor):
+        pause_only = set(changes) == {"agent_paused"} and changes["agent_paused"] is True
+        if operator["role"] != "owner" and not (pause_only and operator["role"] in APPROVER_ROLES):
+            raise ValidationError("Only the owner can change policy. Any approver can pause the agent.")
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            business = self._business_row(db, business_id)
+            current = self._policy(db, business_id)
+            allowed = {"reserve_floor_minor", "action_limit_minor", "daily_cap_minor", "dual_approval_threshold_minor",
+                       "max_deferral_days", "max_discount_bps", "lookahead_days", "autonomy_level", "agent_paused",
+                       "resume_reason"}
+            unknown = set(changes) - allowed
+            if unknown:
+                raise ValidationError(f"Unknown policy field(s): {', '.join(sorted(unknown))}.")
+            changes = dict(changes)
+            reason = changes.pop("resume_reason", None)
+            if current["agent_paused"] and changes.get("agent_paused") is False:
+                if not isinstance(reason, str) or len(reason.strip()) < 5:
+                    raise ValidationError("Resuming a paused agent needs a written reason (at least 5 characters).")
+            tail = current["version"].rsplit("-v", 1)[-1]
+            version_label = f"policy-v{int(tail) + 1 if tail.isdigit() else 2}"
+            base = {key: value for key, value in current.items() if key != "paused_reason"}
+            policy = validate_policy({**base, **changes, "version": version_label}, business_id, business["currency"])
+            if policy["agent_paused"] and changes.get("agent_paused"):
+                policy["paused_reason"] = f"Paused by {operator['name']} ({operator['role']})"
+            elif policy["agent_paused"] and current.get("paused_reason"):
+                policy["paused_reason"] = current["paused_reason"]
+            state = self._state(db, business_id)
+            if any(item["kind"] == "bill_deferral" and item["amount_minor"] > policy["action_limit_minor"]
+                   for item in state["adjustments"]):
+                raise ValidationError("The action limit cannot go below an accepted adjustment; reset the sandbox first.")
+            db.execute("UPDATE policies SET policy_json=?,version=?,updated_at=? WHERE business_id=?",
+                       (canonical_json(policy), policy["version"], utc_now(), business_id))
+            version = self._bump(db, business_id)
+            db.execute("UPDATE mandates SET status='revoked' WHERE business_id=? AND kind='standing' AND status='active'", (business_id,))
+            standing = None
+            if policy["autonomy_level"] == "delegate" and not policy["agent_paused"]:
+                standing = self._issue_standing(db, business_id, policy, operator)
+            receipt = self._audit(db, business_id, "policy.update", actor, "human_approval",
+                                  {"previous": current, "policy": policy, "state_version": version, "resume_reason": reason,
+                                   "standing_mandate": standing["mandate_id"] if standing else None})
+            return {**policy, "changed": True, "standing_mandate": standing, **receipt}
+
+    def _issue_standing(self, db, business_id, policy, operator):
+        """An 'open' mandate: constraints only, for zero-cash reminders without a human present."""
+        document = {"version": security.MANDATE_VERSION, "kind": "standing", "mandate_id": uuid.uuid4().hex,
+                    "business_id": business_id,
+                    "constraints": {"action.types": ["collection_reminder"], "action.max_per_day": 5,
+                                    "payment.amount_range": {"max_minor": 0}, "counterparty.one_reminder_per_invoice": True},
+                    "policy_version": policy["version"], "issued_by": operator["id"], "issued_role": operator["role"],
+                    "human_present_at_execution": False, "issued_at": utc_now(),
+                    "expires_at": _later(days=STANDING_MANDATE_DAYS), "nonce": secrets.token_urlsafe(16)}
+        document["signature"] = security.sign(self.key, document)
+        db.execute("INSERT INTO mandates(id,business_id,kind,document,status,expires_at,nonce,created_at) VALUES (?,?,?,?,?,?,?,?)",
+                   (document["mandate_id"], business_id, "standing", canonical_json(document), "active",
+                    document["expires_at"], document["nonce"], utc_now()))
+        return document
+
+    def standing_mandate(self, business_id):
+        with self.connect() as db:
+            row = db.execute("SELECT document FROM mandates WHERE business_id=? AND kind='standing' AND status='active' "
+                             "ORDER BY rowid DESC LIMIT 1", (business_id,)).fetchone()
+        if not row:
+            return None
+        document = json.loads(row["document"])
+        return None if _expired(document["expires_at"]) else document
+
+    def verify_payee(self, business_id, payee, account, operator, actor, method):
+        if operator["role"] != "owner":
+            raise ValidationError("Only the owner can verify changed bank details.")
+        if method != "callback_number_on_file":
+            raise ValidationError("Verification must use a phone number already on file, never one from the request.")
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            self._business_row(db, business_id)
+            if not db.execute("SELECT 1 FROM bills WHERE business_id=? AND payee=? AND payee_account=?",
+                              (business_id, payee, account)).fetchone():
+                raise ValidationError("No bill uses this payee and account.")
+            db.execute("INSERT INTO counterparties(business_id,name,kind,profile_json,verified_account,verified_by,verified_at) "
+                       "VALUES (?,?,?,?,?,?,?) ON CONFLICT(business_id,name,kind) DO UPDATE SET "
+                       "verified_account=excluded.verified_account,verified_by=excluded.verified_by,verified_at=excluded.verified_at",
+                       (business_id, payee, "supplier", "{}", account, operator["id"], utc_now()))
+            version = self._bump(db, business_id)
+            return {"payee": payee, "verified_account": analytics.mask_account(account), "state_version": version,
+                    "separation_of_duties": f"{operator['name']} can no longer approve actions for {payee}.",
+                    **self._audit(db, business_id, "payee.verify", actor, "human_approval",
+                                  {"payee": payee, "account": analytics.mask_account(account), "method": method})}
+
+    # ---- derived context used by planning and execution checks -------------
+
+    @staticmethod
+    def derived(snapshot):
+        records = snapshot["records"]
+        verified = {item["name"]: item["verified_account"] for item in snapshot["counterparties"].values()
+                    if item["kind"] == "supplier" and item["verified_account"]}
+        payees = analytics.payee_checks(records["bills"], verified)
+        profiles = analytics.customer_profiles(records["invoices"])
+        blocked = {item["bill_id"]: "Bank details changed; the owner must verify the payee by callback first."
+                   for item in payees["flagged"]}
+        for item in payees.get("lookalikes", []):
+            blocked.setdefault(item["bill_id"], f"Payee name looks like '{item['similar_to']}'; confirm it is not an impostor.")
+        return {"profiles": profiles, "payees": payees, "blocked": blocked,
+                "likely_dates": analytics.scenario_dates(records["invoices"], profiles, "likely"),
+                "stress_dates": analytics.scenario_dates(records["invoices"], profiles, "stress")}
+
+    # ---- plans, approvals and mandates -------------------------------------
+
+    def create_plan(self, business_id, payload, snapshot_hash, proposed_by, actor):
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            snapshot = self._snapshot(db, business_id)
+            if snapshot["policy"]["agent_paused"]:
+                raise ValidationError("The agent is paused (kill switch). Resume it to create new proposals.")
+            if snapshot["snapshot_hash"] != snapshot_hash:
+                raise ValidationError("Records changed while planning; compare again.")
+            identifier = uuid.uuid4().hex
+            body = {**payload, "snapshot_hash": snapshot_hash, "policy_version": snapshot["policy"]["version"]}
+            plan_hash = json_hash(body)
+            db.execute("UPDATE plans SET status='superseded' WHERE business_id=? AND target_date=? AND status='pending'",
+                       (business_id, payload["target_date"]))
+            db.execute("INSERT INTO plans(id,business_id,target_date,plan_hash,snapshot_hash,payload,status,proposed_by,created_at) "
+                       "VALUES (?,?,?,?,?,?,?,?,?)",
+                       (identifier, business_id, payload["target_date"], plan_hash, snapshot_hash,
+                        canonical_json(body), "pending", proposed_by, utc_now()))
+            receipt = self._audit(db, business_id, "plan.propose", actor, "agent_propose",
+                                  {"plan_id": identifier, "plan_hash": plan_hash, "snapshot_hash": snapshot_hash,
+                                   "bundles": [{"bundle_id": item["bundle_id"], "feasible": item["feasible"],
+                                                "actions": [action["action_id"] for action in item["actions"]],
+                                                "economic_cost_minor": item["economic_cost_minor"]} for item in payload["bundles"]],
+                                   "gap_minor": payload["gap_minor"]})
+        return {**body, "plan_id": identifier, "plan_hash": plan_hash, "status": "pending", "approvals": [], **receipt}
+
+    def plan(self, business_id, plan_id):
+        if not isinstance(plan_id, str) or not re.fullmatch(r"[0-9a-f]{32}", plan_id):
+            raise ValidationError("A valid plan_id is required.")
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM plans WHERE business_id=? AND id=?", (business_id, plan_id)).fetchone()
+            if not row:
+                raise ValidationError("Plan was not found for this business.")
+            approvals = [dict(item) for item in db.execute(
+                "SELECT bundle_id,operator_id,role,review_ms,created_at FROM approvals WHERE plan_id=? ORDER BY created_at", (plan_id,))]
+        return {**json.loads(row["payload"]), "plan_id": row["id"], "plan_hash": row["plan_hash"], "status": row["status"],
+                "approvals": approvals}
+
+    def latest_plan(self, business_id, target_date):
+        with self.connect() as db:
+            row = db.execute("SELECT id FROM plans WHERE business_id=? AND target_date=? AND status IN ('pending','approved') "
+                             "ORDER BY rowid DESC LIMIT 1", (business_id, target_date)).fetchone()
+        return self.plan(business_id, row["id"]) if row else None
+
+    def _fresh_plan(self, db, business_id, plan_id, snapshot):
+        row = db.execute("SELECT * FROM plans WHERE business_id=? AND id=?", (business_id, plan_id)).fetchone()
+        if not row:
+            raise ValidationError("Plan was not found for this business.")
+        if row["status"] not in ("pending", "approved", "executed"):
+            raise ValidationError(f"This plan is {row['status']}; compare again.")
+        payload = json.loads(row["payload"])
+        if json_hash(payload) != row["plan_hash"]:
+            raise ValidationError("Plan hash does not match; the stored plan was altered.")
+        if row["snapshot_hash"] != snapshot["snapshot_hash"]:
+            raise ValidationError("Records, policy or sandbox state changed since this plan; compare again.")
+        return row, payload
+
+    def _check_bundle(self, snapshot, derived, bundle, operator=None):
+        """Deterministic checks outside the model: every bound value must trace to a ledger record."""
+        policy = snapshot["policy"]
+        if policy["agent_paused"]:
+            raise ValidationError("The agent is paused (kill switch). Resume it before approving or executing.")
+        if not bundle["feasible"]:
+            raise ValidationError("This bundle does not restore the reserve floor and cannot be approved.")
+        exposure = 0
+        bills = {row["id"]: row for row in snapshot["records"]["bills"]}
+        invoices = {row["id"]: row for row in snapshot["records"]["invoices"]}
+        for action in bundle["actions"]:
+            if action["currency"] != snapshot["business"]["currency"]:
+                raise ValidationError("Action currency does not match the business.")
+            if action["type"] == "supplier_deferral":
+                bill = bills.get(action["record_id"])
+                if not bill or bill["payee"] != action["counterparty"] or bill["due_date"] != action["from_date"] \
+                        or bill["amount_minor"] != action["bill_amount_minor"]:
+                    raise ValidationError("The bill changed after planning (payee, amount or due date).")
+                if bill["priority"] == "payroll" or not bill["reschedule_allowed"]:
+                    raise ValidationError("This bill cannot be deferred.")
+                if action["record_id"] in derived["blocked"]:
+                    raise ValidationError(derived["blocked"][action["record_id"]])
+                if action["days"] > policy["max_deferral_days"] or action["amount_minor"] > bill["amount_minor"]:
+                    raise ValidationError("Deferral terms exceed the bill or the policy.")
+                exposure += action["amount_minor"]
+                verifier = snapshot["counterparties"].get(f"supplier:{bill['payee']}", {}).get("verified_by")
+                if operator and verifier == operator["id"]:
+                    raise ValidationError("Separation of duties: the person who verified this payee's bank details "
+                                          "cannot approve actions for the same payee.")
+            elif action["type"] == "early_payment_offer":
+                invoice = invoices.get(action["record_id"])
+                if not invoice or invoice["customer"] != action["counterparty"] or invoice["amount_minor"] != action["face_minor"] \
+                        or invoice["status"] not in OPEN_INVOICE_STATUSES:
+                    raise ValidationError("The invoice changed after planning.")
+                if action["discount_bps"] > policy["max_discount_bps"] or \
+                        action["amount_minor"] != action["face_minor"] - action["face_minor"] * action["discount_bps"] // 10_000:
+                    raise ValidationError("Discount terms are outside the policy.")
+                exposure += action["face_minor"]
+            else:
+                raise ValidationError("Only supplier deferrals and early-payment offers can be bundled.")
+            if action.get("face_minor", action["amount_minor"]) > policy["action_limit_minor"]:
+                raise ValidationError("An action is above the per-action limit.")
+        today = snapshot["state"]["current_date"]
+        if snapshot["state"]["executed_exposure"].get(today, 0) + exposure > policy["daily_cap_minor"]:
+            raise ValidationError("This bundle would exceed the daily exposure cap.")
+        return exposure
+
+    def approve(self, business_id, plan_id, bundle_id, operator, pin, actor, review_ms=None):
+        if operator["role"] not in APPROVER_ROLES:
+            raise ValidationError("Only an owner or accountant can approve; viewers and the agent cannot.")
+        self.verify_pin(operator["id"], pin)
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            snapshot = self._snapshot(db, business_id)
+            derived = self.derived(snapshot)
+            row, payload = self._fresh_plan(db, business_id, plan_id, snapshot)
+            if row["status"] == "executed":
+                raise ValidationError("This plan was already executed.")
+            bundle = next((item for item in payload["bundles"] if item["bundle_id"] == bundle_id), None)
+            if not bundle:
+                raise ValidationError("Bundle was not found in this plan.")
+            exposure = self._check_bundle(snapshot, derived, bundle, operator)
+            if db.execute("SELECT 1 FROM approvals WHERE plan_id=? AND bundle_id<>?", (plan_id, bundle_id)).fetchone():
+                raise ValidationError("Another bundle of this plan is already being approved.")
+            if db.execute("SELECT 1 FROM approvals WHERE plan_id=? AND bundle_id=? AND operator_id=?",
+                          (plan_id, bundle_id, operator["id"])).fetchone():
+                raise ValidationError("You already approved this bundle. A second approval must come from a different person.")
+            review = review_ms if isinstance(review_ms, int) and not isinstance(review_ms, bool) and 0 <= review_ms < 86_400_000 else None
+            db.execute("INSERT INTO approvals(id,business_id,plan_id,bundle_id,operator_id,role,review_ms,created_at) VALUES (?,?,?,?,?,?,?,?)",
+                       (uuid.uuid4().hex, business_id, plan_id, bundle_id, operator["id"], operator["role"], review, utc_now()))
+            approvals = [dict(item) for item in db.execute(
+                "SELECT operator_id,role,review_ms,created_at FROM approvals WHERE plan_id=? AND bundle_id=? ORDER BY created_at",
+                (plan_id, bundle_id))]
+            policy = snapshot["policy"]
+            dual = exposure > policy["dual_approval_threshold_minor"]
+            people = {item["operator_id"] for item in approvals}
+            satisfied = (len(people) >= 2 and any(item["role"] == "owner" for item in approvals)) if dual else True
+            fast = review is not None and review < FAST_APPROVAL_MS
+            db.execute("UPDATE plans SET status='approved' WHERE id=?", (plan_id,))
+            details = {"plan_id": plan_id, "bundle_id": bundle_id, "exposure_minor": exposure,
+                       "dual_approval_required": dual, "approvals": approvals, "step_up": "PIN re-entered",
+                       "review_ms": review, "fast_approval_flag": fast}
+            if not satisfied:
+                receipt = self._audit(db, business_id, "plan.approve", actor, "human_approval",
+                                      {**details, "status": "awaiting_second_approval"})
+                return {"status": "awaiting_second_approval", "dual_approval_required": True, "approvals": approvals,
+                        "exposure_minor": exposure, "fast_approval_flag": fast,
+                        "message": "Maker-checker: a second person, including the owner, must approve this bundle.", **receipt}
+            document = {"version": security.MANDATE_VERSION, "kind": "bundle", "mandate_id": uuid.uuid4().hex,
+                        "business_id": business_id, "currency": snapshot["business"]["currency"],
+                        "plan_id": plan_id, "bundle_id": bundle_id, "plan_hash": row["plan_hash"],
+                        "snapshot_hash": snapshot["snapshot_hash"], "policy_version": policy["version"],
+                        "target_date": payload["target_date"], "actions": [bound_terms(action) for action in bundle["actions"]],
+                        "constraints": {"payment.allowed_counterparties": sorted({action["counterparty"] for action in bundle["actions"]}),
+                                        "payment.budget_minor": exposure, "execution.not_after": _later(minutes=MANDATE_MINUTES),
+                                        "consent.required": [action["action_id"] for action in bundle["actions"]]},
+                        "exposure_minor": exposure, "approvals": approvals, "dual_approval": dual,
+                        "human_present": True, "issued_at": utc_now(), "expires_at": _later(minutes=MANDATE_MINUTES),
+                        "nonce": secrets.token_urlsafe(16)}
+            document["signature"] = security.sign(self.key, document)
+            db.execute("INSERT INTO mandates(id,business_id,plan_id,bundle_id,kind,document,status,expires_at,nonce,created_at) "
+                       "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                       (document["mandate_id"], business_id, plan_id, bundle_id, "bundle", canonical_json(document),
+                        "active", document["expires_at"], document["nonce"], utc_now()))
+            receipt = self._audit(db, business_id, "mandate.issue", actor, "human_approval",
+                                  {**details, "mandate_id": document["mandate_id"], "signature": document["signature"],
+                                   "expires_at": document["expires_at"]})
+            return {"status": "mandate_issued", "mandate": document, "approvals": approvals, "fast_approval_flag": fast,
+                    "dual_approval_required": dual, "exposure_minor": exposure, **receipt}
+
+    def mandate(self, business_id, mandate_id):
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM mandates WHERE business_id=? AND id=?", (business_id, mandate_id)).fetchone()
+            if not row:
+                raise ValidationError("Mandate was not found for this business.")
+            negotiations = [self._negotiation_dict(item) for item in db.execute(
+                "SELECT * FROM negotiations WHERE mandate_id=? ORDER BY created_at,rowid", (mandate_id,))]
+        document = json.loads(row["document"])
+        status = row["status"]
+        if status in BUNDLE_LIVE and _expired(document["expires_at"]):
+            status = "expired"
+        return {"mandate": document, "status": status, "used_at": row["used_at"], "negotiations": negotiations}
+
+    def live_mandates(self, business_id):
+        with self.connect() as db:
+            rows = db.execute(f"SELECT id FROM mandates WHERE business_id=? AND kind='bundle' AND status IN {BUNDLE_LIVE} "
+                              "ORDER BY rowid DESC", (business_id,)).fetchall()
+        return [item for item in (self.mandate(business_id, row["id"]) for row in rows) if item["status"] != "expired"]
+
+    @staticmethod
+    def _negotiation_dict(row):
+        item = dict(row)
+        item["request"] = json.loads(item.pop("request_json"))
+        item["response"] = json.loads(item.pop("response_json"))
+        return item
+
+    def verify_mandate_document(self, document):
+        valid = isinstance(document, dict) and security.verify(self.key, document)
+        return {"signature_valid": valid,
+                "message": "Signature matches the server key: the mandate is authentic and unaltered." if valid else
+                           "invalid_mandate: the signature does not match. The mandate was altered or not issued by this server."}
+
+    def _load_bundle_mandate(self, db, business_id, mandate_id):
+        if not isinstance(mandate_id, str) or not re.fullmatch(r"[0-9a-f]{32}", mandate_id):
+            raise ValidationError("A valid mandate_id is required; direct execution without a mandate is not allowed.")
+        row = db.execute("SELECT * FROM mandates WHERE business_id=? AND id=? AND kind='bundle'", (business_id, mandate_id)).fetchone()
+        if not row:
+            raise ValidationError("Mandate was not found for this business.")
+        document = json.loads(row["document"])
+        if not security.verify(self.key, document):
+            raise ValidationError("invalid_mandate: the signature does not verify; refusing to act.")
+        if row["status"] == "used":
+            raise ValidationError("This mandate was already used. Its receipt is available with the original idempotency key.")
+        if row["status"] not in BUNDLE_LIVE:
+            raise ValidationError(f"This mandate is {row['status']}.")
+        if _expired(document["expires_at"]):
+            db.execute("UPDATE mandates SET status='expired' WHERE id=?", (mandate_id,))
+            raise ValidationError("The mandate expired; approve the plan again.")
+        return row, document
+
+    def record_negotiation(self, business_id, mandate_id, action, response, simulated_by, actor):
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            _row, document = self._load_bundle_mandate(db, business_id, mandate_id)
+            snapshot = self._snapshot(db, business_id)
+            if snapshot["policy"]["agent_paused"]:
+                raise ValidationError("The agent is paused (kill switch); no counterparty requests can be sent.")
+            if snapshot["snapshot_hash"] != document["snapshot_hash"]:
+                raise ValidationError("Records changed after approval; the mandate is stale.")
+            bound = next((item for item in document["actions"] if item["action_id"] == action["action_id"]), None)
+            if bound is None or bound != bound_terms(action):
+                raise ValidationError("unresolved_constraint: this request is outside the mandate's scope.")
+            identifier = uuid.uuid4().hex
+            db.execute("INSERT INTO negotiations(id,business_id,mandate_id,action_id,counterparty,request_json,response_json,status,simulated_by,created_at) "
+                       "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                       (identifier, business_id, mandate_id, action["action_id"], action["counterparty"],
+                        canonical_json({"terms": bound, "message": action.get("message", "")}), canonical_json(response),
+                        response["status"], simulated_by, utc_now()))
+            latest = {}
+            for item in db.execute("SELECT action_id,status FROM negotiations WHERE mandate_id=? ORDER BY created_at,rowid", (mandate_id,)):
+                latest[item["action_id"]] = item["status"]
+            statuses = [latest.get(item["action_id"]) for item in document["actions"]]
+            status = ("rejected" if "rejected" in statuses else "countered" if "countered" in statuses
+                      else "ready" if all(value == "accepted" for value in statuses) else "active")
+            db.execute("UPDATE mandates SET status=? WHERE id=?", (status, mandate_id))
+            receipt = self._audit(db, business_id, "counterparty.response", actor, "sandbox_simulation",
+                                  {"mandate_id": mandate_id, "action_id": action["action_id"], "counterparty": action["counterparty"],
+                                   "status": response["status"], "counter_terms": response.get("counter_terms"),
+                                   "simulated_by": simulated_by})
+            return {"negotiation_id": identifier, "mandate_status": status, "response": response, **receipt}
+
+    def cancel_mandate(self, business_id, mandate_id, operator, actor):
+        if operator["role"] not in APPROVER_ROLES:
+            raise ValidationError("Viewers cannot cancel mandates.")
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute("SELECT * FROM mandates WHERE business_id=? AND id=?", (business_id, mandate_id)).fetchone()
+            if not row:
+                raise ValidationError("Mandate was not found for this business.")
+            if row["status"] == "used":
+                raise ValidationError("An executed mandate cannot be cancelled; executed changes are never silently undone.")
+            db.execute("UPDATE mandates SET status='cancelled' WHERE id=?", (mandate_id,))
+            if row["plan_id"]:
+                db.execute("UPDATE plans SET status='cancelled' WHERE id=? AND status IN ('pending','approved')", (row["plan_id"],))
+            return {"mandate_id": mandate_id, "status": "cancelled",
+                    **self._audit(db, business_id, "mandate.cancel", actor, "human_approval", {"mandate_id": mandate_id})}
+
+    # ---- execution -----------------------------------------------------------
+
+    def _project_likely(self, snapshot, derived, adjustments, target_date):
+        policy = snapshot["policy"]
+        return project(snapshot["business"], policy, snapshot["records"], target_date,
+                       adjustments=adjustments, scenario="likely", invoice_dates=derived["likely_dates"],
+                       promises=snapshot["state"]["promises"], lookahead_days=policy["lookahead_days"])
+
+    def execute(self, business_id, mandate_id, idempotency_key, operator, actor):
+        if not idempotency_ok(idempotency_key):
+            raise ValidationError("idempotency_key must contain 1-120 safe characters.")
+        if operator["role"] not in APPROVER_ROLES:
+            raise ValidationError("Only an owner or accountant can execute; viewers and the agent cannot.")
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            prior = db.execute("SELECT * FROM executions WHERE business_id=? AND idempotency_key=?",
+                               (business_id, idempotency_key)).fetchone()
+            if prior:
+                if prior["mandate_id"] != mandate_id:
+                    raise ValidationError("idempotency_conflict: this key already belongs to a different mandate.")
+                return {**json.loads(prior["receipt_json"]), "replayed": True}
+            _row, document = self._load_bundle_mandate(db, business_id, mandate_id)
+            snapshot = self._snapshot(db, business_id)
+            derived = self.derived(snapshot)
+            if snapshot["policy"]["agent_paused"]:
+                raise ValidationError("The agent is paused (kill switch); execution is blocked.")
+            if snapshot["snapshot_hash"] != document["snapshot_hash"]:
+                raise ValidationError("Records, policy or sandbox state changed after approval; execution blocked.")
+            plan_row, payload = self._fresh_plan(db, business_id, document["plan_id"], snapshot)
+            if plan_row["plan_hash"] != document["plan_hash"]:
+                raise ValidationError("The plan hash does not match the mandate.")
+            bundle = next(item for item in payload["bundles"] if item["bundle_id"] == document["bundle_id"])
+            self._check_bundle(snapshot, derived, bundle)
+            if [bound_terms(action) for action in bundle["actions"]] != document["actions"]:
+                raise ValidationError("unresolved_constraint: the bundle no longer matches the signed terms.")
+            latest = {}
+            for item in db.execute("SELECT * FROM negotiations WHERE mandate_id=? ORDER BY created_at,rowid", (mandate_id,)):
+                latest[item["action_id"]] = self._negotiation_dict(item)
+            for bound in document["actions"]:
+                reply = latest.get(bound["action_id"])
+                if not reply or reply["status"] != "accepted":
+                    raise ValidationError(f"{bound['counterparty']} has not accepted the exact terms; execution blocked.")
+                if reply["request"]["terms"] != bound:
+                    raise ValidationError("A counterparty accepted different terms from the mandate; execution blocked.")
+            actions = {action["action_id"]: action for action in bundle["actions"]}
+            adjustments = [actions[bound["action_id"]]["adjustment"] for bound in document["actions"]]
+            state = snapshot["state"]
+            before = self._project_likely(snapshot, derived, state["adjustments"], document["target_date"])
+            after = self._project_likely(snapshot, derived, state["adjustments"] + adjustments, document["target_date"])
+            if after["reserve_shortfall_minor"] > 0 or after["payroll_at_risk"]:
+                raise ValidationError("After these actions the reserve floor would still be breached; execution blocked.")
+            new_state = {"adjustments": state["adjustments"] + [{**item, "mandate_id": mandate_id} for item in adjustments],
+                         "promises": state["promises"],
+                         "executed_exposure": {**state["executed_exposure"],
+                                               state["current_date"]: state["executed_exposure"].get(state["current_date"], 0)
+                                               + document["exposure_minor"]}}
+            version = state["version"] + 1
+            db.execute("UPDATE sandbox_state SET version=?,state_json=?,updated_at=? WHERE business_id=?",
+                       (version, canonical_json(new_state), utc_now(), business_id))
+            read_back = self._state(db, business_id)
+            verified = read_back["version"] == version and read_back["adjustments"] == new_state["adjustments"]
+            if not verified:
+                raise ValidationError("Read-back did not match the intended state; the transaction was rolled back.")
+            db.execute("UPDATE mandates SET status='used',used_at=? WHERE id=?", (utc_now(), mandate_id))
+            db.execute("UPDATE plans SET status='executed' WHERE id=?", (document["plan_id"],))
+            db.execute("UPDATE plans SET status='invalidated' WHERE business_id=? AND status IN ('pending','approved') AND id<>?",
+                       (business_id, document["plan_id"]))
+            db.execute(f"UPDATE mandates SET status='invalidated' WHERE business_id=? AND kind='bundle' AND id<>? "
+                       f"AND status IN {BUNDLE_LIVE}", (business_id, mandate_id))
+            receipt = {"receipt_id": uuid.uuid4().hex, "status": "executed", "business_id": business_id,
+                       "currency": snapshot["business"]["currency"],
+                       "mandate_id": mandate_id, "mandate_signature": document["signature"], "plan_id": document["plan_id"],
+                       "bundle_id": document["bundle_id"], "idempotency_key": idempotency_key,
+                       "executed_by": operator["id"], "executed_role": operator["role"], "human_present": True,
+                       "approvals": document["approvals"], "actions": document["actions"],
+                       "adjustments": adjustments, "exposure_minor": document["exposure_minor"],
+                       "cash_moved_minor": 0, "synthetic": True,
+                       "state_before": {"version": state["version"], "state_hash": state["state_hash"]},
+                       "state_after": {"version": read_back["version"], "state_hash": read_back["state_hash"]},
+                       "projection_before": summary(before), "projection_after": summary(after),
+                       "read_back": {"verified": verified, "source": "post-write SELECT inside the same transaction"},
+                       "note": "Schedule changes in the synthetic sandbox only. No money moved and no real counterparty was contacted."}
+            receipt.update(self._audit(db, business_id, "mandate.execute", actor, "sandbox_execute",
+                                       {key: receipt[key] for key in ("receipt_id", "mandate_id", "plan_id", "bundle_id",
+                                                                      "idempotency_key", "actions", "exposure_minor",
+                                                                      "state_before", "state_after", "executed_by")}))
+            db.execute("INSERT INTO executions(id,business_id,mandate_id,idempotency_key,receipt_json,created_at) VALUES (?,?,?,?,?,?)",
+                       (receipt["receipt_id"], business_id, mandate_id, idempotency_key, canonical_json(receipt), utc_now()))
+        receipt["witness"] = self.witness_cosign(business_id)
+        return receipt
+
+    def send_reminder(self, business_id, action, reply, operator, actor, standing_mandate_id=None):
+        """Record a reminder (zero cash) and the customer's simulated reply.
+
+        A human approver may do this directly; under 'delegate' autonomy the
+        agent may do it alone with a signed standing mandate (human not present).
+        """
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            snapshot = self._snapshot(db, business_id)
+            policy = snapshot["policy"]
+            if policy["agent_paused"]:
+                raise ValidationError("The agent is paused (kill switch).")
+            invoice = next((row for row in snapshot["records"]["invoices"] if row["id"] == action.get("record_id")), None)
+            if not invoice or invoice["status"] not in OPEN_INVOICE_STATUSES or invoice["customer"] != action.get("counterparty"):
+                raise ValidationError("Reminders need an open invoice for the same customer.")
+            human_present = operator is not None
+            if human_present:
+                if operator["role"] not in APPROVER_ROLES:
+                    raise ValidationError("Viewers cannot send reminders.")
+            else:
+                standing = db.execute("SELECT * FROM mandates WHERE business_id=? AND id=? AND kind='standing' AND status='active'",
+                                      (business_id, standing_mandate_id or "")).fetchone()
+                if not standing or policy["autonomy_level"] != "delegate":
+                    raise ValidationError("No active standing mandate allows the agent to act alone.")
+                document = json.loads(standing["document"])
+                if not security.verify(self.key, document) or _expired(document["expires_at"]):
+                    raise ValidationError("The standing mandate is invalid or expired.")
+                if "collection_reminder" not in document["constraints"]["action.types"]:
+                    raise ValidationError("The standing mandate does not cover reminders.")
+                sent_today = db.execute("SELECT COUNT(*) FROM messages WHERE business_id=? AND mandate_id=? AND created_at LIKE ?",
+                                        (business_id, standing_mandate_id, utc_now()[:10] + "%")).fetchone()[0]
+                if sent_today >= document["constraints"]["action.max_per_day"]:
+                    raise ValidationError("The standing mandate's daily reminder limit is reached; escalating to a human.")
+            if db.execute("SELECT 1 FROM messages WHERE business_id=? AND record_id=? AND kind='reminder'",
+                          (business_id, invoice["id"])).fetchone():
+                raise ValidationError("A reminder for this invoice was already recorded in the sandbox.")
+            message_id = uuid.uuid4().hex
+            db.execute("INSERT INTO messages(id,business_id,mandate_id,action_id,record_id,counterparty,kind,body,reply,status,human_present,created_at) "
+                       "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                       (message_id, business_id, standing_mandate_id, action["action_id"], invoice["id"], invoice["customer"],
+                        "reminder", action["message"], canonical_json(reply), "delivered_in_sandbox", int(human_present), utc_now()))
+            state = snapshot["state"]
+            promises = dict(state["promises"])
+            if reply.get("promise_to_pay_date"):
+                promises[invoice["id"]] = reply["promise_to_pay_date"]
+            new_state = {"adjustments": state["adjustments"], "executed_exposure": state["executed_exposure"], "promises": promises}
+            db.execute("UPDATE sandbox_state SET state_json=?,updated_at=? WHERE business_id=?",
+                       (canonical_json(new_state), utc_now(), business_id))
+            version = self._bump(db, business_id)
+            receipt = {"message_id": message_id, "status": "delivered_in_sandbox", "invoice_id": invoice["id"],
+                       "counterparty": invoice["customer"], "human_present": human_present,
+                       "standing_mandate_id": standing_mandate_id, "cash_effect_minor": 0,
+                       "promise_to_pay_date": reply.get("promise_to_pay_date"), "state_version": version,
+                       "note": "Reminder recorded in the sandbox; no cash was recognised."}
+            receipt.update(self._audit(db, business_id, "reminder.send", actor,
+                                       "sandbox_execute" if human_present else "delegated_execute", receipt))
+            return receipt
+
+    def executions(self, business_id):
+        with self.connect() as db:
+            self._business_row(db, business_id)
+            return [json.loads(row["receipt_json"]) for row in
+                    db.execute("SELECT receipt_json FROM executions WHERE business_id=? ORDER BY rowid", (business_id,))]
+
+    def execution_by_key(self, business_id, idempotency_key):
+        if not idempotency_ok(idempotency_key):
+            raise ValidationError("idempotency_key must contain 1-120 safe characters.")
+        with self.connect() as db:
+            self._business_row(db, business_id)
+            row = db.execute("SELECT receipt_json FROM executions WHERE business_id=? AND idempotency_key=?",
+                             (business_id, idempotency_key)).fetchone()
+        return {"found": bool(row), "receipt": json.loads(row["receipt_json"]) if row else None}
+
+    def messages(self, business_id):
+        with self.connect() as db:
+            self._business_row(db, business_id)
+            result = []
+            for row in db.execute("SELECT * FROM messages WHERE business_id=? ORDER BY created_at,rowid", (business_id,)):
+                item = dict(row)
+                item["reply"] = json.loads(item["reply"]) if item["reply"] else None
+                item["human_present"] = bool(item["human_present"])
+                result.append(item)
+            return result
+
+    def reset_sandbox(self, business_id, operator, actor):
+        if operator["role"] not in APPROVER_ROLES:
+            raise ValidationError("Viewers cannot reset the sandbox.")
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            business = self._business_row(db, business_id)
+            db.execute("UPDATE sandbox_state SET current_date=?,state_json=?,reset_count=reset_count+1,updated_at=? WHERE business_id=?",
+                       (business["opening_date"], canonical_json(self._empty_state()), utc_now(), business_id))
+            db.execute("DELETE FROM messages WHERE business_id=?", (business_id,))
+            version = self._bump(db, business_id)
+            receipt = {"business_id": business_id, "sandbox_version": version, "reset": True,
+                       "records_preserved": True, "receipts_preserved": True, "audit_preserved": True}
+            receipt.update(self._audit(db, business_id, "sandbox.reset", actor, "human_approval", receipt))
+            return receipt
+
+    # ---- seeding -------------------------------------------------------------
+
+    def seeded(self):
+        with self.connect() as db:
+            row = db.execute("SELECT value FROM metadata WHERE key='seed'").fetchone()
+        return row["value"] if row else None
+
+    def mark_seeded(self, value):
+        with self.connect() as db:
+            db.execute("INSERT OR REPLACE INTO metadata(key,value) VALUES ('seed',?)", (value,))
+
+
+def bound_terms(action):
+    """The exact terms a mandate binds for one action (what you see is what you sign)."""
+    keys = ("action_id", "type", "record_id", "counterparty", "amount_minor", "from_date", "to_date", "days", "currency")
+    terms = {key: action[key] for key in keys if key in action}
+    if action["type"] == "early_payment_offer":
+        terms.update({"discount_bps": action["discount_bps"], "face_minor": action["face_minor"]})
+    if action["type"] == "supplier_deferral":
+        terms["bill_amount_minor"] = action["bill_amount_minor"]
+    return terms

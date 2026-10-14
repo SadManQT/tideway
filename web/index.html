@@ -3,95 +3,118 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#153d36">
-  <meta name="description" content="Probaho approval-gated SME cash-flow recovery demo">
-  <title>Probaho — SME cash-flow recovery</title>
+  <meta name="theme-color" content="#0f2a3a">
+  <meta name="description" content="Tideway: an approval-gated AI cash-flow rescue agent for small businesses (synthetic sandbox).">
+  <title>Tideway: approval-gated cash-flow rescue</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <script src="/app.js" defer></script>
 </head>
 <body>
   <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <symbol id="i-flow" viewBox="0 0 24 24"><path d="M4 7h8a4 4 0 0 1 4 4v6"/><path d="m13 14 3 3 3-3"/><path d="M20 17h-8a4 4 0 0 1-4-4V7"/><path d="m11 10-3-3-3 3"/></symbol>
-    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+    <symbol id="i-wave" viewBox="0 0 24 24"><path d="M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"/><path d="M2 9c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 18a8 8 0 1 1 16 0"/><path d="m12 18 4-6"/></symbol>
+    <symbol id="i-rescue" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="m6.3 6.3 3.2 3.2m5 5 3.2 3.2m0-11.4-3.2 3.2m-5 5-3.2 3.2"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10m4 0h2M4 17h4m4 0h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></symbol>
     <symbol id="i-records" viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
-    <symbol id="i-plan" viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h3M15 17l2-2 2 2"/></symbol>
-    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5zM20 2v4M18 4h4"/></symbol>
-    <symbol id="i-activity" viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5M8 17h8"/></symbol>
-    <symbol id="i-building" viewBox="0 0 24 24"><path d="M4 21V6l8-3 8 3v15M2 21h20M8 9h1M8 13h1M8 17h1M15 9h1M15 13h1M15 17h1"/></symbol>
-    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></symbol>
-    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
-    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
-    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3m-5 5 5-5 5 5M4 16v5h16v-5"/></symbol>
-    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-5L4 8"/><path d="M4 4v4h4M4 13a8 8 0 0 0 14 5l2-2"/><path d="M20 20v-4h-4"/></symbol>
-    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8.5 11.5 2.5 2.5 4.5-4.5"/></symbol>
+    <symbol id="i-chain" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7z"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
-    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 11 3 3 5-5"/></symbol>
-    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 8v5M12 17h.01M10 3 2 18a2 2 0 0 0 2 3h16a2 2 0 0 0 2-3L14 3a2 2 0 0 0-4 0z"/></symbol>
-    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></symbol>
-    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 8v5M12 17h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 17v4h16v-4"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-5L4 8M4 4v4h4M4 13a8 8 0 0 0 14 5l2-2M20 20v-4h-4"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12 20 4l-6 16-3-7z"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.3 6.2L21 12l-6.7 2.8L12 21l-2.3-6.2L3 12l6.7-2.8z"/></symbol>
   </svg>
 
-  <aside class="sidebar">
-    <a class="brand" href="/" aria-label="Probaho home">
-      <span class="brand-mark">P</span><span>Probaho<span class="brand-dot">.</span></span>
-    </a>
-    <div class="workspace-card">
-      <span class="workspace-avatar"><svg class="icon"><use href="#i-building"/></svg></span>
-      <div><strong id="workspace-name">Business workspace</strong><span id="workspace-kind">Synthetic sandbox</span></div>
+  <div id="login" class="login" hidden>
+    <div class="login-card">
+      <div class="login-brand"><span class="brand-mark"><svg class="icon"><use href="#i-wave"/></svg></span><span>Tideway</span></div>
+      <h1>Approval-gated cash-flow rescue</h1>
+      <p class="login-sub">An AI agent that finds a small business's cash shortfall, negotiates a fix with simulated suppliers and customers, and changes nothing until the right people approve. Synthetic sandbox: no real money, bank or counterparty.</p>
+      <form id="login-form" class="login-form" autocomplete="off">
+        <fieldset class="operator-choices" id="operator-choices"><legend>Sign in as</legend></fieldset>
+        <label class="pin-field">PIN<input id="login-pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4,12}" maxlength="12" required aria-describedby="pin-hint"></label>
+        <p id="pin-hint" class="hint">Demo PINs for this synthetic sandbox: owner 2468 · accountant 1357 · viewer 0000.</p>
+        <div id="login-error" class="form-error" role="alert"></div>
+        <button class="button primary wide" type="submit"><svg class="icon"><use href="#i-lock"/></svg>Sign in</button>
+      </form>
     </div>
-    <div class="nav-label">PROBAHO WORKSPACE</div>
-    <nav aria-label="Main navigation">
-      <button class="nav-item active" data-view="overview" aria-label="Cash gap overview" aria-current="page"><svg class="icon"><use href="#i-grid"/></svg><span>Cash gap overview</span></button>
-      <button class="nav-item" data-view="records" aria-label="Records"><svg class="icon"><use href="#i-records"/></svg><span>Records</span></button>
-      <button class="nav-item" data-view="plans" aria-label="Recovery plans"><svg class="icon"><use href="#i-plan"/></svg><span>Recovery plans</span></button>
-      <button class="nav-item" data-view="assistant" aria-label="Assistant"><svg class="icon"><use href="#i-spark"/></svg><span>Assistant</span><span class="nav-tag">DEMO</span></button>
-      <button class="nav-item" data-view="activity" aria-label="Activity and evidence"><svg class="icon"><use href="#i-activity"/></svg><span>Activity &amp; evidence</span></button>
-    </nav>
-    <div class="sidebar-callout">
-      <span class="callout-icon"><svg class="icon"><use href="#i-shield"/></svg></span>
-      <strong>Approval-gated by design</strong>
-      <p>Probaho can read and propose. A human must approve before any sandbox action.</p>
-    </div>
-    <div class="sidebar-bottom"><span class="status-dot"></span><div><strong>Synthetic sandbox</strong><span>Local records and projections</span></div></div>
-  </aside>
+  </div>
 
-  <main>
-    <header class="topbar">
-      <div class="breadcrumb"><span>Probaho</span><b>/</b><strong id="view-label">Cash gap overview</strong></div>
-      <div class="topbar-controls">
-        <label class="control-field"><span>Business</span><select id="business-select" aria-label="Business"></select></label>
-        <label class="control-field date-control"><span>Target date</span><input id="target-date" type="date" aria-label="Target date"></label>
-        <span class="dataset-badge" id="dataset-badge">Synthetic sandbox</span>
+  <div id="shell" class="shell" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Tideway home"><span class="brand-mark"><svg class="icon"><use href="#i-wave"/></svg></span><span>Tideway</span></a>
+      <label class="business-picker"><span>Business</span><select id="business-select" aria-label="Business"></select></label>
+      <nav aria-label="Main">
+        <button class="nav-item" data-view="overview"><svg class="icon"><use href="#i-gauge"/></svg><span>Cash weather</span></button>
+        <button class="nav-item" data-view="rescue"><svg class="icon"><use href="#i-rescue"/></svg><span>Rescue plan</span><span class="nav-badge" id="rescue-badge" hidden></span></button>
+        <button class="nav-item" data-view="assistant"><svg class="icon"><use href="#i-chat"/></svg><span>Ask Tideway</span></button>
+        <button class="nav-item" data-view="whatif"><svg class="icon"><use href="#i-sliders"/></svg><span>What-if</span></button>
+        <button class="nav-item" data-view="records"><svg class="icon"><use href="#i-records"/></svg><span>Records</span></button>
+        <button class="nav-item" data-view="security"><svg class="icon"><use href="#i-shield"/></svg><span>Security centre</span></button>
+        <button class="nav-item" data-view="evidence"><svg class="icon"><use href="#i-chain"/></svg><span>Evidence</span></button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="agent-state" id="agent-state"></div>
+        <div class="operator-card"><span class="avatar"><svg class="icon"><use href="#i-user"/></svg></span><div><strong id="operator-name">—</strong><span id="operator-role">—</span></div>
+          <button class="icon-button" data-action="logout" aria-label="Sign out" title="Switch operator / sign out"><svg class="icon"><use href="#i-x"/></svg></button></div>
+        <p class="sandbox-note">Synthetic sandbox · no real money moves</p>
       </div>
-    </header>
-
-    <div class="page">
-      <div class="page-heading">
-        <div>
-          <div class="eyebrow" id="eyebrow">TOPIC E · CASH-FLOW RECOVERY</div>
-          <h1 id="page-title">Cash gap overview</h1>
-          <p id="page-subtitle">See the scheduled gap, its sources, and the recovery choices that need approval.</p>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div class="title-block"><span class="eyebrow" id="eyebrow">FINTECHATHON 2026 · TOPIC E</span><h1 id="page-title">Cash weather</h1></div>
+        <div class="topbar-controls">
+          <label class="control-field"><span>Show amounts in</span><select id="display-currency" aria-label="Display currency"></select></label>
+          <label class="control-field"><span>Target date</span><input id="target-date" type="date" aria-label="Target date"></label>
+          <button class="button ghost" data-action="refresh" title="Reload"><svg class="icon"><use href="#i-refresh"/></svg></button>
         </div>
-        <div class="heading-actions"><button class="button secondary" data-action="reset-sandbox"><svg class="icon"><use href="#i-refresh"/></svg>Reset sandbox</button></div>
-      </div>
+      </header>
+      <div id="fx-note" class="error-banner fx-note" hidden>Amounts marked ≈ are converted for display with illustrative fixed rates, not live exchange rates. Every calculation, approval and mandate stays in the business's own currency.</div>
       <div id="app-error" class="error-banner" role="alert" hidden></div>
-      <div id="view-content" aria-live="polite"><div class="loading-state">Loading Probaho…</div></div>
-      <footer class="page-footer"><span>Probaho · Topic E · approval-gated SME cash-flow recovery</span><span><b>Local or synthetic workspace</b> · Recorded projections, not a bank balance</span></footer>
-    </div>
-  </main>
+      <div id="view" class="view" aria-live="polite"><div class="loading">Loading…</div></div>
+      <footer class="footer"><span>Tideway · approval-gated cash-flow rescue for small businesses</span><span>Synthetic sandbox. Projections are scheduled estimates, not bank balances. Financing is a mock comparison.</span></footer>
+    </main>
+  </div>
+
+  <dialog id="approve-dialog" aria-labelledby="approve-title">
+    <form id="approve-form" method="dialog">
+      <h2 id="approve-title">Approve exactly this</h2>
+      <div id="approve-summary" class="approve-summary"></div>
+      <label id="confirm-amount-label" class="field" hidden>Type the total exposure to confirm you read it<input id="confirm-amount" inputmode="decimal" autocomplete="off"></label>
+      <label class="field">Your PIN<input id="approve-pin" type="password" inputmode="numeric" maxlength="12" required autocomplete="off"></label>
+      <div id="approve-error" class="form-error" role="alert"></div>
+      <div class="dialog-actions"><button type="button" class="button ghost" data-close="approve-dialog">Cancel</button><button type="submit" class="button primary" id="approve-submit" disabled>Approve</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="pin-dialog" aria-labelledby="pin-title">
+    <form id="pin-form" method="dialog">
+      <h2 id="pin-title">Confirm with your PIN</h2>
+      <p id="pin-text" class="muted"></p>
+      <label class="field" id="reason-label" hidden>Reason (written to the audit trail)<input id="pin-reason" maxlength="200" autocomplete="off"></label>
+      <label class="field">PIN<input id="pin-input" type="password" inputmode="numeric" maxlength="12" required autocomplete="off"></label>
+      <div id="pin-error" class="form-error" role="alert"></div>
+      <div class="dialog-actions"><button type="button" class="button ghost" data-close="pin-dialog">Cancel</button><button type="submit" class="button primary">Confirm</button></div>
+    </form>
+  </dialog>
 
   <dialog id="import-dialog" aria-labelledby="import-title">
     <form id="import-form" method="dialog">
-      <div class="dialog-heading"><div><span class="eyebrow">RECORDS · VALIDATED IMPORT</span><h2 id="import-title">Import combined CSV</h2></div><button type="button" class="icon-button" data-close="import-dialog" aria-label="Close import dialog"><svg class="icon"><use href="#i-close"/></svg></button></div>
-      <p class="muted">Choose one UTF-8 CSV containing transactions, invoices, and/or bills. Probaho validates every row before writing anything; a failed row leaves the sandbox unchanged.</p>
-      <label class="dropzone" for="csv-file"><svg class="icon"><use href="#i-upload"/></svg><strong>Choose a combined CSV file</strong><span>Up to 1.5 MB · at most 5,000 rows</span><input id="csv-file" name="file" type="file" accept=".csv,text/csv" required></label>
-      <p class="file-info" id="file-info">No file selected</p>
-      <div class="format-note"><strong>Required row discriminator</strong><code>record_type</code><span>Each row must be <b>transaction</b>, <b>invoice</b>, or <b>bill</b>; include <b>currency=BDT</b>. Required fields vary by record type.</span><span class="preview-count" id="import-preview">No rows validated yet.</span></div>
-      <button type="button" class="text-button" data-action="sample-csv"><svg class="icon"><use href="#i-download"/></svg>Download an example combined CSV</button>
-      <label class="check-option"><input id="import-replace-demo" type="checkbox" checked> Replace synthetic demo records before adding this file</label>
-      <div class="dialog-error" id="import-error" role="alert" aria-live="polite"></div>
-      <div class="dialog-footer"><button type="button" class="button secondary" data-close="import-dialog">Cancel</button><button type="submit" class="button primary">Validate and import</button></div>
+      <h2 id="import-title">Import records (CSV)</h2>
+      <p class="muted">One UTF-8 file with a <code>record_type</code> column (transaction, invoice or bill). Every row is validated before anything is written; a single bad row rejects the whole file. Free text is screened and quarantined as data.</p>
+      <input id="csv-file" type="file" accept=".csv,text/csv" required>
+      <label class="check"><input id="replace-demo" type="checkbox"> Replace this business's synthetic demo records</label>
+      <div id="import-error" class="form-error" role="alert"></div>
+      <div class="dialog-actions"><button type="button" class="button ghost" data-action="sample-csv">Download example</button><button type="button" class="button ghost" data-close="import-dialog">Cancel</button><button type="submit" class="button primary">Validate and import</button></div>
     </form>
   </dialog>
   <div id="toast" class="toast" role="status" hidden></div>
