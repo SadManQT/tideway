@@ -86,3 +86,15 @@ class SaaS(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Feedback(unittest.TestCase):
+    def test_feedback_keeps_only_a_hash_of_the_question(self):
+        from tideway.service import Tideway
+        app = Tideway(":memory:")
+        operator = {"id": "nadia", "name": "Nadia", "role": "owner"}
+        summary = app.store.add_feedback("shapla-services", operator, "tidelm", True, "Can I pay payroll? secret-text")
+        self.assertEqual(summary["by_mode"]["tidelm"], {"helpful": 1, "total": 1})
+        with app.store.connect() as db:
+            stored = " ".join(str(value) for row in db.execute("SELECT * FROM feedback") for value in tuple(row))
+        self.assertNotIn("secret-text", stored)

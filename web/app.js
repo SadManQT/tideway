@@ -873,8 +873,33 @@ function toolResultHtml({tool, result: r}) {
   return "";
 }
 
+function feedbackHtml(item, index) {
+  if (item.voted) return `<div class="feedback small muted">${item.voted === "up" ? "Thanks: marked helpful." : "Thanks: marked not helpful."}</div>`;
+  return `<div class="feedback" role="group" aria-label="Was this answer helpful?"><span class="small muted">Helpful?</span>
+    <button class="chip" type="button" data-action="feedback" data-index="${index}" data-helpful="true" aria-label="Helpful">👍</button>
+    <button class="chip" type="button" data-action="feedback" data-index="${index}" data-helpful="false" aria-label="Not helpful">👎</button></div>`;
+}
+
+async function sendFeedback(index, helpful) {
+  const item = state.chat[index];
+  if (!item || item.voted) return;
+  const mode = item.copilot ? (item.copilot.routed === "small_talk" ? "small_talk" : "tidelm") : (item.trace ? "local" : "llm");
+  const summary = await act("Feedback", () => api("/api/feedback", {business_id: state.businessId, mode, helpful, question: item.question}));
+  if (!summary) return;
+  item.voted = helpful ? "up" : "down";
+  if (state.dashboard) state.dashboard.feedback = summary;
+  render();
+}
+
 function suggestionsHtml(items) {
   return items?.length ? `<div class="chips follow" aria-label="Suggested next questions">${items.map((prompt) => `<button class="chip" type="button" data-action="prompt" data-prompt="${esc(prompt)}">${esc(prompt)}</button>`).join("")}</div>` : "";
+}
+
+function feedbackSummaryHtml() {
+  const modes = Object.entries(state.dashboard?.feedback?.by_mode || {});
+  if (!modes.length) return "";
+  const up = modes.reduce((sum, [, value]) => sum + value.helpful, 0), total = modes.reduce((sum, [, value]) => sum + value.total, 0);
+  return `<h3 class="section-gap">Answer feedback</h3><p class="small">${esc(up)} of ${esc(total)} rated answers were helpful (${esc(Math.round(100 * up / total))}%). Only a hash of each question is kept.</p>`;
 }
 
 // The "glass box": what TideLM decided (intent + typed tool calls); the numbers above come from tools.
@@ -897,10 +922,11 @@ function renderAssistant() {
   const mode = on ? `<div class="row chat-mode"><span class="pill teal">${icon("spark")}${esc(TIDELM_LABEL)}</span></div>` : "";
   return `<section class="grid split"><div class="card chat ${on ? "with-mode" : ""}">${mode}<div class="chat-log" id="chat-log" aria-live="polite">${state.chat.map((item, index) => item.pending
       ? `<div class="msg agent pending" role="status"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>${esc(item.text)}</div>`
-      : `<div class="msg ${item.role === "user" ? "user" : "agent"} ${item.unverified?.length || item.rejected ? "warn" : ""}">${esc(item.text)}${item.trace?.length ? `<div class="trace">${item.trace.map((t) => `<span>${esc(t.tool)} · ${esc(t.permission)}</span>`).join("")}</div>` : ""}${item.copilot ? copilotHtml(item.copilot) : ""}${index === state.chat.length - 1 && item.role !== "user" ? suggestionsHtml(item.suggestions || (index === 0 ? prompts.slice(0, 3) : [])) : ""}</div>`).join("")}</div>
+      : `<div class="msg ${item.role === "user" ? "user" : "agent"} ${item.unverified?.length || item.rejected ? "warn" : ""}">${esc(item.text)}${item.trace?.length ? `<div class="trace">${item.trace.map((t) => `<span>${esc(t.tool)} · ${esc(t.permission)}</span>`).join("")}</div>` : ""}${item.copilot ? copilotHtml(item.copilot) : ""}${item.question && !item.rejected ? feedbackHtml(item, index) : ""}${index === state.chat.length - 1 && item.role !== "user" ? suggestionsHtml(item.suggestions || (index === 0 ? prompts.slice(0, 3) : [])) : ""}</div>`).join("")}</div>
     <form id="chat-form" class="chat-form"><label class="sr-only" for="chat-input">Your question</label><input id="chat-input" maxlength="2000" placeholder="${on ? "Ask in any language…" : "Ask about payroll, risk, a what-if or a plan…"}" autocomplete="off" required><button class="button primary" type="submit">${icon("send")}Ask</button></form></div>
     <div class="card">${on ? "" : `${tidelmStatusCard("Ask Tideway still works with the local tool agent.")}<div class="section-gap"></div>`}<h3>Try asking</h3><div class="chips">${prompts.map((prompt) => `<button class="chip" data-action="prompt" data-prompt="${esc(prompt)}">${esc(prompt)}</button>`).join("")}</div>
     ${consent ? `<div class="section-gap">${consent}</div>` : ""}
+    ${feedbackSummaryHtml()}
     <h3 class="section-gap">Guardrails</h3><ul class="small">${on ? `<li>TideLM writes a typed plan; Tideway validates every call (known tool, typed arguments, real counterparty names) before anything runs.</li><li>Tools are read or propose only. There is no approve, pay or transfer tool.</li><li>Replies are composed by code from tool output, so the model cannot invent a figure.</li><li>Runs on this computer: no text leaves it.</li>` : `<li>Every number comes from a tool; LLM answers are checked and invented figures are flagged.</li><li>Only six read or propose tools exist. There is no approve, pay or transfer tool.</li><li>Record free text and real names are never sent to a model.</li><li>Each tool call is written to the audit trail with an output hash.</li>`}</ul></div></section>`;
 }
 
@@ -931,13 +957,13 @@ async function ask(message) {
   });
   state.chat = state.chat.filter((item) => item !== pending);
   if (result?.copilot) {
-    state.chat.push({role: "agent", text: result.copilot.text, copilot: result.copilot, suggestions: result.copilot.suggestions});
+    state.chat.push({role: "agent", text: result.copilot.text, copilot: result.copilot, suggestions: result.copilot.suggestions, question: text});
     if ((result.copilot.results || []).some((item) => ["propose_plan", "draft_reminders"].includes(item.tool))) await act("Reload", () => loadDashboard());
   } else if (result?.rejected) {
     state.chat.push({role: "agent", text: result.rejected, rejected: true});
   } else if (result?.chat) {
     const chat = result.chat;
-    state.chat.push({role: "agent", text: chat.text, trace: chat.trace, unverified: chat.unverified_numbers, suggestions: chat.suggestions});
+    state.chat.push({role: "agent", text: chat.text, trace: chat.trace, unverified: chat.unverified_numbers, suggestions: chat.suggestions, question: text});
     if ((chat.trace || []).some((item) => item.tool === "compare_plans")) await act("Reload", () => loadDashboard());
   }
   render();
@@ -1396,6 +1422,7 @@ document.addEventListener("click", async (event) => {
       case "inbox-sample": state.inbox = {...freshInbox(), text: INBOX_SAMPLES[data.sample]?.(currency()) || ""}; render(); $("#inbox-text")?.focus(); break;
       case "inbox-save": await saveInbox(); break;
       case "inbox-photo": await readPhoto(); break;
+      case "feedback": await sendFeedback(Number(data.index), data.helpful === "true"); break;
       case "reload-audit": state.audit = null; render(); loadAudit(); break;
       case "import": $("#import-form").reset(); $("#import-error").textContent = ""; $("#import-dialog").showModal(); break;
       case "sample-csv": { const url = URL.createObjectURL(new Blob([sampleCsv()], {type: "text/csv"})); const link = document.createElement("a"); link.href = url; link.download = "tideway-example.csv"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); break; }

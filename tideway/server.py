@@ -99,6 +99,8 @@ class Application:
         operator = self.scoped(operator, business_id)
         if path == "/api/team":
             return self.store.team(business_id)
+        if path == "/api/feedback":
+            return self.store.feedback_summary(business_id)
         if path == "/api/network":
             return self.tideway.network(business_id, one("target_date"))
         if path == "/api/dashboard":
@@ -189,6 +191,9 @@ class Application:
         business_id = validate_business_id(body.get("business_id", "")) if "business_id" in body else None
         if business_id:
             operator = self.scoped(operator, business_id)
+        if path == "/api/feedback":
+            self.fields(body, ("business_id", "mode", "helpful", "question", "comment"), ("business_id", "mode", "helpful", "question"))
+            return self.store.add_feedback(business_id, operator, body["mode"], body["helpful"], body["question"], body.get("comment", ""))
         if path == "/api/team/invite":
             self.fields(body, ("business_id", "role", "name"), ("business_id", "role", "name"))
             return self.store.create_invite(business_id, operator, body["role"], body["name"])

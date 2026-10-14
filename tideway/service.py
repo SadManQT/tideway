@@ -185,6 +185,7 @@ class Tideway:
                 "snapshot_hash": snapshot["snapshot_hash"], "records": records,
                 "profiles": derived["profiles"], "payees": derived["payees"], "blocked": derived["blocked"],
                 "tidepay": {"predictions": derived["predictions"], "card": tidepay_card()},
+                "feedback": self.store.feedback_summary(business_id),
                 "counterparties": list(snapshot["counterparties"].values()),
                 "plan": latest, "mandates": self.store.live_mandates(business_id),
                 "standing_mandate": self.store.standing_mandate(business_id),

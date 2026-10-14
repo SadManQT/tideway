@@ -122,6 +122,10 @@ CREATE TABLE IF NOT EXISTS invites (
     used_by TEXT, used_at TEXT);
 CREATE TABLE IF NOT EXISTS subscriptions (
     business_id TEXT PRIMARY KEY, plan TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, business_id TEXT NOT NULL, operator_id TEXT NOT NULL, mode TEXT NOT NULL,
+    helpful INTEGER NOT NULL CHECK(helpful IN (0,1)), question_sha256 TEXT NOT NULL, comment TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS login_failures (
     key TEXT PRIMARY KEY, failures INTEGER NOT NULL DEFAULT 0, locked_until TEXT);
 CREATE TABLE IF NOT EXISTS sessions (
@@ -597,6 +601,31 @@ class Store:
             db.execute("DELETE FROM memberships WHERE business_id=? AND operator_id=?", (business_id, operator_id))
             return self._audit(db, business_id, "team.remove", f"operator:{owner['id']}", "human_approval",
                                {"operator_id": operator_id, "role": row["role"]})
+
+    # ---- answer feedback (for honest usability evidence) --------------------
+
+    def add_feedback(self, business_id, operator, mode, helpful, question, comment=""):
+        """Thumbs up/down on an assistant answer.  Only a hash of the question is kept, never its text."""
+        if mode not in ("tidelm", "local", "llm", "small_talk") or not isinstance(helpful, bool):
+            raise ValidationError("Feedback needs a mode and helpful=true/false.")
+        if not isinstance(question, str) or not question.strip() or len(question) > 2000:
+            raise ValidationError("Feedback must refer to a question.")
+        note = text_value({"comment": comment or ""}, "comment", required=False, limit=500, label="Comment")
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            self._business_row(db, business_id)
+            db.execute("INSERT INTO feedback(business_id,operator_id,mode,helpful,question_sha256,comment,created_at) VALUES (?,?,?,?,?,?,?)",
+                       (business_id, operator["id"], mode, int(helpful), hashlib.sha256(question.encode()).hexdigest(), note, utc_now()))
+        return self.feedback_summary(business_id)
+
+    def feedback_summary(self, business_id):
+        with self.connect() as db:
+            rows = db.execute("SELECT mode, SUM(helpful) AS up, COUNT(*) AS total FROM feedback WHERE business_id=? GROUP BY mode",
+                              (business_id,)).fetchall()
+            comments = [dict(row) for row in db.execute(
+                "SELECT mode, helpful, comment, created_at FROM feedback WHERE business_id=? AND comment<>'' ORDER BY id DESC LIMIT 20",
+                (business_id,))]
+        return {"by_mode": {row["mode"]: {"helpful": row["up"], "total": row["total"]} for row in rows}, "recent_comments": comments}
 
     # ---- businesses, policy, records ---------------------------------------
 
