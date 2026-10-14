@@ -1,32 +1,40 @@
 # Tideway: pitch script (about 9 minutes, limit 10)
 
-Slides match `slides/pitch.pdf`. Replace team details before presenting. Every number below is from the synthetic fixtures or the self-test; say so.
+Slides match `slides/pitch.pdf` (12 slides; every number on them is read from `evidence/` when the deck is built). Replace team details before presenting. Say once that all data is synthetic.
 
-## 1. Problem (0:00–0:50)
-"A small business does not need another dashboard. When payroll is days away and cash is short, the owner needs to know: what can I safely defer, who can I ask, and what happens if my customers pay late? And an AI that answers that must never be able to move money on its own."
+## 1. Tideway (slide 1, 0:00–0:30)
+"Tideway helps a small business never miss payroll again. It is on-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, and acts only with the owner's approval."
 
-## 2. A concrete case (0:50–1:40)
-"Shapla Services: BDT 120,000 in the bank, BDT 80,000 payroll, a BDT 70,000 supplier bill, BDT 20,000 coming in, and a BDT 20,000 reserve. The schedule says cash falls to minus BDT 10,000 on 31 October, BDT 30,000 short of the reserve. These figures are exact integer arithmetic linked to source records, not a model's guess."
+## 2. The moment that matters (slide 2, 0:30–1:10)
+"Small businesses get paid late and still have to pay on time, and the gap lands on payroll day. The owner needs three answers fast: will I make payroll, who will pay late, and what do I do now? And an AI that helps must never be able to move money on its own."
 
-## 3. What Tideway does (1:40–3:30)
-"It profiles each customer's payment behaviour with credibility weighting, projects three scenarios with a 14-day look-ahead, and runs a seeded 1,000-run Monte Carlo for the chance of breaching the reserve. An exact optimiser then searches supplier deferrals and early-payment discounts, keeps only bundles that hold the reserve every day and protect payroll, and recommends the cheapest one whose simulated risk is acceptable. Early-payment discounts are priced as an annual rate: two percent for twenty days is about 37% APR. Financing is a labelled mock comparison."
+## 3. See it coming (slide 3, 1:10–1:50)
+"Shapla Services: BDT 120,000 in the bank, BDT 80,000 payroll, a BDT 70,000 supplier bill, BDT 20,000 coming in, a BDT 20,000 reserve. The schedule says minus BDT 10,000 on 31 October. These are exact integer calculations linked to source records, shown as cash weather with 1,000 simulated futures."
 
-## 4. Negotiate and decide (3:30–4:30)
-"Simulated suppliers and customers accept, counter or refuse. A counter-offer becomes a new proposal; a refusal triggers a re-plan. A human approves with a PIN step-up; high-value bundles need two people and a typed amount. That issues a signed mandate, modelled on the AP2 mandate idea, and execution happens once, with read-back."
+## 4. TidePay (slide 4, 1:50–2:40)
+"Whether a customer pays late is the uncertainty that matters, so we built our own model for it. TidePay is trained with federated learning across forty businesses with secure aggregation: nobody shares raw invoices, and the server only sees masked updates. It beats the old rule clearly, and it helps small businesses most, because they learn from everyone without exposing anyone."
 
-## 5. Live demo (4:30–6:30)
-Run the demo script highlights: Shapla rescue and approval, Lotus counter-offer, Harbourline blocks and honest failure.
+## 5. TideLM (slide 5, 2:40–3:40)
+"For the conversation we did not rent an API. We fine-tuned our own model, TideLM, on a laptop: Qwen3-4B with a LoRA adapter trained on our own data. On a held-out test with company names it never saw, it went from the base model's numbers to ours on the slide: plans with every argument right, intent, reading records from bank and mobile-money messages, and catching hidden instructions. It speaks eight languages and runs on the owner's computer, so their books never leave it."
 
-## 6. Security (6:30–8:00)
-"We assume the worst: a fully hijacked model and a rubber-stamp human. The model has no approve or execute tool, sees only pseudonyms, and cannot be the weak link. Hidden Unicode is stripped, injected instructions are quarantined, changed bank details and look-alike payees block the bill, and payee verification is owner-only by callback with separation of duties. A kill switch and a circuit breaker stop the agent. The audit log is hash-chained with an independent witness, so edits and truncation are detected. Our 30-case suite maps to OWASP LLM and Agentic IDs; all pass, and that is evidence for those cases, not proof."
+## 6. Plan, approve, execute (slides 6–7, 3:40–5:00)
+"An exact optimiser searches deferrals and early-payment offers, keeps only plans that hold the reserve every day with payroll funded, and explains why the cheaper option is too risky. A person approves with a PIN; big amounts need two people and a typed amount. That issues a signed, expiring mandate bound to exactly these actions. Simulated counterparties accept, counter or refuse, and execution happens once, with read-back."
 
-## 7. Honest limits and what is different (8:00–9:00)
-"This is a synthetic sandbox with simulated counterparties; PINs and keys are demo-grade; we have not measured a live model or run a user study. We are not the first cash-flow assistant; incumbents offer forecasting and reminders. Our contribution is a complete, replayable loop from gap to safe action, with enforcement outside the model. Next: baseline comparison, consented SME interviews, a real rail adapter behind the same mandate."
+## 7. Live demo (5:00–7:00)
+Run the demo script highlights: landing page and demo sign-in, cash weather, ask in Chinese or Spanish, rescue and approval, Harbourline fraud blocks and the honest "no safe plan".
+
+## 8. Security (slide 9, 7:00–8:00)
+"We assume the worst: a fully hijacked model and a rubber-stamp human. The model has no approve, pay or write tool; its plans pass a typed validator; a forbidden tool trips a circuit breaker. Injection and changed-bank-details screening work in eight languages. The audit log is hash-chained with a witness. Every attack in our suite is blocked; that is evidence for those cases, not proof."
+
+## 9. A product, with evidence and honest limits (slides 10–12, 8:00–9:00)
+"It is built as a product: sign up a business in any of 29 currencies, invite your accountant with a one-time code, and see which customer could hurt your cash most. Everything is reproducible with one command. Limits: synthetic data, simulated counterparties, demo-grade keys, no user study yet. Next: consented SME pilots, a real bank rail behind the same mandate, and federated TidePay across real users."
 
 ## Likely judge questions
-- **How is this different from a general chatbot?** Exact projection, optimiser, enforcement and state outside the model; a baseline comparison is planned, not yet run.
-- **What if the AI is wrong?** It cannot act: figures come from tools, answers are grounded-checked, and execution needs a signed mandate.
+- **Why train your own model instead of calling an API?** Privacy (books never leave the device), cost (no per-call fee), control (a narrow, tested skill set) and measurable gains on our task; the base-vs-tuned table is in `evidence/ml/`.
+- **What if the AI is wrong?** It cannot act. Figures come from tools; plans are validated; names are resolved against the ledger; every action needs a signed mandate approved by people.
+- **Isn't 4B too small?** It only has to choose tools and fill arguments, not reason about money; the arithmetic is deterministic code.
+- **How is TidePay private?** Federated averaging with pairwise masks that cancel in the sum; the server never sees one business's update.
 - **Why synthetic data?** Reproducibility and attack coverage; we report no real-user results.
 - **Is the mandate AP2?** Modelled on the idea; not an implementation of the AP2 specification.
-- **Who pays?** Hypothesis: small businesses or their accountants; unvalidated.
+- **Who pays?** Hypothesis: small businesses or their accountants, per seat; plans shown are illustrative.
 - **Why no real bank?** The rules accept sandbox evidence; the ISO 20022 pain.001 draft shows the adapter boundary and is never sent.
