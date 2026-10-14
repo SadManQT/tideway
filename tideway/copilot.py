@@ -11,9 +11,9 @@ import difflib
 import statistics
 from datetime import date, timedelta
 
-from . import analytics, conversation
+from . import analytics, conversation, i18n
 from .domain import (MAX_UNITS, OPEN_INVOICE_STATUSES, SETTLED_INVOICE_STATUSES, SecurityError, ValidationError, add_days, days_between,
-                     human_date, money_text)
+                     money_text)
 from .ml.model import BUCKETS, predict_for
 from .projection import summary
 
@@ -68,7 +68,7 @@ def suppliers_of(snapshot):
     return sorted({row["payee"] for row in snapshot["records"]["bills"]})
 
 
-def credit_check(app, business_id, customer, amount_units, terms_days, target_date=None):
+def credit_check(app, business_id, customer, amount_units, terms_days, target_date=None, lang="en"):
     """Should we sell on credit to this customer? TidePay risk + exposure + cash timing, explained."""
     snapshot = app.store.snapshot(business_id)
     business, records = snapshot["business"], snapshot["records"]
@@ -92,24 +92,22 @@ def credit_check(app, business_id, customer, amount_units, terms_days, target_da
     new_minor = int(round(amount_units * 100))
     share = (open_now + new_minor) / max(1, open_total + new_minor)
     if p_over_30 >= 0.25:
-        verdict, advice = "high_risk", "Ask for at least 50% upfront or cash on delivery; do not extend full credit."
-        safe_terms = 0
+        verdict, safe_terms = "high_risk", 0
     elif p_over_30 >= 0.10 or p_over_15 >= 0.35:
-        verdict, advice = "caution", "Offer shorter terms or take a 30% deposit."
-        safe_terms = max(7, terms_days - 15)
+        verdict, safe_terms = "caution", max(7, terms_days - 15)
     else:
-        verdict, advice = "safe", "These terms look safe based on this customer's history."
-        safe_terms = terms_days
+        verdict, safe_terms = "safe", terms_days
+    advice_key = f"advice_{verdict}"
     expected_arrival = add_days(due.isoformat(), max(0, round(prediction["expected_delay_days"])))
-    reasons = [f"{len(history)} settled invoice(s) on record" + (f", average {statistics.fmean(h['delay'] for h in history):.1f} days late"
-                                                                   if history else "; using the business-wide pattern"),
-               f"TidePay expects about {max(0, round(prediction['expected_delay_days']))} days of delay "
-               f"({round(p_over_30 * 100)}% chance of more than 30 days)",
-               f"expected payment around {human_date(expected_arrival, True)}"]
+    reasons = [i18n.t(lang, "r_history", n=len(history), late=f"{statistics.fmean(h['delay'] for h in history):.1f}")
+               if history else i18n.t(lang, "r_nohistory"),
+               i18n.t(lang, "r_tidepay", days=max(0, round(prediction["expected_delay_days"])), p30=round(p_over_30 * 100)),
+               i18n.t(lang, "r_arrival", date=i18n.day(lang, expected_arrival))]
     if share >= 0.5:
-        reasons.append(f"after this sale {round(share * 100)}% of all money owed to you would sit with {customer}")
+        reasons.append(i18n.t(lang, "r_share", share=round(share * 100), who=customer))
         if verdict == "safe":
-            verdict, advice = "caution", "The customer pays well, but this sale concentrates too much risk in one account; consider a deposit."
+            verdict, advice_key = "caution", "advice_concentration"
+    advice = i18n.t(lang, advice_key)
     return {"customer": customer, "amount_minor": new_minor, "currency": business["currency"], "terms_days": terms_days,
             "verdict": verdict, "advice": advice, "suggested_terms_days": safe_terms,
             "probabilities": dict(zip([b[2] for b in BUCKETS], probs)), "expected_delay_days": prediction["expected_delay_days"],
@@ -161,7 +159,7 @@ def bank_pack(app, business_id, target_date=None):
             "note": "Prepared from the business's own records by Tideway. Synthetic sandbox data; not a credit decision."}
 
 
-def run_plan(app, business_id, target_date, plan, actor):
+def run_plan(app, business_id, target_date, plan, actor, lang="en"):
     """Execute a validated TideLM plan. Returns tool results for the reply writer."""
     validate_plan(plan)
     snapshot = app.store.snapshot(business_id)
@@ -213,17 +211,18 @@ def run_plan(app, business_id, target_date, plan, actor):
             proposal = app.propose(business_id, target_date, actor, proposed_by="agent:tidelm", excluded=tuple(excluded),
                                    max_discount_bps=None if pct is None else int(round(pct * 100)), prefer=prefer)
             best = proposal["bundles"][0] if proposal["bundles"] else None
-            results.append({"tool": tool, "result": {"plan_id": proposal["plan_id"], "explanation": proposal["explanation"],
+            results.append({"tool": tool, "result": {"plan_id": proposal["plan_id"],
+                                                     "explanation": conversation.plan_summary(proposal, snapshot["business"]["currency"], lang),
                                                      "excluded": excluded, "prefer": prefer,
                                                      "recommended_cost_minor": best["economic_cost_minor"] if best else None,
                                                      "futures_short_of_20_after": best["futures_short_of_20_after"] if best else None}})
         elif tool == "explain_plan":
             plan_row = app.store.latest_plan(business_id, target_date or snapshot["business"]["default_target_date"])
-            results.append({"tool": tool, "result": {"explanation": conversation.explain_choice(plan_row, snapshot["business"]["currency"]),
+            results.append({"tool": tool, "result": {"explanation": conversation.explain_choice(plan_row, snapshot["business"]["currency"], lang),
                                                      "why_not": (plan_row or {}).get("why_not", [])[:4]}})
         elif tool == "credit_check":
             results.append({"tool": tool, "result": credit_check(app, business_id, args.get("customer"), args.get("amount"),
-                                                                 args.get("terms_days"), target_date)})
+                                                                 args.get("terms_days"), target_date, lang)})
         elif tool == "draft_reminders":
             wanted = [resolve_name(n, names) for n in (args.get("customers") or [])]
             plan_row = app.store.latest_plan(business_id, target_date or snapshot["business"]["default_target_date"])
@@ -240,41 +239,40 @@ def run_plan(app, business_id, target_date, plan, actor):
     return results
 
 
-def reply_from_results(results, currency):
-    """Deterministic, number-safe reply composed from tool output (TideLM decides what to do; code states the facts)."""
+def reply_from_results(results, currency, lang="en"):
+    """Number-safe reply in the reader's language, composed from tool output (TideLM decides what to do; code states the facts)."""
+    t, day = i18n.t, i18n.day
     lines = []
     for item in results:
         tool, r = item["tool"], item["result"]
         if tool == "refuse":
-            lines.append("I can't approve, pay or transfer money; a person approves in the app with a PIN."
-                         if r["reason"] == "approve_or_move_money" else conversation.out_of_scope())
+            lines.append(t(lang, "refuse_money") if r["reason"] == "approve_or_move_money" else conversation.out_of_scope(lang))
         elif tool == "project_cash":
-            lines.append(f"{r['scenario'].title()} view: lowest cash {money_text(r['minimum_cash_minor'], currency)} on "
-                         f"{human_date(r['minimum_cash_date'])}; reserve shortfall {money_text(r['reserve_shortfall_minor'], currency)}"
-                         + ("; payroll is at risk." if r["payroll_at_risk"] else "; payroll is funded."))
+            lines.append(t(lang, "projection", scenario=t(lang, "scenario")[r["scenario"]],
+                           amount=money_text(r["minimum_cash_minor"], currency), date=day(lang, r["minimum_cash_date"]),
+                           short=money_text(r["reserve_shortfall_minor"], currency),
+                           payroll=t(lang, "payroll_risk" if r["payroll_at_risk"] else "payroll_ok")))
         elif tool == "simulate_risk":
-            lines.append(f"{r['futures_short_of_20']} of 20 simulated futures breach the reserve; payroll unfunded in "
-                         f"{round(r['probability_payroll_unfunded'] * 100)}% of {r['runs']} runs.")
+            lines.append(t(lang, "risk", short=r["futures_short_of_20"], payroll=round(r["probability_payroll_unfunded"] * 100),
+                           runs=r["runs"]))
         elif tool == "what_if":
-            lines.append(conversation.whatif_text("With that change", r["projection"], r["baseline"], currency))
-        elif tool == "propose_plan":
-            lines.append(r["explanation"] + " It is waiting for human approval in the Rescue plan view.")
-        elif tool == "explain_plan":
-            lines.append(r["explanation"] or "There is no current plan yet. Ask me for a rescue plan.")
+            lines.append(conversation.whatif_text(r["projection"], r["baseline"], currency, lang))
+        elif tool in ("propose_plan", "explain_plan"):
+            lines.append(r["explanation"])
         elif tool == "credit_check":
-            lines.append(f"Credit check for {r['customer']} ({money_text(r['amount_minor'], currency)}, {r['terms_days']} days): "
-                         f"{r['verdict'].replace('_', ' ').upper()}. {r['advice']} " + "; ".join(r["reasons"]) + ".")
+            lines.append(t(lang, "credit", who=r["customer"], amount=money_text(r["amount_minor"], currency), days=r["terms_days"],
+                           verdict=t(lang, "verdict")[r["verdict"]], advice=r["advice"],
+                           reasons=("；" if lang == "zh" else "; ").join(r["reasons"])))
         elif tool == "draft_reminders":
-            lines.append(f"{len(r['drafts'])} reminder draft(s) ready: " + ", ".join(f"{d['customer']} ({d['tone']})" for d in r["drafts"])
-                         + ". Review and send them from the Rescue plan view.")
+            lines.append(t(lang, "drafts", n=len(r["drafts"]), names=", ".join(d["customer"] for d in r["drafts"]) or "—"))
         elif tool == "bank_pack":
-            lines.append("Your bank-ready pack is prepared: cash history, receivables aging, forecast, risk and plan. Open it from Cash weather.")
+            lines.append(t(lang, "bank_pack"))
         elif tool == "customer_report":
             parts = []
             for c in r["customers"]:
                 forecast = c["open_invoice_forecasts"][0] if c["open_invoice_forecasts"] else None
-                delay = forecast["likely_delay_days"] if forecast else c["expected_delay_days"]
-                parts.append(f"{c['customer']}: grade {c['grade']}, TidePay expects about {delay} days late on the open invoice, "
-                             f"{money_text(c['open_exposure_minor'], currency)} open")
-            lines.append("; ".join(parts) + ".")
-    return " ".join(lines)
+                parts.append(t(lang, "customer", who=c["customer"], grade=c["grade"],
+                               late=forecast["likely_delay_days"] if forecast else c["expected_delay_days"],
+                               open=money_text(c["open_exposure_minor"], currency)))
+            lines.append(("；" if lang == "zh" else "; ").join(parts) + ("。" if lang == "zh" else "."))
+    return ("" if lang == "zh" else " ").join(lines)

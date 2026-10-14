@@ -10,7 +10,8 @@ from __future__ import annotations
 
 import re
 
-from .domain import human_date, money_text
+from .domain import money_text
+from .i18n import ask, day, t
 
 _GREETING = re.compile(
     r"^(hi+|hey+|hello+|hiya|yo|good (morning|afternoon|evening|day)|greetings|howdy|salam|salaam|assalamu? ?alaikum|"
@@ -42,12 +43,6 @@ def classify(message):
     return None
 
 
-CAPABILITIES = ("I can tell you whether payroll is safe, how likely you are to run short, which customers pay late and "
-                "what TidePay expects from them, run a what-if (\"what if a customer pays 15 days late?\"), check if a "
-                "customer is safe to sell to on credit, draft payment reminders, build a rescue plan for a person to "
-                "approve, and prepare a bank-ready pack. I never approve or move money myself.")
-
-
 def situation(app, business_id, target_date):
     """The few facts a conversation needs, from the same analysis the dashboard uses."""
     analysis = app.analysis(business_id, target_date)
@@ -55,37 +50,39 @@ def situation(app, business_id, target_date):
     profiles = analysis["derived"]["profiles"]["customers"]
     owing = sorted((item for item in profiles.values() if item["open_exposure_minor"]),
                    key=lambda item: -(item.get("tidepay_delay_days") or item["expected_delay_days"]))
-    blocked = analysis["derived"]["blocked"]
-    plan = app.store.latest_plan(business_id, analysis["target_date"])
-    return {"business": business, "currency": business["currency"], "brief": analysis["brief"],
-            "weather": analysis["weather"], "warnings": analysis["warnings"], "simulation": analysis["simulation"],
-            "slowest": owing[0]["customer"] if owing else None, "largest": max(owing, key=lambda i: i["open_exposure_minor"])["customer"] if owing else None,
-            "blocked": len(blocked), "plan": plan, "target_date": analysis["target_date"]}
+    base, likely = analysis["projections"]["base"], analysis["projections"]["likely"]
+    payroll = next((event for event in base["source_references"] if event.get("payroll")), None)
+    return {"business": business, "currency": business["currency"], "weather": analysis["weather"],
+            "warnings": analysis["warnings"], "simulation": analysis["simulation"],
+            "first_breach": base["first_breach_date"], "likely_min": likely["minimum_cash_minor"],
+            "likely_min_date": likely["minimum_cash_date"],
+            "payroll": (-payroll["effect_minor"], payroll["date"]) if payroll else None,
+            "slowest": owing[0]["customer"] if owing else None,
+            "largest": max(owing, key=lambda i: i["open_exposure_minor"])["customer"] if owing else None,
+            "blocked": len(analysis["derived"]["blocked"]),
+            "plan": app.store.latest_plan(business_id, analysis["target_date"]), "target_date": analysis["target_date"]}
 
 
-def suggestions(facts, topic=None, customer=None, exclude=()):
+def suggestions(facts, topic=None, customer=None, exclude=(), lang="en"):
     """Up to three next questions: what naturally follows this answer, then what matters most right now."""
     codes = {item["code"] for item in facts["warnings"]}
     slow, big = facts["slowest"], facts["largest"]
     who = customer or slow
-    rescue = "Why this plan?" if facts["plan"] is not None else (
-        "Find me a rescue plan" if facts["simulation"]["futures_short_of_20"] > 0 else None)
+    q = lambda key, **values: ask(lang, key, **values)  # noqa: E731
+    rescue = q("why") if facts["plan"] is not None else (q("rescue") if facts["simulation"]["futures_short_of_20"] > 0 else None)
     follow = {
-        "payroll": [rescue, "How risky is this month?", who and f"What if {who} pays 15 days late?"],
-        "risk": [rescue, "Can I pay salaries this month?" if "payroll_at_risk" in codes else "Show the cash forecast",
-                 "Which customers pay late?"],
-        "forecast": ["How risky is this month?", rescue, "Which customers pay late?"],
-        "customer": [who and f"What if {who} pays 15 days late?", who and f"Should I give {who} 30 days credit on 20,000?",
-                     "Remind everyone who owes me"],
-        "credit": [who and f"How does {who} usually pay?", who and f"What if {who} pays 15 days late?", "Which customers pay late?"],
-        "receivables": ["Remind everyone who owes me", big and f"How does {big} usually pay?", slow and f"What if {slow} pays 15 days late?"],
-        "whatif": [rescue, "How risky is this month?", big and big != customer and f"What if {big} pays 10 days late?"],
-        "plan": ["Why this plan?", "How risky is this month?", "Remind everyone who owes me"],
-        "security": ["How risky is this month?", rescue, "Which customers pay late?"],
+        "payroll": [rescue, q("risk"), who and q("whatif", who=who, days=15)],
+        "risk": [rescue, q("payroll") if "payroll_at_risk" in codes else q("forecast"), q("late")],
+        "forecast": [q("risk"), rescue, q("late")],
+        "customer": [who and q("whatif", who=who, days=15), who and q("credit", who=who), q("remind")],
+        "credit": [who and q("habit", who=who), who and q("whatif", who=who, days=15), q("late")],
+        "receivables": [q("remind"), big and q("habit", who=big), slow and q("whatif", who=slow, days=15)],
+        "whatif": [rescue, q("risk"), big and big != customer and q("whatif", who=big, days=10)],
+        "plan": [q("why"), q("risk"), q("remind")],
+        "security": [q("risk"), rescue, q("late")],
     }.get(topic, [])
-    situational = ["Can I pay salaries this month?" if "payroll_at_risk" in codes else None, rescue,
-                   "Which bills are blocked and why?" if facts["blocked"] else None,
-                   slow and f"What if {slow} pays 15 days late?", "Which customers pay late?", "How risky is this month?"]
+    situational = [q("payroll") if "payroll_at_risk" in codes else None, rescue, q("blocked") if facts["blocked"] else None,
+                   slow and q("whatif", who=slow, days=15), q("late"), q("risk")]
     seen, result = {item.casefold() for item in exclude}, []
     for item in follow + situational:
         if item and item.casefold() not in seen:
@@ -94,85 +91,113 @@ def suggestions(facts, topic=None, customer=None, exclude=()):
     return result[:3]
 
 
-def briefing(facts, name=None):
-    weather, sim, currency = facts["weather"], facts["simulation"], facts["currency"]
-    lines = [f"{facts['business']['name']} today: {weather['label']}. {facts['brief']['headline']}.", facts["brief"]["detail"]]
-    critical = [item for item in facts["warnings"] if item["severity"] == "critical"]
+def briefing(facts, name=None, lang="en"):
+    sim, currency = facts["simulation"], facts["currency"]
+    weather = t(lang, "weather")[facts["weather"]["level"]]
+    lines = [t(lang, "today", business=facts["business"]["name"], weather=weather),
+             t(lang, "breach_scheduled", date=day(lang, facts["first_breach"]), short=sim["futures_short_of_20"])
+             if facts["first_breach"] else t(lang, "breach_sim", short=sim["futures_short_of_20"]),
+             t(lang, "lowest", amount=money_text(facts["likely_min"], currency), date=day(lang, facts["likely_min_date"]))]
+    if facts["payroll"]:
+        lines.append(t(lang, "payroll_due", amount=money_text(facts["payroll"][0], currency), date=day(lang, facts["payroll"][1])))
+    critical = [t(lang, f"w_{item['code']}") for item in facts["warnings"]
+                if item["severity"] == "critical" and f"w_{item['code']}" in _WARNINGS]
     if critical:
-        lines.append("Needs attention: " + "; ".join(item["title"] for item in critical[:2]) + ".")
+        lines.append(t(lang, "attention", items=("；" if lang == "zh" else "; ").join(critical[:2])))
     if facts["blocked"]:
-        lines.append(f"{facts['blocked']} bill(s) are blocked for possible payment fraud.")
+        lines.append(t(lang, "blocked", n=facts["blocked"]))
     if facts["plan"] and facts["plan"].get("bundles"):
-        best = facts["plan"]["bundles"][0]
-        lines.append(f"A rescue plan is ready (cost {money_text(best['economic_cost_minor'], currency)}); "
-                     "it waits for a person to approve it.")
-    elif sim["futures_short_of_20"] > 0:
-        lines.append("Ask me for a rescue plan.")
+        lines.append(t(lang, "plan_ready", amount=money_text(facts["plan"]["bundles"][0]["economic_cost_minor"], currency)))
     else:
-        lines.append("No action is needed right now.")
-    hello = f"Hi {name.split()[0]}! " if name else "Hi! "
-    return hello + " ".join(lines)
+        lines.append(t(lang, "ask_plan") if sim["futures_short_of_20"] > 0 else t(lang, "all_good"))
+    hello = t(lang, "hello", name=name.split()[0]) if name else t(lang, "hello_anon")
+    return hello + _join(lang, lines)
 
 
-def small_talk(kind, facts, name=None):
+_WARNINGS = {"w_reserve_breach", "w_payroll_at_risk", "w_payee_account_changed", "w_lookalike_payee"}
+
+
+def small_talk(kind, facts, name=None, lang="en"):
     if kind == "thanks":
-        return "You're welcome. " + ("Anything else? " if facts else "")
+        return t(lang, "thanks")
     if kind == "help":
-        return CAPABILITIES + " Try one of the suggestions below."
-    if kind == "status":
-        return briefing(facts, None)
-    return briefing(facts, name)
+        return t(lang, "help")
+    return briefing(facts, name if kind == "greeting" else None, lang)
 
 
-def not_understood(facts):
-    return ("I'm not sure what you mean. I'm Tideway's cash-flow copilot for "
-            f"{facts['business']['name']}: ask about cash, payroll, customers, risk or a rescue plan, in your own words "
-            "and language. For example:")
+def not_understood(facts, lang="en"):
+    return t(lang, "not_understood", business=facts["business"]["name"])
 
 
-def out_of_scope():
-    return ("That's outside what I do; I only work on this business's cash flow. I can answer questions about payroll, "
-            "risk, customers, what-ifs, credit checks, reminders and rescue plans.")
+def out_of_scope(lang="en"):
+    return t(lang, "out_of_scope")
 
 
+def _join(lang, lines):
+    return "".join(lines) if lang == "zh" else " ".join(lines)
 
-def explain_choice(plan, currency):
+
+def explain_choice(plan, currency, lang="en"):
     """Why the recommended bundle won: its risk and cost against each rejected option, in plain words."""
     if not plan:
-        return "There is no current proposal yet. Ask me for a rescue plan first."
+        return t(lang, "no_plan")
     bundles = plan.get("bundles") or []
     if not bundles:
-        return plan.get("explanation") or "No proposal could hold the reserve floor."
+        return t(lang, "plan_none")
     best, target = bundles[0], round(plan.get("risk_target", 0.1) * 20)
-    lines = [f"I recommend this bundle because it holds the reserve floor every day with payroll funded, and only "
-             f"{best['futures_short_of_20_after']} of 20 simulated futures still fall short (my bar is {target} or fewer), "
-             f"at an economic cost of {money_text(best['economic_cost_minor'], currency)}."]
+    lines = [t(lang, "why_best", after=best["futures_short_of_20_after"], target=target,
+               cost=money_text(best["economic_cost_minor"], currency))]
     for other in bundles[1:]:
-        cost_gap = other["economic_cost_minor"] - best["economic_cost_minor"]
+        gap = other["economic_cost_minor"] - best["economic_cost_minor"]
         if other["futures_short_of_20_after"] is not None and other["futures_short_of_20_after"] > target:
-            lines.append(f"A {'cheaper' if cost_gap < 0 else 'different'} option ({money_text(other['economic_cost_minor'], currency)}) "
-                         f"leaves {other['futures_short_of_20_after']} of 20 futures short: too risky.")
-        else:
-            lines.append(f"Another safe option costs {money_text(abs(cost_gap), currency)} "
-                         f"{'more' if cost_gap > 0 else 'less'} and asks {other['counterparties']} counterparties.")
+            lines.append(t(lang, "why_risky", cost=money_text(other["economic_cost_minor"], currency),
+                           after=other["futures_short_of_20_after"]))
+        elif gap > 0:
+            lines.append(t(lang, "why_costlier", gap=money_text(gap, currency), n=other["counterparties"]))
     short = [item for item in plan.get("why_not", []) if item["reason"].startswith("INSUFFICIENT_ALONE")]
     if short:
         item = min(short, key=lambda i: int(re.sub(r"\D", "", i["reason"]) or 0))
-        lines.append(f"No single action is enough: for example, the best request to {item['counterparty']} alone "
-                     f"{item['reason'].split(': ', 1)[-1].replace('still', 'still leaves you')}")
+        amount = re.search(r"([A-Z]{3} [\d,.]+)", item["reason"])
+        lines.append(t(lang, "why_alone", who=item["counterparty"], short=amount.group(1) if amount else ""))
     financing = [item for item in plan.get("financing", []) if item.get("feasible")]
     if financing:
-        cheapest = min(financing, key=lambda item: item["economic_cost_minor"])
-        lines.append(f"The cheapest financing would cost {money_text(cheapest['economic_cost_minor'], currency)} in fees "
-                     "(illustrative mock offer), so it is kept as a fallback.")
-    return " ".join(lines)
+        lines.append(t(lang, "why_finance", fee=money_text(min(i["economic_cost_minor"] for i in financing), currency)))
+    return _join(lang, lines)
 
 
-def whatif_text(label, projection, baseline, currency):
+def plan_summary(plan, currency, lang="en"):
+    """A proposal in the reader's language, built from the plan's own numbers."""
+    basis = plan["basis_projection"]
+    if not plan["action_needed"]:
+        return t(lang, "plan_none")
+    lines = [t(lang, "plan_gap", amount=money_text(basis["minimum_cash_minor"], currency), date=day(lang, basis["minimum_cash_date"]),
+               short=money_text(basis["reserve_shortfall_minor"], currency))]
+    bundles = plan.get("bundles") or []
+    if bundles and bundles[0]["feasible"]:
+        best = bundles[0]
+        actions = []
+        for action in best["actions"]:
+            if action["type"] == "supplier_deferral":
+                actions.append(t(lang, "act_defer", who=action["counterparty"], amount=money_text(action["amount_minor"], currency),
+                                 from_=day(lang, action["from_date"]), to=day(lang, action["to_date"])))
+            else:
+                actions.append(t(lang, "act_early", who=action["counterparty"], pct=f"{action['discount_bps'] / 100:g}",
+                                 amount=money_text(action["face_minor"], currency), to=day(lang, action["to_date"])))
+        lines.append(t(lang, "plan_recommend", actions="；".join(actions) if lang == "zh" else "; ".join(actions),
+                       cost=money_text(best["economic_cost_minor"], currency), n=best["counterparties"],
+                       after=best["futures_short_of_20_after"]))
+    else:
+        lines.append(t(lang, "plan_nosafe", short=money_text(bundles[0]["remaining_shortfall_minor"] if bundles
+                                                             else basis["reserve_shortfall_minor"], currency)))
+    lines.append(t(lang, "plan_wait"))
+    return _join(lang, lines)
+
+
+def whatif_text(projection, baseline, currency, lang="en", label=None):
     worse = baseline["minimum_cash_minor"] - projection["minimum_cash_minor"]
-    change = (f"{money_text(worse, currency)} worse than today's likely low of {money_text(baseline['minimum_cash_minor'], currency)}"
-              if worse > 0 else "no worse than today's likely low" if worse == 0 else
-              f"{money_text(-worse, currency)} better than today's likely low")
-    return (f"{label}, the lowest likely cash is {money_text(projection['minimum_cash_minor'], currency)} on "
-            f"{human_date(projection['minimum_cash_date'])}: {change}. Reserve shortfall "
-            f"{money_text(projection['reserve_shortfall_minor'], currency)}. Nothing was saved.")
+    change = (t(lang, "worse", amount=money_text(worse, currency), base=money_text(baseline["minimum_cash_minor"], currency))
+              if worse > 0 else t(lang, "same") if worse == 0 else t(lang, "better", amount=money_text(-worse, currency)))
+    text = t(lang, "whatif", amount=money_text(projection["minimum_cash_minor"], currency),
+             date=day(lang, projection["minimum_cash_date"]), change=change,
+             short=money_text(projection["reserve_shortfall_minor"], currency))
+    return text.replace("With that change", label, 1) if label and lang == "en" else text

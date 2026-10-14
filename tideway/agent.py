@@ -21,7 +21,7 @@ import time
 import urllib.error
 import urllib.request
 
-from . import conversation, copilot
+from . import conversation, copilot, i18n
 from .domain import SecurityError, ValidationError, canonical_json, human_date, money_text
 from .projection import summary
 
@@ -329,7 +329,8 @@ class Agent:
         small = conversation.classify(message)
         topic, focus = None, named
         if small:
-            answer = conversation.small_talk(small, conversation.situation(self.app, business_id, target_date), name)
+            answer = conversation.small_talk(small, conversation.situation(self.app, business_id, target_date), name,
+                                             i18n.detect(message))
         elif re.search(r"\b(approve|execute|transfer|wire|send money|pay (the )?(supplier|bill|now|them)|release)\b", text):
             answer = ("I can't approve, execute or move money; that is deliberate. I can build a proposal. A person must "
                       "review it, enter their PIN and approve. Above the dual-approval threshold a second person must approve too.")
@@ -344,8 +345,8 @@ class Agent:
                 trace.append({"tool": "what_if", "permission": "agent_read"})
                 topic, focus = "whatif", customer
                 baseline = summary(self.app.analysis(business_id, target_date)["projections"]["likely"])
-                answer = conversation.whatif_text(f"If {customer} pays {what_if.group(2)} days later than expected", projection,
-                                                  baseline, currency)
+                answer = conversation.whatif_text(projection, baseline, currency,
+                                                  label=f"If {customer} pays {what_if.group(2)} days later than expected")
         elif re.search(r"payroll|salar|wages", text):
             projections = self.tool("project_cash", business_id, target, actor, trace)
             risk = self.tool("simulate_risk", business_id, target, actor, trace)

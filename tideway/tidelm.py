@@ -17,7 +17,7 @@ import threading
 import time
 from pathlib import Path
 
-from . import conversation, copilot
+from . import conversation, copilot, i18n
 from .domain import (SecurityError, ValidationError, canonical_json, scan_text, validate_bill, validate_invoice,
                      validate_transaction)
 from .ml.tidelm_data import EXTRACT_SYSTEM, PLAN_SYSTEM
@@ -137,11 +137,12 @@ class TideLM:
         if not isinstance(message, str) or not message.strip() or len(message) > MAX_INPUT:
             raise ValidationError(f"Message must contain 1-{MAX_INPUT:,} characters.")
         started = time.monotonic()
+        lang = i18n.detect(message)  # answer in the language of the question
         small = conversation.classify(message)
         if small:  # greetings, thanks, help, status: answered instantly from live data, no model call
             facts = conversation.situation(app, business_id, target_date)
-            return {"text": conversation.small_talk(small, facts, name), "mode": "tidelm", "plan": None, "results": [],
-                    "routed": "small_talk", "suggestions": conversation.suggestions(facts),
+            return {"text": conversation.small_talk(small, facts, name, lang), "mode": "tidelm", "plan": None, "results": [],
+                    "routed": "small_talk", "lang": lang, "suggestions": conversation.suggestions(facts, lang=lang),
                     "elapsed_ms": int((time.monotonic() - started) * 1000)}
         raw = self._generate(PLAN_SYSTEM, message.strip())
         plan = parse_json(raw)
@@ -153,18 +154,18 @@ class TideLM:
                 raise ValueError("unparseable")
             copilot.validate_plan(plan)
             if role not in PLANNER_ROLES and any(call["tool"] in PROPOSING_TOOLS for call in plan["calls"]):
-                text = "Viewers can read forecasts and reports, but only an owner or accountant can ask for plans or reminders."
+                text = i18n.t(lang, "viewer")
                 results = []
             else:
-                results = copilot.run_plan(app, business_id, target_date, plan, actor)
-                text = copilot.reply_from_results(results, currency)
+                results = copilot.run_plan(app, business_id, target_date, plan, actor, lang)
+                text = copilot.reply_from_results(results, currency, lang)
             permission = "agent_read"
         except ValueError as exc:  # a refused or unparseable plan is answered, never guessed
             if not isinstance(exc, ValidationError):
                 exc = None
             results, permission = [], "denied"
-            text = (f"I couldn't do that safely: {exc}" if exc else
-                    conversation.not_understood(conversation.situation(app, business_id, target_date)))
+            text = (i18n.t(lang, "unsafe", reason=exc) if exc else
+                    conversation.not_understood(conversation.situation(app, business_id, target_date), lang))
             if isinstance(exc, SecurityError):  # the model asked for a forbidden tool: counts toward the breaker
                 app.store.reject(business_id, "agent.tool_rejected", actor, exc, {"plan": plan}, security_relevant=True)
         trace["elapsed_ms"] = int((time.monotonic() - started) * 1000)
@@ -173,8 +174,8 @@ class TideLM:
                          "output_sha256": hashlib.sha256(text.encode()).hexdigest()})
         topic, focus = _topic(plan, results)
         follow = conversation.suggestions(conversation.situation(app, business_id, target_date), topic, focus,
-                                          exclude=(message.strip(),))
-        return {"text": text, "mode": "tidelm", "plan": plan, "results": results, "suggestions": follow,
+                                          exclude=(message.strip(),), lang=lang)
+        return {"text": text, "mode": "tidelm", "plan": plan, "results": results, "suggestions": follow, "lang": lang,
                 "elapsed_ms": trace["elapsed_ms"]}
 
     # ---- skill 2: zero-entry inbox --------------------------------------------------
