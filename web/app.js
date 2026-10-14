@@ -3,7 +3,7 @@
 // Tideway UI: vanilla JS, no build step. Every server value is escaped before rendering.
 const $ = (selector) => document.querySelector(selector);
 const freshWhatIf = () => ({delays: {}, expense: "", expenseDate: "", drop: "", result: null});
-const freshInbox = () => ({text: "", drafts: null, suspicious: false, flags: [], note: "", saved: null});
+const freshInbox = () => ({text: "", photo: "", photoName: "", transcript: "", drafts: null, suspicious: false, flags: [], note: "", saved: null});
 const state = {
   config: null, operator: null, businessId: "", targetDate: "", view: "overview",
   dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "", selftest: null, drill: null,
@@ -1008,9 +1008,48 @@ function renderInbox() {
   return `<section class="grid split"><form class="card" id="inbox-form"><div class="card-head"><div><h3>Paste a message</h3><p>TideLM reads it on this computer and drafts records. It cannot save, pay or approve anything.</p></div>${on ? `<span class="pill teal">${icon("spark")}${esc(TIDELM_LABEL)}</span>` : ""}</div>
       ${on ? "" : `${tidelmStatusCard("You can still add records with Import CSV in Records.")}<div class="section-gap"></div>`}
       <label class="field">SMS, WhatsApp or bank text<textarea id="inbox-text" maxlength="2000" spellcheck="false" placeholder="e.g. Invoice INV-2291 to Nila Traders, BDT 42,500, due 5 Nov">${esc(state.inbox.text)}</textarea></label>
-      <div class="row section-gap"><button class="button primary" type="submit" ${on ? "" : "disabled"}>${icon("spark")}Extract</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="clean">Sample: invoice SMS</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="injection">Sample: injection attempt</button></div></form>
+      <div class="row section-gap"><button class="button primary" type="submit" ${on ? "" : "disabled"}>${icon("spark")}Extract</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="clean">Sample: invoice SMS</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="injection">Sample: injection attempt</button></div>
+      ${photoHtml()}</form>
     <div class="card"><h3>How the inbox stays safe</h3><ul class="small"><li>Drafts only: nothing reaches the ledger until you tick it and save.</li><li>Every field is validated again by Tideway's own rules when you save.</li><li>Instructions hidden in the text are flagged and never followed.</li><li>Pasted text never leaves this computer; the audit trail keeps only its hash.</li></ul></div></section>
     <div id="inbox-results" aria-live="polite">${inboxResultsHtml()}</div>`;
+}
+
+// Invoice or receipt photos: read on this computer by TideVision; downscaled in the browser before upload.
+function photoHtml() {
+  const vision = state.config.vision || {};
+  if (!vision.available) return `<p class="hint section-gap">Photo reading is off on this computer${vision.reason ? `: ${esc(vision.reason)}` : "."}</p>`;
+  const ib = state.inbox;
+  return `<div class="photo-drop section-gap"><label class="field">Or a photo of an invoice, bill or receipt<input id="inbox-photo" type="file" accept="image/jpeg,image/png,image/webp" capture="environment"></label>
+    ${ib.photo ? `<div class="photo-preview"><img src="${esc(ib.photo)}" alt="Selected document photo ${esc(ib.photoName)}"><button class="button teal" type="button" data-action="inbox-photo">${icon("spark")}Read this photo</button></div>` : `<p class="hint">JPEG, PNG or WebP. Location and other metadata are removed before reading.</p>`}
+    ${ib.transcript ? `<details class="section-gap"><summary>Text TideVision read from the photo</summary><p class="small">${esc(ib.transcript)}</p></details>` : ""}</div>`;
+}
+
+function shrinkPhoto(file) {
+  return new Promise((resolve, reject) => {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return reject(new Error("Use a JPEG, PNG or WebP photo."));
+    if (file.size > 20 * 1024 * 1024) return reject(new Error("The photo is too large."));
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      const scale = Math.min(1, 1600 / Math.max(image.width, image.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(image.width * scale);
+      canvas.height = Math.round(image.height * scale);
+      canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/jpeg", 0.88));
+    };
+    image.onerror = () => { URL.revokeObjectURL(url); reject(new Error("The photo could not be read.")); };
+    image.src = url;
+  });
+}
+
+async function readPhoto() {
+  if (!state.inbox.photo) return toast("Choose a photo first.");
+  const result = await act("Photo", () => api("/api/inbox/photo", {business_id: state.businessId, image: state.inbox.photo}));
+  if (result) Object.assign(state.inbox, {drafts: (result.drafts || []).map(editableDraft), suspicious: Boolean(result.suspicious),
+    flags: result.risk_flags || [], note: result.note || "", transcript: result.transcript || "", saved: null});
+  render();
 }
 
 async function extractInbox() {
@@ -1356,6 +1395,7 @@ document.addEventListener("click", async (event) => {
       case "whatif-reset": state.whatif = freshWhatIf(); render(); break;
       case "inbox-sample": state.inbox = {...freshInbox(), text: INBOX_SAMPLES[data.sample]?.(currency()) || ""}; render(); $("#inbox-text")?.focus(); break;
       case "inbox-save": await saveInbox(); break;
+      case "inbox-photo": await readPhoto(); break;
       case "reload-audit": state.audit = null; render(); loadAudit(); break;
       case "import": $("#import-form").reset(); $("#import-error").textContent = ""; $("#import-dialog").showModal(); break;
       case "sample-csv": { const url = URL.createObjectURL(new Blob([sampleCsv()], {type: "text/csv"})); const link = document.createElement("a"); link.href = url; link.download = "tideway-example.csv"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); break; }
@@ -1404,6 +1444,11 @@ document.addEventListener("change", async (event) => {
     else if (target.id === "record-filter") { state.recordFilter = target.value; render(); }
     else if (target.id === "whatif-drop") { state.whatif.drop = target.value; }
     else if (target.id === "whatif-date") { state.whatif.expenseDate = target.value; }
+    else if (target.id === "inbox-photo" && target.files?.[0]) {
+      const file = target.files[0];
+      Object.assign(state.inbox, {...freshInbox(), text: state.inbox.text, photo: await shrinkPhoto(file), photoName: file.name});
+      render();
+    }
     else if (target.dataset?.draft !== undefined && ["selected", "type"].includes(target.dataset.field)) {
       // Re-render so labels and the save count follow the change, then put focus back.
       const draft = state.inbox.drafts?.[Number(target.dataset.draft)];
