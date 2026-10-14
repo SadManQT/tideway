@@ -476,7 +476,7 @@ function renderOverview() {
   <section class="brief ${esc(d.weather.level)}">
     <div class="weather-badge">${icon(weatherIcon(d.weather.level))}${esc(d.weather.label)}</div>
     <div><h2>${esc(d.brief.headline)}</h2><p>${esc(d.brief.detail)} ${esc(d.weather.text)}</p></div>
-    <div class="row">${speakButtonHtml()}${canApprove() ? `<button class="button ghost" data-action="run-agent">${icon("play")}Run the rescue agent</button>` : `<span class="pill">Viewer: read only</span>`}</div>
+    <div class="row">${speakButtonHtml()}<a class="button ghost" href="/api/export?kind=bank-pack&business_id=${encodeURIComponent(state.businessId)}&target_date=${encodeURIComponent(state.targetDate)}">${icon("download")}Bank-ready pack</a>${canApprove() ? `<button class="button ghost" data-action="run-agent">${icon("play")}Run the rescue agent</button>` : `<span class="pill">Viewer: read only</span>`}</div>
   </section>
   <section class="metrics section-gap">
     ${metric("Opening cash", money(d.business.opening_cash_minor), `On ${day(d.business.opening_date, true)}`)}

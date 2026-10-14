@@ -310,3 +310,35 @@ def reply_from_results(results, currency, lang="en"):
                                open=money_text(c["open_exposure_minor"], currency)))
             lines.append(("；" if lang == "zh" else "; ").join(parts) + ("。" if lang == "zh" else "."))
     return ("" if lang == "zh" else " ").join(lines)
+
+
+def bank_pack_html(pack):
+    """The bank-ready pack as one printable, self-contained HTML page (no scripts, everything escaped)."""
+    from html import escape
+    currency = pack["business"]["currency"]
+    m = lambda minor: escape(money_text(minor, currency))  # noqa: E731
+    kpis, forecast, risk = pack["kpis"], pack["forecast"], pack["risk"]
+    pct = lambda value: "—" if value is None else f"{value * 100:.0f}%"  # noqa: E731
+    rows = "".join(f"<tr><td>{escape(item['month'])}</td><td>{m(item['in_minor'])}</td><td>{m(item['out_minor'])}</td>"
+                   f"<td>{m(item['in_minor'] - item['out_minor'])}</td></tr>" for item in pack["monthly_cash_history"])
+    aging = "".join(f"<tr><td>{escape(bucket)}</td><td>{m(amount)}</td></tr>" for bucket, amount in pack["receivables_aging_minor"].items())
+    facts = [("Days sales outstanding", "—" if kpis.get("dso_days") is None else f"{kpis['dso_days']:.0f} days"),
+             ("Paid on time", pct(kpis.get("on_time_share"))), ("Open receivables", m(kpis["open_receivables_minor"])),
+             ("Open payables", m(kpis["open_payables_minor"])), ("Largest customer share", pct(kpis.get("top_customer_share"))),
+             ("Monthly expense run-rate", m(kpis["monthly_expense_run_rate_minor"]))]
+    business = pack["business"]
+    return f"""<!doctype html><html lang="en"><meta charset="utf-8"><title>Bank-ready pack · {escape(business['name'])}</title>
+<style>body{{font:11pt/1.5 -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:#14221f;max-width:820px;margin:32px auto;padding:0 20px}}
+h1{{color:#0f3d36;border-bottom:3px solid #1f8a70;padding-bottom:6px}}h2{{color:#0f3d36;margin-top:26px}}table{{border-collapse:collapse;width:100%}}
+td,th{{border:1px solid #c7d6d1;padding:5px 8px;text-align:left}}th{{background:#e6f2ee}}.note{{color:#5b6b67;font-size:9.5pt}}
+.grid{{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px}}@media print{{body{{margin:0}}}}</style>
+<h1>Bank-ready pack: {escape(business['name'])}</h1>
+<p>{escape(business.get('sector') or 'Small business')} · {escape(business.get('country') or '')} · currency {escape(currency)} · prepared on {escape(pack['prepared_on'])}</p>
+<h2>Key figures</h2><div class="grid">{''.join(f'<div><strong>{escape(label)}</strong><br>{value}</div>' for label, value in facts)}</div>
+<h2>Cash history (settled)</h2><table><tr><th>Month</th><th>In</th><th>Out</th><th>Net</th></tr>{rows or '<tr><td colspan=4>No history yet</td></tr>'}</table>
+<h2>Receivables aging</h2><table><tr><th>Days overdue</th><th>Amount</th></tr>{aging}</table>
+<h2>Forecast and risk</h2><p>Lowest likely cash {m(forecast['minimum_cash_minor'])} on {escape(forecast['minimum_cash_date'])};
+reserve shortfall {m(forecast['reserve_shortfall_minor'])}. In {risk['runs']} simulated futures (seed {risk['seed']}),
+{risk['futures_short_of_20']} of 20 fall below the reserve. Funding need: <strong>{m(pack['funding_need_minor'])}</strong>.</p>
+<h2>Recovery plan</h2><p>{escape(pack['recovery_plan'] or 'No plan has been prepared yet.')}</p>
+<p class="note">{escape(pack['note'])} Audit chain head: <code>{escape(pack['evidence']['audit_head'] or '')}</code>.</p></html>"""

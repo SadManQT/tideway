@@ -69,3 +69,16 @@ class CounterpartyRisk(unittest.TestCase):
     def test_payer_outside_the_horizon_is_explained_not_zeroed(self):
         headline = Tideway(":memory:").network("harbourline-traders")["headline"]
         self.assertIn("does not count on it", headline)
+
+
+class BankPack(unittest.TestCase):
+    def test_bank_pack_is_escaped_and_complete(self):
+        from tideway.copilot import bank_pack, bank_pack_html
+        app = Tideway(":memory:")
+        pack = bank_pack(app, SHAPLA)
+        pack["business"]["name"] = "<script>alert(1)</script>"
+        page = bank_pack_html(pack)
+        self.assertNotIn("<script>", page)
+        self.assertIn("&lt;script&gt;", page)
+        self.assertIn("Receivables aging", page)
+        self.assertIn("BDT 62,000", page)  # funding need = likely reserve shortfall

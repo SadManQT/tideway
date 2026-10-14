@@ -120,6 +120,10 @@ class Application:
         self.scoped(operator, business_id)
         if kind == "evidence":
             return canonical_json(self.store.evidence(business_id)), "application/json", f"tideway-{business_id}-evidence.json"
+        if kind == "bank-pack":
+            from .copilot import bank_pack, bank_pack_html
+            return (bank_pack_html(bank_pack(self.tideway, business_id, query.get("target_date", [None])[0])), "text/html",
+                    f"tideway-{business_id}-bank-pack.html")
         if kind == "iso20022":
             return self.tideway.iso20022(business_id), "application/xml", f"tideway-{business_id}-pain001-draft.xml"
         stream = io.StringIO(newline="")
