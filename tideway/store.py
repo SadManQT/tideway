@@ -720,13 +720,14 @@ class Store:
                     if item["kind"] == "supplier" and item["verified_account"]}
         payees = analytics.payee_checks(records["bills"], verified)
         profiles = analytics.customer_profiles(records["invoices"])
+        predictions = analytics.tidepay_predictions(records["invoices"], snapshot["state"]["current_date"])
         blocked = {item["bill_id"]: "Bank details changed; the owner must verify the payee by callback first."
                    for item in payees["flagged"]}
         for item in payees.get("lookalikes", []):
             blocked.setdefault(item["bill_id"], f"Payee name looks like '{item['similar_to']}'; confirm it is not an impostor.")
-        return {"profiles": profiles, "payees": payees, "blocked": blocked,
-                "likely_dates": analytics.scenario_dates(records["invoices"], profiles, "likely"),
-                "stress_dates": analytics.scenario_dates(records["invoices"], profiles, "stress")}
+        return {"profiles": profiles, "payees": payees, "blocked": blocked, "predictions": predictions,
+                "likely_dates": analytics.scenario_dates(records["invoices"], profiles, "likely", predictions),
+                "stress_dates": analytics.scenario_dates(records["invoices"], profiles, "stress", predictions)}
 
     # ---- plans, approvals and mandates -------------------------------------
 

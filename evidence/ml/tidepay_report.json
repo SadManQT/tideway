@@ -1,0 +1,93 @@
+{
+ "meta": {
+  "trained_at": "2026-10-14 19:55",
+  "seed": 7,
+  "rounds": 25,
+  "clients": 40,
+  "train_invoices": 10292,
+  "test_invoices": 3452,
+  "method": "FedAvg + pairwise-mask secure aggregation",
+  "data": "synthetic SME invoice histories (tideway/ml/synth.py); no real customer data"
+ },
+ "results": {
+  "prior": {
+   "log_loss": 1.5858,
+   "accuracy": 0.2367,
+   "mae_days": 12.09,
+   "auc_late_over_7d": 0.5,
+   "n": 3452
+  },
+  "heuristic_v1": {
+   "log_loss": 1.55,
+   "accuracy": 0.42,
+   "mae_days": 7.34,
+   "auc_late_over_7d": 0.9096,
+   "n": 3452
+  },
+  "local_only": {
+   "log_loss": 1.1161,
+   "accuracy": 0.5463,
+   "mae_days": 7.35,
+   "auc_late_over_7d": 0.9126,
+   "n": 3452
+  },
+  "federated": {
+   "log_loss": 1.0361,
+   "accuracy": 0.5826,
+   "mae_days": 7.03,
+   "auc_late_over_7d": 0.9198,
+   "n": 3452
+  },
+  "centralised": {
+   "log_loss": 1.0357,
+   "accuracy": 0.5689,
+   "mae_days": 6.98,
+   "auc_late_over_7d": 0.9215,
+   "n": 3452
+  },
+  "federated_on_smaller_half_of_smes": {
+   "log_loss": 0.9996,
+   "accuracy": 0.584,
+   "mae_days": 6.12,
+   "auc_late_over_7d": 0.9224,
+   "n": 1238
+  },
+  "local_only_on_smaller_half_of_smes": {
+   "mae_days": 6.64,
+   "n": 1238
+  }
+ },
+ "secure_aggregation_sample": [
+  {
+   "round": 1,
+   "client0_true_update_head": [
+    -0.01,
+    0.0036,
+    0.0024,
+    -0.0034
+   ],
+   "client0_masked_update_head": [
+    174.74,
+    406.66,
+    -73.09,
+    -60.1
+   ]
+  },
+  {
+   "round": 2,
+   "client0_true_update_head": [
+    -0.0115,
+    0.0045,
+    0.0029,
+    -0.0042
+   ],
+   "client0_masked_update_head": [
+    -30.51,
+    340.57,
+    35.66,
+    310.38
+   ]
+  }
+ ],
+ "elapsed_seconds": 8.4
+}

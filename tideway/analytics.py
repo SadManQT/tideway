@@ -13,6 +13,7 @@ import random
 import statistics
 from collections import Counter, defaultdict
 from datetime import date, timedelta
+from pathlib import Path
 
 from .domain import OPEN_INVOICE_STATUSES, SETTLED_INVOICE_STATUSES, add_days, days_between, human_date
 from .projection import build_events, horizon_end
@@ -90,16 +91,83 @@ def customer_profiles(invoices, as_of=None):
             "history_observations": len(pool), "prior_weight": PRIOR_WEIGHT}
 
 
-def scenario_dates(invoices, profiles, mode):
-    """Payment dates for open invoices: 'likely' uses the pooled mean, 'stress' the 80th percentile."""
-    customers = profiles["customers"]
-    key = "expected_delay_days" if mode == "likely" else "p80_delay_days"
+# ---- TidePay: the trained payment-delay model ----------------------------------
+
+SAMPLE_RANGES = ((0, 0), (1, 7), (8, 15), (16, 30), (31, 60))  # days late used when sampling each bucket
+_MODEL = None
+
+
+def tidepay_model():
+    global _MODEL
+    if _MODEL is None:
+        from .ml.model import load
+        _MODEL = load(Path(__file__).with_name("ml") / "tidepay_model.json")
+    return _MODEL
+
+
+def delay_quantile(probs, u):
+    """Inverse CDF of the bucket distribution, uniform within each bucket's day range."""
+    cumulative = 0.0
+    for p, (low, high) in zip(probs, SAMPLE_RANGES):
+        if p > 0 and u <= cumulative + p:
+            share = (u - cumulative) / p
+            return low + round(share * (high - low))
+        cumulative += p
+    return SAMPLE_RANGES[-1][1]
+
+
+def delay_cdf(probs, days):
+    cumulative = 0.0
+    for p, (low, high) in zip(probs, SAMPLE_RANGES):
+        if days >= high:
+            cumulative += p
+        elif days >= low:
+            cumulative += p * (days - low + 1) / (high - low + 1)
+    return min(1.0, cumulative)
+
+
+def tidepay_predictions(invoices, as_of):
+    """TidePay forecast for every open invoice, from history settled on or before ``as_of``."""
+    from datetime import date as _date
+    from .ml.model import predict_for
+    model = tidepay_model()
+    settled = [row for row in invoices if row["status"] in SETTLED_INVOICE_STATUSES and row.get("paid_date")
+               and row["paid_date"] <= as_of]
+    portfolio = statistics.fmean(days_between(r["due_date"], r["paid_date"]) for r in settled) if settled else 5.0
     result = {}
     for row in invoices:
         if row["status"] not in OPEN_INVOICE_STATUSES:
             continue
-        profile = customers.get(row["customer"])
-        delay = profile[key] if profile else 0
+        history = sorted(({"delay": days_between(r["due_date"], r["paid_date"]), "amount": r["amount_minor"] / 100,
+                           "paid_date": r["paid_date"]} for r in settled if r["customer"] == row["customer"]),
+                         key=lambda item: item["paid_date"])
+        terms = max(1, days_between(row["issue_date"], row["due_date"]))
+        prediction = predict_for(model, history, row["amount_minor"] / 100, terms,
+                                 _date.fromisoformat(row["due_date"]), portfolio)
+        probs = prediction["probabilities"]
+        prediction.update({"invoice_id": row["id"], "customer": row["customer"], "history_used": len(history),
+                           "likely_delay_days": max(0, round(prediction["expected_delay_days"])),
+                           "p80_delay_days": delay_quantile(probs, 0.8)})
+        result[row["id"]] = prediction
+    return result
+
+
+def scenario_dates(invoices, profiles, mode, predictions=None):
+    """Payment dates for open invoices: 'likely' = TidePay expected delay, 'stress' = its 80th percentile.
+
+    Falls back to the credibility-weighted customer profile only if no model prediction exists.
+    """
+    customers = profiles["customers"]
+    result = {}
+    for row in invoices:
+        if row["status"] not in OPEN_INVOICE_STATUSES:
+            continue
+        prediction = (predictions or {}).get(row["id"])
+        if prediction:
+            delay = prediction["likely_delay_days" if mode == "likely" else "p80_delay_days"]
+        else:
+            profile = customers.get(row["customer"])
+            delay = profile["expected_delay_days" if mode == "likely" else "p80_delay_days"] if profile else 0
         result[row["id"]] = max(row["expected_collection_date"], add_days(row["due_date"], delay))
     return result
 
@@ -151,7 +219,16 @@ def monte_carlo(business, policy, records, target_date, adjustments=(), promises
             fixed[index] += event["effect_minor"]
             if event.get("payroll"):
                 payroll_index.add(index)
-    sample = _delay_sampler(records["invoices"], as_of)
+    predictions = tidepay_predictions(records["invoices"], as_of)
+    fallback = _delay_sampler(records["invoices"], as_of)
+
+    def sample(local, invoice_id, customer, minimum_late, u):
+        prediction = predictions.get(invoice_id)
+        if not prediction:
+            return fallback(local, customer, minimum_late)
+        probs = prediction["probabilities"]
+        floor = delay_cdf(probs, minimum_late - 1) if minimum_late > 0 else 0.0  # still unpaid today
+        return max(minimum_late, delay_quantile(probs, floor + u * (1 - floor)))
     rng = random.Random(seed)
     reserve = policy["reserve_floor_minor"]
     customers = sorted({item[4] for item in uncertain})
@@ -165,7 +242,7 @@ def monte_carlo(business, policy, records, target_date, adjustments=(), promises
         arrivals = {}
         for invoice_id, amount, expected, due, customer, minimum_late in uncertain:
             local = random.Random(int(draws[customer] * 2 ** 53))
-            paid = max(expected, add_days(due, sample(local, customer, minimum_late)))
+            paid = max(expected, add_days(due, sample(local, invoice_id, customer, minimum_late, draws[customer])))
             arrivals[invoice_id] = paid
             offset = days_between(start, paid)
             if offset < length:
@@ -209,10 +286,10 @@ def monte_carlo(business, policy, records, target_date, adjustments=(), promises
             "most_common_breach_date": first_breaches.most_common(1)[0][0] if first_breaches else None,
             "invoice_late_share": {invoice_id: round(count / runs, 3) for invoice_id, count in sorted(late_after.items())},
             "fan": fan,
-            "method": "Seeded Monte Carlo over open-invoice payment dates. One delay per customer per future, resampled "
-                      "from that customer's settled history mixed with the business-wide history (credibility weight "
-                      "n/(n+5)); overdue invoices only draw delays at least as long as their current lateness. All other "
-                      "events are fixed. Estimates from synthetic data, not a guarantee."}
+            "method": "Seeded Monte Carlo over open-invoice payment dates. Each invoice's lateness is drawn from TidePay, "
+                      "Tideway's own federated-trained model; one shared draw per customer per future, so a slow customer "
+                      "is slow on all its invoices. Overdue invoices only draw delays at least as long as their current "
+                      "lateness. All other events are fixed. Estimates from synthetic data, not a guarantee."}
 
 
 def weather(probability_breach, scheduled_shortfall):

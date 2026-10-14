@@ -17,6 +17,19 @@ from .store import Store
 
 
 MC_RUNS = 1000
+_CARD = None
+
+
+def tidepay_card():
+    """Model card shown in the UI: what TidePay is, how it was trained and how it scored."""
+    global _CARD
+    if _CARD is None:
+        import json
+        from pathlib import Path
+        root = Path(__file__).resolve().parent.parent
+        report = json.loads((root / "evidence" / "ml" / "tidepay_report.json").read_text())
+        _CARD = {"meta": report["meta"], "results": report["results"]}
+    return _CARD
 PLAN_MC_RUNS = 400
 
 
@@ -133,6 +146,7 @@ class Tideway:
                                                                   "promises", "executed_exposure", "reset_count")},
                 "snapshot_hash": snapshot["snapshot_hash"], "records": records,
                 "profiles": derived["profiles"], "payees": derived["payees"], "blocked": derived["blocked"],
+                "tidepay": {"predictions": derived["predictions"], "card": tidepay_card()},
                 "counterparties": list(snapshot["counterparties"].values()),
                 "plan": latest, "mandates": self.store.live_mandates(business_id),
                 "standing_mandate": self.store.standing_mandate(business_id),
