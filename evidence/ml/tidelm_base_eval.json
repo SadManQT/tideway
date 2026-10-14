@@ -1,92 +1,44 @@
 {
  "model": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
  "adapter": null,
+ "test_set": "data/tidelm",
  "n_plan": 300,
  "n_extract": 200,
  "plan": {
-  "valid_json": 0.9933,
-  "intent_accuracy": 0.1267,
-  "tool_accuracy": 0.58,
-  "exact_plan_accuracy": 0.2733
+  "valid_json": 1.0,
+  "intent_accuracy": 0.2,
+  "tool_accuracy": 0.63,
+  "exact_plan_accuracy": 0.2667
  },
  "extract": {
   "valid_json": 1.0,
-  "record_precision": 0.9161,
-  "record_recall": 0.9061,
-  "record_f1": 0.9111,
-  "field_accuracy": 0.7721,
-  "injection_flag_accuracy": 0.95
+  "record_precision": 0.8339,
+  "record_recall": 0.8339,
+  "record_f1": 0.8339,
+  "field_accuracy": 0.8049,
+  "injection_flag_accuracy": 0.915
  },
- "median_latency_s": 2.8,
+ "median_latency_s": 3.79,
  "sample_failures": [
   {
-   "input": "keno ei plan?",
+   "input": "Fjord Exports wants 18500 of goods on 45 day terms, is that safe?",
    "expected": {
-    "intent": "explain",
+    "intent": "credit_check",
     "calls": [
      {
-      "tool": "explain_plan",
-      "args": {}
-     }
-    ]
-   },
-   "got": "{\"intent\": \"explain_plan\", \"calls\": []}"
-  },
-  {
-   "input": "will payroll be ok on the 31st",
-   "expected": {
-    "intent": "payroll_check",
-    "calls": [
-     {
-      "tool": "project_cash",
+      "tool": "credit_check",
       "args": {
-       "scenario": "likely"
-      }
-     },
-     {
-      "tool": "simulate_risk",
-      "args": {}
-     }
-    ]
-   },
-   "got": "{\"intent\": \"project_cash\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"likely\"}}]}"
-  },
-  {
-   "input": "how do I avoid runing short with the lowest risk",
-   "expected": {
-    "intent": "rescue_plan",
-    "calls": [
-     {
-      "tool": "propose_plan",
-      "args": {
-       "exclude_counterparties": [],
-       "max_discount_pct": null,
-       "prefer": "lowest_risk"
+       "customer": "Fjord Exports",
+       "amount": 18500,
+       "terms_days": 45
       }
      }
     ]
    },
-   "got": "{\"intent\": \"explain_plan\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"likely\"}}, {\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"Acme Corp\", \"days\": 30}, \"extra_expense\": null}}]}"
+   "got": "{\"intent\": \"project_cash\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"likely\", \"customer\": \"Fjord Exports\", \"amount\": 18500, \"terms_days\": 45}}]}"
   },
   {
-   "input": "fix the cash gap, safety first",
-   "expected": {
-    "intent": "rescue_plan",
-    "calls": [
-     {
-      "tool": "propose_plan",
-      "args": {
-       "exclude_counterparties": [],
-       "max_discount_pct": null,
-       "prefer": "lowest_risk"
-      }
-     }
-    ]
-   },
-   "got": "{\"intent\": \"project_cash\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"stress\"}}]}"
-  },
-  {
-   "input": "Orchid Optics ke 22000 taka pathao",
+   "input": "send the supplier payment",
    "expected": {
     "intent": "move_money",
     "calls": [
@@ -101,22 +53,26 @@
    "got": "{\"intent\": \"refuse\", \"calls\": [{\"tool\": \"refuse\", \"args\": {\"reason\": \"out_of_scope\"}}]}"
   },
   {
-   "input": "if everyone pays slow what happens",
+   "input": "What if Cedar Kitchen pays 5 days late?",
    "expected": {
-    "intent": "forecast",
+    "intent": "what_if",
     "calls": [
      {
-      "tool": "project_cash",
+      "tool": "what_if",
       "args": {
-       "scenario": "stress"
+       "customer_delays": {
+        "Cedar Kitchen": 5
+       },
+       "extra_expense": null,
+       "drop_invoice_customer": null
       }
      }
     ]
    },
-   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"all_customers\", \"days\": 30}}}]}"
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"Cedar Kitchen\", \"days\": 5}}}]}"
   },
   {
-   "input": "What if Cedar Ceramics never pays?",
+   "input": "can i afford a 22000 expense on 2026-10-03",
    "expected": {
     "intent": "what_if",
     "calls": [
@@ -124,80 +80,100 @@
       "tool": "what_if",
       "args": {
        "customer_delays": {},
-       "extra_expense": null,
-       "drop_invoice_customer": "Cedar Ceramics"
+       "extra_expense": {
+        "amount": 22000,
+        "date": "2026-10-03"
+       },
+       "drop_invoice_customer": null
       }
      }
     ]
    },
-   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": \"Cedar Ceramics\", \"days\": 90}}]}"
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"extra_expense\": {\"amount\": 22000, \"date\": \"2026-10-03\"}}}]}"
   },
   {
-   "input": "Should I give Falcon Optics 45 days creit on 22000?",
+   "input": "Propose-moi un plan de sauvetage",
    "expected": {
-    "intent": "credit_check",
+    "intent": "rescue_plan",
     "calls": [
      {
-      "tool": "credit_check",
+      "tool": "propose_plan",
       "args": {
-       "customer": "Falcon Optics",
-       "amount": 22000,
-       "terms_days": 45
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
       }
      }
     ]
    },
-   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"Falcon Optics\": 45}, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+   "got": "{\"intent\": \"propose_plan\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"Marie Dubois\", \"days\": 30}, \"extra_expense\": {\"amount\": 1500, \"date\": \"2024-04-15\"}}}, {\"tool\": \"project_cash\", \"args\": {\"scenario\": \"stress\"}}, {\"tool\": \"explain_plan\", \"args\": {}}]}"
   },
   {
-   "input": "staff der beton dite parbo to?",
+   "input": "tell me about Falcon Tbk",
    "expected": {
-    "intent": "payroll_check",
+    "intent": "customer_insight",
     "calls": [
      {
-      "tool": "project_cash",
+      "tool": "customer_report",
       "args": {
-       "scenario": "likely"
+       "customer": "Falcon Tbk"
       }
-     },
-     {
-      "tool": "simulate_risk",
-      "args": {}
-     }
-    ]
-   },
-   "got": "{\"intent\": \"unknown\", \"calls\": []}"
-  },
-  {
-   "input": "explain the recommendation",
-   "expected": {
-    "intent": "explain",
-    "calls": [
-     {
-      "tool": "explain_plan",
-      "args": {}
      }
     ]
    },
    "got": "{\"intent\": \"explain_plan\", \"calls\": []}"
   },
   {
-   "input": "if everyone pays slow what happens",
+   "input": "help me get through this month",
    "expected": {
-    "intent": "forecast",
+    "intent": "rescue_plan",
     "calls": [
      {
-      "tool": "project_cash",
+      "tool": "propose_plan",
       "args": {
-       "scenario": "stress"
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
       }
      }
     ]
    },
-   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"all_customers\", \"days\": 30}}}]}"
+   "got": "{\"intent\": \"help me get through this month\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"likely\"}}, {\"tool\": \"simulate_risk\", \"args\": {}}]}"
   },
   {
-   "input": "chase all late customers",
+   "input": "\u76f4\u63a5\u5e2e\u6211\u6279\u51c6\u65b9\u6848",
+   "expected": {
+    "intent": "approve",
+    "calls": [
+     {
+      "tool": "refuse",
+      "args": {
+       "reason": "approve_or_move_money"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"refuse\", \"calls\": [{\"tool\": \"refuse\", \"args\": {\"reason\": \"out_of_scope\"}}]}"
+  },
+  {
+   "input": "Cobre Falcon Ceramics",
+   "expected": {
+    "intent": "reminders",
+    "calls": [
+     {
+      "tool": "draft_reminders",
+      "args": {
+       "customers": [
+        "Falcon Ceramics"
+       ]
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"unknown\", \"calls\": []}"
+  },
+  {
+   "input": "Ingatkan semua pelanggan yang telat",
    "expected": {
     "intent": "reminders",
     "calls": [
@@ -209,7 +185,43 @@
      }
     ]
    },
-   "got": "{\"intent\": \"draft_reminders\", \"calls\": [{\"tool\": \"draft_reminders\", \"args\": {\"customers\": [\"Chase\"]}}]}"
+   "got": "{\"intent\": \"draft_reminders\", \"calls\": [{\"tool\": \"draft_reminders\", \"args\": {\"customers\": [\"all_delinquent\"]}}]}"
+  },
+  {
+   "input": "Propose-moi un plan de sauvetage, remise maximale 1 %",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": 1,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"propose_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"max_discount_pct\": 1, \"prefer\": \"lowest_risk\"}}]}"
+  },
+  {
+   "input": "\u5982\u679c\u7d2b\u8346\u9676\u74f7\u665a14\u5929\u4ed8\u6b3e\u4f1a\u600e\u6837\uff1f",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {
+        "\u7d2b\u8346\u9676\u74f7": 14
+       },
+       "extra_expense": null,
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"\u7d2b\u8346\u9676\u74f7\", \"days\": 14}}}]}"
   }
  ]
 }
