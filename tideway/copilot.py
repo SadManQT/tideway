@@ -12,7 +12,7 @@ import statistics
 from datetime import date, timedelta
 
 from . import analytics
-from .domain import (OPEN_INVOICE_STATUSES, SETTLED_INVOICE_STATUSES, ValidationError, add_days, days_between,
+from .domain import (OPEN_INVOICE_STATUSES, SETTLED_INVOICE_STATUSES, SecurityError, ValidationError, add_days, days_between,
                      human_date, money_text)
 from .ml.model import BUCKETS, predict_for
 from .projection import summary
@@ -52,7 +52,8 @@ def validate_plan(plan):
         raise ValidationError("Too many tool calls in one plan.")
     for call in plan["calls"]:
         if not isinstance(call, dict) or call.get("tool") not in TOOLS:
-            raise ValidationError(f"Tool {str(call.get('tool') if isinstance(call, dict) else call)[:40]} is not permitted.")
+            raise SecurityError("forbidden_tool",
+                                f"tool {str(call.get('tool') if isinstance(call, dict) else call)[:40]} is not permitted.")
         args = call.get("args") or {}
         if not isinstance(args, dict) or not set(args) <= TOOLS[call["tool"]]:
             raise ValidationError(f"Arguments for {call['tool']} do not match its schema.")

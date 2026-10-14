@@ -17,6 +17,7 @@ from .agent import Agent
 from .domain import SecurityError, ValidationError, canonical_json, validate_business_id
 from .security import RateLimiter
 from .service import Tideway
+from .tidelm import TideLM, TideLMUnavailable, confirm as confirm_inbox
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -41,6 +42,7 @@ class Application:
         self.post_limiter = RateLimiter(capacity=120, refill_per_second=2)
         self.login_limiter = RateLimiter(capacity=10, refill_per_second=0.2)
         self.selftest_cache = None
+        self.tidelm = TideLM()
 
     # ---- helpers ---------------------------------------------------------------
 
@@ -65,7 +67,8 @@ class Application:
 
     def config(self, operator):
         return {**self.tideway.config(), "csrf_token": self.csrf, "operator": operator,
-                "ai_configured": bool(self.agent.key), "ai_model": self.agent.model if self.agent.key else None}
+                "ai_configured": bool(self.agent.key), "ai_model": self.agent.model if self.agent.key else None,
+                "tidelm": self.tidelm.status()}
 
     def bundle_for(self, business_id, plan_id, bundle_id):
         plan = self.store.plan(business_id, plan_id)
@@ -165,6 +168,17 @@ class Application:
                 raise ValidationError("Invalid chat request.")
             return self.agent.chat(business_id, body.get("target_date"), body["message"], history, body.get("consent", False),
                                    "agent:llm" if body.get("consent") and self.agent.key else "agent:local", operator["role"])
+        if path == "/api/copilot/ask":
+            self.fields(body, ("business_id", "target_date", "message"), ("business_id", "message"))
+            return self.tidelm.ask(self.tideway, business_id, body.get("target_date"), body["message"], operator["role"])
+        if path == "/api/inbox/extract":
+            self.fields(body, ("business_id", "text"), ("business_id", "text"))
+            self.require(operator, "owner", "accountant")
+            return self.tidelm.extract(self.tideway, business_id, body["text"])
+        if path == "/api/inbox/confirm":
+            self.fields(body, ("business_id", "records"), ("business_id", "records"))
+            self.require(operator, "owner", "accountant")
+            return confirm_inbox(self.tideway, business_id, body["records"], actor)
         if path == "/api/plan/propose":
             self.fields(body, ("business_id", "target_date"), ("business_id",))
             self.require(operator, "owner", "accountant")
@@ -352,6 +366,8 @@ def make_handler(app):
                 self.reply(401 if operator is None else 403, {"error": str(exc)})
             except LookupError:
                 self.reply(404, {"error": "Not found."})
+            except TideLMUnavailable as exc:
+                self.reply(503, {"error": str(exc), "code": "tidelm_unavailable"})
             except RecursionError:
                 self.reply(400, {"error": "JSON is nested too deeply.", "code": "validation_error"})
             except (ValidationError, ValueError, UnicodeDecodeError) as exc:

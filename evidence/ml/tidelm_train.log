@@ -1,0 +1,16 @@
+Loading configuration file tideway/ml/tidelm_lora.yaml
+Loading pretrained model
+Fetching 11 files:   0%|          | 0/11 [00:00<?, ?it/s]Fetching 11 files: 100%|██████████| 11/11 [00:00<00:00, 3020.05it/s]
+Loading datasets
+Training
+[34m╭─[0m[34m [0m[1;35mmlx_lm.lora[0m[34m [0m[34m───────────────────────────────────────────────────────────────────────────────────────────────────────[0m[34m─╮[0m
+[34m│[0m    [39mmodel        [0m   [1mmlx-community/Qwen3-4B-Instruct-2507-4bit[0m                                                         [34m│[0m
+[34m│[0m    [39mtype         [0m   [1mlora · 16 layers · rank 16[0m                                                                        [34m│[0m
+[34m│[0m    [39mdataset      [0m   [1mdata/tidelm[0m                                                                                       [34m│[0m
+[34m│[0m    [39moptimizer    [0m   [1madam · lr 1.0e-04[0m                                                                                 [34m│[0m
+[34m│[0m    [39mbatch · iters[0m   [1m4 · 900[0m                                                                                           [34m│[0m
+[34m│[0m    [39mmax seq      [0m   [1m1,024[0m                                                                                             [34m│[0m
+[34m╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+Trainable parameters: 0.365% (14.680M/4022.468M)
+  [1miter   train_loss     tok/s     tokens[0m
+  [38;5;244m   1[0m    [1;35mval[0m [1m1.847[0m    [38;5;244m348.74s[0m

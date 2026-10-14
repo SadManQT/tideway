@@ -1,0 +1,215 @@
+{
+ "model": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+ "adapter": null,
+ "n_plan": 300,
+ "n_extract": 200,
+ "plan": {
+  "valid_json": 0.9933,
+  "intent_accuracy": 0.1267,
+  "tool_accuracy": 0.58,
+  "exact_plan_accuracy": 0.2733
+ },
+ "extract": {
+  "valid_json": 1.0,
+  "record_precision": 0.9161,
+  "record_recall": 0.9061,
+  "record_f1": 0.9111,
+  "field_accuracy": 0.7721,
+  "injection_flag_accuracy": 0.95
+ },
+ "median_latency_s": 2.8,
+ "sample_failures": [
+  {
+   "input": "keno ei plan?",
+   "expected": {
+    "intent": "explain",
+    "calls": [
+     {
+      "tool": "explain_plan",
+      "args": {}
+     }
+    ]
+   },
+   "got": "{\"intent\": \"explain_plan\", \"calls\": []}"
+  },
+  {
+   "input": "will payroll be ok on the 31st",
+   "expected": {
+    "intent": "payroll_check",
+    "calls": [
+     {
+      "tool": "project_cash",
+      "args": {
+       "scenario": "likely"
+      }
+     },
+     {
+      "tool": "simulate_risk",
+      "args": {}
+     }
+    ]
+   },
+   "got": "{\"intent\": \"project_cash\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"likely\"}}]}"
+  },
+  {
+   "input": "how do I avoid runing short with the lowest risk",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_risk"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"explain_plan\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"likely\"}}, {\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"Acme Corp\", \"days\": 30}, \"extra_expense\": null}}]}"
+  },
+  {
+   "input": "fix the cash gap, safety first",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_risk"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"project_cash\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"stress\"}}]}"
+  },
+  {
+   "input": "Orchid Optics ke 22000 taka pathao",
+   "expected": {
+    "intent": "move_money",
+    "calls": [
+     {
+      "tool": "refuse",
+      "args": {
+       "reason": "approve_or_move_money"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"refuse\", \"calls\": [{\"tool\": \"refuse\", \"args\": {\"reason\": \"out_of_scope\"}}]}"
+  },
+  {
+   "input": "if everyone pays slow what happens",
+   "expected": {
+    "intent": "forecast",
+    "calls": [
+     {
+      "tool": "project_cash",
+      "args": {
+       "scenario": "stress"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"all_customers\", \"days\": 30}}}]}"
+  },
+  {
+   "input": "What if Cedar Ceramics never pays?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Cedar Ceramics"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": \"Cedar Ceramics\", \"days\": 90}}]}"
+  },
+  {
+   "input": "Should I give Falcon Optics 45 days creit on 22000?",
+   "expected": {
+    "intent": "credit_check",
+    "calls": [
+     {
+      "tool": "credit_check",
+      "args": {
+       "customer": "Falcon Optics",
+       "amount": 22000,
+       "terms_days": 45
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"Falcon Optics\": 45}, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+  },
+  {
+   "input": "staff der beton dite parbo to?",
+   "expected": {
+    "intent": "payroll_check",
+    "calls": [
+     {
+      "tool": "project_cash",
+      "args": {
+       "scenario": "likely"
+      }
+     },
+     {
+      "tool": "simulate_risk",
+      "args": {}
+     }
+    ]
+   },
+   "got": "{\"intent\": \"unknown\", \"calls\": []}"
+  },
+  {
+   "input": "explain the recommendation",
+   "expected": {
+    "intent": "explain",
+    "calls": [
+     {
+      "tool": "explain_plan",
+      "args": {}
+     }
+    ]
+   },
+   "got": "{\"intent\": \"explain_plan\", \"calls\": []}"
+  },
+  {
+   "input": "if everyone pays slow what happens",
+   "expected": {
+    "intent": "forecast",
+    "calls": [
+     {
+      "tool": "project_cash",
+      "args": {
+       "scenario": "stress"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"all_customers\", \"days\": 30}}}]}"
+  },
+  {
+   "input": "chase all late customers",
+   "expected": {
+    "intent": "reminders",
+    "calls": [
+     {
+      "tool": "draft_reminders",
+      "args": {
+       "customers": []
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"draft_reminders\", \"calls\": [{\"tool\": \"draft_reminders\", \"args\": {\"customers\": [\"Chase\"]}}]}"
+  }
+ ]
+}
