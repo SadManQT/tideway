@@ -355,6 +355,10 @@ class Agent:
                        if projections["base"]["payroll_at_risk"] else "Payroll is funded on the schedule. ") +
                       f"In {round(risk['probability_payroll_unfunded'] * 20)} of 20 simulated futures payroll is unfunded. "
                       "Payroll is protected: I never propose deferring it.")
+        elif re.search(r"biggest risk|riskiest|depend(ent|s)? on|concentration|counterparty risk|who (could|can) hurt", text):
+            network = self.app.network(business_id, target_date)
+            trace.append({"tool": "counterparty_risk", "permission": "agent_read"})
+            answer, topic = network["headline"], "receivables"
         elif re.search(r"risk|chance|probab|future", text):
             risk = self.tool("simulate_risk", business_id, target, actor, trace)
             topic = "risk"

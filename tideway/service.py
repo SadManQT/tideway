@@ -425,6 +425,93 @@ class Tideway:
                                                               for day in projection["days"]],
                 "changes": changes, "written": False}
 
+    def network(self, business_id, target_date=None):
+        """Counterparty risk map: how much each customer and supplier can hurt this business's cash.
+
+        For every customer with open invoices: the cash impact if they pay 30 days later than expected and
+        if they never pay, and TidePay's probability that they pay more than 30 days late.  Expected
+        impact = P(>30 days) x never-pays impact + P(8-30 days) x 30-days-late impact, so a reliable
+        large customer and an unreliable small one can be compared on one scale.  Read-only.
+        """
+        snapshot = self.store.snapshot(business_id)
+        target = self._target(snapshot, target_date)
+        derived = self.store.derived(snapshot)
+        business, policy, state, records = snapshot["business"], snapshot["policy"], snapshot["state"], snapshot["records"]
+        dates = derived["likely_dates"]
+
+        def run(rows=None, invoice_dates=None):
+            projection = project(business, policy, rows or records, target, adjustments=state["adjustments"], scenario="what-if",
+                                 invoice_dates=invoice_dates or dates, promises=state["promises"],
+                                 lookahead_days=policy["lookahead_days"])
+            result = summary(projection)
+            result["days_below_reserve"] = sum(day["closing_cash_minor"] < policy["reserve_floor_minor"] for day in projection["days"])
+            return result
+
+        def hit(after):
+            """Lowest-cash drop, cash lost by the horizon end, and extra days under the reserve."""
+            return {"lowest_cash_drop_minor": baseline["minimum_cash_minor"] - after["minimum_cash_minor"],
+                    "horizon_cash_drop_minor": baseline["closing_cash_minor"] - after["closing_cash_minor"],
+                    "extra_days_below_reserve": after["days_below_reserve"] - baseline["days_below_reserve"]}
+
+        baseline = run()
+        open_rows = [row for row in records["invoices"] if row["status"] in OPEN_INVOICE_STATUSES]
+        receivables = sum(row["amount_minor"] for row in open_rows) or 1
+        customers = []
+        for name in sorted({row["customer"] for row in open_rows}):
+            own = [row for row in open_rows if row["customer"] == name]
+            late = run(invoice_dates={**dates, **{row["id"]: add_days(dates.get(row["id"], row["expected_collection_date"]), 30)
+                                                  for row in own}})
+            never = run(rows={**records, "invoices": [row for row in records["invoices"] if row not in own]})
+            forecasts = [derived["predictions"][row["id"]] for row in own if row["id"] in derived["predictions"]]
+            p30 = max((f["probabilities"][4] for f in forecasts), default=0.0)
+            p8 = max((sum(f["probabilities"][2:4]) for f in forecasts), default=0.0)
+            if_late, if_never = hit(late), hit(never)
+            loss_late = max(if_late["lowest_cash_drop_minor"], if_late["horizon_cash_drop_minor"])
+            loss_never = max(if_never["lowest_cash_drop_minor"], if_never["horizon_cash_drop_minor"])
+            exposure = sum(row["amount_minor"] for row in own)
+            customers.append({
+                "name": name, "kind": "customer", "open_minor": exposure, "share_of_receivables": round(exposure / receivables, 3),
+                "p_over_30_days": round(p30, 3), "p_8_to_30_days": round(p8, 3),
+                "tidepay_delay_days": max((f["likely_delay_days"] for f in forecasts), default=None),
+                "if_30_days_late": if_late, "if_never_pays": if_never,
+                "impact_if_30_days_late_minor": loss_late, "impact_if_never_pays_minor": loss_never,
+                "expected_impact_minor": round(p30 * loss_never + p8 * loss_late),
+                "breaks_payroll_if_never_pays": never["payroll_at_risk"] and not baseline["payroll_at_risk"],
+                "new_breach_if_never_pays": never["reserve_shortfall_minor"] > 0 and baseline["reserve_shortfall_minor"] == 0})
+        customers.sort(key=lambda item: (-item["expected_impact_minor"], -item["impact_if_never_pays_minor"],
+                                         -item["p_over_30_days"] * item["open_minor"]))
+        suppliers = []
+        for name in sorted({row["payee"] for row in records["bills"] if row["status"] in ("open", "scheduled", "rescheduled")}):
+            bills = [row for row in records["bills"] if row["payee"] == name and row["status"] in ("open", "scheduled", "rescheduled")]
+            profile = snapshot["counterparties"].get(f"supplier:{name}", {}).get("profile", {})
+            suppliers.append({
+                "name": name, "kind": "supplier", "open_minor": sum(row["amount_minor"] for row in bills),
+                "next_due": min(row["due_date"] for row in bills),
+                "can_defer": any(row["reschedule_allowed"] and row["priority"] != "payroll" for row in bills)
+                and profile.get("style") != "strict",
+                "blocked": [derived["blocked"][row["id"]] for row in bills if row["id"] in derived["blocked"]]})
+        suppliers.sort(key=lambda item: -item["open_minor"])
+        top = customers[0] if customers else None
+        currency = business["currency"]
+        if not top:
+            headline = "No open receivables, so no customer can delay your cash."
+        else:
+            never = top["if_never_pays"]
+            headline = (f"{top['name']} is the riskiest payer (TidePay: {round(top['p_over_30_days'] * 100)}% chance of more than "
+                        f"30 days late), but its payment is not expected before {human_date(baseline['end_date'])}, so your "
+                        "forecast already does not count on it.") if top["impact_if_never_pays_minor"] == 0 else (
+                       f"{top['name']} is your biggest counterparty risk: TidePay gives a {round(top['p_over_30_days'] * 100)}% "
+                        f"chance of paying more than 30 days late, and if they never pay you lose "
+                        f"{money_text(top['impact_if_never_pays_minor'], currency)} of cash by {human_date(baseline['end_date'])}"
+                        + (f" and spend {never['extra_days_below_reserve']} more day(s) under the reserve" if never["extra_days_below_reserve"] > 0 else "")
+                        + (", and payroll fails." if top["breaks_payroll_if_never_pays"] else "."))
+        return {"business": {"name": business["name"], "currency": business["currency"]}, "target_date": target,
+                "baseline": baseline, "customers": customers, "suppliers": suppliers, "headline": headline,
+                "method": "Each customer is stressed alone on the likely projection: paying 30 days later than TidePay "
+                          "expects, and never paying. Impact is the larger of the drop in lowest cash and the cash lost by "
+                          "the horizon end. Expected impact = P(>30 days late) x never-pays impact + P(8-30 days) x "
+                          "30-days-late impact. Read-only; synthetic data."}
+
     def iso20022(self, business_id):
         """Draft ISO 20022 pain.001 instructions for the deferred supplier payments. Never transmitted."""
         snapshot = self.store.snapshot(business_id)

@@ -55,3 +55,17 @@ class Conversation(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CounterpartyRisk(unittest.TestCase):
+    def test_never_pays_loses_the_whole_invoice_inside_the_horizon(self):
+        app = Tideway(":memory:")
+        network = app.network(SHAPLA)
+        nila = next(item for item in network["customers"] if item["name"] == "Nila Traders")
+        self.assertEqual(nila["if_never_pays"]["horizon_cash_drop_minor"], nila["open_minor"])
+        impacts = [item["expected_impact_minor"] for item in network["customers"]]
+        self.assertEqual(impacts, sorted(impacts, reverse=True))
+
+    def test_payer_outside_the_horizon_is_explained_not_zeroed(self):
+        headline = Tideway(":memory:").network("harbourline-traders")["headline"]
+        self.assertIn("does not count on it", headline)

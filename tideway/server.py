@@ -97,6 +97,8 @@ class Application:
         operator = self.scoped(operator, business_id)
         if path == "/api/team":
             return self.store.team(business_id)
+        if path == "/api/network":
+            return self.tideway.network(business_id, one("target_date"))
         if path == "/api/dashboard":
             return self.tideway.dashboard(business_id, one("target_date"))
         if path == "/api/plan":
