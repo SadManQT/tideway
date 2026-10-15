@@ -206,7 +206,7 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <tr><td>Usability</td><td>3 to 5 SME owners or domain reviewers, with consent</td><td>Planned; not yet collected.</td></tr>
 <tr><td>On-device model quality</td><td>TideLM vs base model on 500 held-out examples with unseen names</td><td><strong>Done</strong>: exact plans 27% to 97.7%, extraction F1 0.91 to 0.989, injection flags 95% to 100% (first adapter; the multilingual adapter is re-evaluated the same way).</td></tr>
 <tr><td>Latency and cost</td><td>Median per answer on a 16 GB laptop; no per-call cost (on-device)</td><td>Measured: about 5 s per TideLM answer before prompt caching; small talk answers instantly. Cloud-LLM runs: not measured.</td></tr></table>
-<p>Total today: <strong>30/30 self-test cases pass</strong> (5 task, 25 attack), plus 62 unit, HTTP, conversation, language and SaaS tests. Reproduce with <code>python3 -m unittest discover -s tests -v</code> and <code>python3 -m tideway.selftest</code>.</p>
+<p>Total today: <strong>30/30 self-test cases pass</strong> (5 task, 25 attack), plus 79 unit, HTTP, conversation, language, SaaS and regression tests. Reproduce with <code>python3 -m unittest discover -s tests -v</code> and <code>python3 -m tideway.selftest</code>.</p>
 <h3>Baseline comparison (planned)</h3>
 <p>Same dataset, three modes: spreadsheet or rule baseline, generic LLM suggestion, Tideway's constrained execution. Compare task completion, invalid recommendations, unauthorised execution, time and cost. Keep the model and temperature the same so the value of the planning-and-policy layer is clear; avoid data leakage and demo-only prompt tuning.</p>
 <h3>Failure cases to cover</h3>
@@ -221,7 +221,7 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <h2>10. Plan for 15 to 20 October 2026</h2>
 <p>Times are Bangladesh time. The implementation is complete and committed; this plan covers evidence, user feedback, documents, the video and submission. Work can be shared, but keep one integration owner. AI-generated code must not be merged without human review and tests.</p>
 <table><tr><th>Date</th><th>Main work</th><th>Verifiable result at day end</th></tr>
-<tr><td>Thu 15 Oct</td><td>Registration check; roster and eligibility; send the organiser question list; re-run all tests on a second machine; re-generate evidence.</td><td>Registration confirmation or written route; 30/30 self-test and 15 unit tests reproduced.</td></tr>
+<tr><td>Thu 15 Oct</td><td>Registration check; roster and eligibility; send the organiser question list; re-run all tests on a second machine; re-generate evidence.</td><td>Registration confirmation or written route; 30/30 self-test and 79 automated tests reproduced.</td></tr>
 <tr><td>Fri 16 Oct</td><td>Baseline comparison (rule, generic LLM, Tideway) on the three fixtures plus new scenarios written before tuning; arrange 3 to 5 SME or finance-reviewer sessions with consent.</td><td>Baseline CSV; interview schedule.</td></tr>
 <tr><td>Sat 17 Oct</td><td>Run interviews and usability sessions; independent attempt to break the sandbox by a teammate; fix only real bugs; <strong>scope freeze</strong>.</td><td>Findings list, fixes, frozen commit.</td></tr>
 <tr><td>Sun 18 Oct</td><td>Re-record the English demo video from the running app (≤ 5 minutes); finish the deck; regenerate PDFs; clean-machine run from the README.</td><td>Video, <code>slides/pitch.pdf</code>, architecture and security PDFs.</td></tr>

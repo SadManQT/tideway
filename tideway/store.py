@@ -213,6 +213,20 @@ class Store:
         with self.connect() as db:
             db.executescript(SCHEMA)
 
+    def close(self):
+        """Release the keeper connection used by shared in-memory databases."""
+        keepalive, self._keepalive = self._keepalive, None
+        if keepalive is not None:
+            keepalive.close()
+
+    def __del__(self):
+        # Tests and short-lived tools create many in-memory stores. Do not leave
+        # their keeper connections for interpreter shutdown to warn about.
+        try:
+            self.close()
+        except Exception:
+            pass
+
     @contextmanager
     def connect(self):
         db = sqlite3.connect(self._uri, uri=True, timeout=10) if self._memory else sqlite3.connect(self.path, timeout=10)

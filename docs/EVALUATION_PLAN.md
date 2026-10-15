@@ -4,7 +4,7 @@ This plan separates what we have **measured** (deterministic, local, reproducibl
 
 ## 1. Measured today (reproducible)
 
-`python3 scripts/evaluate.py` runs `tideway.selftest` (every case on a fresh in-memory copy of the synthetic fixtures) and writes `evidence/results.csv`, `evidence/run-log.jsonl` and `evidence/verification-summary.json`. `python3 -m unittest discover -s tests -v` adds 15 unit and HTTP tests. `node scripts/capture_screens.mjs` drives headless Chrome through the full story and fails on any page error.
+`python3 scripts/evaluate.py` runs `tideway.selftest` (every case on a fresh in-memory copy of the synthetic fixtures) and writes `evidence/results.csv`, `evidence/run-log.jsonl` and `evidence/verification-summary.json`. `python3 -m unittest discover -s tests -v` runs the 79-test offline suite. `node scripts/capture_screens.mjs` drives headless Chrome through the full story and fails on any page error.
 
 | Dimension (roadmap target) | What we run | Result today |
 |---|---|---|
