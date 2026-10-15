@@ -1,5 +1,6 @@
 """Run the Tideway local sandbox (Python 3.11+, standard library only)."""
 import argparse
+import errno
 import os
 import sys
 from pathlib import Path
@@ -31,4 +32,11 @@ if __name__ == "__main__":
     parser.add_argument("--db", default=str(ROOT / "data" / "tideway.sqlite3"))
     parser.add_argument("--no-demo", action="store_true", help="Start without the synthetic demo businesses")
     args = parser.parse_args()
-    serve(args.db, args.port, os.getenv("OPENAI_API_KEY", "").strip(), os.getenv("OPENAI_MODEL", "gpt-5-mini"), not args.no_demo)
+    try:
+        serve(args.db, args.port, os.getenv("OPENAI_API_KEY", "").strip(), os.getenv("OPENAI_MODEL", "gpt-5-mini"), not args.no_demo)
+    except OSError as exc:
+        if exc.errno != errno.EADDRINUSE:
+            raise
+        sys.exit(f"Port {args.port} is already in use, probably by another Tideway still running.\n"
+                 f"Stop it with Ctrl+C in its terminal, or start this one on another port:\n"
+                 f"  python3 run.py --port {args.port + 1}")
