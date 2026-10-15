@@ -20,7 +20,7 @@ Out of scope: moving real money, production bank integration, binding credit dec
  service.py  -- analysis / propose / negotiate / what-if / ISO 20022 draft / CSV import
      |-- projection.py   exact daily cash ledger, scenarios, look-ahead
      |-- analytics.py    customer profiles, TidePay predictions, seeded Monte Carlo, KPIs, warnings, payee checks, APR
-     |-- ml/             TidePay (federated training, secure aggregation) and TideLM (data, LoRA config, evaluation)
+     |-- ml/             TidePay (simulated federated training, illustrative masking) and TideLM (data, LoRA config, evaluation)
      |-- planner.py      candidate actions, exact search, robust re-check, explanations
      |-- counterparty.py deterministic simulated suppliers and customers
      '-- store.py        SQLite: workspaces, memberships, invites, approvals, mandates, executions, audit chain, witness
@@ -101,7 +101,7 @@ A single-page app: a landing page with sign-up, live demo and join-by-code; then
 
 ## 15. Tideway's own AI
 
-**TidePay** predicts, for each open invoice, the probability of five lateness bands (on time; 1-7, 8-15, 16-30, more than 30 days late) from 14 features (customer history, amount, terms, seasonality, portfolio pattern). It is a softmax model in pure Python, trained with **federated averaging** across 40 synthetic SMEs with **pairwise-mask secure aggregation**: the server only sees masked updates that cancel in the sum, so no business shares raw invoices. On held-out later invoices it reaches log loss 1.036 (old rule 1.55) and helps small businesses most (MAE 6.12 days vs 6.64 training alone). Its distribution drives the likely and stress scenarios and the Monte Carlo. Report: `evidence/ml/tidepay_report.md`.
+**TidePay** predicts, for each open invoice, the probability of five lateness bands (on time; 1-7, 8-15, 16-30, more than 30 days late) from 14 features (customer history, amount, terms, seasonality, portfolio pattern). It is a softmax model in pure Python, trained with **simulated federated averaging** across 40 synthetic SMEs. One process holds all synthetic client data and creates reproducible pairwise masks. Global scaling uses pooled training features. This demonstrates aggregation arithmetic, not a distributed cryptographic protocol or a guarantee against a curious server. On held-out later invoices it reaches log loss 1.036 (old rule 1.55) and helps small businesses most (MAE 6.12 days vs 6.64 training alone). Its distribution drives the likely and stress scenarios and the Monte Carlo. Report: `evidence/ml/tidepay_report.md`.
 
 **TideLM** is Qwen3-4B-Instruct (4-bit) with a LoRA adapter trained here with MLX on Apple Silicon (rank 16, 16 layers). It has two skills: turning an owner's message in eight languages into a typed tool plan, and turning pasted bank, card and mobile-money alerts and chat messages into draft records while flagging injection. Training data is generated (`tideway/ml/tidelm_data.py`); the test set uses counterparty names never seen in training. Results against the base model are in `evidence/ml/tidelm_report.md`. At runtime (`tidelm.py`) the system prompt's KV cache is computed once and reused, so each request only processes the user's own tokens, and the model is loaded in the background at start-up. The model never touches money or records: plans pass `copilot.validate_plan` (known tools, typed arguments, names resolved against the ledger, read/propose tools only), a forbidden tool counts toward the circuit breaker, replies are composed by code from tool output, and extracted records are drafts until a person confirms them.
 
@@ -117,6 +117,10 @@ Each operator has a role per business through memberships; every API call is sco
 
 For each customer with open invoices, Tideway stresses that customer alone on the likely projection (paying 30 days later than TidePay expects, and never paying) and reports the drop in lowest cash, cash lost by the horizon end and extra days under the reserve. Expected impact weights those losses by TidePay's probabilities, so a reliable large customer and an unreliable small one share one scale. Suppliers show open amounts, next due date, whether deferral is possible and any fraud block.
 
-## 19. Limitations (honest)
+## 19. Cross-platform local inference
+
+`local_model.py` supports an optional OpenAI-compatible inference service on Windows, macOS or Linux. It accepts only literal loopback HTTP `/v1` endpoints, rejects credentials/query strings/cloud-labelled model IDs, never follows redirects and caps response sizes. Text and cleaned-photo outputs pass the existing typed tool and draft validators. The UI labels this backend unbenchmarked; it does not inherit TideLM v2 scores. The local service must be trusted and configured to run offline models. See `docs/SETUP_WINDOWS_MAC.md`.
+
+## 20. Limitations (honest)
 
 Synthetic data; counterparties are rules, not people; the Monte Carlo models payment timing only; the back-test is on synthetic history; PINs and the signing key are demo-grade (a production system needs real identity, hardware-backed keys and a bank rail); the hash chain and witness reduce, but do not eliminate, risk from a fully privileged attacker; TidePay and TideLM are trained and evaluated on synthetic data, so their scores show the method works, not real-world accuracy; no live cloud-LLM or user-study results are claimed; this is not a compliance certification.

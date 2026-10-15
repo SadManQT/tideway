@@ -21,6 +21,7 @@ from . import conversation, copilot, i18n
 from .domain import (SecurityError, ValidationError, canonical_json, scan_text, validate_bill, validate_invoice,
                      validate_transaction)
 from .ml.tidelm_data import EXTRACT_SYSTEM, PLAN_SYSTEM
+from .local_model import LocalModel, LocalModelUnavailable
 
 ROOT = Path(__file__).resolve().parent.parent
 BASE_MODEL = "mlx-community/Qwen3-4B-Instruct-2507-4bit"
@@ -54,19 +55,25 @@ class TideLM:
         """``generator(system, user) -> str`` may be injected for tests; otherwise MLX is loaded lazily."""
         self.adapter = Path(adapter)
         self._generator = generator
+        self._local = LocalModel.configured() if generator is None else None
         self._model = self._tokenizer = None
         self._lock = threading.Lock()  # MLX generation is not thread-safe; one request at a time
         self._caches = {}
+        self._warm_error = None
 
     # ---- model ---------------------------------------------------------------------
 
     def status(self):
         if self._generator is not None:
             return {"available": True, "loaded": True, "model": "injected", "adapter": None}
+        if self._local is not None:
+            return self._local.status()
+        if self._warm_error:
+            return {"available": False, "loaded": False, "model": BASE_MODEL, "reason": self._warm_error}
         try:
             import mlx_lm  # noqa: F401
             mlx = True
-        except ImportError:
+        except (ImportError, OSError):
             mlx = False
         ready = mlx and (self.adapter / "adapters.safetensors").exists()
         return {"available": ready, "loaded": self._model is not None, "model": BASE_MODEL,
@@ -99,8 +106,24 @@ class TideLM:
         return self._caches[system]
 
     def _generate(self, system, user, max_tokens=400):
+        try:
+            return self._generate_impl(system, user, max_tokens)
+        except TideLMUnavailable:
+            raise
+        except Exception as exc:
+            reason = "TideLM could not run. Check the model files, available memory and inference installation."
+            if self._local is None:
+                self._warm_error = reason
+            raise TideLMUnavailable(reason) from exc
+
+    def _generate_impl(self, system, user, max_tokens=400):
         if self._generator is not None:
             return self._generator(system, user)
+        if self._local is not None:
+            try:
+                return self._local.generate(system, user, max_tokens=max_tokens)
+            except LocalModelUnavailable as exc:
+                raise TideLMUnavailable(str(exc)) from exc
         status = self.status()
         if not status["available"]:
             raise TideLMUnavailable(f"TideLM is not available: {status['reason']}")
@@ -123,7 +146,7 @@ class TideLM:
 
     def warm(self):
         """Load the model and both prompt caches ahead of the first question (run in a background thread)."""
-        if self._generator is not None or not self.status()["available"]:
+        if self._generator is not None or self._local is not None or not self.status()["available"]:
             return False
         with self._lock:
             self._load()

@@ -1,5 +1,44 @@
 Tideway uses Python's standard library for runtime code.
 
+The MIT license covers Tideway application code only. Model weights, base-model
+architectures, runtimes and optional tools retain the licenses of their authors.
+
+Optional models and inference:
+
+* TideLM is a Tideway-trained LoRA adapter for Qwen/Qwen3-4B-Instruct-2507,
+  converted to 4-bit MLX by mlx-community. The base model is Apache-2.0.
+  Upstream: https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507
+  Conversion: https://huggingface.co/mlx-community/Qwen3-4B-Instruct-2507-4bit
+  License copy: licenses/Qwen3-Apache-2.0.txt
+* TideVision uses mlx-community/Qwen2.5-VL-3B-Instruct-4bit, derived from
+  Qwen/Qwen2.5-VL-3B-Instruct, without a Tideway fine-tune. The upstream
+  Qwen RESEARCH LICENSE AGREEMENT permits non-commercial research/evaluation;
+  commercial use requires a separate license. Redistribution carries additional
+  notice and license obligations. No vision weights are included in this package.
+  Qwen is licensed under the Qwen RESEARCH LICENSE AGREEMENT,
+  Copyright (c) Alibaba Cloud. All Rights Reserved.
+  Upstream: https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct
+  Conversion: https://huggingface.co/mlx-community/Qwen2.5-VL-3B-Instruct-4bit
+  License copy: licenses/Qwen2.5-VL-3B-Research.txt
+* MLX, mlx-lm and mlx-vlm are optional Apple Silicon inference/training tools.
+  MLX and mlx-lm use MIT; mlx-vlm uses MIT. Their upstream notices remain
+  applicable when installed or redistributed. No runtime/weights are bundled.
+  https://github.com/ml-explore/mlx
+  https://github.com/ml-explore/mlx-lm
+  https://github.com/Blaizzy/mlx-vlm
+* Pillow (HPND) is optional for photo processing and slide image crops.
+  https://github.com/python-pillow/Pillow/blob/main/LICENSE
+
+Build and demo tooling:
+
+* Playwright (Apache-2.0) and a locally installed Chrome/Chromium/Edge are used
+  for the optional recording script. Neither is bundled in the source package.
+* FFmpeg encodes the demo. The encoder's own build-specific license applies;
+  its binary is not redistributed here. The demo credits synthetic narration
+  generated locally using the installed Windows System.Speech voice.
+
+Model scope and reproducibility are documented in docs/MODEL_CARD.md.
+
 Optional verification tooling:
 
 * The optional browser verification script (`scripts/capture_screens.mjs`)

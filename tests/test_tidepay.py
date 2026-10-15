@@ -24,7 +24,7 @@ class TidePayTests(unittest.TestCase):
         masks = tp.pairwise_masks(5, 12, "seed")
         for column in zip(*masks):
             self.assertAlmostEqual(sum(column), 0.0, places=9)
-        self.assertTrue(any(abs(value) > 1 for value in masks[0]))  # each single update is hidden
+        self.assertTrue(any(abs(value) > 1 for value in masks[0]))  # illustrative masks are nonzero; this does not establish privacy
 
     def test_quantile_and_cdf_are_consistent(self):
         probs = [0.1, 0.3, 0.4, 0.15, 0.05]

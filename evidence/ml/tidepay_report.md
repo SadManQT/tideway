@@ -12,5 +12,5 @@
 
 Smaller half of SMEs: local-only MAE 6.64 days vs federated 6.12 days.
 
-Secure aggregation: the server only receives masked updates; pairwise masks cancel in the sum.
+Simulation only: one process holds all client data and pools features for scaling. Predictable pairwise masks demonstrate cancellation; cryptographic privacy and distributed deployment are not implemented.
 Results are on synthetic data and show the method works as designed, not real-world accuracy.

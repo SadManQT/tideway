@@ -17,8 +17,11 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CHROME = os.environ.get("CHROME") or ("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-                                      if sys.platform == "darwin" else "google-chrome")
+CHROME = os.environ.get("CHROME") or next((p for p in (
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "C:/Program Files/Google/Chrome/Application/chrome.exe",
+    "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+) if Path(p).is_file()), "google-chrome")
 
 DOC_CSS = """
 @page { size: A4; margin: 16mm 15mm; }
@@ -29,6 +32,8 @@ h3 { font-size: 11.5pt; break-after: avoid; }
 table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 9pt; }
 th, td { border: 1px solid #c7d6d1; padding: 4px 6px; text-align: left; vertical-align: top; }
 th { background: #e6f2ee; } tr { break-inside: avoid; }
+table.compact { break-inside: avoid; } thead { display: table-header-group; }
+body { overflow-wrap: anywhere; }
 code { font: 9pt ui-monospace, Menlo, monospace; background: #eef4f2; padding: 0 3px; border-radius: 3px; }
 pre { background: #eef4f2; padding: 8px; font-size: 8.5pt; white-space: pre-wrap; break-inside: avoid; }
 pre code { background: none; } blockquote { border-left: 4px solid #1f8a70; margin: 8px 0; padding: 2px 10px; color: #35504a; }
@@ -66,20 +71,33 @@ def markdown_to_html(source: str) -> str:
                 i += 1
             i -= 1
             head, body = rows[0], [row for row in rows[2:]]
-            out.append("<table><tr>" + "".join(f"<th>{inline(c)}</th>" for c in head) + "</tr>" +
-                       "".join("<tr>" + "".join(f"<td>{inline(c)}</td>" for c in row) + "</tr>" for row in body) + "</table>")
+            out.append(f'<table class="{"compact" if len(rows) <= 10 else "long"}"><thead><tr>' +
+                       "".join(f"<th>{inline(c)}</th>" for c in head) + "</tr></thead><tbody>" +
+                       "".join("<tr>" + "".join(f"<td>{inline(c)}</td>" for c in row) + "</tr>" for row in body) + "</tbody></table>")
         elif re.match(r"\s*(- |\d+\. )", line):
             tag = "ol" if re.match(r"\s*\d+\. ", line) else "ul"
             items = []
             while i < len(lines) and re.match(r"\s*(- |\d+\. )", lines[i]):
-                items.append(re.sub(r"^\s*(- (\[[ x]\] )?|\d+\. )", "", lines[i]))
+                item = re.sub(r"^\s*(- (\[[ x]\] )?|\d+\. )", "", lines[i])
                 i += 1
+                while (i < len(lines) and lines[i].strip()
+                       and not re.match(r"\s*(- |\d+\. |#{1,4} |```|\||>)", lines[i])):
+                    item += " " + lines[i].strip()
+                    i += 1
+                items.append(item)
             i -= 1
             out.append(f"<{tag}>" + "".join(f"<li>{inline(item)}</li>" for item in items) + f"</{tag}>")
         elif line.startswith(">"):
             out.append(f"<blockquote>{inline(line.lstrip('> '))}</blockquote>")
         elif line.strip():
-            out.append(f"<p>{inline(line)}</p>")
+            paragraph = [line.strip()]
+            i += 1
+            while (i < len(lines) and lines[i].strip()
+                   and not re.match(r"\s*(- |\d+\. |#{1,4} |```|\||>)", lines[i])):
+                paragraph.append(lines[i].strip())
+                i += 1
+            i -= 1
+            out.append(f"<p>{inline(' '.join(paragraph))}</p>")
         i += 1
     return "\n".join(out)
 
@@ -89,9 +107,15 @@ def print_pdf(page: Path, destination: Path):
     if not executable:
         raise SystemExit("Chrome/Chromium was not found. Install it or set CHROME to its executable path.")
     destination.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run([executable, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
-                    f"--print-to-pdf={destination}", page.resolve().as_uri()],
-                   check=True, capture_output=True, timeout=120)
+    with tempfile.TemporaryDirectory(prefix="tideway-pdf-", ignore_cleanup_errors=True) as folder:
+        rendered = Path(folder) / "rendered.pdf"
+        subprocess.run([executable, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
+                        f"--user-data-dir={Path(folder) / 'profile'}", f"--print-to-pdf={rendered}",
+                        page.resolve().as_uri()], check=True, capture_output=True, timeout=120,
+                       creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+        if not rendered.is_file() or not rendered.read_bytes().startswith(b"%PDF-"):
+            raise RuntimeError(f"Chrome did not produce a PDF for {destination.name}")
+        shutil.copyfile(rendered, destination)
     print(f"wrote {destination.relative_to(ROOT)}")
 
 
@@ -119,9 +143,8 @@ def _tidelm():
 
 
 def _test_count():
-    import ast
-    return sum(1 for path in (ROOT / "tests").glob("test_*.py") for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
-               if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"))
+    report = _json("evidence/test-summary.json") or {}
+    return report.get("tests_run", "see test report for")
 
 
 def slides():
@@ -139,7 +162,7 @@ def slides():
                    ("Flags hidden instructions", pct(base["extract"]["injection_flag_accuracy"]), pct(tuned["extract"]["injection_flag_accuracy"]))]
     fed, rule, thin, alone = (tidepay.get("federated", {}), tidepay.get("heuristic_v1", {}),
                               tidepay.get("federated_on_smaller_half_of_smes", {}), tidepay.get("local_only_on_smaller_half_of_smes", {}))
-    return [
+    deck = [
         {"title": "Tideway", "subtitle": "Never miss payroll again.",
          "bullets": ["On-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, "
                      "and acts only with your approval.", "FinTechathon 2026 · International Track · Topic E: SME Finance Copilot"],
@@ -153,15 +176,16 @@ def slides():
                      "Scheduled, likely and stress views; \"N of 20 futures fall short\"",
                      "Shapla Services (synthetic): scheduled low −BDT 10,000 on 31 Oct; reserve gap BDT 30,000"],
          "image": "01-cash-weather-storm.png"},
-        {"title": "TidePay: our own payment-delay model", "subtitle": "Trained with federated learning: no business shares its invoices",
+        {"title": "TidePay payment-delay model", "subtitle": "Simulated federated learning on synthetic invoices",
          "bullets": [f"Predicts each open invoice's lateness band; drives the scenarios and the Monte Carlo",
-                     f"FedAvg across 40 SMEs with pairwise-mask secure aggregation",
+                     "40 simulated SME clients in one process; illustrative masks, no deployed privacy guarantee",
                      f"Log loss {fed.get('log_loss', '—')} vs {rule.get('log_loss', '—')} for the old rule",
                      f"Small businesses gain most: {thin.get('mae_days', '—')} vs {alone.get('mae_days', '—')} days error training alone"]},
         {"title": "TideLM: our own on-device language model", "subtitle": "Qwen3-4B + a LoRA adapter we trained on a laptop with MLX",
          "table": ([("", "Base model", "TideLM")] + lm_rows) if lm_rows else None,
          "bullets": ["Eight languages: English, 中文, Español, Bahasa, Français, Português, Hinglish, Banglish",
-                     "Held-out test with company names it never saw; synthetic data"] + ([] if lm_rows else ["Evaluation pending"])},
+                     "Synthetic test with unseen names and shared template families",
+                     "Apple Silicon required; Windows demo uses the deterministic assistant"] + ([] if lm_rows else ["Evaluation pending"])},
         {"title": "Plan the rescue", "subtitle": "An exact, risk-aware optimiser",
          "bullets": ["Supplier deferrals, early-payment discounts (priced as APR), zero-cash reminders",
                      "Holds the reserve every day, payroll always funded, ≤ 2 of 20 futures short",
@@ -173,11 +197,11 @@ def slides():
                      "Simulated counterparties accept, counter or refuse; idempotent execution with read-back"],
          "image": "03-approve-exactly-this.png"},
         {"title": "Talk to it in your language", "subtitle": "Glass-box answers, zero-entry bookkeeping",
-         "bullets": ["Every answer shows TideLM's typed plan; every number comes from Tideway's tools",
+         "bullets": ["Optional TideLM shows its typed plan; figures come from Tideway's tools",
                      "Answers in the language of the question, with the same figures",
-                     "Paste bank or mobile-money alerts, or photograph a receipt: drafts until you confirm"],
+                     "Optional local models draft messages and photos; human confirmation is required"],
          "image": "07-assistant.png"},
-        {"title": "The model is not the weak link", "subtitle": "Enforcement lives outside the model",
+        {"title": "Security enforcement", "subtitle": "Permissions and validation live outside the model",
          "bullets": [f"{verify.get('attacks_blocked', '—')}/{verify.get('attacks', '—')} attacks blocked, "
                      f"{verify.get('tasks_completed', '—')}/{verify.get('tasks', '—')} tasks completed, assuming a hijacked model",
                      "Injection and payee-fraud screening in eight languages; changed accounts and look-alikes blocked",
@@ -190,13 +214,20 @@ def slides():
          "image": "18-team.png"},
         {"title": "Evidence, not claims", "subtitle": "Reproducible in one command each",
          "bullets": [f"{verify.get('passed', '—')}/{verify.get('cases', '—')} self-test cases · {_test_count()} automated tests",
-                     "Model reports, run logs and screenshots in evidence/",
+                     "Model reports, sandbox logs, browser evidence and reproducible setup",
                      "python3 -m tideway.selftest · python3 -m unittest discover -s tests"]},
         {"title": "Honest limits, clear next steps", "subtitle": "What we have not done yet",
          "bullets": ["Synthetic data and simulated counterparties; demo-grade PINs and keys",
                      "No user study or external penetration test yet",
                      "Next: consented SME pilots, a real bank rail behind the same mandate, federated TidePay across real users"]},
     ]
+    team = _json("submission-team.json") or {}
+    if team.get("team_name"):
+        deck[0]["bullets"].append(team["team_name"])
+        deck.append({"title": team["team_name"], "subtitle": "Bangladesh University of Engineering and Technology",
+                     "bullets": [member["name"] + (f" - {member['role']}" if member.get("role") else "")
+                                 for member in team.get("members", [])]})
+    return deck
 
 
 def _crop(path: Path, work: Path):
@@ -260,6 +291,7 @@ def main():
         pitch(work)
         document(work, "architecture", ROOT / "docs" / "TECHNICAL_DOCUMENTATION.md", ROOT / "docs" / "architecture.pdf")
         document(work, "security-assessment", ROOT / "docs" / "SECURITY_SELF_ASSESSMENT.md", ROOT / "docs" / "security-assessment.pdf")
+        document(work, "submission-notes", ROOT / "docs" / "SUBMISSION_NOTES.md", ROOT / "docs" / "submission-notes.pdf")
         roadmap = ROOT / "docs" / "roadmap" / "Tideway_FinTechathon_2026_Roadmap.html"
         if roadmap.exists():
             print_pdf(roadmap, ROOT / "docs" / "Tideway_FinTechathon_2026_Roadmap.pdf")

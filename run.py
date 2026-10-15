@@ -17,7 +17,8 @@ def load_env():
             line = line.strip()
             if line and not line.startswith("#") and "=" in line:
                 key, value = line.split("=", 1)
-                if key.strip() in ("OPENAI_API_KEY", "OPENAI_MODEL", "TIDEWAY_HOST", "TIDEWAY_PORT"):
+                if key.strip() in ("OPENAI_API_KEY", "OPENAI_MODEL", "TIDEWAY_HOST", "TIDEWAY_PORT",
+                                   "TIDEWAY_LOCAL_MODEL_URL", "TIDEWAY_LOCAL_TEXT_MODEL", "TIDEWAY_LOCAL_VISION_MODEL"):
                     os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
 
 

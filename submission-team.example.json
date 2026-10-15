@@ -1,0 +1,10 @@
+{
+  "team_name": "",
+  "leader": "",
+  "members": [],
+  "registration_id": "",
+  "registration_confirmed": false,
+  "submission_route_confirmed": false,
+  "eligibility_confirmed": false,
+  "reviewer_access_confirmed": false
+}

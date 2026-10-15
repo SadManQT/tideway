@@ -438,10 +438,19 @@ def make_handler(app):
 def serve(db_path, port=8787, key="", model="gpt-5-mini", seed=True, host="127.0.0.1"):
     app = Application(db_path, key, model, seed)
     server = ThreadingHTTPServer((host, port), make_handler(app))
-    if app.tidelm.status()["available"]:  # load TideLM in the background so the first question is fast
+    model_status = app.tidelm.status()
+    if model_status["available"] and model_status.get("backend") != "local-compatible":
         import threading
-        threading.Thread(target=app.tidelm.warm, name="tidelm-warmup", daemon=True).start()
+        def warm_model():
+            try:
+                app.tidelm.warm()
+            except Exception:
+                app.tidelm._warm_error = "TideLM warm-up failed. Check model files, available memory and MLX installation."
+                print(app.tidelm._warm_error, flush=True)
+        threading.Thread(target=warm_model, name="tidelm-warmup", daemon=True).start()
         print("TideLM: loading the on-device model in the background…", flush=True)
+    elif model_status["available"]:
+        print("Local compatible model configured; its results are not the TideLM v2 benchmark.", flush=True)
     display_host = "127.0.0.1" if host in ("0.0.0.0", "::") else host
     print(f"Tideway is ready: http://{display_host}:{server.server_port}", flush=True)
     print("Demo sign-in (synthetic sandbox): owner Nadia PIN 2468 · accountant Imran PIN 1357 · viewer Guest PIN 0000", flush=True)

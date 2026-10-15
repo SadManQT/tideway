@@ -20,6 +20,8 @@ Tideway is a working prototype for the FinTechathon 2026 International Track, **
 
 > **Honest scope.** Everything runs in a **synthetic sandbox**: fictional businesses, no real money, no bank, lender, supplier or customer connected. Financing offers are labelled **MOCK** catalogue comparisons and are never executable. The payment file (ISO 20022 pain.001) is a draft that is never sent. A passing test suite is evidence for the listed cases only, not proof of security. The optional LLM mode has not been measured against a live provider.
 
+Built by **The Last BrainCell**, Bangladesh University of Engineering and Technology (BUET). See [team and submission notes](docs/SUBMISSION_NOTES.md).
+
 ## Quick start (Python 3.11+, standard library only)
 
 ```bash
@@ -27,6 +29,8 @@ python3 run.py
 ```
 
 Open <http://127.0.0.1:8787>. The server binds to loopback only; do not expose it to a network.
+
+Windows and Mac instructions: [SETUP_WINDOWS_MAC.md](docs/SETUP_WINDOWS_MAC.md). Run `python scripts/check_setup.py` to inspect optional model availability.
 
 ## Reproducible setup, test and local deployment
 
@@ -37,7 +41,7 @@ dependency lock marker in `requirements.lock`.
 ```bash
 # Native setup (Python 3.11.11)
 python3 --version
-make test                 # the canonical offline test command
+python3 -m unittest discover -s tests -v  # also works without make
 make selftest             # 30-case task and security scorecard
 make build                # bytecode/compile check
 make run                  # start http://127.0.0.1:8787
@@ -96,17 +100,17 @@ python3 scripts/build_submission_pdfs.py   # pitch, architecture and security PD
 
 ## Tideway's own AI (trained here, runs on-device)
 
-Tideway does not depend on a third-party AI API. Both models are trained in this repository and run on the owner's machine.
+Tideway does not depend on a third-party AI API. TidePay is trained here on synthetic data. TideLM is our LoRA adapter on the third-party Qwen3 base model. Optional TideVision uses a third-party Qwen2.5-VL model without a Tideway fine-tune. The evaluated MLX adapters require Apple Silicon. Windows, Linux and macOS can use the deterministic assistant or an explicitly configured local compatible model server, labelled unbenchmarked. The initial optional model download needs internet access; cached inference is local.
 
 | Model | What it does | How it is trained | Evidence |
 |---|---|---|---|
-| **TidePay** | Probability that an open invoice is paid on time, 1-7, 8-15, 16-30 or 30+ days late | Pure-Python softmax trained with **federated learning** (FedAvg) across 40 synthetic SMEs, with pairwise-mask secure aggregation: no business shares raw invoices | [tidepay_report.md](evidence/ml/tidepay_report.md): log loss 1.036 vs 1.55 for the old rule; on the smaller half of SMEs, MAE 6.12 days vs 6.64 training alone |
+| **TidePay** | Probability that an open invoice is paid on time, 1-7, 8-15, 16-30 or 30+ days late | Pure-Python softmax trained with **federated learning** (FedAvg) across 40 synthetic SMEs, in a single-process simulation with illustrative pairwise masks. This experiment does not provide a deployed privacy guarantee | [tidepay_report.md](evidence/ml/tidepay_report.md): log loss 1.036 vs 1.55 for the old rule; on the smaller half of SMEs, MAE 6.12 days vs 6.64 training alone |
 | **TideLM** | (1) Turns an owner's message in English, Chinese, Spanish, Indonesian/Malay, French, Portuguese, Hinglish or Banglish into a typed tool plan; (2) turns pasted bank, card and mobile-money alerts (M-Pesa, UPI, WeChat Pay, Alipay, PayNow, DuitNow, GCash, Pix, SEPA, Faster Payments, Wise, bKash) and chat messages into draft records and flags injection | LoRA fine-tune of Qwen3-4B-Instruct (4-bit) with MLX on Apple Silicon, on 4,500 generated multilingual examples (500 validation); the 500 test examples use counterparty names never seen in training | [tidelm_report.md](evidence/ml/tidelm_report.md) (v2, eight languages): exact plans 26.7% → **96.7%**, intent 20% → **99%**, extraction F1 0.83 → **0.969**, injection flags 91.5% → **98.5%**, ~2.8 s per answer |
 
 The language model never touches money or records. Its plan passes a validator (known tools, typed arguments, names resolved against the ledger, read/propose tools only); a forbidden tool counts toward the circuit breaker. Replies are written by code from tool output, so every number comes from Tideway. Extracted records are drafts until a person confirms them, and a deterministic scan flags injection even if the model misses it.
 
 ```bash
-python3 -m tideway.ml.train                               # TidePay: federated training + report
+python3 -m tideway.ml.train                               # TidePay: simulated federated training + report
 python3 -m tideway.ml.tidelm_data                         # TideLM: generate train/valid/test data
 pip install mlx-lm                                        # Apple Silicon only
 python3 -m mlx_lm lora --config tideway/ml/tidelm_lora.yaml
@@ -142,7 +146,7 @@ slides/     pitch.pdf
 
 ## Optional LLM mode
 
-Copy `.env.example` to `.env`, set your own `OPENAI_API_KEY` (never commit it) and restart. The model sees only pseudonyms and tool output, can call six read/propose tools, and has no approval, execution, SQL, shell or URL tool.
+Copy `.env.example` to `.env`, set your own `OPENAI_API_KEY` (never commit it) and restart. The model sees only pseudonyms and tool output, can call only the allow-listed read/propose tools, and has no approval, execution, SQL, shell or URL tool.
 
 ## Documents
 
@@ -150,4 +154,4 @@ Copy `.env.example` to `.env`, set your own `OPENAI_API_KEY` (never commit it) a
 
 ## Licence
 
-MIT. See `LICENSE` and `THIRD_PARTY_NOTICES`.
+Tideway application code: MIT. Third-party models and tools retain their own licenses, including TideVision's Qwen Research license. See `LICENSE`, `THIRD_PARTY_NOTICES` and `docs/MODEL_CARD.md`.

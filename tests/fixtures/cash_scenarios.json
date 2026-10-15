@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "method": "Fixed opening-cash perturbations in each fixture currency; compare a 14-day largest-permitted-bill rule with the unchanged Tideway optimiser. Authored before running this comparison.",
+  "scenarios": [
+    {
+      "id": "S01",
+      "fixture": "shapla-services",
+      "cash_delta_minor": -4000000
+    },
+    {
+      "id": "S02",
+      "fixture": "shapla-services",
+      "cash_delta_minor": -2000000
+    },
+    {
+      "id": "S03",
+      "fixture": "shapla-services",
+      "cash_delta_minor": -1000000
+    },
+    {
+      "id": "S04",
+      "fixture": "shapla-services",
+      "cash_delta_minor": 0
+    },
+    {
+      "id": "S05",
+      "fixture": "shapla-services",
+      "cash_delta_minor": 1000000
+    },
+    {
+      "id": "S06",
+      "fixture": "shapla-services",
+      "cash_delta_minor": 2000000
+    },
+    {
+      "id": "S07",
+      "fixture": "shapla-services",
+      "cash_delta_minor": 4000000
+    },
+    {
+      "id": "S08",
+      "fixture": "shapla-services",
+      "cash_delta_minor": 8000000
+    },
+    {
+      "id": "S09",
+      "fixture": "lotus-print",
+      "cash_delta_minor": -3000000
+    },
+    {
+      "id": "S10",
+      "fixture": "lotus-print",
+      "cash_delta_minor": -1000000
+    },
+    {
+      "id": "S11",
+      "fixture": "lotus-print",
+      "cash_delta_minor": 0
+    },
+    {
+      "id": "S12",
+      "fixture": "lotus-print",
+      "cash_delta_minor": 1000000
+    },
+    {
+      "id": "S13",
+      "fixture": "lotus-print",
+      "cash_delta_minor": 3000000
+    },
+    {
+      "id": "S14",
+      "fixture": "lotus-print",
+      "cash_delta_minor": 6000000
+    },
+    {
+      "id": "S15",
+      "fixture": "harbourline-traders",
+      "cash_delta_minor": -1000000
+    },
+    {
+      "id": "S16",
+      "fixture": "harbourline-traders",
+      "cash_delta_minor": 0
+    },
+    {
+      "id": "S17",
+      "fixture": "harbourline-traders",
+      "cash_delta_minor": 1000000
+    },
+    {
+      "id": "S18",
+      "fixture": "harbourline-traders",
+      "cash_delta_minor": 3000000
+    },
+    {
+      "id": "S19",
+      "fixture": "harbourline-traders",
+      "cash_delta_minor": 6000000
+    },
+    {
+      "id": "S20",
+      "fixture": "harbourline-traders",
+      "cash_delta_minor": 10000000
+    }
+  ]
+}

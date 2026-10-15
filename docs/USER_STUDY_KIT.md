@@ -1,6 +1,6 @@
 # Tideway: user study kit (3 to 5 participants, 25 minutes each)
 
-The rubric rewards real user feedback. This kit lets the team run a small, honest study before submission and report exactly what happened. **Report only what you collected; never round up, extrapolate or invent participants.**
+A small user study can strengthen the interaction evidence. This kit lets the team run a small, honest study before submission and report exactly what happened. **Report only what you collected; never round up, extrapolate or invent participants.**
 
 ## Who to invite
 

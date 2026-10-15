@@ -1,6 +1,6 @@
-# Tideway: pitch script (about 9 minutes, limit 10)
+# Tideway: pitch script (about 9 minutes 30 seconds, limit 10)
 
-Slides match `slides/pitch.pdf` (12 slides; every number on them is read from `evidence/` when the deck is built). Replace team details before presenting. Say once that all data is synthetic.
+Slides match `slides/pitch.pdf` (13 slides; every number on them is read from `evidence/` when the deck is built). Team: The Last BrainCell, Bangladesh University of Engineering and Technology. Confirm speaker roles before presenting. Say once that all data is synthetic.
 
 ## 1. Tideway (slide 1, 0:00–0:30)
 "Tideway helps a small business never miss payroll again. It is on-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, and acts only with the owner's approval."
@@ -12,7 +12,7 @@ Slides match `slides/pitch.pdf` (12 slides; every number on them is read from `e
 "Shapla Services: BDT 120,000 in the bank, BDT 80,000 payroll, a BDT 70,000 supplier bill, BDT 20,000 coming in, a BDT 20,000 reserve. The schedule says minus BDT 10,000 on 31 October. These are exact integer calculations linked to source records, shown as cash weather with 1,000 simulated futures."
 
 ## 4. TidePay (slide 4, 1:50–2:40)
-"Whether a customer pays late is the uncertainty that matters, so we built our own model for it. TidePay is trained with federated learning across forty businesses with secure aggregation: nobody shares raw invoices, and the server only sees masked updates. It beats the old rule clearly, and it helps small businesses most, because they learn from everyone without exposing anyone."
+"Whether a customer pays late is the uncertainty that matters, so we built our own model for it. TidePay uses a federated-averaging simulation across forty synthetic businesses. One process holds the data and demonstrates pairwise mask cancellation; we claim no production privacy guarantee. On the held-out synthetic invoices it improves on the old rule, with the largest benefit shown here for smaller clients."
 
 ## 5. TideLM (slide 5, 2:40–3:40)
 "For the conversation we did not rent an API. We fine-tuned our own model, TideLM, on a laptop: Qwen3-4B with a LoRA adapter trained on our own data. On a held-out test with company names it never saw, it went from the base model's numbers to ours on the slide: plans with every argument right, intent, reading records from bank and mobile-money messages, and catching hidden instructions. It speaks eight languages and runs on the owner's computer, so their books never leave it."
@@ -29,11 +29,14 @@ Run the demo script highlights: landing page and demo sign-in, cash weather, ask
 ## 9. A product, with evidence and honest limits (slides 10–12, 8:00–9:00)
 "It is built as a product: sign up a business in any of 29 currencies, invite your accountant with a one-time code, and see which customer could hurt your cash most. Everything is reproducible with one command. Limits: synthetic data, simulated counterparties, demo-grade keys, no user study yet. Next: consented SME pilots, a real bank rail behind the same mandate, and federated TidePay across real users."
 
+## 10. Team (slide 13, 9:00-9:30)
+Introduce The Last BrainCell and the five members listed on the slide. State each member's actual contribution after the team confirms roles.
+
 ## Likely judge questions
 - **Why train your own model instead of calling an API?** Privacy (books never leave the device), cost (no per-call fee), control (a narrow, tested skill set) and measurable gains on our task; the base-vs-tuned table is in `evidence/ml/`.
 - **What if the AI is wrong?** It cannot act. Figures come from tools; plans are validated; names are resolved against the ledger; every action needs a signed mandate approved by people.
 - **Isn't 4B too small?** It only has to choose tools and fill arguments, not reason about money; the arithmetic is deterministic code.
-- **How is TidePay private?** Federated averaging with pairwise masks that cancel in the sum; the server never sees one business's update.
+- **Is TidePay privacy-preserving in production?** No. It is a single-process FedAvg simulation with predictable illustrative masks and pooled scaling. A deployed protocol would need client-held secrets, secure aggregation and a separate threat-model review.
 - **Why synthetic data?** Reproducibility and attack coverage; we report no real-user results.
 - **Is the mandate AP2?** Modelled on the idea; not an implementation of the AP2 specification.
 - **Who pays?** Hypothesis: small businesses or their accountants, per seat; plans shown are illustrative.

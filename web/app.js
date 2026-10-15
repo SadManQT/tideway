@@ -818,7 +818,7 @@ function renderRescue() {
 // ---------------------------------------------------------------------------- assistant
 
 const tidelmOn = () => Boolean(state.config?.tidelm?.available);
-const TIDELM_LABEL = "TideLM · on-device, trained by Tideway";
+const tidelmLabel = () => state.config?.tidelm?.label || "TideLM · local Qwen3 + Tideway adapter";
 const TIDELM_PROMPTS = ["Should I give Nila Traders 30 days credit on 50,000?", "Which customers pay late?",
   "What if Bay Logistics pays 15 days late?", "Nila Traders 晚20天付款会怎样？", "¿Puedo pagar los sueldos este mes?",
   "Remind everyone who owes me", "pay Rahman now"];
@@ -919,7 +919,7 @@ function renderAssistant() {
     : "Hi, I'm Tideway. Ask me whether payroll is safe, how risky the month looks, who to chase, a what-if such as \"what if Nila Traders pays 10 days late\", or ask me for a rescue plan. I can explain and propose; I can't approve or move money."});
   const prompts = on ? TIDELM_PROMPTS : LOCAL_PROMPTS;
   const consent = on ? "" : state.config.ai_configured ? `<label class="check small"><input id="ai-consent" type="checkbox" ${state.aiConsent ? "checked" : ""}> Use the AI model for this message (names are pseudonymised; record text never leaves this computer)</label>` : `<p class="hint">Local agent mode: answers come from deterministic tools, no network. An optional LLM mode is available when a key is configured.</p>`;
-  const mode = on ? `<div class="row chat-mode"><span class="pill teal">${icon("spark")}${esc(TIDELM_LABEL)}</span></div>` : "";
+  const mode = on ? `<div class="row chat-mode"><span class="pill teal">${icon("spark")}${esc(tidelmLabel())}</span></div>` : "";
   return `<section class="grid split"><div class="card chat ${on ? "with-mode" : ""}">${mode}<div class="chat-log" id="chat-log" aria-live="polite">${state.chat.map((item, index) => item.pending
       ? `<div class="msg agent pending" role="status"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>${esc(item.text)}</div>`
       : `<div class="msg ${item.role === "user" ? "user" : "agent"} ${item.unverified?.length || item.rejected ? "warn" : ""}">${esc(item.text)}${item.trace?.length ? `<div class="trace">${item.trace.map((t) => `<span>${esc(t.tool)} · ${esc(t.permission)}</span>`).join("")}</div>` : ""}${item.copilot ? copilotHtml(item.copilot) : ""}${item.question && !item.rejected ? feedbackHtml(item, index) : ""}${index === state.chat.length - 1 && item.role !== "user" ? suggestionsHtml(item.suggestions || (index === 0 ? prompts.slice(0, 3) : [])) : ""}</div>`).join("")}</div>
@@ -1032,7 +1032,7 @@ function inboxResultsHtml() {
 function renderInbox() {
   if (!canApprove()) return `<section class="card"><h3>Inbox is for the owner and the accountant</h3><p class="muted section-gap">Here, people who keep the books paste an SMS, WhatsApp message or bank alert, and TideLM drafts ledger records from it. Nothing is saved until one of them checks and confirms each draft. As a viewer you can read the results in Records.</p></section>`;
   const on = tidelmOn();
-  return `<section class="grid split"><form class="card" id="inbox-form"><div class="card-head"><div><h3>Paste a message</h3><p>TideLM reads it on this computer and drafts records. It cannot save, pay or approve anything.</p></div>${on ? `<span class="pill teal">${icon("spark")}${esc(TIDELM_LABEL)}</span>` : ""}</div>
+  return `<section class="grid split"><form class="card" id="inbox-form"><div class="card-head"><div><h3>Paste a message</h3><p>TideLM reads it on this computer and drafts records. It cannot save, pay or approve anything.</p></div>${on ? `<span class="pill teal">${icon("spark")}${esc(tidelmLabel())}</span>` : ""}</div>
       ${on ? "" : `${tidelmStatusCard("You can still add records with Import CSV in Records.")}<div class="section-gap"></div>`}
       <label class="field">SMS, WhatsApp or bank text<textarea id="inbox-text" maxlength="2000" spellcheck="false" placeholder="e.g. Invoice INV-2291 to Nila Traders, BDT 42,500, due 5 Nov">${esc(state.inbox.text)}</textarea></label>
       <div class="row section-gap"><button class="button primary" type="submit" ${on ? "" : "disabled"}>${icon("spark")}Extract</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="clean">Sample: invoice SMS</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="injection">Sample: injection attempt</button></div>

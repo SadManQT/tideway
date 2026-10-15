@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "python_no_site_packages": true,
+  "git_directory_present": false,
+  "login_http": 200,
+  "dashboard_http": 200,
+  "handbook_http": 200,
+  "source_tree_sha256": "dda73f915c38caba0be021c38a44266e28284d212ffc63e4c4a48d1151f757d8",
+  "optional_model_inference_tested": false,
+  "note": "Fresh ZIP extraction, fresh database, Python -S; core starts without site packages, credentials or Git history."
+}

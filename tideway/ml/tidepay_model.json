@@ -178,7 +178,9 @@
   "clients": 40,
   "train_invoices": 10292,
   "test_invoices": 3452,
-  "method": "FedAvg + pairwise-mask secure aggregation",
-  "data": "synthetic SME invoice histories (tideway/ml/synth.py); no real customer data"
+  "method": "Single-process FedAvg simulation + illustrative pairwise masks",
+  "data": "synthetic SME invoice histories (tideway/ml/synth.py); no real customer data",
+  "simulation_only": true,
+  "privacy_guarantee": false
  }
 }

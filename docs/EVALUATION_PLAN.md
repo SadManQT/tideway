@@ -4,7 +4,7 @@ This plan separates what we have **measured** (deterministic, local, reproducibl
 
 ## 1. Measured today (reproducible)
 
-`python3 scripts/evaluate.py` runs `tideway.selftest` (every case on a fresh in-memory copy of the synthetic fixtures) and writes `evidence/results.csv`, `evidence/run-log.jsonl` and `evidence/verification-summary.json`. `python3 -m unittest discover -s tests -v` runs the 79-test offline suite. `node scripts/capture_screens.mjs` drives headless Chrome through the full story and fails on any page error.
+`python3 scripts/evaluate.py` runs `tideway.selftest` (every case on a fresh in-memory copy of the synthetic fixtures) and writes `evidence/results.csv`, `evidence/run-log.jsonl` and `evidence/verification-summary.json`. `python3 -m unittest discover -s tests -v` runs the offline suite (latest count in `evidence/test-summary.json`). `node scripts/capture_screens.mjs` drives headless Chrome through the full story and fails on any page error.
 
 | Dimension (roadmap target) | What we run | Result today |
 |---|---|---|
@@ -19,22 +19,26 @@ This plan separates what we have **measured** (deterministic, local, reproducibl
 
 Total: **30/30 cases, 0 attacks not blocked.** Assumptions: worst-case hijacked model and rubber-stamp human; synthetic fixtures; one run per case. This is evidence for these cases only, not proof of security.
 
-## 2. Planned (not yet done: do not claim)
+## 2. Product-level scenario comparison
+
+`python scripts/evaluate_scenarios.py` compares a fixed largest-permitted-bill deferral rule against the unchanged Tideway optimiser on 20 authored opening-cash perturbations of the three existing fixtures. The rule finds a feasible cash path in 10/20 and Tideway in 12/20. Both use the same ledger evaluator. This is a narrow synthetic comparison, not independent businesses, user benefit, or a comparison against generic LLMs. Raw outcomes and the scenario-spec hash are in `evidence/scenario-comparison.json`.
+
+## 3. Planned (not yet done: do not claim)
 
 | Item | Plan | Evidence to keep |
 |---|---|---|
-| Baseline comparison | Same three fixtures, three modes: spreadsheet rule (defer the largest bill), generic LLM suggestion, Tideway. Compare shortfall cleared, payroll safety, invalid recommendations, unauthorised actions, cost of plan. | Raw per-run CSV, model name and settings |
+| Expanded baseline comparison | Existing rule comparison is measured above; future three-mode comparison: spreadsheet rule (defer the largest bill), generic LLM suggestion, Tideway. Compare shortfall cleared, payroll safety, invalid recommendations, unauthorised actions, cost of plan. | Raw per-run CSV, model name and settings |
 | Scenario breadth | At least 20 independent scenarios beyond the three demo businesses, written before tuning, with a held-out set | Scenario files, expected outcomes, results |
 | Back-test of payment profiles | Compare predicted against actual lateness on held-out settled invoices | Error table; report as synthetic |
 | Live-LLM mode | At least 30 controlled runs: median and p95 latency, cost per run, grounding-flag rate, tool-denial rate | Run log without keys |
 | Usability | 3 to 5 consenting SME owners or finance reviewers: task success, time, errors, comments | Anonymised notes with consent; report sample size and method next to every finding |
 | Independent review | One teammate or outside reviewer attempts to break the sandbox | Findings list and fixes |
 
-## 3. Claims policy
+## 4. Claims policy
 
 We may say: "30 of 30 defined sandbox cases pass", with the case list. We may not say: fraud is stopped, cash flow improves by a percentage, the model is accurate in production, or users saved time, unless a measured result exists. Money-calculation errors or any unauthorised mutation are release blockers: execution is disabled in a demo until fixed.
 
-## 4. Reproduce everything
+## 5. Reproduce everything
 
 ```bash
 python3 -m unittest discover -s tests -v

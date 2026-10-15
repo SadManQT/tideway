@@ -74,15 +74,19 @@ class TideVision:
     def __init__(self, generator=None):
         """``generator(image_path) -> str`` may be injected for tests; otherwise MLX is loaded lazily."""
         self._generator = generator
+        from .local_model import LocalModel
+        self._local = LocalModel.configured("vision") if generator is None else None
         self._model = self._processor = None
         self._lock = threading.Lock()
 
     def status(self):
         if self._generator is not None:
             return {"available": True, "model": "injected"}
+        if self._local is not None:
+            return self._local.status()
         try:
             import mlx_vlm  # noqa: F401
-        except ImportError:
+        except (ImportError, OSError):
             return {"available": False, "model": MODEL, "reason": "Install mlx-vlm (Apple Silicon): pip install mlx-vlm"}
         try:
             from huggingface_hub import try_to_load_from_cache
@@ -94,8 +98,22 @@ class TideVision:
                                               f"snapshot_download; snapshot_download('{MODEL}')\""}
 
     def _generate(self, path, business_name="this business"):
+        try:
+            return self._generate_impl(path, business_name)
+        except TideVisionUnavailable:
+            raise
+        except Exception as exc:
+            raise TideVisionUnavailable("Photo model could not run. Check the model files, available memory and inference installation.") from exc
+
+    def _generate_impl(self, path, business_name="this business"):
         if self._generator is not None:
             return self._generator(path)
+        if self._local is not None:
+            from .local_model import LocalModelUnavailable
+            try:
+                return self._local.generate(SYSTEM, USER.format(business=business_name), image_path=path)
+            except LocalModelUnavailable as exc:
+                raise TideVisionUnavailable(str(exc)) from exc
         status = self.status()
         if not status["available"]:
             raise TideVisionUnavailable(f"Photo reading is not available: {status['reason']}")

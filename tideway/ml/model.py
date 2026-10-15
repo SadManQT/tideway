@@ -3,7 +3,7 @@
 Pure Python so it runs anywhere the app runs. The model predicts a probability
 for each lateness bucket of an open invoice from observable history only (the
 customer's earlier invoices that were already settled when the invoice was
-issued). Federated averaging with pairwise additive masks (secure aggregation)
+issued). Simulated federated averaging with reproducible pairwise additive masks
 lets several SMEs train one model without revealing their own updates.
 """
 from __future__ import annotations
@@ -136,7 +136,7 @@ class Softmax:
 
 
 def pairwise_masks(n_clients, length, round_seed):
-    """Secure aggregation: client i adds mask(i,j) for j>i and subtracts mask(j,i) for j<i; the sum cancels."""
+    """Illustrative masking, not cryptographic privacy: client i adds mask(i,j) for j>i and subtracts mask(j,i) for j<i; the sum cancels."""
     masks = [[0.0] * length for _ in range(n_clients)]
     for i in range(n_clients):
         for j in range(i + 1, n_clients):
@@ -149,7 +149,7 @@ def pairwise_masks(n_clients, length, round_seed):
 
 
 def federated_train(client_rows, scaler_model, rounds=25, local_epochs=1, lr=0.05, seed=0, log=None):
-    """FedAvg with secure aggregation. client_rows: list of scaled (z, y) lists per client."""
+    """Single-process FedAvg simulation with illustrative masks. client_rows: list of scaled (z, y) lists per client."""
     global_model = Softmax()
     global_model.mean, global_model.std = scaler_model.mean, scaler_model.std
     total = sum(len(rows) for rows in client_rows)
@@ -164,7 +164,7 @@ def federated_train(client_rows, scaler_model, rounds=25, local_epochs=1, lr=0.0
             local.sgd(rows, epochs=local_epochs, lr=lr, seed=seed * 1000 + r * 50 + index, start_epoch=r)
             weight = len(rows) / total
             update = [weight * value for value in local.flat()]
-            masked = [u + m for u, m in zip(update, masks[index])]  # all the server ever receives
+            masked = [u + m for u, m in zip(update, masks[index])]  # simulated aggregate input; this process also holds the raw synthetic data
             if index == 0:
                 sample_masked = (update[:4], masked[:4])
             aggregate = [a + b for a, b in zip(aggregate, masked)]

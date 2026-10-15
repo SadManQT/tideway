@@ -4,7 +4,7 @@ Compares, on the same held-out (chronologically later) invoices:
   * prior: the overall bucket frequencies (no model);
   * heuristic: Tideway v1's customer-average rule (credibility-weighted mean);
   * local-only: each SME trains alone on its own small history;
-  * federated: FedAvg across SMEs with secure aggregation (no raw data shared);
+  * federated: single-process FedAvg simulation with illustrative masking (no privacy guarantee);
   * centralised: one model on pooled data (an upper bound that needs data sharing).
 Writes the federated model to tideway/ml/tidepay_model.json and a report to evidence/ml/.
 """
@@ -116,7 +116,7 @@ def main(seed=7, rounds=25):
     results["local_only_on_smaller_half_of_smes"] = {"mae_days": round(statistics.fmean(errors), 2), "n": len(errors)}
 
     meta = {"trained_at": time.strftime("%Y-%m-%d %H:%M"), "seed": seed, "rounds": rounds, "clients": len(clients),
-            "train_invoices": len(all_train), "test_invoices": len(all_test), "method": "FedAvg + pairwise-mask secure aggregation",
+            "train_invoices": len(all_train), "test_invoices": len(all_test), "method": "Single-process FedAvg simulation + illustrative pairwise masks",
             "data": "synthetic SME invoice histories (tideway/ml/synth.py); no real customer data"}
     MODEL_PATH.write_text(json.dumps(federated.to_json(meta), indent=1))
     out = ROOT / "evidence" / "ml"
@@ -132,7 +132,7 @@ def main(seed=7, rounds=25):
         lines.append(f"| {name} | {r['log_loss']} | {r['accuracy']} | {r['mae_days']} | {r['auc_late_over_7d']} |")
     lines += ["", f"Smaller half of SMEs: local-only MAE {results['local_only_on_smaller_half_of_smes']['mae_days']} days vs "
               f"federated {results['federated_on_smaller_half_of_smes']['mae_days']} days.", "",
-              "Secure aggregation: the server only receives masked updates; pairwise masks cancel in the sum.",
+              "Simulation only: one process holds all client data, pools training features for scaling, and generates predictable masks. Mask cancellation is demonstrated; cryptographic privacy and distributed deployment are not implemented.",
               "Results are on synthetic data and show the method works as designed, not real-world accuracy."]
     (out / "tidepay_report.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))

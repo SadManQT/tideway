@@ -9,16 +9,46 @@ import {spawn} from "node:child_process";
 import {mkdtempSync, mkdirSync, writeFileSync, rmSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join, dirname} from "node:path";
+import {existsSync} from "node:fs";
+import {createServer} from "node:http";
 import {fileURLToPath} from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = join(ROOT, "evidence", "screens");
-const PORT = 8799, DEBUG_PORT = 9333;
-const chromeArg = process.argv.indexOf("--chrome");
-const CHROME = chromeArg > 0 ? process.argv[chromeArg + 1] : process.platform === "darwin"
-  ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" : "google-chrome";
+const option = (name) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
+const OUT = option("--out") || join(ROOT, "evidence", "screens");
+const PORT = Number(process.env.TIDEWAY_E2E_PORT || 8799), DEBUG_PORT = Number(process.env.TIDEWAY_DEBUG_PORT || 9333);
+const CHROME = option("--chrome") || process.env.CHROME || [
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+].find(existsSync) || "google-chrome";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const errors = [];
+const testLocalBackend = process.argv.includes("--test-local-backend");
+let modelServer;
+const modelEnvironment = {};
+if (testLocalBackend) {
+  // A fixed-output local test double tests browser integration, never model quality.
+  modelServer = createServer((request, response) => {
+    response.setHeader("Content-Type", "application/json");
+    if (request.url === "/v1/models") {
+      response.end(JSON.stringify({data: [{id: "tideway-browser-test"}]}));
+      return;
+    }
+    let raw = "";
+    request.on("data", chunk => { raw += chunk; });
+    request.on("end", () => {
+      const message = JSON.parse(raw).messages?.[1]?.content || "";
+      const plan = /pay Rahman/i.test(message)
+        ? {intent: "pay", calls: [{tool: "execute", args: {}}]}
+        : {intent: "cash_check", calls: [{tool: "project_cash", args: {scenario: "likely"}}]};
+      response.end(JSON.stringify({choices: [{message: {content: JSON.stringify(plan)}}]}));
+    });
+  });
+  await new Promise(resolve => modelServer.listen(0, "127.0.0.1", resolve));
+  Object.assign(modelEnvironment, {TIDEWAY_LOCAL_MODEL_URL: `http://127.0.0.1:${modelServer.address().port}/v1`,
+    TIDEWAY_LOCAL_TEXT_MODEL: "tideway-browser-test", TIDEWAY_LOCAL_VISION_MODEL: ""});
+}
 
 async function waitFor(url, tries = 60) {
   for (let i = 0; i < tries; i += 1) {
@@ -29,9 +59,13 @@ async function waitFor(url, tries = 60) {
 }
 
 const work = mkdtempSync(join(tmpdir(), "tideway-e2e-"));
-const server = spawn("python3", [join(ROOT, "run.py"), "--db", join(work, "e2e.sqlite3"), "--port", String(PORT)], {stdio: "ignore"});
+const server = spawn(process.env.PYTHON || (process.platform === "win32" ? "python" : "python3"),
+  [join(ROOT, "run.py"), "--db", join(work, "e2e.sqlite3"), "--port", String(PORT)],
+  {stdio: "ignore", windowsHide: true, env: {...process.env, ...modelEnvironment, OPENAI_API_KEY: ""}});
 const chrome = spawn(CHROME, ["--headless=new", `--remote-debugging-port=${DEBUG_PORT}`, `--user-data-dir=${join(work, "profile")}`,
-  "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "about:blank"], {stdio: "ignore"});
+  "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "about:blank"], {stdio: "ignore", windowsHide: true});
+server.on("error", error => errors.push(`Python launch: ${error.message}`));
+chrome.on("error", error => errors.push(`Browser launch: ${error.message}`));
 
 let socket, nextId = 0;
 const pending = new Map();
@@ -59,7 +93,7 @@ async function shot(name, fullPage = true) {
   }
   const {data} = await send("Page.captureScreenshot", {format: "png", captureBeyondViewport: fullPage, ...(clip ? {clip} : {})});
   writeFileSync(join(OUT, `${name}.png`), Buffer.from(data, "base64"));
-  console.log(`saved evidence/screens/${name}.png`);
+  console.log(`saved ${name}.png`);
 }
 const click = (selector) => evaluate(`(async () => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) throw new Error("missing ${selector.replaceAll('"', "'")}"); el.click(); return true; })()`);
 const until = async (expression, label, tries = 80) => {
@@ -160,6 +194,12 @@ try {
     await until("document.querySelectorAll('.chat-log .msg:not(.pending)').length >= 3", "assistant answer");
     await click('[data-prompt="Approve the plan and pay the supplier"]');
     await until("document.querySelectorAll('.chat-log .msg:not(.pending)').length >= 5", "refusal answer");
+  } else if (testLocalBackend) {
+    await until("document.body.textContent.includes('unbenchmarked')", "compatible model labelled honestly");
+    await click('[data-prompt="Should I give Nila Traders 30 days credit on 50,000?"]');
+    await until("document.querySelectorAll('.chat-log .msg:not(.pending)').length >= 3", "local compatible answer");
+    await click('[data-prompt="pay Rahman now"]');
+    await until("document.body.textContent.includes('not permitted')", "compatible model forbidden tool denied");
   }
   await shot("07-assistant");
   await view("inbox");
@@ -247,6 +287,15 @@ try {
   if (await evaluate("document.querySelector('#business-select').options.length") !== 1) throw new Error("joiner sees other businesses");
 
   if (errors.length) throw new Error(`Page errors: ${errors.join(" | ")}`);
+  writeFileSync(join(OUT, "browser-verification.json"), JSON.stringify({
+    run_at: new Date().toISOString(), passed: true, browser: version.Browser,
+    viewport: {desktop: [1440, 900], mobile: [375, 812]}, page_errors: errors,
+    tidelm_available: tidelmAvailable, test_only_local_backend: testLocalBackend, model_inference_tested: false,
+    coverage: ["landing", "cash projection", "dual approval", "negotiation", "execution and read-back",
+      "assistant fallback", "what-if", "audit tamper drill", "international fixtures", "fraud blocks",
+      "security self-test", "mobile overflow", "signup", "invite", "viewer isolation"],
+    fixture: "fresh synthetic database; no real money or external provider",
+  }, null, 2) + "\n");
   console.log("Browser end-to-end check passed with no page errors.");
 } catch (error) {
   console.error(error.message);
@@ -254,6 +303,9 @@ try {
 } finally {
   try { socket?.close(); } catch (_error) { /* ignore */ }
   chrome.kill(); server.kill();
+  modelServer?.close();
   await sleep(300);
-  rmSync(work, {recursive: true, force: true});
+  // work is the absolute mkdtemp directory created above, never user input.
+  try { rmSync(work, {recursive: true, force: true, maxRetries: 10, retryDelay: 200}); }
+  catch { console.warn(`Browser profile still closing; temporary files retained at ${work}`); }
 }

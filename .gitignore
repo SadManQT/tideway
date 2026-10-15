@@ -30,3 +30,5 @@ evidence/private/
 
 # Local model weights and adapters (regenerate with tideway/ml).
 models/
+dist/
+submission-team.json

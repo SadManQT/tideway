@@ -1,6 +1,6 @@
 # Tideway: demo recording script (4:50, limit 5:00)
 
-Record the running app at <http://127.0.0.1:8787> with English narration. Start from a fresh database: `python3 run.py --db data/demo-recording.sqlite3`. Install TideLM first (`python3 scripts/get_tidelm.py`, `pip install mlx-lm`) and wait for "TideLM: loading the on-device model in the background…" to finish before recording. Say once, early, that every record is synthetic and no real money moves. **Re-record this script** before submission.
+Record the running app at <http://127.0.0.1:8787> with English narration. Start from a fresh database: `python3 run.py --db data/demo-recording.sqlite3`. Install TideLM first (`python3 scripts/get_tidelm.py`, `pip install mlx-lm`) and wait for "TideLM: loading the on-device model in the background…" to finish before recording. Say once, early, that every record is synthetic and no real money moves. **Recording is deferred by the team.** This is a future recording script, not evidence that a video exists. For Windows without a local model, show the deterministic assistant and explicitly describe TideLM/photo extraction as optional; never read the MLX narration as if that model were running.
 
 Demo accounts (synthetic): owner Nadia `2468`, accountant Imran `1357`, viewer Guest `0000`; one click on the landing page signs in.
 
