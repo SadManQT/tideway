@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123f3d">
+  <meta name="description" content="The Tideway public handbook: how the synthetic cash-flow rescue sandbox works, how to demo it, and how to prepare for a viva.">
+  <title>Tideway handbook · see the gap, choose the guardrails</title>
+  <link rel="stylesheet" href="/guide.css">
+  <script src="/guide.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to handbook content</a>
+
+  <header class="guide-header" id="top">
+    <div class="nav-inner">
+      <a class="wordmark" href="#top" aria-label="Tideway handbook home">
+        <span class="wordmark-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="wordmark-type">Tideway <small>PUBLIC HANDBOOK</small></span>
+      </a>
+      <nav class="guide-nav" aria-label="Handbook chapters">
+        <a href="#overview">Overview</a>
+        <a href="#problems">Problems</a>
+        <a href="#response">Lifecycle</a>
+        <a href="#features">Features</a>
+        <a href="#setup">Setup</a>
+        <a href="#viva">Viva center</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="text-button" id="print-guide" type="button">Print</button>
+        <a class="app-link" href="/">Open app <span aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="hero section-frame" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">FinTechathon 2026 · International Track · Topic E</p>
+        <h1 id="hero-title">See the cash gap before it becomes a payroll day surprise.</h1>
+        <p class="hero-lede">Tideway is an approval-gated finance copilot for small businesses. It reads a local ledger, predicts when invoices may arrive, compares recovery choices, and keeps a person in charge of every consequential step.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="/">Open the Tideway app <span aria-hidden="true">↗</span></a>
+          <a class="button button-secondary" href="#viva">Prepare for the viva <span aria-hidden="true">↓</span></a>
+        </div>
+        <p class="hero-note"><span class="seal" aria-hidden="true">◎</span><strong>Scope in one line:</strong> this is a working prototype in a synthetic sandbox. No bank, lender, supplier, customer, or real-money rail is connected.</p>
+      </div>
+      <aside class="hero-plate" aria-label="Tideway at a glance">
+        <div class="plate-topline"><span>THE HANDBOOK EDITION</span><span>01 / 06</span></div>
+        <div class="plate-wave" aria-hidden="true"><span></span><span></span><span></span></div>
+        <p class="plate-kicker">A local, bounded loop</p>
+        <h2>Records <i>→</i> forecast <i>→</i> proposal <i>→</i> approval</h2>
+        <p class="plate-copy">The agent can read, analyse and propose. It cannot approve or execute.</p>
+        <div class="plate-metrics">
+          <div><strong>14</strong><span>day default<br>look-ahead</span></div>
+          <div><strong>1,000</strong><span>seeded risk<br>simulations</span></div>
+          <div><strong>30/30</strong><span>defined sandbox<br>cases pass</span></div>
+        </div>
+        <p class="plate-footnote">Measured cases only; this is not a production-security claim.</p>
+      </aside>
+    </section>
+
+    <div class="chapter-rule" aria-hidden="true"><span></span><span></span><span></span></div>
+
+    <section class="chapter section-frame" id="overview" aria-labelledby="overview-title">
+      <div class="chapter-heading">
+        <p class="eyebrow">01 · Orientation</p>
+        <h2 id="overview-title">What Tideway does</h2>
+        <p class="chapter-dek">A small business often knows its balance today but not the shape of the next two weeks. Tideway turns the records already in the workspace into a dated, source-linked decision: what may happen, why it may happen, and what a human could choose to do about it.</p>
+      </div>
+      <div class="overview-grid">
+        <article class="editorial-card accent-teal">
+          <p class="card-number">01</p>
+          <h3>Find the gap</h3>
+          <p>Exact minor-unit arithmetic walks a daily ledger of opening cash, expected invoice inflows, supplier bills and payroll. Scheduled, likely and stress views make the assumptions visible.</p>
+          <p class="card-caption">Output: a minimum-cash date, reserve shortfall, warnings and a cash-weather label.</p>
+        </article>
+        <article class="editorial-card accent-gold">
+          <p class="card-number">02</p>
+          <h3>Explain the risk</h3>
+          <p>TidePay gives open invoices a probability across five lateness bands. A seeded Monte Carlo run turns those probabilities into a repeatable estimate of reserve, negative-cash and payroll risk.</p>
+          <p class="card-caption">Output: a risk read-out a judge can reproduce from the same records and date.</p>
+        </article>
+        <article class="editorial-card accent-coral">
+          <p class="card-number">03</p>
+          <h3>Propose a rescue</h3>
+          <p>An exact search compares supplier deferrals, early-payment offers and zero-cash reminders. It keeps payroll funded, respects the reserve floor, excludes blocked payees and explains rejected candidates.</p>
+          <p class="card-caption">Output: up to three bundles, or an honest “no safe plan” escalation.</p>
+        </article>
+        <article class="editorial-card accent-ink">
+          <p class="card-number">04</p>
+          <h3>Keep people in charge</h3>
+          <p>A proposal is not an action. PIN step-up, role checks, dual approval above the threshold, a signed expiring mandate, simulated counterparty agreement and a one-time read-back gate the sandbox execution.</p>
+          <p class="card-caption">Output: a receipt and audit evidence, only after the required humans act.</p>
+        </article>
+      </div>
+      <div class="quote-band">
+        <p class="quote-mark" aria-hidden="true">“</p>
+        <blockquote>AI as a financial participant does not mean AI gets the keys. It means the system can do the tedious analysis while the authority boundary stays explicit.</blockquote>
+        <p class="quote-source">Tideway design principle · proposal first, authority elsewhere</p>
+      </div>
+    </section>
+
+    <section class="chapter section-frame" id="problems" aria-labelledby="problems-title">
+      <div class="chapter-heading split-heading">
+        <div>
+          <p class="eyebrow">02 · The case for it</p>
+          <h2 id="problems-title">The problems it fixes — and how</h2>
+        </div>
+        <p class="heading-aside">Each answer is deliberately bounded. Tideway does not promise to remove uncertainty; it makes the uncertainty, trade-offs and stopping points easier to inspect.</p>
+      </div>
+      <div class="problem-list">
+        <article class="problem-row">
+          <div class="problem-index">A</div>
+          <div><h3>“The account is fine today, but payroll is next week.”</h3><p>Static balances hide dated inflows and outflows, and a deferral can simply move a shortfall past the chosen date.</p></div>
+          <div class="problem-answer"><span>How Tideway responds</span><p>Daily projection uses three scenarios and a target-date look-ahead (14 days by default, configurable within policy). A plan must hold the reserve floor on every day of that horizon.</p></div>
+        </article>
+        <article class="problem-row">
+          <div class="problem-index">B</div>
+          <div><h3>“The biggest invoice is not necessarily the biggest risk.”</h3><p>A customer’s payment habit, amount and timing matter together. A single late payer can distort a payroll decision.</p></div>
+          <div class="problem-answer"><span>How Tideway responds</span><p>Customer profiles blend the customer’s settled history with the portfolio, then TidePay and the counterparty risk map show both lateness likelihood and expected cash impact.</p></div>
+        </article>
+        <article class="problem-row">
+          <div class="problem-index">C</div>
+          <div><h3>“A plausible plan is still not permission to act.”</h3><p>An assistant that can both suggest and send creates an authority problem, especially when a counterparty or model is wrong.</p></div>
+          <div class="problem-answer"><span>How Tideway responds</span><p>The local agent has read/propose tools only. Humans approve with PINs; high exposure needs two different people including the owner; a signed, scoped mandate expires and is checked at execution.</p></div>
+        </article>
+        <article class="problem-row">
+          <div class="problem-index">D</div>
+          <div><h3>“A message can look like a record and act like an instruction.”</h3><p>Bank alerts, chats and ledger free text can contain hidden characters, changed account details or prompt-injection language.</p></div>
+          <div class="problem-answer"><span>How Tideway responds</span><p>Deterministic screening flags injection and payment-detail changes; suspicious stored text is quarantined. Inbox extraction creates drafts only, and nothing is saved until a person confirms it.</p></div>
+        </article>
+        <article class="problem-row">
+          <div class="problem-index">E</div>
+          <div><h3>“When something happens, the team needs to show why.”</h3><p>Approvals, counter-offers, retries and refusals are hard to reconstruct from an ordinary activity feed.</p></div>
+          <div class="problem-answer"><span>How Tideway responds</span><p>Per-business audit entries form a hash chain with an independent witness checkpoint. Evidence view verifies the chain, and exports include evidence JSON, records/receipts CSV and a draft pain.001 file.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="chapter section-frame" id="response" aria-labelledby="response-title">
+      <div class="chapter-heading">
+        <p class="eyebrow">03 · Under the hood</p>
+        <h2 id="response-title">One request, one explainable response</h2>
+        <p class="chapter-dek">The UI action is simple. The path underneath it is a sequence of checks, deterministic services and human gates. Here is the concrete Shapla Services payroll-gap story from the demo.</p>
+      </div>
+      <div class="lifecycle" aria-label="Request and response lifecycle">
+        <article class="lifecycle-step"><span class="step-dot">01</span><div><h3>Ask</h3><p>Nadia selects Shapla Services, sets <code>31 Oct 2026</code> as the target date, and chooses <strong>Run the rescue agent</strong> or asks the Assistant for a briefing.</p></div></article>
+        <article class="lifecycle-step"><span class="step-dot">02</span><div><h3>Guard the request</h3><p>The loopback HTTP layer checks the session, business membership, role, Host/Origin, CSRF token, body size and endpoint fields before the service sees a write.</p></div></article>
+        <article class="lifecycle-step"><span class="step-dot">03</span><div><h3>Build the facts</h3><p>The service walks exact integer minor units, maps invoice profiles, projects scheduled/likely/stress dates, and runs the seeded 1,000-future risk calculation.</p></div></article>
+        <article class="lifecycle-step"><span class="step-dot">04</span><div><h3>Compare choices</h3><p>The planner searches bounded combinations of allowed supplier deferrals, early-payment offers and reminders. It keeps payroll funded and the reserve floor intact through the look-ahead.</p></div></article>
+        <article class="lifecycle-step"><span class="step-dot">05</span><div><h3>Return evidence</h3><p>The browser receives a cash-weather result, source records, risks, rejected reasons and up to three proposal bundles. A response is information and a proposal—not an approval.</p></div></article>
+        <article class="lifecycle-step"><span class="step-dot">06</span><div><h3>Gate authority</h3><p>If Nadia reviews a bundle, the store checks PIN and role. Above the dual-approval threshold, Imran must approve separately and type the exact exposure too.</p></div></article>
+        <article class="lifecycle-step"><span class="step-dot">07</span><div><h3>Act once, then read back</h3><p>After simulated counterparties accept, the signed mandate, expiry, state hash, pause state and idempotency key are checked. The sandbox transaction commits once, returns before/after hashes, and appends evidence.</p></div></article>
+      </div>
+      <div class="example-panel">
+        <div class="example-copy">
+          <p class="eyebrow">Concrete example · Shapla Services</p>
+          <h3>What the judge should see</h3>
+          <p>Opening cash is BDT 120,000; payroll is BDT 80,000; a supplier bill is BDT 70,000; a confirmed receivable is BDT 20,000; the reserve floor is BDT 20,000. The scheduled minimum is <strong>BDT −10,000 on 31 Oct 2026</strong>, a reserve shortfall of <strong>BDT 30,000</strong>.</p>
+          <p>The response can propose a bounded bundle. It cannot claim the supplier agreed before negotiation, move a real balance, or turn a mock financing catalogue item into an executable offer.</p>
+        </div>
+        <div class="json-pair">
+          <div>
+            <p class="code-label">Request shape · illustrative</p>
+            <pre><code>{
+  "action": "run rescue agent",
+  "business": "Shapla Services",
+  "target_date": "2026-10-31"
+}</code></pre>
+          </div>
+          <div>
+            <p class="code-label">Response highlights</p>
+            <pre><code>{
+  "weather": "Storm",
+  "scheduled_minimum": "BDT -10,000",
+  "reserve_shortfall": "BDT 30,000",
+  "risk_runs": 1000,
+  "next": "review proposal; nothing executed"
+}</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter section-frame" id="features" aria-labelledby="features-title">
+      <div class="chapter-heading split-heading">
+        <div>
+          <p class="eyebrow">04 · Field guide</p>
+          <h2 id="features-title">Every major feature, with the exact path to use it</h2>
+        </div>
+        <p class="heading-aside">Open a card for the operator steps, expected result and the boundary a judge should ask about.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card" id="feature-cash">
+          <p class="feature-tag teal-tag">01 · Overview</p><h3>Cash weather &amp; scenarios</h3>
+          <p>Scheduled, likely and stress projections show when cash crosses the reserve floor, including the default 14-day look-ahead.</p>
+          <details><summary>How to use it</summary><ol><li>Sign in from the landing page and select a demo business.</li><li>Open <strong>Cash weather</strong>; choose a target date in the top bar.</li><li>Read the minimum cash, scenario cards, warning reasons and seeded risk fan.</li><li>Use <strong>Read my brief</strong> for a spoken/read-aloud summary.</li></ol><p class="guardrail"><strong>Boundary:</strong> the projection is a scheduled estimate from synthetic records, not a bank balance or guarantee.</p></details>
+        </article>
+        <article class="feature-card" id="feature-tidepay">
+          <p class="feature-tag gold-tag">02 · Forecasting</p><h3>TidePay customer profiles</h3>
+          <p>TidePay predicts five lateness bands per open invoice; explainable customer profiles remain the fallback when history is thin.</p>
+          <details><summary>How to use it</summary><ol><li>From Overview, open the customer or invoice explanation beside the forecast.</li><li>Compare on-time rate, expected delay, p80/p90 delay, grade and confidence.</li><li>Ask the Assistant which customer is the biggest risk, then open its tool plan.</li><li>Use the back-test shown in the UI as synthetic evidence, not a production accuracy claim.</li></ol><p class="guardrail"><strong>Boundary:</strong> TidePay was trained and evaluated on synthetic data; it does not make a binding credit decision.</p></details>
+        </article>
+        <article class="feature-card" id="feature-risk">
+          <p class="feature-tag teal-tag">03 · Risk</p><h3>Seeded Monte Carlo</h3>
+          <p>One thousand repeatable futures estimate reserve breaches, negative cash, unfunded payroll, expected/p90 shortfall and a common breach date.</p>
+          <details><summary>How to use it</summary><ol><li>Set the same business and target date to reproduce a result.</li><li>Read the weather label: Clear, Unsettled or Storm, and open the scenario detail.</li><li>Compare risk before and after a proposed bundle in Rescue.</li><li>Point judges to the seed rule: business, snapshot hash and target date.</li></ol><p class="guardrail"><strong>Boundary:</strong> only payment timing is uncertain in this model; it is not a general market forecast.</p></details>
+        </article>
+        <article class="feature-card" id="feature-risk-map">
+          <p class="feature-tag coral-tag">04 · Prioritisation</p><h3>Counterparty risk map</h3>
+          <p>Each customer is stressed alone—30 days late and then never paying—to rank expected cash impact beside supplier deferral options and fraud blocks.</p>
+          <details><summary>How to use it</summary><ol><li>Open <strong>Ask Tideway</strong> and ask, “Who is my biggest risk?”</li><li>Open the answer’s details to see which read tools were chosen.</li><li>Compare the customer’s cash lost by the horizon and extra days under reserve.</li><li>Use the result to decide which record to inspect, not to label a customer as bad.</li></ol><p class="guardrail"><strong>Boundary:</strong> this is a scenario ranking over the workspace records, not a credit report.</p></details>
+        </article>
+        <article class="feature-card" id="feature-planner">
+          <p class="feature-tag gold-tag">05 · Rescue</p><h3>Exact planner &amp; What-if</h3>
+          <p>The planner searches bounded combinations and ranks feasible bundles; What-if lets an operator move a payment date or add an expense without saving it.</p>
+          <details><summary>How to use it</summary><ol><li>Open <strong>Rescue plan</strong> and press <strong>Run the rescue agent</strong>.</li><li>Read the recommended and alternative bundles, source records, exposure and risk.</li><li>Open <strong>What-if</strong> to adjust a customer delay or add a dated expense.</li><li>Press reset or leave the view; What-if changes remain a simulation and are never written to the ledger.</li></ol><p class="guardrail"><strong>Boundary:</strong> payroll cannot be deferred; blocked payees and over-cap bundles are rejected.</p></details>
+        </article>
+        <article class="feature-card" id="feature-negotiation">
+          <p class="feature-tag teal-tag">06 · Counterparties</p><h3>Negotiation &amp; mock financing</h3>
+          <p>Rules-based simulated suppliers and customers accept, counter or reject. Financing is a labelled comparison of three mock products, never an executable offer.</p>
+          <details><summary>How to use it</summary><ol><li>Run a Rescue plan and review the requested actions.</li><li>Choose <strong>Send requests</strong> only after understanding the proposed terms.</li><li>Read each simulated reply; a counter becomes a revised proposal needing fresh approval.</li><li>Open financing comparisons for fee, term and time-to-cash context only.</li></ol><p class="guardrail"><strong>Boundary:</strong> simulated counterparties are fixed rules, not people; nothing contacts a supplier, lender or customer.</p></details>
+        </article>
+        <article class="feature-card" id="feature-approval">
+          <p class="feature-tag coral-tag">07 · Authority</p><h3>PIN approval &amp; signed mandates</h3>
+          <p>Approvals are maker-checker controls. A second person and typed exposure are required above the configured threshold; the final mandate is scoped and short-lived.</p>
+          <details><summary>How to use it</summary><ol><li>Review the exact bundle in Rescue and choose <strong>Review and approve</strong>.</li><li>Enter the operator PIN; type the exact exposure when prompted.</li><li>Switch to the second eligible demo operator if dual approval is required.</li><li>Inspect the mandate’s actions, amounts, snapshot/policy binding and expiry before negotiating or executing.</li></ol><p class="guardrail"><strong>Boundary:</strong> viewers cannot approve, and a mandate never authorises real money movement.</p></details>
+        </article>
+        <article class="feature-card" id="feature-execute">
+          <p class="feature-tag gold-tag">08 · Completion</p><h3>Execute once &amp; read back</h3>
+          <p>Execution checks accepted simulated replies, signature, expiry, pause state and fresh record/state hashes, then returns a receipt with before/after hashes.</p>
+          <details><summary>How to use it</summary><ol><li>After the required approvals, choose <strong>Send requests</strong> and wait for replies.</li><li>Choose <strong>Execute once</strong>; do not treat a proposal or counter as execution.</li><li>Read the receipt and its idempotency outcome.</li><li>Retrying with the same key returns the same receipt; a new key on a consumed mandate is refused.</li></ol><p class="guardrail"><strong>Boundary:</strong> execution mutates only the local sandbox and cannot move a bank balance.</p></details>
+        </article>
+        <article class="feature-card" id="feature-assistant">
+          <p class="feature-tag teal-tag">09 · Conversation</p><h3>Assistant &amp; TideLM</h3>
+          <p>Ask in English, 中文, Español, Français, Português, Bahasa Indonesia, Hinglish or Banglish. The answer uses tool output and shows the typed plan underneath.</p>
+          <details><summary>How to use it</summary><ol><li>Open <strong>Ask Tideway</strong> and start with “hi” for a live personal briefing.</li><li>Ask a concrete question such as <code>Nila Traders 晚20天付款会怎样？</code>.</li><li>Expand <strong>How Tideway worked this out</strong> to inspect the tool plan.</li><li>Use a suggested follow-up; try “pay Rahman now” to see that the assistant has no payment tool.</li></ol><p class="guardrail"><strong>Boundary:</strong> the model may read/propose; validators allow-list tools, and replies are composed from tool output rather than model authority.</p></details>
+        </article>
+        <article class="feature-card" id="feature-inbox">
+          <p class="feature-tag coral-tag">10 · Capture</p><h3>Zero-entry Inbox</h3>
+          <p>Paste a bank, card, mobile-money alert or chat message; the local extractor drafts a record and the deterministic scan flags injection or payment-detail changes.</p>
+          <details><summary>How to use it</summary><ol><li>Open <strong>Inbox</strong> and paste the synthetic message from the demo script.</li><li>Press <strong>Extract</strong>; read the red warning and flagged text.</li><li>Check the proposed date, amount, counterparty and record type.</li><li>Save only after confirming the clean fields; suspicious text remains data and is not an instruction.</li></ol><p class="guardrail"><strong>Boundary:</strong> drafts are not records until confirmed, and the extractor cannot approve or execute.</p></details>
+        </article>
+        <article class="feature-card" id="feature-records">
+          <p class="feature-tag gold-tag">11 · Ledger</p><h3>Records, CSV &amp; quarantine</h3>
+          <p>Transactions, invoices and bills are validated before storage. CSV import is all-or-nothing; suspicious free text is quarantined and spreadsheet formulas are neutralised on export.</p>
+          <details><summary>How to use it</summary><ol><li>Open <strong>Records</strong> and choose <strong>Import CSV</strong> or download the example.</li><li>Use the required <code>record_type</code> column and keep one business currency.</li><li>Review validation and quarantine results before writing.</li><li>Filter records by type/status and open quarantined text as data, not instructions.</li></ol><p class="guardrail"><strong>Boundary:</strong> a bad row rejects the whole import; the limit is 5,000 rows or 1.5 MB.</p></details>
+        </article>
+        <article class="feature-card" id="feature-security">
+          <p class="feature-tag teal-tag">12 · Security centre</p><h3>Fraud blocks &amp; injection defence</h3>
+          <p>Changed bank details, look-alike payees, hidden Unicode and instruction-like text are surfaced or blocked before an action can proceed.</p>
+          <details><summary>How to use it</summary><ol><li>Open <strong>Security centre</strong> and run the self-test to replay the 30 defined cases.</li><li>Open a flagged payee and use the owner-only callback verification path when the synthetic fixture requires it.</li><li>Inspect separation of duties: the verifier cannot be the only approver for that payee.</li><li>Open blocked records and read the structured reason instead of bypassing it.</li></ol><p class="guardrail"><strong>Boundary:</strong> 30/30 is evidence for listed synthetic cases only, not proof that every attack is stopped or a certification.</p></details>
+        </article>
+        <article class="feature-card" id="feature-autonomy">
+          <p class="feature-tag coral-tag">13 · Control</p><h3>Autonomy dial &amp; kill switch</h3>
+          <p>Advise reads and explains; Propose creates plans; Delegate allows only capped zero-cash reminders under a standing mandate. Pause and circuit-breaker controls stop the agent.</p>
+          <details><summary>How to use it</summary><ol><li>Open <strong>Security centre</strong> and read the permission matrix.</li><li>Change the autonomy setting only as the owner, with the required PIN.</li><li>Use the kill switch with a written reason to pause planning/execution; only the owner resumes.</li><li>Review the denial counter after five security denials in ten minutes.</li></ol><p class="guardrail"><strong>Boundary:</strong> moving money and payroll deferral are never delegated; the agent principal cannot execute a money mandate.</p></details>
+        </article>
+        <article class="feature-card" id="feature-team">
+          <p class="feature-tag gold-tag">14 · Workspaces</p><h3>Businesses, roles &amp; team invites</h3>
+          <p>Sign-up creates a business and owner; invite codes add an owner, accountant or viewer within plan seat limits. Every request is scoped to a member’s business.</p>
+          <details><summary>How to use it</summary><ol><li>From the landing page, choose <strong>Start free</strong>, enter business name, currency, cash, reserve, username and a valid 6–12 digit PIN.</li><li>Open <strong>Team</strong> as owner and create a one-time invite code.</li><li>Join with that code using a role and separate PIN; switch businesses only from the picker.</li><li>Test the boundary: a viewer can read but cannot approve.</li></ol><p class="guardrail"><strong>Boundary:</strong> plans and prices are illustrative; nothing is charged, and tenants cannot see one another’s data.</p></details>
+        </article>
+        <article class="feature-card" id="feature-evidence">
+          <p class="feature-tag teal-tag">15 · Proof</p><h3>Evidence, audit &amp; exports</h3>
+          <p>The Evidence view verifies the hash chain and witness checkpoint, records the first invalid entry, and offers a tamper drill plus local exports.</p>
+          <details><summary>How to use it</summary><ol><li>Open <strong>Evidence</strong> after a proposal, approval or execution.</li><li>Run verification and read the chain status and witness result.</li><li>Run the tamper drill to see an edited copy detected.</li><li>Export evidence JSON, records/receipts CSV or the draft ISO 20022 <code>pain.001.001.09</code> file.</li></ol><p class="guardrail"><strong>Boundary:</strong> the payment file is a draft that is never transmitted; a local witness reduces but cannot eliminate privileged-host risk.</p></details>
+        </article>
+        <article class="feature-card" id="feature-international">
+          <p class="feature-tag coral-tag">16 · Reach</p><h3>Currency and language coverage</h3>
+          <p>Workspaces choose one of 29 ISO 4217 currencies; the demo shows BDT, CNY and SGD. Screening covers multiple languages and common bank/wallet identifiers.</p>
+          <details><summary>How to use it</summary><ol><li>Choose a supported currency during sign-up; keep every record in that business currency.</li><li>Ask the Assistant in one of its supported languages and compare the same numbers.</li><li>Paste a synthetic alert in Inbox to see multilingual draft extraction and screening.</li><li>Use display conversion only as illustrative viewing; calculations and mandates remain native.</li></ol><p class="guardrail"><strong>Boundary:</strong> mixed currencies inside one business are rejected, and display FX is not live exchange data.</p></details>
+        </article>
+        <article class="feature-card" id="feature-cloud">
+          <p class="feature-tag gold-tag">17 · Optional</p><h3>Optional cloud-LLM mode</h3>
+          <p>The default local agent and TideLM run on-device. An opt-in OpenAI-compatible mode can use a user key and per-message consent with pseudonymised names.</p>
+          <details><summary>How to use it</summary><ol><li>Copy <code>.env.example</code> to <code>.env</code> only on your own machine and set your own key; never commit it.</li><li>Restart the app and opt in for a specific Assistant message.</li><li>Read the consent text before sending; only pseudonymised names and tool output are eligible.</li><li>Inspect grounding flags when model text contains a number not present in tool output.</li></ol><p class="guardrail"><strong>Boundary:</strong> optional live-provider behaviour has not been measured in this repository; no live-LLM result is claimed.</p></details>
+        </article>
+      </div>
+    </section>
+
+    <section class="chapter section-frame" id="setup" aria-labelledby="setup-title">
+      <div class="chapter-heading">
+        <p class="eyebrow">05 · Reproduce the story</p>
+        <h2 id="setup-title">Setup, demo credentials and the honest scope</h2>
+        <p class="chapter-dek">A judge should be able to start from a clean checkout, see the same synthetic story, and know exactly what a credential or result means.</p>
+      </div>
+      <div class="setup-grid">
+        <article class="setup-card setup-primary">
+          <p class="card-number">01 · Requirements</p>
+          <h3>Run the default offline prototype</h3>
+          <ul class="check-list">
+            <li><strong>Python 3.11.11</strong> (the supported version is pinned in <code>.python-version</code>).</li>
+            <li>Python standard library for the default runtime; no paid service or package install is required.</li>
+            <li>A modern browser. The server binds to loopback only.</li>
+            <li>Node 22+ and Google Chrome are needed only for the screenshot/PDF helper scripts.</li>
+          </ul>
+          <pre class="setup-code"><code>python3 run.py
+# open http://127.0.0.1:8787</code></pre>
+          <p class="small-note">For a reproducible check, use <code>make test</code>. For a clean isolated sandbox, build the supplied Dockerfile and map <code>127.0.0.1:8787</code>.</p>
+        </article>
+        <article class="setup-card">
+          <p class="card-number">02 · Optional model path</p>
+          <h3>TideLM stays optional</h3>
+          <p>The app works without the adapter: the deterministic local agent answers instead. On Apple Silicon, the repository documents downloading the deployed adapter, installing <code>mlx-lm</code>, and evaluating it locally. This path is not needed for the core demo.</p>
+          <div class="command-stack"><code>python3 scripts/get_tidelm.py</code><code>pip install mlx-lm</code></div>
+          <p class="small-note">The optional model is trained on synthetic examples. Do not describe it as a live-provider result or as a guarantee.</p>
+        </article>
+      </div>
+      <div class="demo-grid">
+        <article class="demo-card">
+          <p class="card-number">03 · Synthetic demo accounts</p>
+          <h3>Use these credentials only in the demo</h3>
+          <div class="credential-table-wrap">
+            <table class="credential-table">
+              <caption class="sr-only">Synthetic Tideway demo credentials</caption>
+              <thead><tr><th scope="col">Role</th><th scope="col">Operator</th><th scope="col">PIN</th><th scope="col">Can do</th></tr></thead>
+              <tbody>
+                <tr><td>Owner</td><td>Nadia</td><td><code>2468</code></td><td>Approve, configure, resume</td></tr>
+                <tr><td>Accountant</td><td>Imran</td><td><code>1357</code></td><td>Approve with owner</td></tr>
+                <tr><td>Viewer</td><td>Guest</td><td><code>0000</code></td><td>Read-only</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="warning-note"><strong>Demo-only credentials.</strong> They are fictional and intentionally visible in this public handbook. They are not passwords for any real account.</p>
+        </article>
+        <article class="demo-card demo-walkthrough">
+          <p class="card-number">04 · Two-minute judge route</p>
+          <h3>Show the complete loop</h3>
+          <ol class="numbered-list">
+            <li>Run <code>python3 run.py</code>; sign in as <strong>Nadia (Owner)</strong>.</li>
+            <li>On Shapla Services, open Cash weather and press <strong>Read my brief</strong>.</li>
+            <li>Ask Tideway in English or another supported language; expand its tool plan.</li>
+            <li>Run Rescue, inspect the exact bundle, then approve with Nadia’s PIN and typed exposure.</li>
+            <li>Switch to Imran for the second approval, send simulated requests, and execute once.</li>
+            <li>Use Inbox with the injection sample, then Security centre self-test and Evidence tamper drill.</li>
+          </ol>
+        </article>
+      </div>
+      <aside class="scope-callout">
+        <div class="scope-icon" aria-hidden="true">!</div>
+        <div><h3>Read the sandbox label before reading any number</h3><p>All businesses, customers, suppliers, messages, balances and credentials in this project are synthetic. Financing products are labelled <strong>MOCK</strong>. The ISO 20022 payment file is a draft and is never sent. There is no production bank integration, lender decision, payroll deferral, payment rail, or claim that cash improves by a particular percentage. The self-test is evidence for its listed cases, not a certification.</p></div>
+      </aside>
+    </section>
+
+    <section class="chapter viva-chapter section-frame" id="viva" aria-labelledby="viva-title">
+      <div class="chapter-heading split-heading">
+        <div>
+          <p class="eyebrow">06 · Judge center</p>
+          <h2 id="viva-title">Viva bank: answer the “why” behind the demo</h2>
+        </div>
+        <p class="heading-aside">Search the local question bank, filter by chapter, reveal a model answer, or let the browser choose a prompt. The bank is generated deterministically from current Tideway topics.</p>
+      </div>
+
+      <div class="viva-toolbar" aria-label="Viva bank controls">
+        <label class="search-control" for="viva-search"><span>Search questions</span><input id="viva-search" type="search" autocomplete="off" placeholder="Try “mandate”, “Shapla”, or “sandbox”"></label>
+        <label class="select-control" for="viva-category"><span>Category</span><select id="viva-category"><option value="all">All categories</option></select></label>
+        <div class="viva-actions">
+          <button class="button button-primary" id="viva-random" type="button">Random question <span aria-hidden="true">↻</span></button>
+          <button class="button button-secondary" id="viva-print" type="button">Print bank</button>
+          <button class="button button-quiet" id="viva-export" type="button">Export JSON</button>
+        </div>
+      </div>
+      <div class="category-chips" id="viva-chips" role="group" aria-label="Filter by viva category"></div>
+      <p class="viva-status" id="viva-status" role="status" aria-live="polite">Building the local question bank…</p>
+
+      <div class="viva-featured-grid">
+        <article class="viva-spotlight" aria-labelledby="viva-current-question">
+          <div class="spotlight-topline"><span id="viva-current-category">Featured question</span><span id="viva-current-id">V-0001</span></div>
+          <h3 id="viva-current-question">Loading a question…</h3>
+          <p class="spotlight-prompt">Try answering aloud before opening the details. A good answer names the user problem, the mechanism, and the control that keeps the claim honest.</p>
+          <button class="button button-secondary reveal-button" id="viva-reveal" type="button">Reveal answer</button>
+          <details class="current-answer" id="viva-current-details">
+            <summary>Answer details</summary>
+            <div id="viva-current-answer" class="answer-body"></div>
+          </details>
+        </article>
+        <aside class="framework-card" aria-labelledby="framework-title">
+          <p class="feature-tag gold-tag">30-second framework</p>
+          <h3 id="framework-title">S · M · G</h3>
+          <p class="framework-intro">Keep a judge answer short enough to trust and specific enough to verify.</p>
+          <ol class="framework-list">
+            <li><strong>Situation · 0–10s</strong><span>Name the SME cash problem and the synthetic Shapla story.</span></li>
+            <li><strong>Mechanism · 10–20s</strong><span>Say what Tideway computes or proposes, and where the number comes from.</span></li>
+            <li><strong>Guardrail · 20–30s</strong><span>State the human approval, sandbox boundary, test evidence or known limitation.</span></li>
+          </ol>
+          <p class="framework-closer">Close with: “I can show that in the app.”</p>
+        </aside>
+      </div>
+
+      <div class="bank-heading"><div><p class="eyebrow">Deterministic question bank</p><h3>Choose a card to practise</h3></div><strong id="viva-count">1,200 questions</strong></div>
+      <div class="viva-results" id="viva-results" role="list" aria-live="polite"></div>
+      <button class="button button-secondary load-more" id="viva-more" type="button">Show more questions</button>
+      <noscript><p class="noscript-note">The viva bank needs JavaScript to generate and filter its local questions. The rest of this handbook remains readable without it.</p></noscript>
+    </section>
+  </main>
+
+  <footer class="guide-footer section-frame">
+    <div><a class="wordmark footer-wordmark" href="#top"><span class="wordmark-mark" aria-hidden="true"><span></span><span></span><span></span></span><span class="wordmark-type">Tideway <small>HANDBOOK</small></span></a><p>Approval-gated cash-flow rescue for small businesses, documented plainly.</p></div>
+    <div class="footer-links"><a href="#overview">Start at overview</a><a href="#viva">Open viva center</a><a href="/">Return to app <span aria-hidden="true">↗</span></a></div>
+    <p class="footer-disclaimer">Synthetic sandbox · no real money moves · no external dependencies</p>
+  </footer>
+</body>
+</html>

@@ -23,7 +23,8 @@ from .vision import TideVision, TideVisionUnavailable
 
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = {"/": "index.html", "/index.html": "index.html", "/styles.css": "styles.css", "/app.js": "app.js",
-          "/favicon.svg": "favicon.svg"}
+          "/favicon.svg": "favicon.svg", "/guide": "guide.html", "/guide.html": "guide.html",
+          "/guide.css": "guide.css", "/guide.js": "guide.js"}
 CONTENT_TYPES = {"html": "text/html", "css": "text/css", "js": "text/javascript", "svg": "image/svg+xml"}
 COOKIE = "tideway_session"
 

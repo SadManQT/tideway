@@ -7,6 +7,7 @@
 ## Two-minute tour for judges
 
 1. `python3 run.py` and open <http://127.0.0.1:8787>. Click **Nadia (Owner)** on the landing page.
+   The public project handbook is available at <http://127.0.0.1:8787/guide.html> (or `/guide`).
 2. **Cash weather**: Shapla Services is in a storm; press **Read my brief**.
 3. **Ask Tideway**: say "hi", then ask in another language, e.g. "Nila Traders 晚20天付款会怎样？". Open the plan under the answer to see exactly which tools the model chose.
 4. **Rescue plan**: run the agent, then approve with PIN `2468` (and Imran `1357` for the second approval).
