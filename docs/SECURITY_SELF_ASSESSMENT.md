@@ -13,7 +13,7 @@
 | Audit trail | Accountability | Hash chain plus independent witness |
 | Signing and witness keys | Mandate trust | Local key files, kept out of Git (`data/` is ignored) |
 
-Trust boundaries: (1) user to server (cookie, CSRF, Origin/Host checks, tenant membership); (2) model to tools (TideLM plans pass a typed validator; allow-list, read/propose only; a forbidden tool counts toward the circuit breaker); (3) tools to store (the only code that can approve, sign or execute); (4) record text to anything that reasons (quarantine and pseudonymisation).
+Trust boundaries: (1) user to server (cookie, CSRF, Origin/Host checks, tenant membership); (2) model to tools (TideLM plans pass a typed validator; allow-list, read/propose only; a forbidden tool counts toward the circuit breaker); (3) tools to store (the only code that can approve, sign or execute); (4) stored record text to anything that reasons (quarantine and pseudonymisation). Inbox messages and photos are the deliberate exception: the local extractor must read them to draft records, but deterministic screening, validation and human confirmation keep that input from becoming an instruction or an action.
 
 **Worst-case assumptions used in testing.** The model is fully hijacked and the human approver rubber-stamps whatever is proposed. The claim under test is that money cannot move on a fooled model's word, because enforcement lives outside the model.
 
@@ -75,13 +75,13 @@ Loopback bind; Host and Origin allow-lists; CSRF token on every write; `HttpOnly
 
 ## 5. Privacy
 
-TideLM, the default assistant, runs on the owner's machine: no question, record or extracted message leaves it. The deterministic local agent sends nothing anywhere either. In optional LLM mode (per-message consent) counterparty names are replaced with pseudonyms and record free text is never sent. Demo data is fictional. No credentials, passports or personal data are in the repository; `.env` and `data/` are ignored.
+TideLM, the default assistant, runs on the owner's machine: no question, record or extracted message leaves it. The deterministic local agent sends nothing anywhere either. The Inbox extractor receives the pasted message or photo locally because it must draft a record; it never receives an approval or execution capability, and nothing is saved until confirmation. In optional LLM mode (per-message consent) counterparty names are replaced with pseudonyms and record free text is never sent. Demo data is fictional. No credentials, passports or personal data are in the repository; `.env` and `data/` are ignored.
 
 ## 6. Known risks and residual limitations
 
 1. **Demo-grade identity.** PINs and a local signing key stand in for real authentication and hardware-backed keys.
 2. **Privileged attacker.** Someone who can rewrite the database and both key files can forge history; the witness raises the bar but is not a ledger anchored outside the host.
-3. **Rule-based injection scan.** Patterns (eight languages) catch known phrasing; new phrasing could slip past the scan. TideLM also flags injection in pasted text (100% on its synthetic test set), but a model is not a guarantee. The structural defence (no approve or execute tool, quarantine, pseudonymisation, mandates) does not rely on it.
+3. **Rule-based injection scan.** Patterns (eight languages) catch known phrasing; new phrasing could slip past the scan. TideLM also flags injection in pasted text (100% on its synthetic test set), but a model is not a guarantee. The structural defence (no approve or execute tool, draft-only Inbox, quarantine of stored records, pseudonymisation and mandates) does not rely on it.
 4. **Simulated counterparties.** Real suppliers and customers behave differently; real rails add failure modes (partial settlement, reversal).
 5. **Single process and SQLite.** Adequate for the sandbox; production needs a hardened service and database.
 6. **Human factors.** A rubber-stamp approver is assumed in testing, but fast approvals are only flagged, not blocked.

@@ -434,14 +434,15 @@ def make_handler(app):
     return Handler
 
 
-def serve(db_path, port=8787, key="", model="gpt-5-mini", seed=True):
+def serve(db_path, port=8787, key="", model="gpt-5-mini", seed=True, host="127.0.0.1"):
     app = Application(db_path, key, model, seed)
-    server = ThreadingHTTPServer(("127.0.0.1", port), make_handler(app))
+    server = ThreadingHTTPServer((host, port), make_handler(app))
     if app.tidelm.status()["available"]:  # load TideLM in the background so the first question is fast
         import threading
         threading.Thread(target=app.tidelm.warm, name="tidelm-warmup", daemon=True).start()
         print("TideLM: loading the on-device model in the background…", flush=True)
-    print(f"Tideway is ready: http://127.0.0.1:{server.server_port}", flush=True)
+    display_host = "127.0.0.1" if host in ("0.0.0.0", "::") else host
+    print(f"Tideway is ready: http://{display_host}:{server.server_port}", flush=True)
     print("Demo sign-in (synthetic sandbox): owner Nadia PIN 2468 · accountant Imran PIN 1357 · viewer Guest PIN 0000", flush=True)
     print("AI provider connected (consent required per message)." if key else
           "Local agent mode (no network). Set OPENAI_API_KEY in .env to try the optional LLM mode.", flush=True)

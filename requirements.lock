@@ -1,0 +1,2 @@
+# Tideway's default runtime has no third-party Python dependencies.
+# Optional Apple Silicon MLX packages are intentionally outside the offline sandbox.

@@ -17,7 +17,7 @@ def load_env():
             line = line.strip()
             if line and not line.startswith("#") and "=" in line:
                 key, value = line.split("=", 1)
-                if key.strip() in ("OPENAI_API_KEY", "OPENAI_MODEL", "TIDEWAY_PORT"):
+                if key.strip() in ("OPENAI_API_KEY", "OPENAI_MODEL", "TIDEWAY_HOST", "TIDEWAY_PORT"):
                     os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
 
 
@@ -28,12 +28,15 @@ if __name__ == "__main__":
         sys.stdout.reconfigure(encoding="utf-8")
     load_env()
     parser = argparse.ArgumentParser(description="Tideway: approval-gated cash-flow rescue (synthetic sandbox)")
+    parser.add_argument("--host", default=os.getenv("TIDEWAY_HOST", "127.0.0.1"),
+                        help="Bind address (loopback by default; Docker uses 0.0.0.0 behind a local port mapping)")
     parser.add_argument("--port", type=int, default=int(os.getenv("TIDEWAY_PORT", "8787")))
     parser.add_argument("--db", default=str(ROOT / "data" / "tideway.sqlite3"))
     parser.add_argument("--no-demo", action="store_true", help="Start without the synthetic demo businesses")
     args = parser.parse_args()
     try:
-        serve(args.db, args.port, os.getenv("OPENAI_API_KEY", "").strip(), os.getenv("OPENAI_MODEL", "gpt-5-mini"), not args.no_demo)
+        serve(args.db, args.port, os.getenv("OPENAI_API_KEY", "").strip(), os.getenv("OPENAI_MODEL", "gpt-5-mini"),
+              not args.no_demo, args.host)
     except OSError as exc:
         if exc.errno != errno.EADDRINUSE:
             raise

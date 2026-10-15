@@ -100,7 +100,7 @@ def document(work: Path, name: str, markdown_path: Path, destination: Path):
 
 def _json(path):
     try:
-        return json.loads((ROOT / path).read_text())
+        return json.loads((ROOT / path).read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return None
 
@@ -116,7 +116,7 @@ def _tidelm():
 
 def _test_count():
     import ast
-    return sum(1 for path in (ROOT / "tests").glob("test_*.py") for node in ast.walk(ast.parse(path.read_text()))
+    return sum(1 for path in (ROOT / "tests").glob("test_*.py") for node in ast.walk(ast.parse(path.read_text(encoding="utf-8")))
                if isinstance(node, ast.FunctionDef) and node.name.startswith("test_"))
 
 

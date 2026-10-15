@@ -26,6 +26,7 @@ evidence/private/
 /demo/presentation-production/render/intro-scenes.json
 /demo/presentation-production/qa/final-audio-decoded.wav
 .env.local
+.vscode/
 
 # Local model weights and adapters (regenerate with tideway/ml).
 models/

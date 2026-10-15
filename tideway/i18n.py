@@ -392,12 +392,12 @@ M = {
                     "pt": "{payee} (nome quase igual a {similar}: possível impostor)", "id": "{payee} (nama mirip {similar}: kemungkinan penipu)"},
     "nothing_blocked": {"en": "No bills are blocked.", "zh": "没有被冻结的账单。", "es": "No hay facturas bloqueadas.", "fr": "Aucune facture n'est bloquée.",
                         "pt": "Nenhuma conta está bloqueada.", "id": "Tidak ada tagihan yang diblokir."},
-    "quarantined": {"en": "{n} record(s) contain instruction-like text and are quarantined; they never reach a model.",
-                    "zh": "有{n}条记录含有类似指令的文字，已被隔离，永远不会发送给模型。",
-                    "es": "{n} registro(s) contienen texto con apariencia de instrucciones y están en cuarentena; nunca llegan a un modelo.",
-                    "fr": "{n} enregistrement(s) contiennent un texte ressemblant à des instructions et sont en quarantaine ; ils n'atteignent jamais un modèle.",
-                    "pt": "{n} registro(s) contêm texto com cara de instrução e estão em quarentena; nunca chegam a um modelo.",
-                    "id": "{n} catatan berisi teks mirip perintah dan dikarantina; tidak pernah sampai ke model."},
+    "quarantined": {"en": "{n} stored record(s) contain instruction-like text and are quarantined; they are not used as model context or instructions.",
+                    "zh": "有{n}条已保存记录含有类似指令的文字，已被隔离，不会作为模型上下文或指令使用。",
+                    "es": "{n} registro(s) guardado(s) contienen texto con apariencia de instrucciones y están en cuarentena; no se usan como contexto ni instrucciones del modelo.",
+                    "fr": "{n} enregistrement(s) enregistré(s) contiennent un texte ressemblant à des instructions et sont en quarantaine ; ils ne servent pas de contexte ni d'instruction au modèle.",
+                    "pt": "{n} registro(s) salvo(s) contêm texto com cara de instrução e estão em quarentena; não são usados como contexto nem instrução do modelo.",
+                    "id": "{n} catatan tersimpan berisi teks mirip perintah dan dikarantina; tidak digunakan sebagai konteks atau instruksi model."},
 }
 
 SUGGESTIONS = {

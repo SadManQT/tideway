@@ -27,6 +27,32 @@ python3 run.py
 
 Open <http://127.0.0.1:8787>. The server binds to loopback only; do not expose it to a network.
 
+## Reproducible setup, test and local deployment
+
+The default runtime is offline and uses only the Python standard library. The
+repository pins the supported interpreter in `.python-version` and keeps the
+dependency lock marker in `requirements.lock`.
+
+```bash
+# Native setup (Python 3.11.11)
+python3 --version
+make test                 # the canonical offline test command
+make selftest             # 30-case task and security scorecard
+make build                # bytecode/compile check
+make run                  # start http://127.0.0.1:8787
+```
+
+For a clean, isolated sandbox with persistent local data:
+
+```bash
+docker build -t tideway:local .
+docker run --rm -p 127.0.0.1:8787:8787 -v tideway-data:/app/data tideway:local
+```
+
+The Docker image binds internally for container networking, while the example
+port mapping exposes it only on the host loopback interface. No production
+deployment or external service is implied.
+
 | Role | Operator | PIN |
 |---|---|---|
 | Owner | Nadia | `2468` |
@@ -56,7 +82,7 @@ python3 scripts/build_submission_pdfs.py   # pitch, architecture and security PD
 7. **Executes once, verifiably.** Idempotent execution against the sandbox, state hashes before and after, and a read-back check.
 8. **Stays stoppable.** A kill switch pauses the agent (only the owner resumes, with a reason). A circuit breaker pauses it automatically after repeated security denials.
 9. **Resists fraud.** Changed bank details and look-alike payee names block every action on the bill. Only flagged payees can be verified: by the owner, by callback to a number on file. Whoever verified a payee cannot be the only approver of actions for it (separation of duties).
-10. **Quarantines injection.** Hidden Unicode is stripped and flagged; instruction-like text in records is quarantined and never reaches a model.
+10. **Quarantines injection.** Hidden Unicode is stripped and flagged; instruction-like text already in ledger records is quarantined as data and excluded from planning/model context. Inbox text is intentionally read by the on-device extractor, but its deterministic scan, draft-only workflow and confirmation step keep it from becoming an instruction or an action.
 11. **Optional cloud LLM mode.** Off by default; TideLM (below) is the on-device default. With a key and per-message consent, counterparty names are pseudonymised, record free text is never sent, and every number in the answer is checked against tool output (ungrounded numbers are flagged).
 12. **Proves what happened.** A hash-chained audit log with an independent witness checkpoint (truncation is detected), and a one-click tamper drill.
 13. **Dials autonomy.** Advise, Propose or Delegate. Under Delegate, a standing mandate lets the agent send zero-cash reminders only, capped per day. Moving money is never delegated.

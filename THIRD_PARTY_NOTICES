@@ -2,10 +2,10 @@ Tideway uses Python's standard library for runtime code.
 
 Optional verification tooling:
 
-* Playwright Python bindings and an installed Chromium/Chrome browser may be
-  used by tests/browser_check.py and scripts/capture_previews.py. These tools
-  are not bundled in the application runtime and remain subject to their own
-  licenses and installation terms.
+* The optional browser verification script (`scripts/capture_screens.mjs`)
+  uses Node.js built-in WebSocket support and an installed Chromium/Chrome
+  browser. These tools are not bundled in the application runtime and remain
+  subject to their own licenses and installation terms.
 * The optional AI adapter sends consented requests to the OpenAI Responses API.
   OpenAI services, models, SDK/API terms, and retention policies are external
   to this repository. No API key or provider asset is included here.

@@ -372,8 +372,8 @@ class Agent:
             answer = (("The agent is paused by the kill switch. " if security["agent_paused"] else "") +
                       (f"{len(blocked)} bill(s) are blocked: " + "; ".join(f"{bill_id}: {reason}" for bill_id, reason in blocked.items())
                        if blocked else "No bills are blocked.") +
-                      f" {len(security['quarantined_records'])} record(s) contain instruction-like text and are quarantined; "
-                      "they never reach a model.")
+                       f" {len(security['quarantined_records'])} stored record(s) contain instruction-like text and are quarantined; "
+                       "they are not used as model context or instructions.")
         elif named and re.search(r"\bcredit\b|\bterms?\b|on account|udhaar|\bbaki\b", text):
             days = re.search(r"(\d{1,3})\s*-?\s*(?:days?|din)\b", text)
             amounts = [float(n.replace(",", "")) * (1000 if k else 1) for n, k in re.findall(r"(\d[\d,]*(?:\.\d+)?)\s*(k)?\b", text)
