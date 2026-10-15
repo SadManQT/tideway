@@ -10,10 +10,11 @@ from __future__ import annotations
 import difflib
 import statistics
 from datetime import date, timedelta
+from decimal import Decimal, InvalidOperation
 
 from . import analytics, conversation, i18n
 from .domain import (MAX_UNITS, OPEN_INVOICE_STATUSES, SETTLED_INVOICE_STATUSES, SecurityError, ValidationError, add_days, days_between,
-                     money_text)
+                     money_text, valid_date)
 from .ml.model import BUCKETS, predict_for
 from .projection import summary
 
@@ -32,6 +33,104 @@ TOOLS = {
     "refuse": {"reason"},
 }
 MAX_CALLS = 4
+
+
+def _text(value, field):
+    if not isinstance(value, str) or not value.strip():
+        raise ValidationError(f"{field} must be non-empty text.")
+
+
+def _number(value, field, *, minimum=None, maximum=None, decimals=None):
+    """Validate a JSON number without allowing bools, NaN, infinity or overflow."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValidationError(f"{field} must be a number.")
+    try:
+        number = Decimal(str(value))
+    except (InvalidOperation, ValueError, AttributeError):
+        raise ValidationError(f"{field} must be a number.") from None
+    if not number.is_finite():
+        raise ValidationError(f"{field} must be a finite number.")
+    if minimum is not None and number < minimum:
+        raise ValidationError(f"{field} must be at least {minimum}.")
+    if maximum is not None and number > maximum:
+        raise ValidationError(f"{field} must be at most {maximum}.")
+    if decimals is not None:
+        quantum = Decimal(1).scaleb(-decimals)
+        if number != number.quantize(quantum):
+            raise ValidationError(f"{field} may have at most {decimals} decimal places.")
+
+
+def _text_list(value, field):
+    if not isinstance(value, list):
+        raise ValidationError(f"{field} must be a list of names.")
+    for index, item in enumerate(value):
+        _text(item, f"{field}[{index}]")
+
+
+def _validate_what_if_args(args):
+    delays = args.get("customer_delays")
+    if delays is not None:
+        if not isinstance(delays, dict) or len(delays) > 20:
+            raise ValidationError("what_if.customer_delays must map up to 20 customers to extra days.")
+        for customer, days in delays.items():
+            _text(customer, "what_if.customer_delays customer")
+            if isinstance(days, bool) or not isinstance(days, int) or not -30 <= days <= 90:
+                raise ValidationError("what_if customer delays must be whole numbers from -30 to 90 days.")
+
+    expense = args.get("extra_expense")
+    if expense is not None:
+        if not isinstance(expense, dict):
+            raise ValidationError("what_if.extra_expense must be an object.")
+        unknown = [key for key in expense if key not in {"amount", "date"}]
+        if unknown:
+            raise ValidationError("what_if.extra_expense takes only amount and date.")
+        if "amount" not in expense or "date" not in expense:
+            raise ValidationError("what_if.extra_expense needs amount and date.")
+        _number(expense["amount"], "what_if.extra_expense.amount", minimum=Decimal("0.01"),
+                maximum=MAX_UNITS, decimals=2)
+        valid_date(expense["date"], "what_if.extra_expense.date")
+
+    if "drop_invoice_customer" in args and args["drop_invoice_customer"] is not None:
+        _text(args["drop_invoice_customer"], "what_if.drop_invoice_customer")
+
+
+def _validate_tool_args(tool, args):
+    """Validate model-produced argument values before any tool implementation sees them."""
+    if tool == "project_cash":
+        if "scenario" in args:
+            _text(args["scenario"], "project_cash.scenario")
+            if args["scenario"] not in ("base", "likely", "stress"):
+                raise ValidationError("project_cash.scenario must be base, likely or stress.")
+    elif tool == "what_if":
+        _validate_what_if_args(args)
+    elif tool == "propose_plan":
+        if "exclude_counterparties" in args and args["exclude_counterparties"] is not None:
+            _text_list(args["exclude_counterparties"], "propose_plan.exclude_counterparties")
+        if "max_discount_pct" in args and args["max_discount_pct"] is not None:
+            _number(args["max_discount_pct"], "propose_plan.max_discount_pct", minimum=Decimal("0"), maximum=Decimal("10"))
+        if "prefer" in args and args["prefer"] is not None:
+            _text(args["prefer"], "propose_plan.prefer")
+            if args["prefer"] not in ("lowest_cost", "lowest_risk", "fewest_asks"):
+                raise ValidationError("propose_plan.prefer is not recognised.")
+    elif tool == "credit_check":
+        missing = [field for field in ("customer", "amount", "terms_days") if field not in args]
+        if missing:
+            raise ValidationError(f"credit_check needs: {', '.join(missing)}.")
+        _text(args["customer"], "credit_check.customer")
+        _number(args["amount"], "credit_check.amount", minimum=Decimal("0.01"), maximum=MAX_UNITS)
+        if isinstance(args["terms_days"], bool) or not isinstance(args["terms_days"], int) or not 0 <= args["terms_days"] <= 180:
+            raise ValidationError("credit_check.terms_days must be a whole number from 0 to 180.")
+    elif tool == "draft_reminders":
+        if "customers" in args and args["customers"] is not None:
+            _text_list(args["customers"], "draft_reminders.customers")
+    elif tool == "customer_report":
+        if "customer" in args and args["customer"] is not None:
+            _text(args["customer"], "customer_report.customer")
+    elif tool == "refuse":
+        if "reason" in args:
+            _text(args["reason"], "refuse.reason")
+            if args["reason"] not in ("approve_or_move_money", "out_of_scope"):
+                raise ValidationError("refuse.reason is not recognised.")
 
 
 def resolve_name(name, candidates):
@@ -53,12 +152,23 @@ def validate_plan(plan):
     if len(plan["calls"]) > MAX_CALLS:
         raise ValidationError("Too many tool calls in one plan.")
     for call in plan["calls"]:
-        if not isinstance(call, dict) or call.get("tool") not in TOOLS:
+        if not isinstance(call, dict):
             raise SecurityError("forbidden_tool",
-                                f"tool {str(call.get('tool') if isinstance(call, dict) else call)[:40]} is not permitted.")
-        args = call.get("args") or {}
-        if not isinstance(args, dict) or not set(args) <= TOOLS[call["tool"]]:
+                                f"tool {str(call)[:40]} is not permitted.")
+        tool = call.get("tool")
+        if not isinstance(tool, str) or tool not in TOOLS:
+            raise SecurityError("forbidden_tool", f"tool {str(tool)[:40]} is not permitted.")
+        unknown_call_fields = set(call) - {"tool", "args"}
+        if unknown_call_fields:
+            raise ValidationError(f"Call for {tool} has unsupported fields.")
+        if "args" in call and not isinstance(call["args"], dict):
+            raise ValidationError(f"Arguments for {tool} must be an object.")
+        args = call.get("args", {})
+        if not set(args) <= TOOLS[tool]:
             raise ValidationError(f"Arguments for {call['tool']} do not match its schema.")
+        _validate_tool_args(tool, args)
+    if "intent" in plan:
+        _text(plan["intent"], "Plan intent")
     return plan
 
 
@@ -168,7 +278,7 @@ def run_plan(app, business_id, target_date, plan, actor, lang="en"):
     names = customers_of(snapshot)
     results = []
     for call in plan["calls"]:
-        tool, args = call["tool"], call.get("args") or {}
+        tool, args = call["tool"], call.get("args", {})
         if tool == "refuse":
             results.append({"tool": tool, "result": {"refused": True, "reason": args.get("reason", "out_of_scope")}})
         elif tool == "project_cash":

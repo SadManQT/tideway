@@ -168,6 +168,12 @@ class TideLM:
                     conversation.not_understood(conversation.situation(app, business_id, target_date), lang))
             if isinstance(exc, SecurityError):  # the model asked for a forbidden tool: counts toward the breaker
                 app.store.reject(business_id, "agent.tool_rejected", actor, exc, {"plan": plan}, security_relevant=True)
+        except (TypeError, KeyError, IndexError, OverflowError):
+            # A malformed model plan must never turn into an HTTP 500.  Expected bad
+            # shapes are rejected by validate_plan; this is the final boundary guard
+            # for an unexpected shape reaching a tool implementation.
+            results, permission = [], "denied"
+            text = i18n.t(lang, "unsafe", reason="TideLM returned an invalid plan.")
         trace["elapsed_ms"] = int((time.monotonic() - started) * 1000)
         app.store.audit(business_id, "agent.answer", actor, permission,
                         {**trace, "tools": [call.get("tool") for call in (plan or {}).get("calls", []) if isinstance(call, dict)],
