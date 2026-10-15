@@ -149,5 +149,6 @@
    }
   ],
   "transcript": "HARBOR PAPER LTD\nTax invoice BL-7731\nBill to: Shapla Services\nIssue date: 10/10/2026\nDue date: 28/10/2026\nPrinting paper A4, 40 reams BDT 5,200.00\nDelivery BDT 1,000.00\nTOTAL DUE DUE BDT 6,200.00"
- }
+  },
+  "note": "The vision result above is the real-device pre-fix observation that motivated ISO-date normalisation and Bill-to classification. The current implementation covers the repaired behavior in tests/test_vision.py; a new Apple Silicon smoke run is still required before making a post-fix on-device claim."
 }

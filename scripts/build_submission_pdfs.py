@@ -10,6 +10,7 @@ import html
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -84,8 +85,11 @@ def markdown_to_html(source: str) -> str:
 
 
 def print_pdf(page: Path, destination: Path):
+    executable = CHROME if Path(CHROME).is_file() else shutil.which(CHROME)
+    if not executable:
+        raise SystemExit("Chrome/Chromium was not found. Install it or set CHROME to its executable path.")
     destination.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
+    subprocess.run([executable, "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
                     f"--print-to-pdf={destination}", page.resolve().as_uri()],
                    check=True, capture_output=True, timeout=120)
     print(f"wrote {destination.relative_to(ROOT)}")
