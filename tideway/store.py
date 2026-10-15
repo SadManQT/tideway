@@ -279,13 +279,25 @@ class Store:
                         {"denials": count, "window_minutes": BREAKER_WINDOW_MINUTES,
                          "effect": "agent paused; pending plans and mandates invalidated; owner must resume with a reason"})
 
-    def _witness_read(self):
+    @staticmethod
+    def _witness_marker_key(business_id):
+        return f"witness:{business_id}"
+
+    def _witness_read_status(self):
         if self.witness_path is None:
-            return dict(self._witness_memory)
+            return dict(self._witness_memory), None
         try:
-            return json.loads(self.witness_path.read_text())
-        except (OSError, ValueError):
-            return {}
+            data = json.loads(self.witness_path.read_text())
+        except FileNotFoundError:
+            return {}, "missing"
+        except (OSError, TypeError, ValueError):
+            return {}, "unreadable"
+        if not isinstance(data, dict):
+            return {}, "unreadable"
+        return data, None
+
+    def _witness_read(self):
+        return self._witness_read_status()[0]
 
     def _witness_write(self, data):
         if self.witness_path is None:
@@ -310,12 +322,17 @@ class Store:
         item["signature"] = self._witness_signature(item)
         data[business_id] = item
         self._witness_write(data)
+        with self.connect() as db:
+            db.execute("INSERT OR REPLACE INTO metadata(key,value) VALUES (?,?)",
+                       (self._witness_marker_key(business_id), item["cosigned_at"]))
         return {"cosigned": True, **item}
 
     def evidence(self, business_id):
         with self.connect() as db:
             self._business_row(db, business_id)
             rows = [dict(row) for row in db.execute("SELECT * FROM audit WHERE business_id=? ORDER BY id", (business_id,))]
+            expected_witness = db.execute("SELECT 1 FROM metadata WHERE key=?",
+                                         (self._witness_marker_key(business_id),)).fetchone() is not None
         valid, previous, first_bad = True, "0" * 64, None
         for index, row in enumerate(rows):
             ok = row["previous_hash"] == previous and row["entry_hash"] == _entry_digest(previous, business_id, row)
@@ -328,19 +345,37 @@ class Store:
                 row["details"] = json.loads(row["details"])
             except ValueError:
                 valid = False
-        witnessed = self._witness_read().get(business_id)
+            except TypeError:
+                valid = False
+        witness_data, _ = self._witness_read_status()
+        witnessed = witness_data.get(business_id)
         witness = {"present": bool(witnessed)}
         if witnessed:
-            signature_ok = hmac.compare_digest(self._witness_signature(witnessed), witnessed.get("signature", ""))
-            in_place = len(rows) >= witnessed["size"] and witnessed["size"] > 0 and \
-                rows[witnessed["size"] - 1]["entry_hash"] == witnessed["head_hash"]
-            witness.update({"size": witnessed["size"], "head_hash": witnessed["head_hash"],
-                            "cosigned_at": witnessed["cosigned_at"], "signature_valid": signature_ok,
-                            "consistent": signature_ok and in_place})
+            size = witnessed.get("size") if isinstance(witnessed, dict) else None
+            head_hash = witnessed.get("head_hash") if isinstance(witnessed, dict) else None
+            cosigned_at = witnessed.get("cosigned_at") if isinstance(witnessed, dict) else None
+            try:
+                signature_ok = isinstance(witnessed, dict) and isinstance(witnessed.get("signature"), str) and \
+                    hmac.compare_digest(self._witness_signature(witnessed), witnessed["signature"])
+            except (KeyError, TypeError, ValueError):
+                signature_ok = False
+            size_ok = isinstance(size, int) and not isinstance(size, bool) and size > 0
+            in_place = size_ok and len(rows) >= size and rows[size - 1]["entry_hash"] == head_hash
+            witness.update({"size": size, "head_hash": head_hash, "cosigned_at": cosigned_at,
+                            "signature_valid": signature_ok, "consistent": signature_ok and in_place})
+            problems = []
+            if not signature_ok:
+                problems.append("The witness signature is invalid.")
             if not in_place:
+                problems.append(f"Chain has {len(rows)} entries but the witness cosigned {size}; "
+                                "entries were truncated or rewritten.")
+            if problems:
                 valid = False
-                witness["problem"] = (f"Chain has {len(rows)} entries but the witness cosigned {witnessed['size']}; "
-                                      "entries were truncated or rewritten.")
+                witness["problem"] = " ".join(problems)
+        elif expected_witness:
+            valid = False
+            witness.update({"signature_valid": False, "consistent": False,
+                            "problem": "The previously recorded witness is missing; the witness file may have been deleted or is unreadable."})
         checkpoint = {"business_id": business_id, "entries": len(rows), "head_hash": previous, "signed_at": utc_now()}
         checkpoint["signature"] = security.sign(self.key, checkpoint)
         return {"project": "Tideway", "track": "FinTechathon 2026 International Track, Topic E",
