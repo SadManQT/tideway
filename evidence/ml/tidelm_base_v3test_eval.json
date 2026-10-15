@@ -1,0 +1,219 @@
+{
+ "model": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+ "adapter": null,
+ "test_set": "data/tidelm-v3",
+ "n_plan": 300,
+ "n_extract": 200,
+ "plan": {
+  "valid_json": 1.0,
+  "intent_accuracy": 0.2233,
+  "tool_accuracy": 0.5767,
+  "exact_plan_accuracy": 0.3367
+ },
+ "extract": {
+  "valid_json": 1.0,
+  "record_precision": 0.8182,
+  "record_recall": 0.8153,
+  "record_f1": 0.8168,
+  "field_accuracy": 0.8282,
+  "injection_flag_accuracy": 0.89
+ },
+ "median_latency_s": 3.86,
+ "sample_failures": [
+  {
+   "input": "Find me a rescue plan, as safe as possible",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_risk"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"propose_plan\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"stress\"}}, {\"tool\": \"simulate_risk\", \"args\": {}}, {\"tool\": \"what_if\", \"args\": {\"customer_delays\": null, \"extra_expense\": null, \"drop_invoice_customer\": null}}, {\"tool\": \"explain_plan\", \"args\": {}}]}"
+  },
+  {
+   "input": "Falcon Kitchen jod taka na dey?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Falcon Kitchen"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"unknown\", \"calls\": []}"
+  },
+  {
+   "input": "fix th cash gap without involving Falcon Ceramics",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [
+        "Falcon Ceramics"
+       ],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"fix_cash_gap\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"likely\"}}, {\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"Falcon Ceramics\", \"days\": 0}, \"extra_expense\": null, \"drop_invoice_customer\": \"Falcon Ceramics\"}}]}"
+  },
+  {
+   "input": "asume Quartz Optics defaults",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Quartz Optics"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"project_cash\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"stress\", \"customers\": [\"Quartz Optics\"]}}]}"
+  },
+  {
+   "input": "ekta plan banao, jhuki jeno kom thake",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_risk"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"propose_plan\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"Rajesh Kumar\", \"days\": 30}, \"extra_expense\": {\"amount\": 1500, \"date\": \"2024-05-15\"}}}, {\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [\"Sunshine Logistics\"], \"max_discount_pct\": 10, \"prefer\": "
+  },
+  {
+   "input": "dhoro Cedar Holdings default korlo",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Cedar Holdings"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"customer_delays\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"dhoro Cedar Holdings\", \"days\": 30}}}]}"
+  },
+  {
+   "input": "did any supplier hange bank details?",
+   "expected": {
+    "intent": "security_check",
+    "calls": [
+     {
+      "tool": "security_check",
+      "args": {}
+     }
+    ]
+   },
+   "got": "{\"intent\": \"counterparty_risk\", \"calls\": [{\"tool\": \"counterparty_risk\", \"args\": {\"customer\": \"supplier\"}}]}"
+  },
+  {
+   "input": "yeh plan kyun?",
+   "expected": {
+    "intent": "explain",
+    "calls": [
+     {
+      "tool": "explain_plan",
+      "args": {}
+     }
+    ]
+   },
+   "got": "{\"intent\": \"explain_plan\", \"calls\": []}"
+  },
+  {
+   "input": "ke shobcheye deri kore taka dey?",
+   "expected": {
+    "intent": "customer_insight",
+    "calls": [
+     {
+      "tool": "customer_report",
+      "args": {
+       "customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"explain_plan\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"Amit Kumar\", \"days\": 30}}}]}"
+  },
+  {
+   "input": "\u00bfY si gasto 60000 en una m\u00e1quina el 2026-10-18?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": {
+        "amount": 60000,
+        "date": "2026-10-18"
+       },
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"extra_expense\": {\"amount\": 60000, \"date\": \"2026-10-18\"}}}]}"
+  },
+  {
+   "input": "if everyone pays slow what happens",
+   "expected": {
+    "intent": "forecast",
+    "calls": [
+     {
+      "tool": "project_cash",
+      "args": {
+       "scenario": "stress"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": null, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+  },
+  {
+   "input": "\u00bfQu\u00e9 clientes pagan tarde?",
+   "expected": {
+    "intent": "customer_insight",
+    "calls": [
+     {
+      "tool": "customer_report",
+      "args": {
+       "customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": null, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+  }
+ ]
+}

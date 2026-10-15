@@ -9,9 +9,9 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-RELEASE = "https://github.com/SadManQT/tideway/releases/download/tidelm-v1/"
-FILES = {"adapters.safetensors": "9980aa8e251dd3dff9dd83cbb36fb38ad18fac6e4b9f34023e4514d1cd65aefd",
-         "adapter_config.json": "a1cd14355f2302011eb720f7a96bc228a4f8c6dd64ae01c8fcc962c1782e6c9e"}
+RELEASE = "https://github.com/SadManQT/tideway/releases/download/tidelm-v2/"
+FILES = {"adapters.safetensors": "fc05629e563686e9da5f8ae5e50508c23143aacfd3dd3136830e2ec2fc2ed3a6",
+         "adapter_config.json": "76b01348a3d51a932f985b23801a292cf2ccd729aadff5560742827710db44b6"}
 TARGET = Path(__file__).resolve().parent.parent / "models" / "tidelm-adapter"
 
 

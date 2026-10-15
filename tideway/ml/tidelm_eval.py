@@ -80,9 +80,11 @@ def score_extract(predicted, expected):
     return result
 
 
-PAIRS = (  # (label, tuned result, base result on the same test set)
-    ("v3: multilingual + counterparty risk and security tools", "tidelm_v3_eval.json", "tidelm_base_v3test_eval.json"),
-    ("v2: eight languages, 13 payment-message formats", "tidelm_ft_eval.json", "tidelm_base_eval.json"),
+PAIRS = (  # (label, tuned result, base result on the same test set); the deployed adapter first
+    ("v2 (deployed): eight languages, 13 payment-message formats", "tidelm_ft_eval.json", "tidelm_base_eval.json"),
+    ("v3 (experiment, not deployed): two extra tools and more safety phrasings. On v2's test it scored 90.0% exact "
+     "plans against v2's 96.7% (it over-chose the lowest-risk preference) and was slower, so v2 stays in use",
+     "tidelm_v3_eval.json", "tidelm_base_v3test_eval.json"),
 )
 
 

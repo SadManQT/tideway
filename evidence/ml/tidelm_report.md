@@ -2,7 +2,7 @@
 
 Base model: Qwen3-4B-Instruct-2507 (4-bit, MLX). TideLM: the same model plus Tideway's LoRA adapter (rank 16, 16 layers). Test examples use counterparty names never seen in training. Synthetic data from `tideway/ml/tidelm_data.py`; these scores show the method works, not real-world accuracy.
 
-## v2: eight languages, 13 payment-message formats
+## v2 (deployed): eight languages, 13 payment-message formats
 
 300 planning and 200 extraction examples (`data/tidelm`).
 
@@ -19,5 +19,23 @@ Base model: Qwen3-4B-Instruct-2507 (4-bit, MLX). TideLM: the same model plus Tid
 | Injection flag accuracy | 91.5% | **98.5%** |
 
 Median seconds per answer during evaluation (Apple M4, 16 GB): base 3.79, TideLM 2.84.
+
+## v3 (experiment, not deployed): two extra tools and more safety phrasings. On v2's test it scored 90.0% exact plans against v2's 96.7% (it over-chose the lowest-risk preference) and was slower, so v2 stays in use
+
+300 planning and 200 extraction examples (`data/tidelm-v3`).
+
+| Metric | Base model | TideLM |
+|---|---|---|
+| Valid JSON (plans) | 100.0% | **99.3%** |
+| Intent accuracy | 22.3% | **95.3%** |
+| Correct tools | 57.7% | **95.7%** |
+| Exact plan (tools + every argument) | 33.7% | **89.3%** |
+| Record precision | 0.818 | **0.989** |
+| Record recall | 0.815 | **0.962** |
+| Record F1 | 0.817 | **0.975** |
+| Field accuracy | 82.8% | **99.8%** |
+| Injection flag accuracy | 89.0% | **98.5%** |
+
+Median seconds per answer during evaluation (Apple M4, 16 GB): base 3.86, TideLM 4.42.
 
 Remaining errors are mostly a missed preference word or an informal phrase read as a different request. In the app they cannot cause harm: names are resolved against the ledger, only read/propose tools exist, every number comes from Tideway's tools, and every action still needs people to approve a signed mandate.

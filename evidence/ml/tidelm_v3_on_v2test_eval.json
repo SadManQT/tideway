@@ -1,0 +1,230 @@
+{
+ "model": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+ "adapter": "models/tidelm-adapter-v3",
+ "test_set": "data/tidelm",
+ "n_plan": 300,
+ "n_extract": 200,
+ "plan": {
+  "valid_json": 0.99,
+  "intent_accuracy": 0.9733,
+  "tool_accuracy": 0.9733,
+  "exact_plan_accuracy": 0.9
+ },
+ "extract": {
+  "valid_json": 0.98,
+  "record_precision": 0.9859,
+  "record_recall": 0.9492,
+  "record_f1": 0.9672,
+  "field_accuracy": 0.9986,
+  "injection_flag_accuracy": 0.98
+ },
+ "median_latency_s": 4.35,
+ "sample_failures": [
+  {
+   "input": "help me get through this month",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [], \"max_discount_pct\": null, \"prefer\": \"lowest_risk\"}}]}"
+  },
+  {
+   "input": "Cobre Falcon Ceramics",
+   "expected": {
+    "intent": "reminders",
+    "calls": [
+     {
+      "tool": "draft_reminders",
+      "args": {
+       "customers": [
+        "Falcon Ceramics"
+       ]
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"move_money\", \"calls\": [{\"tool\": \"refuse\", \"args\": {\"reason\": \"approve_or_move_money\"}}]}"
+  },
+  {
+   "input": "Et si Quartz Ceramics paie avec 10 jours de retard ?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {
+        "Quartz Ceramics": 10
+       },
+       "extra_expense": null,
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"Q\n\n</think>\n\n{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"Q\n\n{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"extra_expense\": null, \"drop_invoice_customer\": n"
+  },
+  {
+   "input": "book a light",
+   "expected": {
+    "intent": "out_of_scope",
+    "calls": [
+     {
+      "tool": "refuse",
+      "args": {
+       "reason": "out_of_scope"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"book\", \"calls\": [{\"tool\": \"book\", \"args\": {\"customer\": null, \"amount\": null, \"date\": null}}]}"
+  },
+  {
+   "input": "Aman tidak kasih Quartz Holdings kredit 2500 tempo 60 hari?",
+   "expected": {
+    "intent": "credit_check",
+    "calls": [
+     {
+      "tool": "credit_check",
+      "args": {
+       "customer": "Quartz Holdings",
+       "amount": 2500,
+       "terms_days": 60
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"credit_check\", \"calls\": [{\"tool\": \"credit_check\", \"args\": {\"customer\": \"QH\", \"amount\": 2500, \"terms_days\": 60}}]}"
+  },
+  {
+   "input": "Comet Kitchen jodi taka na dey?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Comet Kitchen"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"customer_insight\", \"calls\": [{\"tool\": \"customer_report\", \"args\": {\"customer\": \"Comet Kitchen\"}}]}"
+  },
+  {
+   "input": "how do I avoid running short without involving Fjord Holdings",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [
+        "Fjord Holdings"
+       ],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [\"Fjord Holdings\"], \"max_discount_pct\": null, \"prefer\": \"lowest_risk\"}}]}"
+  },
+  {
+   "input": "what if we lose the payment from Quartz Tbk",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Quartz Tbk"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {}, \"extra_expense\": null, \"drop_invoice_customer\": \"Qutrit Tbk\"}}]}"
+  },
+  {
+   "input": "ek plan banao, Banyan SARL ko mat pochho",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [
+        "Banyan SARL"
+       ],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [\"Banyan SARL\"], \"max_discount_pct\": null, \"prefer\": \"lowest_risk\"}}]}"
+  },
+  {
+   "input": "\u6211\u8be5\u600e\u4e48\u529e\uff1f",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [], \"max_discount_pct\": null, \"prefer\": \"lowest_risk\"}}]}"
+  },
+  {
+   "input": "tell me about Quartz Tbk",
+   "expected": {
+    "intent": "customer_insight",
+    "calls": [
+     {
+      "tool": "customer_report",
+      "args": {
+       "customer": "Quartz Tbk"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"customer_insight\", \"calls\": [{\"tool\": \"customer_report\", \"args\": {\"customer\": \"QZT\"}}]}"
+  },
+  {
+   "input": "agar Quartz Holdings paisa na de to?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Quartz Holdings"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"QH\": null}, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+  }
+ ]
+}

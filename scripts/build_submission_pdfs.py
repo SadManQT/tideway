@@ -107,8 +107,7 @@ def _json(path):
 
 def _tidelm():
     """Best available TideLM evaluation pair (adapter vs base on the same test set), or None."""
-    for tuned, base in (("evidence/ml/tidelm_v3_eval.json", "evidence/ml/tidelm_base_v3test_eval.json"),
-                        ("evidence/ml/tidelm_ft_eval.json", "evidence/ml/tidelm_base_eval.json")):
+    for tuned, base in (("evidence/ml/tidelm_ft_eval.json", "evidence/ml/tidelm_base_eval.json"),):  # the deployed adapter
         a, b = _json(tuned), _json(base)
         if a and b and a.get("test_set") == b.get("test_set"):
             return a, b

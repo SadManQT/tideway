@@ -1,0 +1,232 @@
+{
+ "model": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+ "adapter": "models/tidelm-adapter-v3",
+ "test_set": "data/tidelm-v3",
+ "n_plan": 300,
+ "n_extract": 200,
+ "plan": {
+  "valid_json": 0.9933,
+  "intent_accuracy": 0.9533,
+  "tool_accuracy": 0.9567,
+  "exact_plan_accuracy": 0.8933
+ },
+ "extract": {
+  "valid_json": 0.985,
+  "record_precision": 0.9892,
+  "record_recall": 0.9617,
+  "record_f1": 0.9753,
+  "field_accuracy": 0.9978,
+  "injection_flag_accuracy": 0.985
+ },
+ "median_latency_s": 4.42,
+ "sample_failures": [
+  {
+   "input": "Falcon Kitchen jod taka na dey?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Falcon Kitchen"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"customer_insight\", \"calls\": [{\"tool\": \"customer_report\", \"args\": {\"customer\": \"Falcon Kitchen\"}}]}"
+  },
+  {
+   "input": "asume Quartz Optics defaults",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Quartz Optics"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {}, \"extra_expense\": null, \"drop_invoice_customer\": \"QZ-100\"}}]}"
+  },
+  {
+   "input": "cash gap kaise bharein?, Banyan Kitchen ko mat poochho",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [
+        "Banyan Kitchen"
+       ],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [\"Banyan Kitchen\"], \"max_discount_pct\": null, \"prefer\": \"lowest_risk\"}}]}"
+  },
+  {
+   "input": "\u00bfqu\u00e9 debo hacer?",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [], \"max_discount_pct\": null, \"prefer\": \"lowest_risk\"}}]}"
+  },
+  {
+   "input": "chase Orchid Tbk",
+   "expected": {
+    "intent": "reminders",
+    "calls": [
+     {
+      "tool": "draft_reminders",
+      "args": {
+       "customers": [
+        "Orchid Tbk"
+       ]
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"move_money\", \"calls\": [{\"tool\": \"refuse\", \"args\": {\"reason\": \"approve_or_move_money\"}}]}"
+  },
+  {
+   "input": "apa yang harus saya lakukan?",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [], \"max_discount_pct\": null, \"prefer\": \"lowest_risk\"}}]}"
+  },
+  {
+   "input": "Quartz Optics ke 45000 baki 30 diner jono dibo?",
+   "expected": {
+    "intent": "credit_check",
+    "calls": [
+     {
+      "tool": "credit_check",
+      "args": {
+       "customer": "Quartz Optics",
+       "amount": 45000,
+       "terms_days": 30
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"credit_check\", \"calls\": [{\"tool\": \"credit_check\", \"args\": {\"customer\": \"Qutrit Optics\", \"amount\": 45000, \"terms_days\": 30}}]}"
+  },
+  {
+   "input": "ekta plan banao, Wrenn Tbk ke bad dao",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [
+        "Wrenn Tbk"
+       ],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [\"Wrenn Tbk\"], \"max_discount_pct\": null, \"prefer\": \"lowest_risk\"}}]}"
+  },
+  {
+   "input": "hazme un plan de rescate",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"rescue_plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [], \"max_discount_pct\": null, \"prefer\": \"lowest_risk\"}}]}"
+  },
+  {
+   "input": "Cobre Banyan Exports",
+   "expected": {
+    "intent": "reminders",
+    "calls": [
+     {
+      "tool": "draft_reminders",
+      "args": {
+       "customers": [
+        "Banyan Exports"
+       ]
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"move_money\", \"calls\": [{\"tool\": \"refuse\", \"args\": {\"reason\": \"approve_or_move_money\"}}]}"
+  },
+  {
+   "input": "agar Falcon Tbk paisa na e to?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Falcon Tbk"
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {}, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+  },
+  {
+   "input": "Ingatkan Quartz Optics untuk bayar",
+   "expected": {
+    "intent": "reminders",
+    "calls": [
+     {
+      "tool": "draft_reminders",
+      "args": {
+       "customers": [
+        "Quartz Optics"
+       ]
+      }
+     }
+    ]
+   },
+   "got": "<think>\n\n</think>\n\n{\"intent\": \"reminders\", \"calls\": [{\"tool\": \"draft_reminders\", \"args\": {\"customers\": [\"QZ Optics\"]}}]}"
+  }
+ ]
+}
