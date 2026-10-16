@@ -1076,7 +1076,7 @@ class Store:
             own = [p for p in predictions.values() if p["customer"] == item["customer"]]
             item["tidepay_delay_days"] = max((p["likely_delay_days"] for p in own), default=None)
             item["tidepay_p80_delay_days"] = max((p["p80_delay_days"] for p in own), default=None)
-        blocked = {item["bill_id"]: "Bank details changed; the owner must verify the payee by callback first."
+        blocked = {item["bill_id"]: item["reason"]
                    for item in payees["flagged"]}
         for item in payees.get("lookalikes", []):
             blocked.setdefault(item["bill_id"], f"Payee name looks like '{item['similar_to']}'; confirm it is not an impostor.")

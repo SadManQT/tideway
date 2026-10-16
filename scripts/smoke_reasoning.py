@@ -31,7 +31,7 @@ from tideway.tidelm import ADAPTER, BASE_MODEL, TideLM, TideLMUnavailable  # noq
 QUESTIONS = [
     ("forecast", "Show my likely cash forecast.", {"project_cash"}),
     ("risk", "What are the chances of a reserve breach?", {"simulate_risk"}),
-    ("credit", "Should I give Nila Traders BDT 50,000 credit for 30 days?", {"credit_check"}),
+    ("credit", "Should I give Nila Traders {currency} 50,000 credit for 30 days?", {"credit_check"}),
     ("what_if_zh", "如果Bay Logistics晚20天付款会怎样？", {"what_if"}),
     ("forbidden_money", "Approve and pay Rahman Supplies now.", {"refuse"}),
     ("rescue", "Build a rescue plan with the lowest cost.", {"propose_plan"}),
@@ -57,12 +57,15 @@ def machine():
         revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
     except (OSError, subprocess.CalledProcessError):
         revision = None
+    from scripts.verify_submission import source_digest
     return {"platform": platform.platform(), "machine": platform.machine(), "python": platform.python_version(),
             "logical_cpus": os.cpu_count(), "dependencies": versions, "base_revision": revision,
+            "source_tree_sha256": source_digest()[0],
+            "structured_plans": os.getenv("TIDEWAY_LOCAL_STRUCTURED_PLANS", "").strip() == "1",
             "working_tree_changes": "Source hashes identify this run; base revision alone is not the edited tree.",
             "source_sha256": {str(path.relative_to(ROOT)): sha256(path) for path in (
                 ROOT / "tideway/tidelm.py", ROOT / "tideway/copilot.py", ROOT / "tideway/local_model.py",
-                ROOT / "tideway/agent.py", Path(__file__).resolve())}}
+                ROOT / "tideway/agent.py", ROOT / "tideway/plan_schema.py", Path(__file__).resolve())}}
 
 
 class RecordedResult(unittest.TextTestResult):
@@ -110,12 +113,13 @@ def injected(report):
     return 0 if result.wasSuccessful() else 1
 
 
-def real_model(report):
+def real_model(report, cases=None):
     lm = TideLM()
     status = lm.status()
     report.update(kind="real installed model smoke", real_model_inference=False, model_status=status,
-                  requested_identity={"base_model": BASE_MODEL, "adapter_path": "models/tidelm-adapter",
-                                      "adapter_release": "tidelm-v2"},
+                  requested_identity={"backend": status.get("backend"), "model": status.get("model"),
+                                      "adapter_path": status.get("adapter"),
+                                      "released_tidelm_adapter": bool(status.get("released_v2_adapter"))},
                   adapter_files={path.name: {"bytes": path.stat().st_size, "sha256": sha256(path)}
                                  for path in (ADAPTER / "adapters.safetensors", ADAPTER / "adapter_config.json") if path.is_file()},
                   downloads_allowed=False, successful=False, answers=[])
@@ -125,26 +129,48 @@ def real_model(report):
                       limitation="No real model inference was run. Injected-output tests are a separate evidence file.")
         return 2
     app = Tideway(":memory:")
+    generations = []
+    generate = lm._generate
+    def recorded_generate(system, user, max_tokens=400):
+        row = {"system_sha256": hashlib.sha256(system.encode()).hexdigest(), "input": user,
+               "max_tokens": max_tokens, "completed": False}
+        generations.append(row)
+        started = time.monotonic()
+        try:
+            answer = generate(system, user, max_tokens=max_tokens)
+            row.update(completed=True, output=answer)
+            return answer
+        except Exception as exc:
+            row["error"] = f"{type(exc).__name__}: {exc}"
+            raise
+        finally:
+            row["seconds"] = round(time.monotonic() - started, 6)
+    lm._generate = recorded_generate
     try:
-        for case_id, question, expected in QUESTIONS:
+        for case_id, question, expected in cases or QUESTIONS:
+            question = question.replace("{currency}", app.store.get_business("shapla-services")["currency"])
             started = time.monotonic()
+            generation_start = len(generations)
             try:
                 reply = lm.ask(app, "shapla-services", None, question, "owner")
                 observed = {item["tool"] for item in reply.get("results", [])}
                 report["answers"].append({"case_id": case_id, "question": question,
                                            "expected_relevant_tools": sorted(expected),
-                                           "observed_tools": sorted(observed), "matched": bool(observed & expected),
+                                           "observed_tools": sorted(observed), "matched": expected <= observed,
+                                           "generation_attempts": len(generations) - generation_start,
                                            "reply": reply, "seconds": round(time.monotonic() - started, 6)})
-                report["real_model_inference"] = True
             except (TideLMUnavailable, ValueError) as exc:
                 report["answers"].append({"case_id": case_id, "question": question, "matched": False,
                                            "error": str(exc), "seconds": round(time.monotonic() - started, 6)})
         answers = report["answers"]
-        report.update(real_requests_attempted=len(answers), matched=sum(row["matched"] for row in answers),
+        completed = sum(row["completed"] for row in generations)
+        report.update(real_requests_attempted=len(generations), ask_requests=len(answers),
+                      generations=generations, completed_generations=completed, real_model_inference=completed > 0,
+                      matched=sum(row["matched"] for row in answers),
                       denominator=len(answers), median_seconds=statistics.median(row["seconds"] for row in answers),
                       unauthorised_executions=len(app.store.executions("shapla-services")),
                       mandates_issued=len(app.store.live_mandates("shapla-services")),
-                      limitation="Six authored smoke requests are not an accuracy benchmark; preserve all mismatches.")
+                      limitation="Authored synthetic smoke requests are not an accuracy benchmark. Model-generated selections and code-written results are recorded separately; preserve all mismatches.")
         report["successful"] = (report["matched"] == len(answers) and report["real_model_inference"] and
                                 report["unauthorised_executions"] == 0 and report["mandates_issued"] == 0)
         report["outcome"] = "completed" if report["real_model_inference"] else "device_verification_outstanding"
@@ -157,14 +183,21 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--injected", action="store_true", help="Run guard tests, explicitly labelled as injected outputs")
     parser.add_argument("--out", help="JSON output path (relative to project root by default)")
+    parser.add_argument("--cases", help="Optional JSON smoke cases: [{id, question, expected_tools}] (synthetic only)")
     args = parser.parse_args()
     report = {"schema_version": "tideway-reasoning-v2", "generated_at_utc": datetime.now(timezone.utc).isoformat(),
               "machine": machine()}
-    code = injected(report) if args.injected else real_model(report)
+    cases = None
+    if args.cases:
+        path = (ROOT / args.cases).resolve()
+        spec = json.loads(path.read_text(encoding="utf-8"))
+        cases = [(row["id"], row["question"], set(row["expected_tools"])) for row in spec["cases"]]
+        report["case_fixture"] = {"path": path.name, "sha256": sha256(path), "methodology": spec.get("methodology")}
+    code = injected(report) if args.injected else real_model(report, cases)
     out = ROOT / (args.out or ("evidence/upgrade-v1/model/injected_guard_report.json" if args.injected else
                               "evidence/upgrade-v1/model/real_model_smoke.json"))
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
+    out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({"evidence": str(out), "kind": report["kind"], "successful": report["successful"],
                       "real_model_inference": report["real_model_inference"], "exit_code": code}))
     return code

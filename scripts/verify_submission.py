@@ -20,6 +20,9 @@ def source_digest(source_root=None):
     """Hash runtime/test sources, optionally in an extracted release tree."""
     root = Path(source_root) if source_root is not None else ROOT
     paths = [root / "run.py"]
+    workflow = root / ".github/workflows/ci.yml"
+    if workflow.is_file():
+        paths.append(workflow)
     for folder in ("tideway", "tests", "web", "scripts"):
         paths.extend(p for p in (root / folder).rglob("*") if p.suffix in (".py", ".js", ".mjs", ".css", ".html", ".json")
                      and "__pycache__" not in p.parts)

@@ -38,7 +38,7 @@ python -m tideway.selftest
 ```
 
 The public handbook is at `/guide`. The model-status card distinguishes the
-deterministic Windows demo from optional Apple Silicon inference. Receipt
+deterministic default from optional local-compatible and Apple Silicon inference. Receipt
 extraction and TideLM are optional, with limitations in `docs/MODEL_CARD.md`.
 
 ## Deliverable map
@@ -91,3 +91,14 @@ be claimed on a machine where it was actually run.
 Use `docs/PAYMENT_DELAY_RUNBOOK.md` for the live linked approval/invalidation/reapproval sequence. `evidence/upgrade-v1/` contains the corrected chronological prediction benchmark, distinct scenario workflows and screening/performance measurements, real-model availability report and delay receipt. Historical observations are retained under `evidence/history/pre-upgrade-v1/` and `evidence/ml/`. See `docs/CONTEST_UPGRADE_REPORT.md` for measured results and remaining verification limits.
 
 The package source is tested and browser-checked at the same source digest; `python3 scripts/verify_package.py` checks archive hashes, extracted tests and a new loopback server with Python `-S`, no Git or developer configuration. This local preparation does not establish registration or submission readiness. The main site is dynamic and its full latest notices remain unverified.
+
+## Readiness follow-up
+
+See `docs/READINESS_UPDATE.md` for the four-step first-use guide, explicit residual-risk
+warnings, contextual screening regressions, tracked cross-platform CI and Windows
+real-model smoke. The compatible Qwen3 backend matched 6/6 original and 12/12 additional
+authored smoke requests; raw failures and generations are preserved separately from
+historical TideLM adapter results. No model/runtime binaries are bundled. Follow
+`docs/SETUP_WINDOWS_MAC.md` to provision and start the optional model; the core needs
+neither weights nor an API key. CI is configured and locally checked; hosted CI has
+not run. Team-controlled administrative facts and video remain deferred.

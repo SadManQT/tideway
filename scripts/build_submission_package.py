@@ -17,6 +17,7 @@ from verify_submission import source_digest  # noqa: E402
 EXCLUDED_ROOTS = {".git", ".aws", ".agents", ".codex", ".claude", ".opencode", ".vscode",
                   ".venv", "venv", "node_modules", "data", "models", "tmp", "dist", "demo"}
 RELEASE_FOLDERS = {"tideway", "web", "scripts", "tests", "docs", "slides", "evidence", "licenses", "examples"}
+RELEASE_CONFIG_FILES = {".github/workflows/ci.yml"}
 RELEASE_ROOT_FILES = {"README.md", "LICENSE", "THIRD_PARTY_NOTICES", "Makefile", "Dockerfile", ".dockerignore",
                       ".gitignore", ".gitattributes", ".python-version", ".env.example", "requirements.txt",
                       "requirements.lock", "requirements-evaluation.txt", "run.py", "start.cmd", "start.ps1",
@@ -35,6 +36,8 @@ def allowed_source(name):
     if (p.is_absolute() or ".." in p.parts or not p.parts or p.as_posix() != name
             or any(":" in part for part in p.parts) or p.parts[0] in EXCLUDED_ROOTS):
         return False
+    if name in RELEASE_CONFIG_FILES:
+        return True
     if p.parts[0] not in RELEASE_FOLDERS and name not in RELEASE_ROOT_FILES:
         return False
     if any(part.casefold() in PRIVATE_COMPONENTS for part in p.parts) or p.suffix.casefold() in PRIVATE_SUFFIXES:

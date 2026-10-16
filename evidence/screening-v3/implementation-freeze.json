@@ -1,0 +1,10 @@
+{
+  "status": "Development implementation frozen before access to root-authored heldout corpus. No perfect-score tuning on heldout.",
+  "sha256": {
+    "tideway/domain.py": "7b4468d8ea911f146adbdbf6360d26bbe14b880d1cbb897ac7b6d20f46c25876",
+    "tideway/analytics.py": "fd1b319328fdd9d198d0267ed59875129c8fa84def373c79510a9af634a42dec",
+    "tests/fixtures/screening_development_v3.json": "fd6b133a80c6dfc0f5410321a60161bab4d47898b5a17d4b9ddf38e0eec7d2a2",
+    "scripts/evaluate_screening_v3.py": "5f46009439ac250c34c4d4254c2463308c6af7c24855f59ca4ced4858dc988ec",
+    "tests/test_screening_context.py": "f7aa4d794054c168d1130ad62586ac11276c2ee2374c9957f111f1324ef91eaf"
+  }
+}

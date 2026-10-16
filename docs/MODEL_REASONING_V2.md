@@ -40,8 +40,7 @@ The public response contains `selections`, `trace`, `model_identity`,
 has a source label, permission, elapsed duration, full output hash and audit ID.
 The brief rationale is composed from deterministic tool outputs. These are
 observable selections and receipts, not hidden thoughts or an invented model
-transcript. Result-aware tool selection is implemented; its performance with
-the actual released model remains unverified on this machine.
+transcript. Result-aware tool selection has authored smoke evidence with a Windows compatible model. Post-change performance with the released MLX TideLM adapter remains unverified; those are different model identities.
 
 ## Validation and budgets
 
@@ -95,6 +94,12 @@ an unbenchmarked label. The released MLX adapter is identified by both file
 hashes; a custom adapter is not labelled as the released v2 adapter. A matching
 adapter hash identifies the artifact, not the accuracy of this new runtime.
 
+## Optional structured plans
+
+`TIDEWAY_LOCAL_STRUCTURED_PLANS=1` opts a compatible local text server into JSON Schema-constrained planning. The default is off. `tideway/plan_schema.py` describes the public tool union, argument types and limits; customer fields/maps can be closed to the scoped ledger's exact names. Optional nulls are permitted only where the existing tool validator treats them as omitted. The request uses `response_format: json_schema`; a server that does not support it fails without a loose retry.
+
+The schema improves output shape. It does not establish user intent, financial correctness or permission: whole-plan preflight, number grounding, contextual dates/names, role checks and the approval workflow still apply. The same rules reject unsafe output even if a server ignores the schema. MLX generation and extraction keep their existing paths; the option does not silently replace the MLX adapter or add tools.
+
 ## Evidence actually recorded
 
 `evidence/upgrade-v1/model/injected_guard_report.json` records the independently
@@ -107,13 +112,28 @@ preservation; malformed JSON; output/call limits; timeout containment; and
 deterministic fallback labels. Finite passing tests are not proof of security.
 
 `evidence/upgrade-v1/model/real_model_smoke.json` records macOS 26.6.2, arm64,
-Python 3.14.7 and 10 logical CPUs. This machine has no `mlx`, `mlx-lm`,
+Python 3.14.7 and 10 logical CPUs. That recorded machine had no `mlx`, `mlx-lm`,
 `huggingface-hub`, released adapter or cached base model. The real smoke wrote
 `device_verification_outstanding`, attempted zero real requests and exited 2.
 No weights were downloaded and no model output, success or latency was
 fabricated. Source hashes and dependency versions identify each recorded run.
 The historical released v2 synthetic scores do not measure this runtime or a
 different local model.
+
+Real compatible-model runs were subsequently recorded on Windows 11 x64 / Python 3.13.7 using checksum-pinned GGUF models and llama.cpp. The final Qwen3 4B runs used the explicit structured-plan option. All requests use synthetic businesses. The following results measure expected tool coverage for authored requests, not independent model accuracy:
+
+| Recorded configuration/run | Matched authored requests | Preserved evidence |
+|---|---:|---|
+| Qwen2.5 1.5B, initial configuration | 3/6 | [windows-local-initial.json](../evidence/readiness-v2/model/windows-local-initial.json) |
+| Qwen2.5 1.5B, subsequent prompt/harness | 2/6 | [windows-compact-round2.json](../evidence/readiness-v2/model/windows-compact-round2.json) |
+| Qwen2.5 1.5B, structured output | 4/6 | [windows-compact-structured.json](../evidence/readiness-v2/model/windows-compact-structured.json) |
+| Qwen3 4B, initial structured run | 5/6 | [qwen3-smoke.json](../evidence/readiness-v2/model/qwen3-smoke.json) |
+| Qwen3 4B, final six-request smoke | 6/6 | [qwen3-final-smoke.json](../evidence/readiness-v2/model/qwen3-final-smoke.json) |
+| Qwen3 4B, final expanded fixture | 12/12 | [qwen3-final-expanded.json](../evidence/readiness-v2/model/qwen3-final-expanded.json) |
+
+An earlier expanded 12/12 run is also retained as `qwen3-expanded-smoke.json`; rerunning the same fixture does not create new independent cases. The final six requests completed seven generations; the expanded twelve completed fourteen because rescue requests can use a second selection. Both final reports recorded zero financial executions and zero issued mandates. Raw selections, deterministic tool results, mismatches, generation timing and source hashes are retained. The initial compact report predates the identity-reporting correction: its `requested_identity` incorrectly names TideLM; its `model_status` identifies the actual Qwen2.5 compatible model. It is retained as historical evidence, not an MLX adapter result.
+
+Prompts/schema evolved after observing these cases, and the expanded authored set overlaps their intents. Neither set is a sealed benchmark or establishes generalisation, calibration, robust multilingual accuracy or full-model safety. The smaller profile's failures remain material. Native macOS helper execution, post-change MLX TideLM inference and post-fix TideVision inference remain outstanding. Historical MLX scores cannot be transferred to either GGUF profile.
 
 ## Reproduce
 
@@ -154,4 +174,18 @@ PowerShell can set the same variables using `$env:TIDEWAY_LOCAL_MODEL_URL` and
 `$env:TIDEWAY_LOCAL_TEXT_MODEL` before the Python command. The script reads the
 explicit shell environment; it does not rely on a private `.env` file. That
 local model is unbenchmarked and does not inherit the TideLM release scores.
-No Windows device or live compatible-model quality result is claimed.
+The earlier Windows browser follow-up used a fixed-output local server for integration only. The subsequent real Windows smoke in the table is separate evidence; the UI test double does not supply its model-quality claim.
+
+For the pinned profiles, provision explicitly using `scripts/local_demo_model.py --download`, then `--serve` in another terminal. `compact` remains the default; `--profile qwen3-4b` selects the measured larger model. `--cache-dir` can choose another drive, and must match between download and serve. Defaults use ignored `models/local-demo/`; weights/native runtimes are not bundled. The helper supports Windows x64 and macOS arm64/x64 but its native Mac path was not run here. Safe Mac TAR extraction needs Python 3.11.11+. See [SETUP_WINDOWS_MAC.md](SETUP_WINDOWS_MAC.md) for full commands, aliases and runtime requirements.
+
+After starting the Qwen3 helper on port 8791, reproduce without overwriting the saved reports. Windows PowerShell:
+
+```powershell
+$env:TIDEWAY_LOCAL_MODEL_URL = 'http://127.0.0.1:8791/v1'
+$env:TIDEWAY_LOCAL_TEXT_MODEL = 'Qwen3-4B-Instruct-2507-Q4_K_M'
+$env:TIDEWAY_LOCAL_STRUCTURED_PLANS = '1'
+python scripts/smoke_reasoning.py --out tmp/local-device-smoke.json
+python scripts/smoke_reasoning.py --cases tests/fixtures/model_reasoning_smoke_v3.json --out tmp/local-device-expanded.json
+```
+
+On Mac, export the same three variables and use `python3` for both commands. This is a reproduction procedure, not a claim that Mac inference was executed. The harness records successful generations separately from deterministic responses and identifies the configured compatible model rather than the MLX adapter.

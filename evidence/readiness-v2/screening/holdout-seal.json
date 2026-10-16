@@ -1,0 +1,7 @@
+{
+  "fixture": "tests/fixtures/screening_holdout_v3.json",
+  "sha256": "65d96dbf24e794e1a7e52a3c40a9f6da9cf4c8cb24fe7c362438722e47c0c632",
+  "sealed_at_utc": "2026-10-16T04:44:56.965376+00:00",
+  "evaluated": false,
+  "method": "Separate reviewer authorship; implementing agent instructed not to inspect until development freeze. Synthetic, not externally authored."
+}

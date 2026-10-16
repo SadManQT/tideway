@@ -95,7 +95,12 @@ class LocalModel:
         self._cache, self._checked = result, time.monotonic()
         return dict(result)
 
-    def generate(self, system, user, max_tokens=700, image_path=None):
+    def generate(self, system, user, max_tokens=700, image_path=None, response_schema=None):
+        if response_schema is not None and not isinstance(response_schema, dict):
+            raise LocalModelUnavailable("Local structured output requires a JSON Schema object.")
+        response_format = ({"type": "json_schema", "json_schema": {
+            "name": "tideway_plan", "strict": True, "schema": response_schema}}
+            if response_schema is not None else {"type": "json_object"})
         content = user
         if image_path:
             encoded = base64.b64encode(Path(image_path).read_bytes()).decode("ascii")
@@ -105,7 +110,7 @@ class LocalModel:
             "model": self.model, "messages": [{"role": "system", "content": system},
                                                {"role": "user", "content": content}],
             "stream": False, "temperature": 0, "max_tokens": max_tokens,
-            "response_format": {"type": "json_object"},
+            "response_format": response_format,
         })
         try:
             answer = data["choices"][0]["message"]["content"]

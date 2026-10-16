@@ -85,7 +85,7 @@ Optional TideLM inference runs on the owner's machine: no question, record or ex
 4. **Simulated counterparties.** Real suppliers and customers behave differently; real rails add failure modes (partial settlement, reversal).
 5. **Single process and SQLite.** Adequate for the sandbox; production needs a hardened service and database.
 6. **Human factors.** A rubber-stamp approver is assumed in testing, but fast approvals are only flagged, not blocked.
-7. **Not measured.** No live-LLM run, no user study, no external penetration test. We make no such claims.
+7. **Verification scope.** Authored Windows local-model smoke results are in `evidence/readiness-v2/model/`. The released MLX adapter, receipt model, SME user study and external penetration test remain unverified for this runtime.
 8. **Small model, synthetic training data.** TideLM can misread a name or drop a constraint (see its report); names are resolved against the ledger and every plan is only a proposal, but a person must still read it before approving.
 9. **Not a compliance certification.** No claim of PCI, SOC 2, local regulator or bank approval.
 10. **Optional local model service.** The compatible backend only sends HTTP to literal loopback addresses, refuses redirects, and bounds responses. Its typed plans have the same permission boundary. The independently installed server is trusted infrastructure and must use offline models; Tideway does not audit its plugins or forwarding behaviour. Local-compatible model accuracy is unbenchmarked.
@@ -95,6 +95,26 @@ Optional TideLM inference runs on the owner's machine: no question, record or ex
 - The new delay operation is owner/PIN scoped and synthetic-only; it uses snapshot comparison, atomic invalidation and durable request receipts. Concurrent requests, exact retries, stale approval/execution, invalid horizons, failed audit writes, cross-tenant access and preserved quarantine are covered in `tests/test_demo_delay.py`. An old promise must not hide a newly applied delay. The UI keeps hypothetical What-if separate.
 - Whole-plan preflight prevents a valid first proposing call from writing before a later invalid call is found. Exact/casefold unique entity matching clarifies ambiguity rather than guessing. Agent-labelled proposers also respect Advise mode. No-safe-plan replies do not ask for approval. See `tests/test_reasoning_guards.py`.
 - Labelled benign/attack screening now reports false positives and false negatives separately. A discovered case-only payee identity bypass was fixed by normalising account-history lookup; the first observation is preserved. Novel-vendor and missing-account cases can lack detectable signals. Pattern screening remains incomplete and can overflag benign instructions about payment or markup. See `docs/SCENARIO_EVALUATION_V2.md` for every denominator and residual miss.
-- Finite injected-output tests do not establish model quality. Current model availability reports explicitly record missing MLX/weights. No post-change real-model inference, external penetration test or certification is claimed.
+- Finite injected-output tests do not establish model quality. Archived Mac availability reports record missing MLX/weights. The later compatible Qwen3 Windows smoke uses real inference and remains separate from the released MLX adapter and historical quality scores. No external penetration test or certification is claimed.
+
+## 8. Readiness follow-up
+
+Contextual screening now separates instruction flags from conservative payment-detail review.
+Local negation, control omission, forged signatures, exfiltration and destination
+substitution have regression coverage. A missing payment account for an established
+supplier also blocks action. Its owner-facing warning does not offer callback verification
+until an actual account exists.
+
+Two separately authored synthetic screening sets initially detected only 4/10 and
+5/10 attacks. Those failures are preserved in `evidence/readiness-v2/screening/`.
+After disclosure and fixes, both sets detect 10/10 as regressions, with 1/12 and
+0/12 benign inputs flagged. Those revised scores are not unseen generalisation
+measurements. Unrelated new-name impostors remain indistinguishable from legitimate
+new vendors using these fields alone. See `docs/READINESS_UPDATE.md`.
+
+Optional JSON Schema constrains local model output shape. Typed preflight remains
+the authority even if a server ignores the schema. Generated proposals still require
+normal human approvals and simulated consent. Quick-start shortcuts only navigate;
+browser checks verify they do not mutate financial state or open approval dialogs.
 
 Public handbook and benchmark assets disclose synthetic documentation only. Session, tenant, role, Host/Origin, CSRF and execution controls remain in place for financial APIs. Package verification excludes private local metadata and checks actual extracted bytes; the synthetic public roster does not establish eligibility or registration.

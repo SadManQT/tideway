@@ -153,6 +153,9 @@ def slides():
     tidepay = (_json("evidence/upgrade-v1/tidepay/report.json") or {}).get("results", {})
     verify = _json("evidence/verification-summary.json") or {}
     lm = _tidelm()
+    local_smoke = _json("evidence/readiness-v2/model/qwen3-final-smoke.json") or {}
+    local_proof = (f"Windows compatible model: {local_smoke.get('matched')}/{local_smoke.get('denominator')} authored smoke requests matched"
+                   if local_smoke.get("successful") else "Current compatible-model verification is recorded separately")
     pct = lambda v: f"{v * 100:.1f}%".replace(".0%", "%")  # noqa: E731
     lm_rows = []
     if lm:
@@ -164,7 +167,7 @@ def slides():
     fed, rule, thin, alone = (tidepay.get("federated", {}), tidepay.get("heuristic_v1", {}),
                               tidepay.get("federated_on_smaller_half_of_smes", {}), tidepay.get("local_only_on_smaller_half_of_smes", {}))
     deck = [
-        {"title": "Tideway", "subtitle": "Never miss payroll again.",
+        {"title": "Tideway", "subtitle": "Plan ahead for payroll.",
          "bullets": ["On-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, "
                      "and acts only with your approval.", "FinTechathon 2026 · International Track · Topic E: SME Finance Copilot"],
          "image": "00-landing.png", "first": True},
@@ -189,10 +192,10 @@ def slides():
          "table": ([("", "Base model", "TideLM")] + lm_rows) if lm_rows else None,
          "bullets": ["Eight languages: English, 中文, Español, Bahasa, Français, Português, Hinglish, Banglish",
                      "Synthetic test with unseen names and shared template families",
-                     "Historical scores; changed result-aware runtime needs device verification"] + ([] if lm_rows else ["Evaluation pending"])},
+                     local_proof + "; historical adapter scores above are a different evaluation"] + ([] if lm_rows else ["Evaluation pending"])},
         {"title": "Plan the rescue", "subtitle": "An exact, risk-aware optimiser",
          "bullets": ["Supplier deferrals, early-payment discounts (priced as APR), zero-cash reminders",
-                     "Holds the reserve every day, payroll always funded, ≤ 2 of 20 futures short",
+                     "Feasible plans protect payroll and the likely reserve path; residual risk stays visible",
                      "Explains why the cheaper option is too risky; financing shown as a mock comparison"],
          "image": "02-rescue-agent-and-plan.png"},
         {"title": "Approve exactly this", "subtitle": "Human approval, signed mandate, verified execution",

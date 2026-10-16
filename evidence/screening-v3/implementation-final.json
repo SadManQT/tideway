@@ -1,0 +1,9 @@
+{
+  "status": "Final regression-only improvement after both independent holdouts disclosed. Preserve original4of10 and5of10 detection outcomes. No fresh independent validation of final rules. No more source edits planned.",
+  "sha256": {
+    "tideway/domain.py": "ce47e06a7fb242ff853f66d5ecc5af2b1729d8019b314fafb18e5331c9c4264c",
+    "tideway/analytics.py": "fd1b319328fdd9d198d0267ed59875129c8fa84def373c79510a9af634a42dec",
+    "tests/test_screening_context.py": "717533d3d199d17a00f3336ff4bf7b15df23329eed2c7617b68d84de687fd5cd",
+    "scripts/evaluate_screening_v3.py": "e8abc800220e3914c06bac1150079447ff3976420d9005192f70411c0f648da4"
+  }
+}

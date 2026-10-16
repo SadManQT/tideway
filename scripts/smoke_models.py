@@ -93,7 +93,7 @@ def main():
     report['complete'] = report['tidelm'] is not None and report['vision'] is not None
     out = ROOT / args.out
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(report, indent=1, ensure_ascii=False))
+    out.write_text(json.dumps(report, indent=1, ensure_ascii=False), encoding="utf-8")
     print(json.dumps({"tidelm_median_s": (report["tidelm"] or {}).get("median_seconds"),
                       "vision_s": (report["vision"] or {}).get("seconds_including_load")}))
     print(f"wrote {out.relative_to(ROOT)}")

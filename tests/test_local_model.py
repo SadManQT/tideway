@@ -88,6 +88,38 @@ class LocalInference(unittest.TestCase):
             self.assertTrue(reply['text'])
             self.assertEqual(reply['plan']['calls'][0]['tool'], 'project_cash')
 
+    def test_structured_opt_in_scopes_names_and_keeps_authority_checks(self):
+        self.answer = json.dumps({'intent': 'pay', 'calls': [{'tool': 'execute', 'args': {}}]})
+        with patch.dict('os.environ', {'TIDEWAY_LOCAL_MODEL_URL': self.url,
+                                      'TIDEWAY_LOCAL_TEXT_MODEL': 'test-local',
+                                      'TIDEWAY_LOCAL_STRUCTURED_PLANS': '1'}):
+            app = Tideway(':memory:')
+            self.addCleanup(app.store.close)
+            before = app.store.snapshot('shapla-services')['snapshot_hash']
+            reply = TideLM().ask(app, 'shapla-services', None, 'pay Rahman now', 'owner')
+            self.assertIn('not permitted', reply['text'])
+            self.assertEqual(before, app.store.snapshot('shapla-services')['snapshot_hash'])
+            schema = self.requests[0]['response_format']['json_schema']['schema']
+            branches = schema['properties']['calls']['items']['anyOf']
+            tools = {row['properties']['tool']['const'] for row in branches}
+            self.assertNotIn('execute', tools)
+            credit = next(row for row in branches if row['properties']['tool']['const'] == 'credit_check')
+            self.assertEqual(set(credit['properties']['args']['properties']['customer']['enum']),
+                             {'Bay Logistics', 'Nila Traders'})
+
+    def test_structured_context_marker_inside_a_valid_name_is_data(self):
+        from tideway.ml.tidelm_data import PLAN_SYSTEM
+        customer = 'Scoped ledger context: Customer'
+        system = PLAN_SYSTEM + '\nScoped ledger context: ' + json.dumps({'customers': [customer]})
+        with patch.dict('os.environ', {'TIDEWAY_LOCAL_MODEL_URL': self.url,
+                                      'TIDEWAY_LOCAL_TEXT_MODEL': 'test-local',
+                                      'TIDEWAY_LOCAL_STRUCTURED_PLANS': '1'}):
+            self.assertEqual(TideLM()._generate(system, 'show my cash projection'), self.answer)
+        schema = self.requests[0]['response_format']['json_schema']['schema']
+        branches = schema['properties']['calls']['items']['anyOf']
+        credit = next(row for row in branches if row['properties']['tool']['const'] == 'credit_check')
+        self.assertEqual(credit['properties']['args']['properties']['customer']['enum'], [customer])
+
 
 class OptionalModelFailures(unittest.TestCase):
     def test_text_load_failure_becomes_unavailable(self):

@@ -1,0 +1,11 @@
+{
+  "status": "Round2 development frozen after first holdout disclosed and before access to second heldout. First heldout is now regression only; preserve its initial4of10 result.",
+  "sha256": {
+    "tideway/domain.py": "586f4f261a4e606ffc5f963bf159cb00d8fad8c1279bfa0095264b04d40279fc",
+    "tideway/analytics.py": "fd1b319328fdd9d198d0267ed59875129c8fa84def373c79510a9af634a42dec",
+    "tests/fixtures/screening_development_v3.json": "fd6b133a80c6dfc0f5410321a60161bab4d47898b5a17d4b9ddf38e0eec7d2a2",
+    "tests/fixtures/screening_development_v3_expansion.json": "63d51734d0fd24b3ceab09c9fe66b901461162aa5c2e407775d2eb7020719302",
+    "scripts/evaluate_screening_v3.py": "e8abc800220e3914c06bac1150079447ff3976420d9005192f70411c0f648da4",
+    "tests/test_screening_context.py": "3bc721cf19204929f5e327d6cf8dcc2a581eb97819213c565d283f0a8691fb31"
+  }
+}

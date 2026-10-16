@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import threading
 import time
@@ -51,6 +52,17 @@ Never invent an amount or assume credit terms. No approval, mandate, execution, 
 For a rescue request select read tools and propose_plan; a second bounded selection may see actual tool results.
 In that second selection propose only when the results warrant it, preserve original constraints, and do not repeat reads.
 Output the public JSON tool selection only. No private chain of thought, invented results or narrative transcript.
+Tool selection guide:
+- Overall cash uncertainty, reserve breach probability or payroll risk: simulate_risk with empty args {}.
+- A cash forecast: project_cash with scenario base, likely or stress.
+- A hypothetical customer delay: what_if, with customer_delays mapping each exact customer name directly to an integer number of days.
+  Example shape: {"intent":"what_if","calls":[{"tool":"what_if","args":{"customer_delays":{"Exact Customer Name":7}}}]}.
+  The map keys are actual customer names, not literal keys called name or days. Other what_if arguments may be omitted.
+- credit_check is only for a requested new credit sale with explicit customer, amount and terms_days; do not invent a sale for a general risk question.
+- A request to approve, pay, wire or transfer funds: {"intent":"refuse","calls":[{"tool":"refuse","args":{"reason":"approve_or_move_money"}}]}.
+- A recovery proposal for review: propose_plan. Copy its original args unchanged into a warranted follow-up after observed results.
+  A proposal is allowed; approving or executing it is a separate human workflow. If the user gives no discount ceiling, omit max_discount_pct or use null.
+Every call uses the exact envelope {"tool":"tool_name","args":{}}. Each tool accepts only its documented arguments.
 """
 
 
@@ -203,6 +215,11 @@ class TideLM:
             return self._generator(system, user)
         if self._local is not None:
             try:
+                if os.getenv("TIDEWAY_LOCAL_STRUCTURED_PLANS", "").strip() == "1" and system.startswith(PLAN_SYSTEM):
+                    from .plan_schema import plan_schema
+                    context = json.loads(system.partition("\nScoped ledger context: ")[2])
+                    return self._local.generate(system, user, max_tokens=max_tokens,
+                                                response_schema=plan_schema(context["customers"]))
                 return self._local.generate(system, user, max_tokens=max_tokens)
             except LocalModelUnavailable as exc:
                 raise TideLMUnavailable(str(exc)) from exc

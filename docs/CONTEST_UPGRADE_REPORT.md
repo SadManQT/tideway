@@ -22,7 +22,7 @@ Evidence: `evidence/upgrade-v1/tidepay/` (report, raw predictions, splits/hashes
 
 Whole-plan preflight validates roles/Advise mode, strict entity identity, money/currency/units, dates, hypothetical isolation and tool budgets before any proposing side effect. Rescue selection consumes deterministic forecast/risk/security outputs and records a bounded model follow-up, observable tool receipts and a code-written rationale. Fallback and injected transports are labelled explicitly.
 
-Current real-model smoke: unavailable, zero real requests, exit code 2. This Mac has no MLX, released adapter or cached base weights. Historical TideLM v2 scores do not measure the changed protocol. No large model download was attempted. Reproduction: `python3 scripts/smoke_reasoning.py`; model-enabled commands in `docs/MODEL_REASONING_V2.md`.
+Archived real-model smoke on macOS: unavailable, zero real requests, exit code 2. That environment had no MLX, released adapter or cached base weights. Historical TideLM v2 scores do not measure the changed protocol. The later Windows compatible-model verification and retained failed runs are separate under `evidence/readiness-v2/model/`; see `docs/READINESS_UPDATE.md`. Reproduction: `python3 scripts/smoke_reasoning.py`; model-enabled commands in `docs/MODEL_REASONING_V2.md`.
 
 Evidence: `evidence/upgrade-v1/model/`; guard tests are separate from model quality.
 
@@ -49,9 +49,9 @@ Run `python3 scripts/demo_payment_delay.py`. For the live UI use a new unused da
 
 ## Actual verification and handoff
 
-Latest automated report: 159 tests run, 159 passed, 0 skipped, 0 failures and 0 errors; Python 3.14.7 on Darwin. See evidence/test-summary.json for the validated source digest. The stdlib-only baseline had four optional Pillow skips; the isolated QA environment enables those cases.
+Latest automated report: 198 tests run, 197 passed, 1 skipped, 0 failures and 0 errors; Python 3.13.7 on Windows. See evidence/test-summary.json for the validated source digest and evidence/test-run.log for skip reasons. The earlier stdlib-only baseline had four optional Pillow skips; each run records its actual skips.
 
-Baseline: `evidence/upgrade-v1/baseline.json`; original self-test and historical observations preserved. Current self-test, unit, compile, browser, model availability and distribution reports describe their own actual environments. No Docker build, Windows run, external penetration test, SME user study or post-change real-model quality result is claimed.
+Baseline: `evidence/upgrade-v1/baseline.json`; original self-test and historical observations preserved. Current self-test, unit, compile, browser, model availability and distribution reports describe their own actual environments. Only the environments named in those reports were verified. No Docker build, external penetration test, SME user study or post-change real-model quality result is claimed.
 
 Regenerated deliverables: slides/pitch.pdf; docs/architecture.pdf; docs/security-assessment.pdf; docs/submission-notes.pdf; docs/Tideway_FinTechathon_2026_Roadmap.pdf. Final visual QA evidence and source/package hashes are kept with the release reports. Build the local ZIP with `python3 scripts/build_submission_package.py`, verify extracted bytes/startup with `python3 scripts/verify_package.py`, inspect dist/extraction-verification.json and dist/SHA256SUMS.txt.
 

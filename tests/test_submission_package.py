@@ -34,8 +34,26 @@ class PackagePrivacy(unittest.TestCase):
 
     def test_source_and_public_config_template_remain_reproducible(self):
         for name in ('.env.example', 'run.py', 'tideway/store.py', 'licenses/Qwen3-Apache-2.0.txt',
-                     'evidence/screens/browser-verification.json', 'tests/test_local_model.py'):
+                     'evidence/screens/browser-verification.json', 'tests/test_local_model.py',
+                     '.github/workflows/ci.yml'):
             self.assertTrue(allowed_source(name), name)
+
+    def test_ci_exception_does_not_expose_other_hidden_workstation_files(self):
+        for name in ('.github/workflows/private.yml', '.github/credentials.json',
+                     '.github/workflows/../ci.yml', '.github/workflows/ci.yml/extra'):
+            self.assertFalse(allowed_source(name), name)
+
+    def test_workflow_changes_invalidate_the_verified_release_digest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'run.py').write_text('pass\n', encoding='utf-8')
+            workflow = root / '.github/workflows/ci.yml'
+            workflow.parent.mkdir(parents=True)
+            workflow.write_text('name: first\n', encoding='utf-8')
+            first, files = source_digest(root)
+            self.assertIn('.github/workflows/ci.yml', files)
+            workflow.write_text('name: second\n', encoding='utf-8')
+            self.assertNotEqual(first, source_digest(root)[0])
 
     def test_missing_team_facts_are_never_marked_complete(self):
         team = {'team_name': 'Example', 'members': [{'name': 'Person', 'role': ''}]}

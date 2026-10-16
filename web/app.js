@@ -394,6 +394,9 @@ function render() {
     records: renderRecords, team: renderTeam, security: renderSecurity, evidence: renderEvidence};
   $("#fx-note").hidden = !state.displayCurrency || state.displayCurrency === currency();
   $("#view").innerHTML = state.dashboard ? (renderers[state.view] || renderOverview)() : `<div class="loading">Loading…</div>`;
+  window.TidewayQuickStart.render(state.dashboard ? {operatorId: state.operator?.id, businessId: state.businessId,
+    role: role(), synthetic: state.dashboard.business.synthetic, view: state.view, hasProposal: !!plan,
+    hasRecords: Object.values(state.dashboard.records || {}).some((rows) => Array.isArray(rows) && rows.length)} : null);
   if (state.view === "assistant") { const log = $("#chat-log"); if (log) log.scrollTop = log.scrollHeight; }
 }
 
@@ -709,11 +712,19 @@ function bundleCard(plan, bundle, index) {
     <div class="bundle-head"><div><span class="eyebrow">${esc(bundle.feasible ? label : counter ? "Counter-offer (not safe)" : "Best partial option (not safe)")}</span><h3>${bundle.actions.map((action) => esc(action.counterparty)).join(" + ") || "No actions"}</h3></div>
       <div class="row">${bundle.feasible ? `<span class="pill ok">Holds the reserve</span>` : `<span class="pill storm">Shortfall remains</span>`}${isNum(bundle.futures_short_of_20_after) ? `<span class="pill ${bundle.risk_target_met ? "ok" : "unsettled"}">${esc(bundle.futures_short_of_20_after)} of 20 futures short</span>` : ""}${bundle.dual_approval_required ? `<span class="pill violet">Two approvers</span>` : ""}${button}</div></div>
     <div class="bundle-body">
+      ${residualRiskHtml(plan, bundle)}
       <div class="compare"><div><span>Economic cost</span><strong>${money(bundle.economic_cost_minor)}</strong></div><div><span>Exposure</span><strong>${money(bundle.exposure_minor)}</strong></div>${isNum(after.minimum_cash_minor) ? `<div><span>Lowest likely cash after</span><strong>${money(after.minimum_cash_minor)}</strong></div>` : `<div><span>Reserve shortfall after</span><strong>${money(bundle.remaining_shortfall_minor)}</strong></div>`}<div><span>Counterparties to agree</span><strong>${esc(bundle.counterparties)}</strong></div></div>
       ${bundle.why_not ? `<p class="why-not">${esc(bundle.why_not)}</p>` : ""}
       ${approvals.length ? `<p class="small">Approvals so far: ${approvals.map((item) => `${esc(item.operator_id)} (${esc(item.role)})`).join(", ")}</p>` : ""}
       ${bundle.actions.map(actionCard).join("")}
     </div></article>`;
+}
+
+function residualRiskHtml(plan, bundle) {
+  if (!bundle.feasible || bundle.risk_target_met !== false || !isNum(bundle.probability_breach_after)) return "";
+  const risk = Math.round(bundle.probability_breach_after * 1000) / 10;
+  const target = isNum(plan.risk_target) ? Math.round(plan.risk_target * 1000) / 10 : 10;
+  return `<div class="alert warning residual-risk" role="note">${icon("alert")}<div><strong>Residual risk: ${esc(risk)}% of simulated futures fall below reserve</strong><span>The likely forecast holds the reserve, but this option does not meet the ${esc(target)}% risk target. Review the remaining exposure before approving; this is not a guaranteed rescue.</span></div></div>`;
 }
 
 function mandateCard(view) {
@@ -1199,6 +1210,18 @@ function renderRecords() {
 
 // ---------------------------------------------------------------------------- security
 
+function payeeAlertHtml(item, owner) {
+  const hasAccount = typeof item.account === "string" && !!item.account.trim();
+  const missing = item.code === "account_missing" || !hasAccount;
+  const details = missing
+    ? `Known account ${esc(item.expected_account || "not available")}. The payment account is missing. ${esc(item.reason)}`
+    : `Known account ${esc(item.expected_account || "not available")} → new ${esc(item.new_account || "not available")}. ${esc(item.reason)}`;
+  const next = missing
+    ? `<p class="small section-gap">Keep this bill blocked. Confirm valid payment details with the supplier using a number already on file, then correct the source record. Callback verification requires a payment account.</p>`
+    : owner ? `<div class="row section-gap"><button class="button small ghost" data-action="verify-payee" data-payee="${esc(item.payee)}" data-account="${esc(item.account)}">I called the number on file: verify</button></div>` : "";
+  return `<div class="alert critical">${icon("shield")}<div><strong>${esc(item.payee)} · bill ${esc(item.bill_id)}</strong><span>${details}</span>${next}</div></div>`;
+}
+
 function renderSecurity() {
   const d = state.dashboard;
   const policy = d.policy;
@@ -1222,7 +1245,7 @@ function renderSecurity() {
         <label class="field">Payroll protection<input value="Always on (cannot be disabled)" disabled></label>
         ${owner ? `<div class="row"><button class="button primary" type="submit">${icon("lock")}Save policy</button></div>` : ""}</form></section>
     <section class="card section-gap"><div class="card-head"><div><h3>Payee verification (business-email-compromise defence)</h3><p>Changed bank details and look-alike names block every action on that bill until the owner verifies by calling a number already on file. The verifier then cannot approve actions for that payee (separation of duties).</p></div></div>
-      ${(payees.flagged || []).map((item) => `<div class="alert critical">${icon("shield")}<div><strong>${esc(item.payee)} · bill ${esc(item.bill_id)}</strong><span>Known account ${esc(item.expected_account)} → new ${esc(item.new_account)}. ${esc(item.reason)}</span>${owner ? `<div class="row section-gap"><button class="button small ghost" data-action="verify-payee" data-payee="${esc(item.payee)}" data-account="${esc(item.account)}">I called the number on file: verify</button></div>` : ""}</div></div>`).join("")}
+      ${(payees.flagged || []).map((item) => payeeAlertHtml(item, owner)).join("")}
       ${(payees.lookalikes || []).map((item) => `<div class="alert critical">${icon("alert")}<div><strong>Look-alike payee "${esc(item.payee)}"</strong><span>${esc(Math.round(item.similarity * 100))}% similar to "${esc(item.similar_to)}". ${esc(item.reason)}</span></div></div>`).join("")}
       ${!(payees.flagged || []).length && !(payees.lookalikes || []).length ? `<div class="alert success">${icon("check")}<div><strong>No payee changes</strong><span>Every open bill pays a known account.</span></div></div>` : ""}</section>
     <section class="card section-gap"><div class="card-head"><div><h3>Attack self-test</h3><p>Runs 5 task scenarios and 25 attacks against an isolated in-memory copy, assuming a hijacked model and a rubber-stamp human. The live workspace is never touched.</p></div>${canApprove() ? `<button class="button primary" data-action="selftest">${icon("shield")}Run self-test</button>` : ""}</div>
@@ -1277,7 +1300,7 @@ function openApprove(planId, bundleId) {
   const lines = bundle.actions.map((action) => `<div class="line"><span>${esc(action.counterparty)} · ${action.type === "supplier_deferral" ? `move ${nat(action.amount_minor)} to ${esc(day(action.to_date))}` : `${esc(action.discount_bps / 100)}% off, pay ${nat(action.amount_minor)} by ${esc(day(action.to_date))}`}</span><b>${nat(action.economic_cost_minor)}</b></div>`);
   lines.push(`<div class="line"><span>Total exposure</span><b>${nat(bundle.exposure_minor)}</b></div>`);
   lines.push(`<div class="line"><span>Simulated futures still short after</span><b>${esc(bundle.futures_short_of_20_after ?? "—")} of 20</b></div>`);
-  $("#approve-summary").innerHTML = lines.join("") + `<p class="small muted">You approve these exact terms. Any change to the records, policy, payee, amount or dates voids this approval before execution. ${bundle.dual_approval_required ? "This exceeds the dual-approval threshold: a second person, including the owner, must approve too." : ""}</p>`;
+  $("#approve-summary").innerHTML = lines.join("") + residualRiskHtml(plan, bundle) + `<p class="small muted">You approve these exact terms. Any change to the records, policy, payee, amount or dates voids this approval before execution. ${bundle.dual_approval_required ? "This exceeds the dual-approval threshold: a second person, including the owner, must approve too." : ""}</p>`;
   $("#confirm-amount-label").hidden = !bundle.dual_approval_required;
   $("#confirm-amount").value = "";
   $("#approve-pin").value = "";
@@ -1434,6 +1457,7 @@ document.addEventListener("click", async (event) => {
     if (state.view === "evidence" && state.dashboard) loadAudit();
     if (state.view === "team" && state.businessId) loadTeam();
     window.scrollTo(0, 0);
+    if (nav.hasAttribute("data-quick-start-link")) $("#page-title").focus({preventScroll: true});
     return;
   }
   const button = target.closest("[data-action]");

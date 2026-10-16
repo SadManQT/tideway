@@ -428,6 +428,22 @@ li + li { margin-top: 4px; }
 .land-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; padding: 18px clamp(16px, 4vw, 48px) 28px; border-top: 1px solid var(--line); color: var(--faint); font-size: 11px; }
 
 /* onboarding, read-aloud, team */
+.quick-start { margin: 18px 30px 0; padding: 18px 20px; border: 1px solid #c5dedb; border-radius: var(--radius); background: #f2faf8; }
+.quick-start-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.quick-start-head > div { flex: 1 1 240px; min-width: 0; }
+.quick-start h2 { margin-top: 3px; font-size: 17px; }
+.quick-start p { margin-top: 4px; color: var(--muted); font-size: 12px; }
+.quick-start-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
+.quick-start-steps li { display: flex; align-items: flex-start; gap: 9px; min-width: 0; margin: 0; padding: 12px; border: 1px solid #d4e6e2; border-radius: 10px; background: var(--white); }
+.quick-start-steps li.current { border-color: var(--teal); box-shadow: inset 0 3px 0 var(--teal); }
+.quick-start-number { display: grid; place-items: center; flex: none; width: 23px; height: 23px; border-radius: 50%; color: var(--teal); background: var(--teal-soft); font-size: 12px; font-weight: 800; }
+.quick-start-steps h3 { font-size: 13px; }
+.quick-start-steps .button { margin-top: 10px; white-space: normal; text-align: left; }
+.quick-start-help { margin-top: 12px !important; }
+#page-title:focus-visible { outline: 2px solid var(--teal); outline-offset: 4px; }
+@media (max-width: 1180px) { .quick-start-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 860px) { .quick-start { margin: 14px 16px 0; padding: 16px; } }
+@media (max-width: 560px) { .quick-start-steps { grid-template-columns: minmax(0, 1fr); } }
 .section-gap-bottom { margin-bottom: 16px; }
 .onboarding { border-left: 4px solid var(--teal); }
 .onboard-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }

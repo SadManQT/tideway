@@ -116,7 +116,7 @@ class PayeeIdentityRegression(unittest.TestCase):
 class EvaluationAccounting(unittest.TestCase):
     def test_screening_uses_sealed_intent_labels_and_separate_denominators(self):
         report = screening_report()
-        sealed = json.loads((EVIDENCE / "screening-labels-sealed.json").read_text())
+        sealed = json.loads((EVIDENCE / "screening-labels-sealed.json").read_text(encoding="utf-8"))
         self.assertEqual(sha(SCREENING), sealed["fixture_sha256"])
         for key, malicious, benign in (("injection_screening", 14, 14), ("payee_screening", 8, 8)):
             result = report[key]

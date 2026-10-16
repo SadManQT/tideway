@@ -217,10 +217,10 @@ def confusion(rows):
 
 
 def screening_report():
-    seal = json.loads((EVIDENCE / "screening-labels-sealed.json").read_text())
+    seal = json.loads((EVIDENCE / "screening-labels-sealed.json").read_text(encoding="utf-8"))
     if sha(SCREENING) != seal["fixture_sha256"]:
         raise RuntimeError("Screening labels changed after sealing.")
-    spec = json.loads(SCREENING.read_text())
+    spec = json.loads(SCREENING.read_text(encoding="utf-8"))
     messages, payees = [], []
     for case in spec["messages"]:
         cleaned, removed = clean_text(case["text"])

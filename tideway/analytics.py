@@ -351,12 +351,15 @@ def payee_checks(bills, verified_accounts=None):
             continue
         identity = row["payee"].casefold()
         reference = known_by_identity.get(identity)
-        if row.get("payee_account") and reference and reference != row["payee_account"]:
+        if reference and reference != row.get("payee_account"):
+            missing = not row.get("payee_account")
             flagged.append({"bill_id": row["id"], "payee": row["payee"],
-                            "expected_account": mask_account(reference), "new_account": mask_account(row["payee_account"]),
-                            "account": row["payee_account"],
-                            "reason": "Bank details differ from the account used or verified before. Verify by calling "
-                                      "a number already on file before any action."})
+                            "expected_account": mask_account(reference), "new_account": mask_account(row.get("payee_account")),
+                            "account": row.get("payee_account"),
+                            "code": "account_missing" if missing else "account_changed",
+                            "reason": ("Bank details are missing for an established supplier. Restore and verify the account "
+                                       if missing else "Bank details differ from the account used or verified before. Verify ")
+                                      + "by calling a number already on file before any action."})
         cleared = bool(row.get("payee_account")) and verified_by_identity.get(identity) == row["payee_account"]
         if identity not in established_identities and not cleared:
             for name in established:
@@ -434,7 +437,7 @@ def warnings(business, records, base_projection, stress, profiles, payee_report,
                        "detail": "Cash would be negative on a payroll day without action. Payroll is never deferred."})
     if payee_report["flagged"]:
         result.append({"severity": "critical", "code": "payee_account_changed",
-                       "title": f"{len(payee_report['flagged'])} bill(s) with changed bank details",
+                       "title": f"{len(payee_report['flagged'])} bill(s) with missing or changed bank details",
                        "detail": "Actions on these bills are blocked until the owner verifies the payee by callback."})
     if payee_report["lookalikes"]:
         item = payee_report["lookalikes"][0]

@@ -28,6 +28,24 @@ Optional models and inference:
   https://github.com/Blaizzy/mlx-vlm
 * Pillow (HPND) is optional for photo processing and slide image crops.
   https://github.com/python-pillow/Pillow/blob/main/LICENSE
+* The optional `scripts/local_demo_model.py` helper provisions compatible GGUF
+  text models separately. `compact` uses Qwen/Qwen2.5-1.5B-Instruct-GGUF
+  (Q4_K_M); `qwen3-4b` uses unsloth/Qwen3-4B-Instruct-2507-GGUF (Q4_K_M),
+  derived from Qwen/Qwen3-4B-Instruct-2507. Both model cards identify Apache-2.0.
+  These are third-party models/conversions, not Tideway-trained adapters, and
+  they do not inherit the released TideLM MLX evaluation scores.
+  https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF
+  https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF
+  https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507
+  Apache-2.0 license copy: licenses/Qwen3-Apache-2.0.txt
+* The helper downloads an optional checksum-pinned llama.cpp native runtime
+  from ggml-org/llama.cpp release b11678. llama.cpp is MIT; downloaded runtime
+  archives can contain additional component notices that remain applicable.
+  The helper records model/runtime provenance and supports an explicit external
+  cache directory. No GGUF weights, runtime executables, DLLs or dylibs are
+  included in the source/submission package.
+  https://github.com/ggml-org/llama.cpp
+  https://github.com/ggml-org/llama.cpp/blob/master/LICENSE
 
 Build and demo tooling:
 

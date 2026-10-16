@@ -87,7 +87,7 @@ def main():
         actual_digest, _files = source_digest(source)
         if actual_digest != manifest.get('source_tree_sha256'):
             raise RuntimeError('Extracted source differs from the tested/browser-verified source digest')
-        roster = json.loads((source / 'submission-team.public.json').read_text())
+        roster = json.loads((source / 'submission-team.public.json').read_text(encoding='utf-8'))
         if len(roster['members']) != 5:
             raise RuntimeError('The five confirmed public members must be reproducible')
         env = isolated_environment()
@@ -113,7 +113,7 @@ def main():
                         break
                 except (OSError, json.JSONDecodeError):
                     if process.poll() is not None:
-                        raise RuntimeError(log.read_text())
+                        raise RuntimeError(log.read_text(encoding='utf-8'))
                     time.sleep(.1)
             else:
                 raise RuntimeError('Extracted server did not start')

@@ -259,14 +259,37 @@ def _scope(raw, business_id):
 # instruction.  These flags make that boundary visible and testable; they do
 # not decide anything on their own.
 
+# Compose the rules from threat categories rather than individual test phrases.
+# These are warning heuristics; a token or intent can always be paraphrased.
+_CONTROL_TERMS = r"(?:polic\w*|limits?|approvals?|security|check(?:s|ers?)?|consent|reviewers?|signatures?|authori[sz]ation|pin|passcode|password|otp|co-?signers?|human\s+signers?)"
+_AUTHORITY_TERMS = r"(?:authori[sz]ation|consent|approvals?|signatures?|reviewers?|signers?)"
+_FINANCIAL_TARGET = r"(?:payment|invoice|funds|money|beneficiary|settlement|payout|remittance|bank|account|destination|disbursement)"
+_SENSITIVE_DATA = r"(?:customer\s+(?:records?|ledger|database|data)|payroll\s+(?:ledger|records?|data)|banking\s+credentials?|credentials?|secrets?|tokens?|private\s+keys?|database|all\s+(?:invoices|records|accounts))"
+_EXTERNAL_DESTINATION = r"(?:https?://|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}|\b(?:there|outside|external|endpoint|server|private\s+(?:mailbox|inbox)|my\s+(?:inbox|mailbox|email))\b)"
+
 INJECTION_PATTERNS = (
-    ("instruction_override", re.compile(r"\b(ignore|disregard|forget)\b.{0,40}\b(instruction|rule|prompt|polic|previous|above)", re.I)),
-    ("role_marker", re.compile(r"(^|\s)(system|assistant|developer|tool)\s*:", re.I)),
-    ("action_command", re.compile(r"\b(approve|execute|transfer|wire|send|pay|release)\b.{0,60}\b(now|immediately|urgent|without|account|iban|wallet|attacker)\b", re.I)),
-    ("control_bypass", re.compile(r"\b(override|bypass|disable|skip)\b.{0,30}\b(polic|limit|approval|security|check|consent)", re.I)),
+    ("instruction_override", re.compile(r"\b(ignore|disregard|forget)\b.{0,50}\b(instructions?|rules?|prompts?|polic\w*|restrictions?)\b", re.I)),
+    ("control_bypass", re.compile(rf"\b(?:override|bypass|disable|skip|omit|waive|circumvent|suspend|eliminate|suppress)\b.{{0,60}}\b{_CONTROL_TERMS}\b", re.I)),
+    # Negating a control requirement removes a safeguard. This differs from
+    # negating "bypass", which preserves that safeguard. Match the whole
+    # removal request so local negation suppression does not invert it again.
+    ("control_bypass", re.compile(rf"\b(?:do\s+not|don't|need\s+not|stop|cease)\s+(?:require|requiring|enforce|enforcing|check|checking|request|requesting|ask\s+for|asking\s+for)\b.{{0,55}}\b{_CONTROL_TERMS}\b", re.I)),
+    ("control_bypass", re.compile(rf"\b{_CONTROL_TERMS}\b[^.;!?]{{0,65}}\b(?:turn|switch)\b.{{0,25}}\boff\b", re.I)),
+    ("control_bypass", re.compile(r"\b(?:without\s+(?:asking\s+)?|no\s+(?:further\s+)?|not\s+require\s+)(?:the\s+|either\s+|human\s+|owner'?s?\s+|any\s+|both\s+){0,3}(?:approv\w*|consent|authorization|callback|review\w*)\b", re.I)),
+    ("forged_authority", re.compile(r"\b(?:treat|accept|regard|use)\b.{0,35}\b(?:this\s+(?:note|message)|text|invoice)\b.{0,35}\b(?:authori[sz]ation|consent|approval)\b|\b(?:mark|set)\b.{0,45}\b(?:mandates?|approvals?|payments?)\b.{0,35}\b(?:accepted|approved|signed|authorized)\b", re.I)),
+    ("forged_authority", re.compile(rf"\b(?:treat|accept|regard|use|count|consider)\b.{{0,80}}\b(?:as|equivalent|in\s+place\s+of|substitute)\b.{{0,60}}\b{_AUTHORITY_TERMS}\b|\b(?:record|mark|set|consider)\b.{{0,65}}\b(?:mandates?|approvals?|payments?|transfers?)\b.{{0,45}}\b(?:accepted|approved|signed|authori[sz]ed|complete|completed|satisfied)\b", re.I)),
+    ("forged_authority", re.compile(rf"\b(?:treat|accept|regard|use|count|consider)\b.{{0,45}}\b(?:chat|message|email|note|text|invoice|stamp|attachment)\b.{{0,55}}\b{_AUTHORITY_TERMS}\b|\b(?:pretend|assume|fabricate|falsify|invent)\b.{{0,60}}\b{_CONTROL_TERMS}\b.{{0,35}}\b(?:passed|complete|completed|done|satisfied|cleared|obtained|granted)\b", re.I)),
+    ("control_bypass", re.compile(rf"\b(?:no|without)\s+(?:further\s+|human\s+|owner\s+|manual\s+|additional\s+){{0,3}}{_AUTHORITY_TERMS}\b.{{0,30}}\b(?:needed|required|necessary)\b|\b{_AUTHORITY_TERMS}\b.{{0,20}}\b(?:is|are)\s+(?:unnecessary|optional)\b", re.I)),
+    ("payment_redirect", re.compile(r"\b(?:redirect|reroute|divert)\b.{0,60}\b(?:payment|invoice|funds|money|beneficiary|settlement)\b|\b(?:payment|invoice|funds|money)\b.{0,35}\b(?:redirect|reroute|divert)\b", re.I)),
+    ("payment_redirect", re.compile(rf"\b(?:replace|substitute|swap|switch|change|amend|route)\b.{{0,65}}\b{_FINANCIAL_TARGET}\b.{{0,65}}\b(?:to|with|for|instead|rather\s+than)\b.{{0,65}}\b(?:account|wallet|beneficiary|bank|coordinates|destination|attachment|below|provide|listed)\b", re.I)),
+    ("payment_redirect", re.compile(r"\b(?:use|pay|send|route|select)\b.{0,55}\b(?:wallet|account|beneficiary|destination)\b.{0,60}\b(?:instead\s+of|rather\s+than|in\s+place\s+of)\b.{0,60}\b(?:registered|recorded|verified|established|existing|usual)\b", re.I)),
+    ("data_exfiltration", re.compile(rf"\b(?:upload|export|post|transmit|send|copy|forward|fetch|email|mail)\b.{{0,100}}\b{_SENSITIVE_DATA}\b.{{0,100}}{_EXTERNAL_DESTINATION}|\b(?:fetch|visit|open)\b.{{0,100}}https?://.{{0,100}}\b{_SENSITIVE_DATA}\b", re.I)),
+    ("concealed_action", re.compile(r"\b(?:hide|conceal|suppress)\b.{0,55}\b(?:payments?|transfers?|disbursements?|execution|owner|user|reviewers?)\b|\b(?:do\s+not|don't|never)\s+(?:show|tell|notify|inform|alert)\b.{0,65}\b(?:owner|user|reviewers?|approvers?)\b.{0,100}\b(?:approve|pay|payment|transfer|transmit|disbursement|execute)\b|\b(?:approve|execute|transmit|pay|release)\b.{0,65}\b(?:silently|secretly|quietly|in\s+secret)\b", re.I)),
+    ("audit_tampering", re.compile(r"\b(?:delete|erase|clear|remove|purge|disable|rewrite)\b.{0,45}\b(?:audit\s+(?:trail|logs?|records?)|execution\s+logs?|transaction\s+logs?)\b", re.I)),
+    ("action_command", re.compile(r"\b(?:wire|transfer|send|pay|release)\b.{0,60}\b(?:my|attacker|unverified)\s+(?:account|wallet)\b|\b(?:wire|transfer|send|pay|release)\b.{0,35}\b(?:all|full|entire)\s+(?:funds|balance|money)\b", re.I)),
     ("payment_detail_change", re.compile(r"\b(new|updated|changed|different)\b.{0,20}\b(bank|account|iban|swift|bic|sort code|routing|wallet|paypal|wise|payoneer|revolut|alipay|wechat ?pay|upi|paynow|duitnow|promptpay|gcash|m-?pesa|bkash|nagad|pix)\b", re.I)),
-    ("hidden_markup", re.compile(r"<\s*/?\s*(script|system|instructions?|iframe)\b|\{\{|\}\}", re.I)),
-    ("external_link", re.compile(r"https?://|www\.", re.I)),
+    ("payment_detail_change", re.compile(r"\b(?:bank\s+details|account|iban|wallet|beneficiary)\b.{0,20}\b(?:changed|updated|replaced|different)\b", re.I)),
+    ("hidden_markup", re.compile(r"<\s*/?\s*(script|system|instructions?|iframe)\b|\{\{\s*(?:tool|system|execute|instructions?)\s*:", re.I)),
     # The same signals in other languages owners and counterparties actually write in.
     ("instruction_override", re.compile(r"(忽略|无视|忘记|不要理会).{0,12}(指令|指示|说明|规则|提示|之前|以上)"
                                         r"|\b(ignora|olvida|ignorez|oubliez|abaikan|lupakan)\b.{0,40}\b(instruc|regla|r[eè]gle|consigne|aturan|perintah|anterior|pr[eé]c[eé]dent|sebelum)"
@@ -282,6 +305,30 @@ INJECTION_PATTERNS = (
     ("control_bypass", re.compile(r"(绕过|跳过|关闭).{0,8}(审批|限制|安全|检查)|\b(omite|salta|contourne|lewati)\b.{0,30}\b(aprobaci|approbation|persetujuan|l[ií]mite|limit)", re.I)),
 )
 
+# Flags signal review, not malicious intent. Payment-detail changes remain
+# quarantined even when a supplier's request is legitimate. A receipt URL or
+# an ordinary role-like heading alone is not an instruction attack.
+PAYMENT_REVIEW_FLAGS = frozenset({"payment_detail_change"})
+_ROLE_MARKER = re.compile(r"(^|\s)(system|assistant|developer|tool|系统|助手|sistema|syst[eè]me|asisten|النظام)\s*[:：]", re.I)
+_ACTION_WORD = re.compile(r"\b(?:approve|execute|transfer|wire|send|pay|release)\b", re.I)
+_LINK = re.compile(r"https?://|www\.", re.I)
+_NEGATION = re.compile(r"\b(?:never|must\s+not|do\s+not|don't|should\s+not|cannot|can't|not\s+to)\s+(?:\w+\s+){0,2}$", re.I)
+
+
+def _negated_at(value, start):
+    """Suppress locally negated prohibitions, not an entire mixed message."""
+    prefix = value[max(0, start - 90):start]
+    if _NEGATION.search(prefix):
+        return True
+    if re.match(r"without\b", value[start:], re.I):
+        # "No payment is allowed without approval" is a prohibition. Limit
+        # this exemption to that clause and that match: a later bypass,
+        # silent-action, or authority-forging request is scanned separately.
+        clause = re.split(r"[.;!?\n]", prefix)[-1]
+        return bool(re.search(r"\bno\s+(?:payments?|transfers?|funds?|money|disbursements?)\b.{0,35}\b(?:allowed|permitted|executed|released|sent)\b.{0,15}$", clause, re.I)
+                    or re.search(r"\b(?:never|do\s+not|must\s+not)\s+(?:pay|release|transfer|send|execute)\b.{0,45}$", clause, re.I))
+    return False
+
 
 PAYROLL_WORDS = ("payroll", "salary", "salaries", "wage", "wages", "staff pay", "staff cost", "bonus")
 
@@ -292,13 +339,32 @@ def is_payroll_text(*values) -> bool:
 
 
 def scan_text(*values) -> list[str]:
+    """Contextual warning signals; never a source of action authority.
+
+    ``payment_detail_change`` requests independent account verification and
+    must not be presented as a positive injection/fraud classification.
+    Undetected text remains untrusted: permissions and approvals do not rely
+    on these rules. Limited negation handling does not interpret prose fully.
+    """
     flags = []
     for value in values:
         if not isinstance(value, str) or not value:
             continue
+        local = []
         for name, pattern in INJECTION_PATTERNS:
-            if name not in flags and pattern.search(value):
-                flags.append(name)
+            if name == "role_marker":
+                continue  # Contextual gating below also covers multilingual headings.
+            if any(not _negated_at(value, match.start()) for match in pattern.finditer(value)):
+                if name not in local:
+                    local.append(name)
+        attack = any(name not in PAYMENT_REVIEW_FLAGS for name in local)
+        if attack and _ROLE_MARKER.search(value):
+            local.append("role_marker")
+        if attack and _ACTION_WORD.search(value) and "action_command" not in local:
+            local.append("action_command")
+        if attack and _LINK.search(value):
+            local.append("external_link")
+        flags.extend(name for name in local if name not in flags)
     return flags
 
 
