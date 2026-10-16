@@ -1,7 +1,8 @@
 {
-  "run_at": "2026-10-15T18:04:33.187Z",
+  "run_at": "2026-10-15T19:58:14.430Z",
   "passed": true,
   "browser": "Chrome/155.0.8059.40",
+  "source_tree_sha256": "371d54d47dc4a1a5e29ef76b215681ce1444ea6adb26d9e98f5ad19a7f92e1cb",
   "viewport": {
     "desktop": [
       1440,
@@ -14,6 +15,8 @@
   },
   "page_errors": [],
   "tidelm_available": false,
+  "test_only_local_backend": false,
+  "linked_payment_delay": false,
   "model_inference_tested": false,
   "coverage": [
     "landing",
@@ -30,7 +33,8 @@
     "mobile overflow",
     "signup",
     "invite",
-    "viewer isolation"
+    "viewer isolation",
+    "public guide routes and assets"
   ],
   "fixture": "fresh synthetic database; no real money or external provider"
 }

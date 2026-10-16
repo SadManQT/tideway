@@ -46,6 +46,7 @@ class LocalModel:
         if self.error:
             raise LocalModelUnavailable(self.error)
         connection = http.client.HTTPConnection(self.host, self.port, timeout=timeout)
+        deadline = time.monotonic() + timeout
         try:
             body = json.dumps(payload).encode("utf-8") if payload is not None else None
             connection.request(method, "/v1/" + path, body,
@@ -54,9 +55,23 @@ class LocalModel:
             # HTTPConnection never follows redirects, including redirects off-host.
             if response.status != 200:
                 raise LocalModelUnavailable(f"Local model server returned HTTP {response.status}.")
-            raw = response.read(262145)
-            if len(raw) > 262144:
-                raise LocalModelUnavailable("Local model response exceeded the 256 KiB limit.")
+            chunks, size = [], 0
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise LocalModelUnavailable("Local model request exceeded its time budget.")
+                # Keep a total deadline even if a server drips response bytes.
+                sock = connection.sock or getattr(getattr(response.fp, "raw", None), "_sock", None)
+                if sock is not None:
+                    sock.settimeout(remaining)
+                chunk = response.read1(min(16384, 262145 - size))
+                if not chunk:
+                    break
+                chunks.append(chunk)
+                size += len(chunk)
+                if size > 262144:
+                    raise LocalModelUnavailable("Local model response exceeded the 256 KiB limit.")
+            raw = b"".join(chunks)
             return json.loads(raw)
         except (OSError, http.client.HTTPException, UnicodeError, ValueError, RecursionError) as exc:
             raise LocalModelUnavailable("Local model is unavailable or returned invalid JSON. Check the local server and model ID.") from exc

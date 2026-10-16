@@ -1,0 +1,18 @@
+{
+  "head": "fb7961689bb9dc5a03bc52939999ade82966658d",
+  "origin": "https://github.com/SadManQT/tideway",
+  "remote_main_matches_head": true,
+  "python": "3.14.7",
+  "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "tests_run": 97,
+  "passed": 93,
+  "skipped": 4,
+  "skip_reason": "Pillow not installed; optional image decoding tests",
+  "failures": 0,
+  "errors": 0,
+  "selftest_cases": 30,
+  "selftest_passed": 30,
+  "mlx_text_available": false,
+  "mlx_vision_available": false,
+  "unrelated_change_preserved": ".DS_Store"
+}

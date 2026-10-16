@@ -38,10 +38,16 @@ def heuristic_eval(rows, delays, bucket_means):
             "mae_days": round(statistics.fmean(errors), 2), "auc_late_over_7d": tp.auc(scores), "n": len(rows)}
 
 
-def prior_eval(train_y, rows, delays):
+def prior_eval(train_y, train_delays, rows, delays):
+    """Prior baseline: fit both probabilities and day prediction on training data.
+
+    Historical evidence used the test delay mean for MAE; that observation is
+    preserved in evidence/ml, while reruns use this corrected baseline. For a
+    global chronological, matured-label audit use scripts/evaluate_tidepay_v2.py.
+    """
     counts = [train_y.count(c) + 1 for c in range(len(tp.BUCKETS))]
     probs = [c / sum(counts) for c in counts]
-    mean_delay = statistics.fmean(delays)
+    mean_delay = statistics.fmean(train_delays)
     loss = -statistics.fmean(math.log(probs[y]) for _x, y in rows)
     top = max(range(len(probs)), key=probs.__getitem__)
     return {"log_loss": round(loss, 4), "accuracy": round(sum(1 for _x, y in rows if y == top) / len(rows), 4),
@@ -70,7 +76,7 @@ def main(seed=7, rounds=25):
         return [(scaler.scale(x), y) for x, y, _d in rows]
 
     test_scaled, test_delays = scaled(all_test), [d for _x, _y, d in all_test]
-    results = {"prior": prior_eval([y for _x, y, _d in all_train], test_scaled, test_delays),
+    results = {"prior": prior_eval([y for _x, y, _d in all_train], [d for _x, _y, d in all_train], test_scaled, test_delays),
                "heuristic_v1": heuristic_eval([(x, y) for x, y, _d in all_test], test_delays, bucket_means)}
 
     # Local-only: each SME alone, evaluated on its own later invoices.

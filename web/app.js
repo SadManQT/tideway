@@ -7,7 +7,7 @@ const freshInbox = () => ({text: "", photo: "", photoName: "", transcript: "", d
 const state = {
   config: null, operator: null, businessId: "", targetDate: "", view: "overview",
   dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "", selftest: null, drill: null,
-  whatif: freshWhatIf(), inbox: freshInbox(), recordFilter: "all", recordQuery: "", aiConsent: false,
+  whatif: freshWhatIf(), demoDelay: null, demoRequest: null, inbox: freshInbox(), recordFilter: "all", recordQuery: "", aiConsent: false,
   busy: false, approving: null, displayCurrency: "", team: null, teamError: "", invite: null, speaking: false
 };
 const VIEWS = {
@@ -15,7 +15,7 @@ const VIEWS = {
   rescue: ["Rescue plan", "The agent proposes; people approve; counterparties agree; the sandbox executes once"],
   assistant: ["Ask Tideway", "Plain-English questions answered from tool output, never from guesses"],
   inbox: ["Inbox", "Paste a message; TideLM drafts records; nothing is saved until you confirm"],
-  whatif: ["What-if", "Move customers' payment dates or add an expense; nothing is saved"],
+  whatif: ["What-if", "Explore read-only assumptions; a separate owner action can apply a synthetic demo delay"],
   records: ["Records", "The ledger behind every number, with untrusted text quarantined"],
   team: ["Team", "Who can see and act for this business, pending invites and your plan"],
   security: ["Security centre", "Permission tiers, kill switch, policy, payee verification and the attack self-test"],
@@ -137,7 +137,7 @@ const ROLE_PILL = {owner: "teal", accountant: "info", viewer: ""};
 function resetSessionState() {
   stopSpeaking();
   Object.assign(state, {view: "overview", dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "",
-    selftest: null, drill: null, whatif: freshWhatIf(), inbox: freshInbox(), aiConsent: false, approving: null,
+    selftest: null, drill: null, whatif: freshWhatIf(), demoDelay: null, demoRequest: null, inbox: freshInbox(), aiConsent: false, approving: null,
     team: null, teamError: "", invite: null});
 }
 
@@ -472,6 +472,7 @@ function renderOverview() {
     fan: sim.fan, reserve: d.policy.reserve_floor_minor, markers});
   const customers = Object.values(d.profiles.customers || {});
   const k = d.kpis;
+  const audit = d.tidepay?.card?.audit_benchmark;
   return `${onboardingHtml(d)}
   <section class="brief ${esc(d.weather.level)}">
     <div class="weather-badge">${icon(weatherIcon(d.weather.level))}${esc(d.weather.label)}</div>
@@ -493,6 +494,7 @@ function renderOverview() {
       <p class="dots-caption"><strong>${pct(sim.probability_breach)}</strong> breach the reserve floor · payroll unfunded in ${pct(sim.probability_payroll_unfunded)} · most common first breach ${esc(day(sim.most_common_breach_date))}.</p>
       <details class="section-gap"><summary>How this is calculated</summary><p class="small muted">${esc(sim.method)} Seed ${esc(sim.seed)}: the same records always give the same result.</p>
       ${d.backtest.available ? `<p class="small muted section-gap">Backtest (leave-one-out, synthetic history): typical error ${esc(d.backtest.mean_absolute_error_days)} days; ${pct(d.backtest.p80_coverage)} of settled invoices fell inside the P80 delay. ${esc(d.backtest.note)}</p>` : `<p class="small muted section-gap">${esc(d.backtest.reason)}</p>`}</details>
+      ${audit ? `<details class="section-gap"><summary>TidePay prediction evidence</summary><p class="small">${esc(audit.results.federated.n)} held-out synthetic invoices across ${esc(audit.test_businesses)} businesses. Average error ${esc(audit.results.federated.mae_days.toFixed(2))} days for simulated federation versus ${esc(audit.results.heuristic_v1.mae_days.toFixed(2))} for the heuristic.</p><p class="hint">${esc(audit.note)}</p><p class="small"><a href="/benchmarks/tidepay.json" target="_blank" rel="noopener">Metrics, splits and limitations</a> · <a href="/benchmarks/tidepay-reliability.svg" target="_blank" rel="noopener">Reliability plot</a></p></details>` : ""}
     </div>
   </section>
   <section class="grid cols-2 section-gap">
@@ -841,6 +843,7 @@ const argText = (value) => typeof value === "string" ? `"${value}"` : JSON.strin
 
 function toolResultHtml({tool, result: r}) {
   if (!r) return "";
+  if (r.omitted) return `<div class="result-card"><p class="small">${esc(r.reason || "Tool output exceeded the response budget. Ask a narrower question.")}</p></div>`;
   const cur = r.currency || currency();
   if (tool === "credit_check") {
     const pill = {safe: "ok", caution: "unsettled", high_risk: "storm"}[r.verdict] || "info";
@@ -864,7 +867,8 @@ function toolResultHtml({tool, result: r}) {
     return `<div class="result-card"><strong>${tool === "what_if" ? "What-if (nothing saved)" : `Cash projection · ${esc(r.scenario || "likely")}`}</strong>${kvHtml([["Lowest cash", money(p.minimum_cash_minor)], ["On", esc(day(p.minimum_cash_date))], ["Reserve shortfall", money(p.reserve_shortfall_minor)], ["Payroll", p.payroll_at_risk ? "at risk" : "funded"]])}</div>`;
   }
   if (tool === "propose_plan") {
-    return `<div class="result-card"><strong>Rescue proposal · waiting for human approval</strong><p class="small">${esc(r.explanation)}</p>
+    const title = r.outcome === "no_action_needed" ? "No recovery action needed" : r.outcome === "no_safe_plan" || r.feasible === false ? "No safe plan · owner review needed" : "Rescue proposal · waiting for human approval";
+    return `<div class="result-card"><strong>${title}</strong><p class="small">${esc(r.explanation)}</p>
       ${kvHtml([["Recommended cost", money(r.recommended_cost_minor)], ["Futures short after", isNum(r.futures_short_of_20_after) ? `${esc(r.futures_short_of_20_after)} of 20` : "—"]])}
       <div class="row"><button class="button small teal" type="button" data-view="rescue">${icon("rescue")}Open the Rescue plan</button></div></div>`;
   }
@@ -907,15 +911,17 @@ function copilotHtml(c) {
   if (c.routed === "small_talk") return `<div class="copilot"><span class="tag">instant · live data, no model call</span></div>`;
   const calls = c.plan?.calls || [];
   return `<div class="copilot">${(c.results || []).map(toolResultHtml).join("")}
-    <div class="glass" aria-label="TideLM plan"><div class="row between"><strong>TideLM plan${c.plan?.intent ? ` · intent: <code>${esc(c.plan.intent)}</code>` : ""}</strong>${isNum(c.elapsed_ms) ? `<span class="tag">${esc((c.elapsed_ms / 1000).toFixed(1))} s on-device</span>` : ""}</div>
+    <div class="glass" aria-label="Model tool plan"><div class="row between"><strong>${esc(c.mode_label || tidelmLabel())}${c.plan?.intent ? ` · intent: <code>${esc(c.plan.intent)}</code>` : ""}</strong>${isNum(c.elapsed_ms) ? `<span class="tag">${esc((c.elapsed_ms / 1000).toFixed(1))} s locally</span>` : ""}</div>
     <ol class="plan-calls">${calls.map((call) => `<li><code>${esc(call.tool)}</code> ${Object.entries(call.args || {}).map(([key, value]) => `<span class="arg">${esc(key)}=${esc(argText(value))}</span>`).join(" ") || `<span class="arg">no arguments</span>`}</li>`).join("")}</ol>
-    <p class="hint">TideLM only chose these calls. Every number comes from Tideway's tools, not the model.</p></div></div>`;
+    ${c.decision_rationale ? `<p class="small">${esc(c.decision_rationale.rationale || c.decision_rationale)}</p>` : ""}
+    ${c.trace?.length ? `<details><summary>Observed model and tool trace</summary><pre>${esc(JSON.stringify(c.trace, null, 2))}</pre></details>` : ""}
+    <p class="hint">${esc(c.model_identity?.label || c.model_identity?.model || "Local model")} selected the calls. Financial figures and the decision summary come from deterministic tools.</p></div></div>`;
 }
 
 function renderAssistant() {
   const on = tidelmOn();
   if (!state.chat.length) state.chat.push({role: "agent", text: on
-    ? "Hi, I'm TideLM, Tideway's own on-device model. Ask in your own language (English, 中文, Español, Bahasa, Français, Português, Hinglish, Banglish): credit checks, late payers, a what-if, reminder drafts or a rescue plan. I plan the tool calls; Tideway's tools supply every number. I can't approve or move money."
+    ? `Hi, I'm Tideway, using ${tidelmLabel()}. Ask in your own language (English, 中文, Español, Bahasa, Français, Português, Hinglish, Banglish): credit checks, late payers, a what-if, reminder drafts or a rescue plan. The model selects tool calls; Tideway's tools supply the figures. I can't approve or move money.`
     : "Hi, I'm Tideway. Ask me whether payroll is safe, how risky the month looks, who to chase, a what-if such as \"what if Nila Traders pays 10 days late\", or ask me for a rescue plan. I can explain and propose; I can't approve or move money."});
   const prompts = on ? TIDELM_PROMPTS : LOCAL_PROMPTS;
   const consent = on ? "" : state.config.ai_configured ? `<label class="check small"><input id="ai-consent" type="checkbox" ${state.aiConsent ? "checked" : ""}> Use the AI model for this message (names are pseudonymised; record text never leaves this computer)</label>` : `<p class="hint">Local agent mode: answers come from deterministic tools, no network. An optional LLM mode is available when a key is configured.</p>`;
@@ -1115,7 +1121,47 @@ function renderWhatIf() {
     ${customers.map((item) => `<div class="slider-row"><label for="delay-${esc(item.customer)}">${esc(item.customer)} pays later by</label><input type="range" min="-10" max="30" step="1" id="delay-${esc(item.customer)}" data-customer="${esc(item.customer)}" value="${esc(w.delays[item.customer] || 0)}"><output>${esc(w.delays[item.customer] || 0)} days</output></div>`).join("") || `<p class="muted small">No open receivables.</p>`}
       <div class="grid cols-2 section-gap"><label class="field">Extra expense (${esc(currency())})<input id="whatif-expense" inputmode="decimal" value="${esc(w.expense)}" placeholder="e.g. 15000"></label><label class="field">On date<input id="whatif-date" type="date" value="${esc(w.expenseDate || d.target_date)}"></label></div>
       <label class="field section-gap">Assume this invoice is never paid<select id="whatif-drop"><option value="">None</option>${openInvoices.map((row) => `<option value="${esc(row.id)}" ${w.drop === row.id ? "selected" : ""}>${esc(row.customer)} · ${esc(row.id)} · ${money(row.amount_minor)}</option>`).join("")}</select></label>
-      <div class="row section-gap"><button class="button primary" type="submit">${icon("sliders")}Run what-if</button><button class="button ghost" type="button" data-action="whatif-reset">Reset</button></div></form></section>`;
+      <div class="row section-gap"><button class="button primary" type="submit">${icon("sliders")}Run what-if</button><button class="button ghost" type="button" data-action="whatif-reset">Reset</button></div></form></section>${demoDelayHtml()}`;
+}
+
+function demoDelayHtml() {
+  const d = state.dashboard;
+  if (!d.business.synthetic || state.operator?.role !== "owner") return "";
+  const invoices = d.records.invoices.filter((r) => r.source === "demo" && ["confirmed", "overdue"].includes(r.status));
+  const change = state.demoDelay?.business_id === state.businessId ? state.demoDelay : null;
+  const rows = change ? [
+    ["Collection date", day(change.old_date, true), day(change.new_date, true)],
+    ["Scheduled minimum", money(change.before.scheduled.minimum_cash_minor), money(change.after.scheduled.minimum_cash_minor)],
+    ["Likely minimum", money(change.before.likely.minimum_cash_minor), money(change.after.likely.minimum_cash_minor)],
+    ["Likely reserve shortfall", money(change.before.likely.reserve_shortfall_minor), money(change.after.likely.reserve_shortfall_minor)],
+    ["Reserve breach risk", pct(change.before.probability_breach), pct(change.after.probability_breach)]
+  ] : [];
+  return `<section class="card section-gap" id="demo-delay"><span class="pill unsettled">Synthetic ledger change · owner only</span>
+    <h3 class="section-gap">Demonstrate a real payment delay</h3>
+    <p>This separate action saves a later collection date to the demo ledger. It invalidates pending proposals and mandates. Review and approve a fresh plan afterward.</p>
+    <p class="small">Repeatable Shapla example: approve the original rescue, then move Bay Logistics to 15 November 2026. Use a fresh database for another full rehearsal.</p>
+    <form id="demo-delay-form"><div class="grid cols-2"><label class="field">Open demo invoice<select name="invoice_id" required>${invoices.map((r) => `<option value="${esc(r.id)}" ${r.id === "inv-shapla-bay-oct" ? "selected" : ""}>${esc(r.customer)} · currently ${esc(day(r.expected_collection_date, true))}</option>`).join("")}</select></label>
+    <label class="field">New collection date<input name="collection_date" type="date" value="2026-11-15" required></label>
+    <label class="field">Owner PIN<input name="pin" type="password" inputmode="numeric" autocomplete="off" required></label></div>
+    <label class="check section-gap"><input name="confirmed" type="checkbox" required> Apply this change to synthetic records and invalidate previous authority.</label>
+    <button class="button teal section-gap" type="submit">Apply payment delay to demo ledger</button></form>
+    ${change ? `<div class="table-wrap section-gap"><table><thead><tr><th>Calculated change</th><th>Before</th><th>After</th></tr></thead><tbody>${rows.map((r) => `<tr>${r.map((v) => `<td>${v}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
+    <p class="small">${esc(change.invalidated_plans.length)} proposal(s) and ${esc(change.invalidated_mandates.length)} mandate(s) invalidated. ${esc(change.next)}</p>
+    <p class="mono tiny">Snapshot ${esc(change.before_snapshot.slice(0, 12))} → ${esc(change.after_snapshot.slice(0, 12))}</p>
+    <div class="row">${change.invalidated_mandates.length ? `<button type="button" class="button ghost" data-action="demo-stale">Check old mandate is blocked</button>` : ""}<button type="button" class="button primary" data-view="rescue">Create and review a fresh rescue</button></div>
+    ${change.staleResult ? `<p class="alert info" role="status">${esc(change.staleResult)}</p>` : ""}` : ""}</section>`;
+}
+
+async function applyDemoDelay(form) {
+  const fields = new FormData(form);
+  const signature = JSON.stringify([state.businessId, fields.get("invoice_id"), fields.get("collection_date")]);
+  if (state.demoRequest?.signature !== signature) state.demoRequest = {signature, request_id: crypto.randomUUID(), snapshot: state.dashboard.snapshot_hash};
+  const result = await actAndReload("Apply demo delay", () => api("/api/demo/payment-delay", {
+    business_id: state.businessId, invoice_id: fields.get("invoice_id"), collection_date: fields.get("collection_date"),
+    expected_snapshot: state.demoRequest.snapshot, request_id: state.demoRequest.request_id,
+    pin: fields.get("pin"), target_date: state.targetDate
+  }));
+  if (result) { state.demoDelay = result; state.demoRequest = null; state.whatif = freshWhatIf(); render(); toast("Payment delay applied. Old proposals and mandates are invalid; create a fresh rescue."); }
 }
 
 async function runWhatIf() {
@@ -1420,6 +1466,13 @@ document.addEventListener("click", async (event) => {
       }
       case "prompt": await ask(data.prompt); break;
       case "whatif-reset": state.whatif = freshWhatIf(); render(); break;
+      case "demo-stale": {
+        try {
+          await api("/api/mandate/execute", {business_id: state.businessId, mandate_id: state.demoDelay.invalidated_mandates[0], idempotency_key: `stale-demo-${crypto.randomUUID()}`});
+          state.demoDelay.staleResult = "Unexpected success: stop the demo and inspect the receipt.";
+        } catch (error) { state.demoDelay.staleResult = `Old execution refused: ${error.message}`; }
+        render(); break;
+      }
       case "inbox-sample": state.inbox = {...freshInbox(), text: INBOX_SAMPLES[data.sample]?.(currency()) || ""}; render(); $("#inbox-text")?.focus(); break;
       case "inbox-save": await saveInbox(); break;
       case "inbox-photo": await readPhoto(); break;
@@ -1523,6 +1576,7 @@ document.addEventListener("submit", async (event) => {
   try {
     if (form.id === "chat-form") { const input = $("#chat-input"); const text = input.value; input.value = ""; await ask(text); }
     else if (form.id === "whatif-form") await runWhatIf();
+    else if (form.id === "demo-delay-form") await applyDemoDelay(form);
     else if (form.id === "inbox-form") await extractInbox();
     else if (form.id === "policy-form") await savePolicy(form);
     else if (form.id === "invite-form") await createInvite(form);

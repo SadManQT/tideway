@@ -31,6 +31,12 @@ def tidepay_card():
         root = Path(__file__).resolve().parent.parent
         report = json.loads((root / "evidence" / "ml" / "tidepay_report.json").read_text())
         _CARD = {"meta": report["meta"], "results": report["results"]}
+        audited = root / "evidence" / "upgrade-v1" / "tidepay" / "report.json"
+        if audited.is_file():
+            new = json.loads(audited.read_text(encoding="utf-8"))
+            _CARD["audit_benchmark"] = {"version": new["version"], "results": new["results"],
+                                       "test_businesses": new["balance"]["test"]["businesses"],
+                                       "note": "Chronological synthetic benchmark; shipped model unchanged. Single-process federation, no deployed privacy guarantee."}
     return _CARD
 PLAN_MC_RUNS = 400
 
@@ -195,12 +201,32 @@ class Tideway:
 
     # ---- planning ----------------------------------------------------------------
 
+    def apply_demo_delay(self, business_id, invoice_id, collection_date, expected_snapshot, request_id,
+                         operator, pin, actor, target_date=None):
+        # Validate the requested horizon before committing any ledger change.
+        snapshot = self.store.snapshot(business_id)
+        target = self._target(snapshot, target_date)
+        horizon_end(snapshot["business"], target, snapshot["policy"]["lookahead_days"])
+        receipt = self.store.apply_demo_delay(business_id, invoice_id, collection_date, expected_snapshot,
+                                              request_id, operator, pin, actor)
+        response = {key: value for key, value in receipt.items() if key not in ("before", "after")}
+        response["currency"] = receipt["before"]["business"]["currency"]
+        response["target_date"] = target
+        for phase in ("before", "after"):
+            facts = self.analysis(business_id, target, snapshot=receipt[phase])
+            response[phase] = {"scheduled": summary(facts["projections"]["base"]),
+                               "likely": summary(facts["projections"]["likely"]),
+                               "probability_breach": facts["simulation"]["probability_breach"],
+                               "weather": facts["weather"]["label"]}
+        response["next"] = "Old approvals are invalid. Create a fresh proposal, review and approve again, then negotiate."
+        return response
+
     def propose(self, business_id, target_date, actor, proposed_by="agent", excluded=(), max_discount_bps=None,
                 prefer="lowest_cost", replaces_mandate=None):
         snapshot = self.store.snapshot(business_id)
         if snapshot["policy"]["agent_paused"]:
             raise ValidationError("The agent is paused (kill switch). Resume it to create new proposals.")
-        if snapshot["policy"]["autonomy_level"] == "advise" and proposed_by == "agent":
+        if snapshot["policy"]["autonomy_level"] == "advise" and proposed_by.startswith("agent"):
             raise ValidationError("Autonomy is set to 'advise': the agent may explain but not create proposals.")
         target = self._target(snapshot, target_date)
         derived = self.store.derived(snapshot)

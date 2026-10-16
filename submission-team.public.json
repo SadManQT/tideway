@@ -1,0 +1,12 @@
+{
+  "team_name": "The Last BrainCell",
+  "institution": "Bangladesh University of Engineering and Technology (BUET)",
+  "leader": "",
+  "members": [
+    {"name": "Nafis Mohtasim Ramim", "institution": "Bangladesh University of Engineering and Technology (BUET)", "role": ""},
+    {"name": "Shaharia Rahman Santo", "institution": "Bangladesh University of Engineering and Technology (BUET)", "role": ""},
+    {"name": "Md. Atik Khan", "institution": "Bangladesh University of Engineering and Technology (BUET)", "role": ""},
+    {"name": "Md. Ashraf Hossain Chowdhury", "institution": "Bangladesh University of Engineering and Technology (BUET)", "role": ""},
+    {"name": "Khandaker Shadman Sakib Siddiquee", "institution": "Bangladesh University of Engineering and Technology (BUET)", "role": ""}
+  ]
+}

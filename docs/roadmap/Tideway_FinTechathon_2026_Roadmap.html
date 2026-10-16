@@ -16,13 +16,13 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <section class="cover">
 <h1>FinTechathon 2026</h1>
 <p class="sub"><strong>Research and Project Roadmap</strong><br>International Track · Preparation for a Bangladeshi student team</p>
-<p>Information verified on 12 October 2026; project sections updated on 15 October 2026 for <strong>Tideway</strong>. This report covers the competition rules, previous winners, project choice, technical design, testing, submission and final-round preparation in one place.</p>
+<p>Historical research from 12 October 2026; contest sources and project evidence rechecked on 15 October 2026 for <strong>Tideway</strong>. This report covers the competition rules, previous winners, project choice, technical design, testing, submission and final-round preparation in one place.</p>
 <div class="box"><strong>Recommendation.</strong> Choose <strong>Topic E: SME Finance Copilot</strong> and build <strong>Tideway</strong>, an approval-gated cash-flow rescue agent for small businesses. (Earlier working title: Probaho.) It finds a cash gap, plans a recovery with a risk-aware optimiser, negotiates with simulated counterparties and, after human approval and a signed mandate, completes the action inside a sandbox. There is no guarantee of winning; the aim is a tested project that matches the published judging criteria closely.</div>
-<p><strong>Planning assumptions.</strong> A team of 3 to 4 members, at least one of whom can build web and backend software. The implementation is now complete and committed; the remaining work (15 to 20 October) is evidence, documentation, the demo video and submission. Team composition, skills and data access are still unconfirmed. With less time, use the smaller scope in Section 10.
+<p><strong>Current scope.</strong> The team supplied five public member names, all at BUET, in tracked <code>submission-team.public.json</code>. Leader, roles, nationality, eligibility, registration and submission route remain unconfirmed. The contest upgrades are local working changes; the full verification status belongs in <code>docs/CONTEST_UPGRADE_REPORT.md</code>. Recording is explicitly deferred.</p>
 <div class="box warn"><strong>Most urgent now.</strong> The deadline is <strong>20 October 2026, 21:59 Bangladesh time</strong>. Our own target is to submit by 20:00 on 19 October. Confirm registration first; registration may close early if seats fill. [S1–S3]</div>
 <h3>Contents</h3>
 <ol>
-<li>Competition and eligibility</li><li>Timeline, prizes and how to apply</li><li>What to submit and how it is judged</li><li>Previous winners and lessons</li><li>Comparing six ideas</li><li>Chosen project and the user's problem</li><li>Technical design and data</li><li>Security and permission model</li><li>Testing and evidence</li><li>Plan for 15 to 20 October</li><li>Pitch, demo and judges' questions</li><li>Final preparation and cost</li><li>Submission checklist and open questions</li><li>Sources and limits of verification</li></ol>
+<li>Competition and eligibility</li><li>Timeline, prizes and how to apply</li><li>What to submit and how it is judged</li><li>Previous winners and lessons</li><li>Comparing six ideas</li><li>Chosen project and the user's problem</li><li>Technical design and data</li><li>Security and permission model</li><li>Testing and evidence</li><li>Plan for 15 to 20 October</li><li>Pitch, demo and judges' questions</li><li>Final preparation and cost</li><li>Submission checklist and open questions</li><li>Sources and limits of verification</li><li>Contest upgrade: evidence and live state change</li></ol>
 </section>
 
 <section>
@@ -68,7 +68,7 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <table><tr><th>Material</th><th>What we will prepare</th></tr>
 <tr><td>Technical documentation</td><td>Architecture, core algorithm and security design, with data flow and limitations.</td></tr>
 <tr><td>Presentation deck</td><td>A deck suitable for a presentation of at most 10 minutes. No fixed slide count was found.</td></tr>
-<tr><td>Demo video</td><td>Optional on a separate checklist, at most 5 minutes, but requested under execution evidence, so we will make one.</td></tr>
+<tr><td>Demo video</td><td>Optional on a separate checklist, at most 5 minutes, but requested under execution evidence, recording remains deferred until the team instructs it.</td></tr>
 <tr><td>Source code</td><td>GitHub repository link, README, deployment instructions and test cases. Confirm repository visibility.</td></tr>
 <tr><td>Security self-assessment</td><td>How permission tiers are enforced, and a known-risk list.</td></tr>
 <tr><td>Execution evidence</td><td>A to E: operation logs from a simulated account or sandbox, and the demo video. F: real on-chain transaction hashes.</td></tr></table>
@@ -198,17 +198,17 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <h2>9. Testing and evidence</h2>
 <p>Targets below are separated from achieved results. Development data and the final holdout must be kept separate; raw evidence must exist for every number we report.</p>
 <table><tr><th>Test</th><th>Set and target</th><th>Status</th></tr>
-<tr><td>Task completion</td><td>End-to-end scenarios; target at least 90%</td><td><strong>Done</strong>: 5/5 task cases. Broader 20-scenario set: planned.</td></tr>
+<tr><td>Task completion</td><td>End-to-end scenarios; target at least 90%</td><td><strong>Done</strong>: 5/5 task cases. Versioned broader set: 24 distinct conditions, 12 development and 12 held out; outcome classes reported separately.</td></tr>
 <tr><td>Money arithmetic</td><td>Exact minor-unit results</td><td><strong>Done</strong>: unit tests, including the Shapla −1,000,000 minor on 31 Oct and 3,000,000 shortfall.</td></tr>
 <tr><td>Permission safety</td><td>Forbidden-action attempts; zero unauthorised mutation</td><td><strong>Done</strong>: 13 authorisation, mandate, kill-switch and delegation attacks blocked.</td></tr>
 <tr><td>Retry and replay</td><td>Duplicate and restart cases; at most one mutation per action</td><td><strong>Done</strong>: replay and double-spend cases.</td></tr>
 <tr><td>Injection and fraud</td><td>Malicious input; zero attack success</td><td><strong>Done</strong>: 3 injection and 4 payee-fraud cases.</td></tr>
 <tr><td>Usability</td><td>3 to 5 SME owners or domain reviewers, with consent</td><td>Planned; not yet collected.</td></tr>
-<tr><td>On-device model quality</td><td>TideLM vs base model on 500 held-out examples with unseen names</td><td><strong>Done</strong>: deployed v2 exact plans 26.7% to 96.7%, extraction F1 0.834 to 0.969, injection-flag accuracy 91.5% to 98.5%. Synthetic templates with unseen names, not real-world accuracy.</td></tr>
-<tr><td>Latency and cost</td><td>Median per answer on a 16 GB laptop; no per-call cost (on-device)</td><td>Measured: about 5 s per TideLM answer before prompt caching; small talk answers instantly. Cloud-LLM runs: not measured.</td></tr></table>
+<tr><td>On-device model quality</td><td>TideLM vs base model on 500 held-out examples with unseen names</td><td><strong>Done</strong>: historical deployed v2 exact plans 26.7% to 96.7%, extraction F1 0.834 to 0.969, injection-flag accuracy 91.5% to 98.5%. Synthetic templates with unseen names, not real-world accuracy. Changed-runtime device inference remains unverified.</td></tr>
+<tr><td>Latency and cost</td><td>Median per answer on a 16 GB laptop; no per-call cost (on-device)</td><td>Historical device measurement: about 5 s per TideLM answer before prompt caching; changed-runtime latency is unverified; small talk answers instantly. Cloud-LLM runs: not measured.</td></tr></table>
 <p>Total today: <strong>30/30 self-test cases pass</strong> (5 task, 25 attack), plus the automated unit, HTTP, conversation, language, SaaS and regression suite (latest count in <code>evidence/test-summary.json</code>). Reproduce with <code>python3 -m unittest discover -s tests -v</code> and <code>python3 -m tideway.selftest</code>.</p>
-<h3>Baseline comparison (planned)</h3>
-<p>Same dataset, three modes: spreadsheet or rule baseline, generic LLM suggestion, Tideway's constrained execution. Compare task completion, invalid recommendations, unauthorised execution, time and cost. Keep the model and temperature the same so the value of the planning-and-policy layer is clear; avoid data leakage and demo-only prompt tuning.</p>
+<h3>Historical comparison plan and new measured evidence</h3>
+<p>The preserved narrow experiment compares one fixed deferral rule with the optimiser on 20 opening-cash perturbations (10/20 versus 12/20 feasible). The new suite has 24 independently authored business conditions; 24/24 outcome handling, including 9 executed rescues, not 24 rescues. A generic-LLM quality comparison was not run. See docs/SCENARIO_EVALUATION_V2.md.</p>
 <h3>Failure cases to cover</h3>
 <ol><li>Duplicate invoice</li><li>Missing currency</li><li>Negative opening balance</li><li>Supplier refusal or no consent</li><li>Late receivable</li><li>Payroll and reserve conflict</li><li>Invalid model output</li><li>Timeout after execution</li><li>Expired mandate</li><li>Another business's object id</li><li>Changed payee</li><li>Prompt injection in an uploaded CSV</li></ol>
 <h3>Evidence record and claims</h3>
@@ -219,20 +219,20 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 
 <section>
 <h2>10. Plan for 15 to 20 October 2026</h2>
-<p>Times are Bangladesh time. The implementation is complete and committed; this plan covers evidence, user feedback, documents, the video and submission. Work can be shared, but keep one integration owner. AI-generated code must not be merged without human review and tests.</p>
+<p>Times are Bangladesh time. The core and local upgrades are implemented; source changes remain local until the team reviews and commits them. This plan covers verification, feedback and submission, with video recording deferred. Work can be shared, but keep one integration owner. AI-generated code must not be merged without human review and tests.</p>
 <table><tr><th>Date</th><th>Main work</th><th>Verifiable result at day end</th></tr>
 <tr><td>Thu 15 Oct</td><td>Registration check; roster and eligibility; send the organiser question list; re-run all tests on a second machine; re-generate evidence.</td><td>Registration confirmation or written route; 30/30 self-test and the automated test suite (count in evidence/test-summary.json) reproduced.</td></tr>
 <tr><td>Fri 16 Oct</td><td>Baseline comparison (rule, generic LLM, Tideway) on the three fixtures plus new scenarios written before tuning; arrange 3 to 5 SME or finance-reviewer sessions with consent.</td><td>Baseline CSV; interview schedule.</td></tr>
 <tr><td>Sat 17 Oct</td><td>Run interviews and usability sessions; independent attempt to break the sandbox by a teammate; fix only real bugs; <strong>scope freeze</strong>.</td><td>Findings list, fixes, frozen commit.</td></tr>
-<tr><td>Sun 18 Oct</td><td>Re-record the English demo video from the running app (≤ 5 minutes); finish the deck; regenerate PDFs; clean-machine run from the README.</td><td>Video, <code>slides/pitch.pdf</code>, architecture and security PDFs.</td></tr>
-<tr><td>Mon 19 Oct</td><td>Final package check; rename repository to Tideway (owner); links tested from a reviewer account; <strong>submit by 20:00</strong>; save receipt, SHA and archive hash.</td><td>Submission and receipt saved.</td></tr>
+<tr><td>Sun 18 Oct</td><td>Rehearse the live linked-delay demo; finish the deck; regenerate PDFs; clean-machine run from the README. Recording remains deferred.</td><td>Live-demo rehearsal, <code>slides/pitch.pdf</code>, architecture and security PDFs; video remains outstanding.</td></tr>
+<tr><td>Mon 19 Oct</td><td>Final package check; confirm links from a reviewer account; <strong>submit by 20:00</strong>; save receipt, SHA and archive hash.</td><td>Submission and receipt saved.</td></tr>
 <tr><td>Tue 20 Oct</td><td>Access check; fix only if the submission is broken.</td><td>Final update target 18:00; hard cutoff 21:59.</td></tr></table>
 <h3>Team roles</h3>
-<p>With 4 members: A backend and sandbox checks; B agent, analytics and baseline; C UI and demo video; D user research, testing and documents. With 3, C and D share. With 2, one covers backend and agent, the other UI, tests and documents; do not attempt extra workflows. The team lead checks the requirements checklist daily.</p>
+<p>The five confirmed public names and BUET institution are in submission-team.public.json. Actual contribution roles and leader must be supplied by the team; no role assignments are inferred here.</p>
 <h3>Smaller scope if time is short</h3>
-<p>Import, deterministic cash timeline, one recovery plan, approval, sandbox schedule change and audit log. Drop live-LLM mode, extra scenarios, and multilingual polish. Show one clean happy path and one blocked malicious request correctly.</p>
+<p>Import, deterministic cash timeline, one recovery plan, approval, sandbox schedule change and audit log. Freeze optional feature expansion and use the labelled deterministic fallback when needed; retain tested multilingual support. Show one clean happy path and one blocked malicious request correctly.</p>
 <h3>Go or no-go checkpoints</h3>
-<ul><li>End of 15 October: if no eligible team or registration route is confirmed, resolve that before anything else.</li><li>End of 17 October: if baseline or security findings are still open, stop adding features.</li><li>End of 18 October: if the video and documents are not done, nothing new may be coded.</li></ul>
+<ul><li>End of 15 October: if no eligible team or registration route is confirmed, resolve that before anything else.</li><li>End of 17 October: if baseline or security findings are still open, stop adding features.</li><li>End of 18 October: if documents or critical verification are unfinished, freeze features; resolve deferred video requirements separately.</li></ul>
 <p>Whether this is possible depends on the team's skills; do not hide lack of time behind a long feature list.</p>
 </section>
 
@@ -257,7 +257,7 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <li><strong>"No real bank integration?"</strong> The rules accept sandbox evidence for A to E; we show the adapter boundary (a draft ISO 20022 file that is never sent). No production-readiness claim. [S2]</li>
 <li><strong>"Who would pay?"</strong> Small business owners or accountants; a subscription hypothesis; say that pricing is not validated.</li>
 <li><strong>"Is the mandate the AP2 standard?"</strong> It is modelled on the AP2 idea (verifiable, scoped, expiring authorisation); it is not an implementation of the specification.</li></ul>
-<p><strong>Demo backup:</strong> fixed seed fixtures, a reset path, an offline recorded video, PDF screenshots, and fallback if a model times out. Never present a recording as live execution.</p>
+<p><strong>Demo backup:</strong> fixed seed fixtures, a reset path, PDF screenshots and an automatic fresh-database rehearsal, and fallback if a model times out. Never present a recording as live execution.</p>
 </section>
 
 <section>
@@ -301,12 +301,12 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <h3>When our decision would change</h3>
 <p>Keep E if at least 3 SME stakeholders are available and the core coding skills exist. If SME access is missing but student-finance users are available, an early pivot to C is possible. Changing topic after 15 October costs a lot of time; reducing scope is usually better. Reconsider F only if the team already built secure wallet infrastructure.</p>
 <h3>Personal information</h3>
-<p>Team members' names, universities, years, passport status, coding experience and budget have not been invented in this report. Once verified, roles and scope can be made more specific. No registration or email was sent as part of this research.</p>
+<p>Five team names and BUET were supplied publicly and tracked; years, passport status, roles, leader, coding experience and budget have not been invented. Once verified, roles and scope can be made more specific. No registration or email was sent as part of this research.</p>
 </section>
 
 <section>
 <h2>14. Sources and limits of verification</h2>
-<p>Source date: 12 October 2026. For rules, the competition-branded Appendix, the university announcement and the technical-guidance institution's page were cross-checked; where they disagree, the relevant section says so.</p>
+<p>Original research date: 12 October 2026; the four contest sources were re-opened on 15 October 2026 (docs/CONTEST_SOURCES_CHECKED.md). For rules, the competition-branded Appendix, the university announcement and the technical-guidance institution's page were cross-checked; where they disagree, the relevant section says so.</p>
 <ul>
 <li>S1 CMU announcement, 7 October 2026: <a href="https://ird.oou.cmu.ac.th/2026-shenzhen-international-fintech-competition/">ird.oou.cmu.ac.th/2026-shenzhen-international-fintech-competition</a></li>
 <li>S2 PBCSF Appendix 2 (p. 2 rubric, p. 3 submission, p. 4 final and IP): <a href="https://www.its.ac.id/international/wp-content/uploads/sites/66/2026/10/PBCSF-Appendix-2-Problem-Description-and-Competition-Rules-for-International-Track.pdf">its.ac.id PBCSF Appendix 2</a></li>
@@ -322,7 +322,22 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <li>S12 LangGraph workflow design documentation: <a href="https://docs.langchain.com/oss/javascript/langgraph/thinking-in-langgraph">docs.langchain.com</a></li>
 <li>S13 CMU registration form: <a href="https://drive.scmc.cmu.ac.th/s/knkpsQd5HpwJ9qj">drive.scmc.cmu.ac.th</a></li></ul>
 <h3>Confirmed facts versus recommendations</h3>
-<p>The deadline, rubric and submission list are facts from the published rules. Tideway, its features, the budget, the acceptance targets, the plan and the idea scores are our proposals; they are not tested product results or organiser approval.</p>
+<p>The deadline, rubric and submission list are facts from the published rules. The budget, future acceptance targets, schedule and idea scores are our proposals, not measured outcomes or organiser approval. Current implemented features and finite measured results are separated in Section 15 and the versioned evidence reports.</p>
 <p>The dynamic content of the main website and the full Privacy Policy could not be verified. The fields in the CMU form download were not fully verified. An older English asset contained terms from a different competition; these were not used as 2026 International Track rules. No assumption fills those gaps. A separate enterprise competition with the same name exists; its winners are not included as FinTechathon student-track winners. Selected, verifiable results for 2022 to 2025 were taken; a complete archive of every prize in every year is not claimed.</p>
+</section>
+
+<section>
+<h2>15. Contest upgrade: evidence and live state change</h2>
+<p>Reproduce with <code>python3 scripts/evaluate_tidepay_v2.py</code>, <code>python3 scripts/evaluate_upgrade_scenarios.py</code> and <code>python3 scripts/demo_payment_delay.py</code>. Reports and raw outputs are in <code>evidence/upgrade-v1/</code>; historical observations remain preserved.</p>
+<h3>Prediction evidence (audit benchmark, not shipped weights)</h3>
+<p>Train/validation/test: 7,745 / 1,433 / 2,376 invoices, 40 synthetic businesses. Global chronological cutoffs and payment-label maturity prevent unavailable labels crossing training boundaries. All fitted statistics use training data; observable rolling history is rebuilt as of invoice issue.</p>
+<table><tr><th>Same 2,376 test invoices</th><th>MAE days</th><th>Log loss</th><th>Sum Brier</th></tr><tr><td>Prior</td><td>11.9856</td><td>1.5882</td><td>0.7936</td></tr><tr><td>Heuristic</td><td>7.4107</td><td>1.5688</td><td>0.7905</td></tr><tr><td>Local-only</td><td>7.2152</td><td>1.2329</td><td>0.6407</td></tr><tr><td>Simulated federated</td><td>6.9568</td><td>1.0727</td><td>0.5777</td></tr><tr><td>Pooled</td><td>6.9448</td><td>1.0927</td><td>0.5855</td></tr></table>
+<p>Federated MAE is worse for 7/40 businesses; the pooled MAE is slightly better overall. The historical prior used test-label mean statistics; its raw report is retained separately. Reliability bins, counts, business-cluster intervals and split hashes accompany the new report. This is one synthetic cohort, not production accuracy or a cryptographic federation guarantee.</p>
+<h3>Workflow and screening</h3>
+<p>24/24 defined outcomes handled: 9 executed rescues, 9 honest infeasible, 2 no-action and 4 validation/payee blocked. Only 7/9 rescues meet the 10% simulated-risk target. Injection screening detects 12/14 labelled attacks and flags 7/14 benign messages. Payee screening detects 6/8 attacks and flags 3/8 benign cases; a case-only account-history bypass was fixed with the initial result preserved. Finite tests are not proof of security. Performance details and residual failures are in docs/SCENARIO_EVALUATION_V2.md.</p>
+<h3>Live financial decision</h3>
+<p>Approve the original Shapla proposal. As Nadia, explicitly apply Bay Logistics' collection date of 15 November through the separate owner/PIN demo action; What-if stays read-only. The new snapshot invalidates old authority and a stale execution attempt is refused. The fresh proposal replaces supplier deferral with early-payment offers; Bay's 1.5% counter requires fresh approval before negotiated execution and verified read-back. Use a fresh unused database filename for each full rehearsal; never erase earlier evidence.</p>
+<h3>Remaining verification and administration</h3>
+<p>The changed model-tool runtime is bounded, traced and tested with injected outputs; MLX and weights are absent here, so post-change real-model inference remains outstanding. Python/macOS/Chrome checks do not establish Windows, Docker or another device success. Recording, eligibility, registration, route confirmation, leader/roles and reviewer access remain team-controlled. No push, publication, submission, email or video recording is included in this work.</p>
 </section>
 </body></html>

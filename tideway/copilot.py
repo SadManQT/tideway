@@ -7,16 +7,18 @@ propose only. Unknown or unsafe calls are rejected, never "best-guessed".
 """
 from __future__ import annotations
 
-import difflib
+import copy
+import hashlib
+import time
 import statistics
 from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 
 from . import analytics, conversation, i18n
 from .domain import (MAX_UNITS, OPEN_INVOICE_STATUSES, SETTLED_INVOICE_STATUSES, SecurityError, ValidationError, add_days, days_between,
-                     money_text, valid_date)
+                     canonical_json, money_text, valid_date)
 from .ml.model import BUCKETS, predict_for
-from .projection import summary
+from .projection import horizon_end, summary
 
 TOOLS = {
     "project_cash": {"scenario"},
@@ -24,7 +26,7 @@ TOOLS = {
     "what_if": {"customer_delays", "extra_expense", "drop_invoice_customer"},
     "propose_plan": {"exclude_counterparties", "max_discount_pct", "prefer"},
     "explain_plan": set(),
-    "credit_check": {"customer", "amount", "terms_days"},
+    "credit_check": {"customer", "amount", "terms_days", "currency"},
     "draft_reminders": {"customers"},
     "bank_pack": set(),
     "customer_report": {"customer"},
@@ -33,10 +35,14 @@ TOOLS = {
     "refuse": {"reason"},
 }
 MAX_CALLS = 4
+MAX_RESULT_BYTES = 32768
+MAX_NAMES = 20
+PLANNER_ROLES = ("owner", "accountant")
+PROPOSING_TOOLS = ("propose_plan", "draft_reminders")
 
 
 def _text(value, field):
-    if not isinstance(value, str) or not value.strip():
+    if not isinstance(value, str) or not value.strip() or len(value) > 160 or any(ord(c) < 32 for c in value):
         raise ValidationError(f"{field} must be non-empty text.")
 
 
@@ -61,8 +67,8 @@ def _number(value, field, *, minimum=None, maximum=None, decimals=None):
 
 
 def _text_list(value, field):
-    if not isinstance(value, list):
-        raise ValidationError(f"{field} must be a list of names.")
+    if not isinstance(value, list) or len(value) > MAX_NAMES:
+        raise ValidationError(f"{field} must be a list of up to {MAX_NAMES} names.")
     for index, item in enumerate(value):
         _text(item, f"{field}[{index}]")
 
@@ -81,9 +87,9 @@ def _validate_what_if_args(args):
     if expense is not None:
         if not isinstance(expense, dict):
             raise ValidationError("what_if.extra_expense must be an object.")
-        unknown = [key for key in expense if key not in {"amount", "date"}]
+        unknown = [key for key in expense if key not in {"amount", "date", "currency"}]
         if unknown:
-            raise ValidationError("what_if.extra_expense takes only amount and date.")
+            raise ValidationError("what_if.extra_expense takes only amount, date and optional currency.")
         if "amount" not in expense or "date" not in expense:
             raise ValidationError("what_if.extra_expense needs amount and date.")
         _number(expense["amount"], "what_if.extra_expense.amount", minimum=Decimal("0.01"),
@@ -107,7 +113,7 @@ def _validate_tool_args(tool, args):
         if "exclude_counterparties" in args and args["exclude_counterparties"] is not None:
             _text_list(args["exclude_counterparties"], "propose_plan.exclude_counterparties")
         if "max_discount_pct" in args and args["max_discount_pct"] is not None:
-            _number(args["max_discount_pct"], "propose_plan.max_discount_pct", minimum=Decimal("0"), maximum=Decimal("10"))
+            _number(args["max_discount_pct"], "propose_plan.max_discount_pct", minimum=Decimal("0"), maximum=Decimal("10"), decimals=2)
         if "prefer" in args and args["prefer"] is not None:
             _text(args["prefer"], "propose_plan.prefer")
             if args["prefer"] not in ("lowest_cost", "lowest_risk", "fewest_asks"):
@@ -117,7 +123,9 @@ def _validate_tool_args(tool, args):
         if missing:
             raise ValidationError(f"credit_check needs: {', '.join(missing)}.")
         _text(args["customer"], "credit_check.customer")
-        _number(args["amount"], "credit_check.amount", minimum=Decimal("0.01"), maximum=MAX_UNITS)
+        _number(args["amount"], "credit_check.amount", minimum=Decimal("0.01"), maximum=MAX_UNITS, decimals=2)
+        if "currency" in args:
+            _text(args["currency"], "credit_check.currency")
         if isinstance(args["terms_days"], bool) or not isinstance(args["terms_days"], int) or not 0 <= args["terms_days"] <= 180:
             raise ValidationError("credit_check.terms_days must be a whole number from 0 to 180.")
     elif tool == "draft_reminders":
@@ -138,17 +146,17 @@ def resolve_name(name, candidates):
     if not isinstance(name, str) or not name.strip():
         raise ValidationError("A counterparty name is required.")
     exact = [c for c in candidates if c.casefold() == name.strip().casefold()]
-    if exact:
+    if len(exact) == 1:
         return exact[0]
-    close = difflib.get_close_matches(name.strip().casefold(), [c.casefold() for c in candidates], n=2, cutoff=0.82)
-    if len(close) == 1:
-        return next(c for c in candidates if c.casefold() == close[0])
-    raise ValidationError(f"'{name[:60]}' does not match one counterparty of this business. Known: {', '.join(sorted(candidates))}.")
+    raise ValidationError(f"'{name[:60]}' does not match exactly one counterparty of this business. "
+                          f"Use the ledger spelling: {', '.join(sorted(candidates)[:20])}.")
 
 
 def validate_plan(plan):
     if not isinstance(plan, dict) or not isinstance(plan.get("calls"), list) or not plan["calls"]:
         raise ValidationError("TideLM returned no tool calls.")
+    if set(plan) - {"intent", "calls"}:
+        raise ValidationError("Plan has unsupported fields; only intent and calls are allowed.")
     if len(plan["calls"]) > MAX_CALLS:
         raise ValidationError("Too many tool calls in one plan.")
     for call in plan["calls"]:
@@ -185,8 +193,7 @@ def credit_check(app, business_id, customer, amount_units, terms_days, target_da
     snapshot = app.store.snapshot(business_id)
     business, records = snapshot["business"], snapshot["records"]
     customer = resolve_name(customer, customers_of(snapshot))
-    if isinstance(amount_units, bool) or not isinstance(amount_units, (int, float)) or not 0 < amount_units <= MAX_UNITS:
-        raise ValidationError("Amount must be a positive number.")
+    _number(amount_units, "credit_check.amount", minimum=Decimal("0.01"), maximum=MAX_UNITS, decimals=2)
     if isinstance(terms_days, bool) or not isinstance(terms_days, int) or not 0 <= terms_days <= 180:
         raise ValidationError("Terms must be 0-180 days.")
     today = snapshot["state"]["current_date"]
@@ -201,7 +208,7 @@ def credit_check(app, business_id, customer, amount_units, terms_days, target_da
     p_over_15, p_over_30 = sum(probs[3:]), probs[4]
     open_now = sum(r["amount_minor"] for r in records["invoices"] if r["status"] in OPEN_INVOICE_STATUSES and r["customer"] == customer)
     open_total = sum(r["amount_minor"] for r in records["invoices"] if r["status"] in OPEN_INVOICE_STATUSES)
-    new_minor = int(round(amount_units * 100))
+    new_minor = int(Decimal(str(amount_units)) * 100)
     share = (open_now + new_minor) / max(1, open_total + new_minor)
     if p_over_30 >= 0.25:
         verdict, safe_terms = "high_risk", 0
@@ -271,13 +278,79 @@ def bank_pack(app, business_id, target_date=None):
             "note": "Prepared from the business's own records by Tideway. Synthetic sandbox data; not a credit decision."}
 
 
-def run_plan(app, business_id, target_date, plan, actor, lang="en"):
-    """Execute a validated TideLM plan. Returns tool results for the reply writer."""
+def preflight_plan(app, business_id, target_date, plan, role="owner"):
+    """Resolve the *whole* plan before any proposal can be stored.
+
+    Currency defaults to the scoped ledger's currency, never to a model-selected
+    exchange rate. Names must match a unique ledger spelling; typos need clarification.
+    """
     validate_plan(plan)
+    if len(canonical_json(plan).encode()) > 16384:
+        raise ValidationError("Tool plan exceeded the 16 KiB limit.")
+    requested_tools = [call["tool"] for call in plan["calls"]]
+    if requested_tools.count("propose_plan") > 1:
+        raise ValidationError("Only one rescue proposal can be requested per selection.")
+    if "what_if" in requested_tools and any(tool in PROPOSING_TOOLS for tool in requested_tools):
+        raise ValidationError("A hypothetical scenario cannot create a live proposal. Ask for the what-if separately.")
+    if role not in ("owner", "accountant", "viewer"):
+        raise ValidationError("Unknown role; no tools were run.")
+    snapshot = app.store.snapshot(business_id)
+    target = app._target(snapshot, target_date)
+    end = horizon_end(snapshot["business"], target, snapshot["policy"]["lookahead_days"])
+    names, suppliers = customers_of(snapshot), suppliers_of(snapshot)
+    resolved = copy.deepcopy(plan)
+    for call in resolved["calls"]:
+        tool, args = call["tool"], call.setdefault("args", {})
+        if tool in PROPOSING_TOOLS:
+            if role not in PLANNER_ROLES:
+                raise ValidationError("Viewers can read forecasts and risk, but only an owner or accountant can build a plan.")
+            if snapshot["policy"]["agent_paused"]:
+                raise ValidationError("The agent is paused (kill switch); no proposal was created.")
+            if snapshot["policy"]["autonomy_level"] == "advise":
+                raise ValidationError("Autonomy is set to advise; the agent may read but cannot create proposals.")
+        if tool in ("credit_check", "customer_report") and args.get("customer"):
+            args["customer"] = resolve_name(args["customer"], names)
+        if tool == "draft_reminders" and args.get("customers"):
+            args["customers"] = [resolve_name(name, names) for name in args["customers"]]
+        if tool == "propose_plan" and args.get("exclude_counterparties"):
+            args["exclude_counterparties"] = [resolve_name(name, names + suppliers) for name in args["exclude_counterparties"]]
+        if tool == "what_if":
+            if args.get("customer_delays"):
+                args["customer_delays"] = {resolve_name(name, names): days for name, days in args["customer_delays"].items()}
+            if args.get("drop_invoice_customer"):
+                customer = resolve_name(args["drop_invoice_customer"], names)
+                if not any(row["customer"] == customer and row["status"] in OPEN_INVOICE_STATUSES
+                           for row in snapshot["records"]["invoices"]):
+                    raise ValidationError(f"{customer} has no open invoice to drop.")
+                args["drop_invoice_customer"] = customer
+            expense = args.get("extra_expense")
+            if expense and not snapshot["business"]["opening_date"] <= expense["date"] <= end:
+                raise ValidationError("what_if.extra_expense.date must be inside the planning horizon.")
+        money_args = args.get("extra_expense") if tool == "what_if" else args if tool == "credit_check" else None
+        if money_args is not None and "currency" in money_args:
+            if money_args["currency"] != snapshot["business"]["currency"]:
+                raise ValidationError(f"Use {snapshot['business']['currency']}; cross-currency conversion is not available.")
+    return resolved
+
+
+def _bounded_result(value):
+    """Bound record-heavy results without truncating or inventing financial facts."""
+    if len(canonical_json(value).encode()) <= MAX_RESULT_BYTES:
+        return value
+    return {"omitted": True, "reason": "Tool result exceeded the display budget; narrow the request.",
+            "output_sha256": hashlib.sha256(canonical_json(value).encode()).hexdigest()}
+
+
+def run_plan(app, business_id, target_date, plan, actor, lang="en", role="owner", trace=None, source="model_selected", deadline=None):
+    """Execute a validated TideLM plan. Returns tool results for the reply writer."""
+    plan = preflight_plan(app, business_id, target_date, plan, role)
     snapshot = app.store.snapshot(business_id)
     names = customers_of(snapshot)
     results = []
     for call in plan["calls"]:
+        if deadline is not None and time.monotonic() >= deadline:
+            raise ValidationError("The tool time budget was reached; no further calls were run.")
+        started = time.monotonic()
         tool, args = call["tool"], call.get("args", {})
         if tool == "refuse":
             results.append({"tool": tool, "result": {"refused": True, "reason": args.get("reason", "out_of_scope")}})
@@ -299,7 +372,7 @@ def run_plan(app, business_id, target_date, plan, actor, lang="en"):
             changes["customer_delays"] = {resolve_name(k, names): int(v) for k, v in delays.items()}
             expense = args.get("extra_expense")
             if expense:
-                changes["extra_expense"] = {"amount_minor": int(round(float(expense["amount"]) * 100)), "date": expense["date"]}
+                changes["extra_expense"] = {"amount_minor": int(Decimal(str(expense["amount"])) * 100), "date": expense["date"]}
             drop = args.get("drop_invoice_customer")
             if drop:
                 customer = resolve_name(drop, names)
@@ -324,6 +397,10 @@ def run_plan(app, business_id, target_date, plan, actor, lang="en"):
                                    max_discount_bps=None if pct is None else int(round(pct * 100)), prefer=prefer)
             best = proposal["bundles"][0] if proposal["bundles"] else None
             results.append({"tool": tool, "result": {"plan_id": proposal["plan_id"],
+                                                     "action_needed": proposal["action_needed"],
+                                                     "feasible": bool(best and best["feasible"]),
+                                                     "outcome": ("no_action_needed" if not proposal["action_needed"] else "proposal_for_review" if best and best["feasible"] else "no_safe_plan"),
+                                                     "remaining_shortfall_minor": best["remaining_shortfall_minor"] if best else proposal["gap_minor"],
                                                      "explanation": conversation.plan_summary(proposal, snapshot["business"]["currency"], lang),
                                                      "excluded": excluded, "prefer": prefer,
                                                      "recommended_cost_minor": best["economic_cost_minor"] if best else None,
@@ -361,6 +438,17 @@ def run_plan(app, business_id, target_date, plan, actor, lang="en"):
                                                                 [{"bill_id": item["bill_id"], "payee": item["payee"], "kind": "lookalike",
                                                                   "similar_to": item["similar_to"]} for item in derived["payees"]["lookalikes"]],
                                                      "quarantined_records": quarantined}})
+        result = results[-1]["result"]
+        digest = hashlib.sha256(canonical_json(result).encode()).hexdigest()
+        permission = "agent_propose" if tool in PROPOSING_TOOLS else "agent_read"
+        receipt = app.store.audit(business_id, "agent.tool", actor, permission,
+                                  {"tool": tool, "source": source, "output_sha256": digest,
+                                   "snapshot_hash": snapshot["snapshot_hash"]})
+        results[-1]["result"] = _bounded_result(result)
+        if trace is not None:
+            trace.append({"tool": tool, "args": args, "source": source, "status": "done",
+                          "permission": permission, "duration_ms": int((time.monotonic() - started) * 1000),
+                          "output_sha256": digest, "audit_id": receipt["audit_id"]})
     return results
 
 
@@ -370,7 +458,9 @@ def reply_from_results(results, currency, lang="en"):
     lines = []
     for item in results:
         tool, r = item["tool"], item["result"]
-        if tool == "refuse":
+        if r.get("omitted"):
+            lines.append(r["reason"])
+        elif tool == "refuse":
             lines.append(t(lang, "refuse_money") if r["reason"] == "approve_or_move_money" else conversation.out_of_scope(lang))
         elif tool == "project_cash":
             lines.append(t(lang, "projection", scenario=t(lang, "scenario")[r["scenario"]],

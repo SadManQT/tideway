@@ -1,0 +1,14 @@
+{
+  "seed": 7,
+  "businesses": 40,
+  "rounds": 25,
+  "local_epochs": 1,
+  "learning_rate": 0.05,
+  "train_end": "2025-03-01",
+  "validation_end": "2025-07-01",
+  "generator_start": "2024-01-01",
+  "generator_months": 22,
+  "bootstrap_seed": 1701,
+  "bootstrap_repetitions": 1000,
+  "calibration_bins": 10
+}

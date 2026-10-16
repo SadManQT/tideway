@@ -1,0 +1,105 @@
+{
+  "version": "tideway-independent-scenarios-v2",
+  "sealed_at_utc": "2026-10-15T19:41:13+00:00",
+  "fixture_sha256": "0fd9b482d1a13bb91d5126ab751db2b4eb019c3fcefee8d1063c47f0460d4a46",
+  "count": 24,
+  "expected_outcomes": {
+    "D01": {
+      "class": "no_action_needed",
+      "reason": "Opening cash covers every scheduled obligation and the reserve."
+    },
+    "D02": {
+      "class": "feasible_rescue",
+      "reason": "A seven-day deferral bridges the gap until the confirmed expected receipt."
+    },
+    "D03": {
+      "class": "feasible_rescue",
+      "reason": "The receivable can be collected before payroll for an allowed discount; payroll itself must never move."
+    },
+    "D04": {
+      "class": "honest_infeasibility",
+      "reason": "No permitted action creates the missing cash."
+    },
+    "D05": {
+      "class": "honest_infeasibility",
+      "reason": "A draft can look feasible, but refusal leaves no consented plan and must never cause execution."
+    },
+    "D06": {
+      "class": "feasible_rescue",
+      "reason": "Seven-day terms can cover the expected gap; any actual counter requires a new proposal and approval."
+    },
+    "D07": {
+      "class": "feasible_rescue",
+      "reason": "Deferring 5000 or 6000 leaves a real on-time partial payment and covers the reserve."
+    },
+    "D08": {
+      "class": "honest_infeasibility",
+      "reason": "Protect payroll from deferral and disclose that it remains unfunded."
+    },
+    "D09": {
+      "class": "honest_infeasibility",
+      "reason": "Later income cannot remove the reserve breach on the opening day."
+    },
+    "D10": {
+      "class": "feasible_rescue",
+      "reason": "A supplier deferral or discounted collection can bridge a slow, correlated customer; report remaining simulated risk."
+    },
+    "D11": {
+      "class": "no_action_needed",
+      "reason": "Sparse history should be disclosed but must not invent a cash gap."
+    },
+    "D12": {
+      "class": "feasible_rescue",
+      "reason": "A bounded partial deferral covers the exact cent shortfall without floating-point rounding."
+    },
+    "H01": {
+      "class": "honest_infeasibility",
+      "reason": "A deferral to October 23 is beyond October 22 and is unavailable; it cannot conceal the deficit."
+    },
+    "H02": {
+      "class": "feasible_rescue",
+      "reason": "October 22 is inside the horizon, so a seven-day move can safely match the receipt."
+    },
+    "H03": {
+      "class": "security_blocked",
+      "reason": "The whole import must be rejected before a mixed-currency ledger or plan exists."
+    },
+    "H04": {
+      "class": "security_blocked",
+      "reason": "Required money data must be validated; never guess the amount or silently accept zero."
+    },
+    "H05": {
+      "class": "security_blocked",
+      "reason": "A changed account must block every proposed action on that bill until verified independently."
+    },
+    "H06": {
+      "class": "security_blocked",
+      "reason": "The new near-identical payee must be quarantined and no changed schedule executed."
+    },
+    "H07": {
+      "class": "honest_infeasibility",
+      "reason": "The 9000 gap exceeds a 5000 total cap; the optimiser must not split actions to bypass it."
+    },
+    "H08": {
+      "class": "honest_infeasibility",
+      "reason": "A one-percent proposal must not execute after a three-percent counter prohibited by policy."
+    },
+    "H09": {
+      "class": "honest_infeasibility",
+      "reason": "Description-based payroll detection must protect this transaction and disclose underfunding."
+    },
+    "H10": {
+      "class": "feasible_rescue",
+      "reason": "A permitted early-payment offer can draw an existing receivable into the horizon; it must not create new money."
+    },
+    "H11": {
+      "class": "feasible_rescue",
+      "reason": "A bounded combination can bridge staggered obligations; report six-group search coverage and wall-clock cost."
+    },
+    "H12": {
+      "class": "honest_infeasibility",
+      "reason": "Usual lateness creates a shortfall and no seven/fourteen-day option fits the three-day limit."
+    }
+  },
+  "protocol": "Authored and sealed before running evaluate_upgrade_scenarios.py. Do not modify held-out inputs/expectations in response to outcomes. This is authored synthetic holdout, not independent-author validation."
+}

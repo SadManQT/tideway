@@ -37,6 +37,7 @@ body { overflow-wrap: anywhere; }
 code { font: 9pt ui-monospace, Menlo, monospace; background: #eef4f2; padding: 0 3px; border-radius: 3px; }
 pre { background: #eef4f2; padding: 8px; font-size: 8.5pt; white-space: pre-wrap; break-inside: avoid; }
 pre code { background: none; } blockquote { border-left: 4px solid #1f8a70; margin: 8px 0; padding: 2px 10px; color: #35504a; }
+li { break-inside: avoid; } p { orphans: 3; widows: 3; }
 """
 
 
@@ -149,7 +150,7 @@ def _test_count():
 
 def slides():
     """The deck, with every number read from the evidence files at build time (never typed by hand)."""
-    tidepay = (_json("evidence/ml/tidepay_report.json") or {}).get("results", {})
+    tidepay = (_json("evidence/upgrade-v1/tidepay/report.json") or {}).get("results", {})
     verify = _json("evidence/verification-summary.json") or {}
     lm = _tidelm()
     pct = lambda v: f"{v * 100:.1f}%".replace(".0%", "%")  # noqa: E731
@@ -176,16 +177,19 @@ def slides():
                      "Scheduled, likely and stress views; \"N of 20 futures fall short\"",
                      "Shapla Services (synthetic): scheduled low −BDT 10,000 on 31 Oct; reserve gap BDT 30,000"],
          "image": "01-cash-weather-storm.png"},
-        {"title": "TidePay payment-delay model", "subtitle": "Simulated federated learning on synthetic invoices",
-         "bullets": [f"Predicts each open invoice's lateness band; drives the scenarios and the Monte Carlo",
-                     "40 simulated SME clients in one process; illustrative masks, no deployed privacy guarantee",
-                     f"Log loss {fed.get('log_loss', '—')} vs {rule.get('log_loss', '—')} for the old rule",
-                     f"Small businesses gain most: {thin.get('mae_days', '—')} vs {alone.get('mae_days', '—')} days error training alone"]},
+        {"title": "TidePay: chronological audit", "subtitle": "Same held-out invoices, training-only statistics",
+         "table": [("Model", "MAE days", "Log loss", "Brier sum")] + [
+             (label, f"{tidepay[key]['mae_days']:.3f}", f"{tidepay[key]['log_loss']:.3f}", f"{tidepay[key]['brier_sum']:.3f}")
+             for key, label in (("prior", "Prior"), ("heuristic_v1", "Heuristic"), ("local_only", "Local-only"),
+                                ("federated", "Federated"), ("centralised", "Pooled")) if key in tidepay],
+         "bullets": [f"{fed.get('n', '—')} test invoices, 40 synthetic SMEs; historical prior leakage disclosed",
+                     "Audit benchmark, shipped weights unchanged; pooled MAE slightly better",
+                     "One-process federation with pooled scaling; no deployed privacy guarantee"]},
         {"title": "TideLM: our own on-device language model", "subtitle": "Qwen3-4B + a LoRA adapter we trained on a laptop with MLX",
          "table": ([("", "Base model", "TideLM")] + lm_rows) if lm_rows else None,
          "bullets": ["Eight languages: English, 中文, Español, Bahasa, Français, Português, Hinglish, Banglish",
                      "Synthetic test with unseen names and shared template families",
-                     "Apple Silicon required; Windows demo uses the deterministic assistant"] + ([] if lm_rows else ["Evaluation pending"])},
+                     "Historical scores; changed result-aware runtime needs device verification"] + ([] if lm_rows else ["Evaluation pending"])},
         {"title": "Plan the rescue", "subtitle": "An exact, risk-aware optimiser",
          "bullets": ["Supplier deferrals, early-payment discounts (priced as APR), zero-cash reminders",
                      "Holds the reserve every day, payroll always funded, ≤ 2 of 20 futures short",
@@ -212,7 +216,7 @@ def slides():
                      "Invite your accountant by one-time code; roles per business; tenants never see each other",
                      "Counterparty risk map: who can hurt your cash, and by how much"],
          "image": "18-team.png"},
-        {"title": "Evidence, not claims", "subtitle": "Reproducible in one command each",
+        {"title": "Evidence, with denominators", "subtitle": "Reproducible in one command each",
          "bullets": [f"{verify.get('passed', '—')}/{verify.get('cases', '—')} self-test cases · {_test_count()} automated tests",
                      "Model reports, sandbox logs, browser evidence and reproducible setup",
                      "python3 -m tideway.selftest · python3 -m unittest discover -s tests"]},
@@ -221,7 +225,30 @@ def slides():
                      "No user study or external penetration test yet",
                      "Next: consented SME pilots, a real bank rail behind the same mandate, federated TidePay across real users"]},
     ]
-    team = _json("submission-team.json") or {}
+    scenarios = _json("evidence/upgrade-v1/scenarios/report.json") or {}
+    if scenarios:
+        counts = scenarios["summary"]
+        outcomes = counts["by_expected_outcome"]
+        attacks = scenarios["screening"]["injection_screening"]["confusion"]
+        payees = scenarios["screening"]["payee_screening"]["confusion"]
+        risk_met = sum(bool(row.get("risk_target_met")) for row in scenarios["rows"] if row["executed"])
+        deck.insert(10, {"title": "Beyond three demo fixtures", "subtitle": f"{counts['cases']} distinct conditions; development and held-out expectations sealed",
+                         "bullets": [f"{counts['workflow_successes']}/{counts['cases']} outcome handling: {counts['executed_rescues']} rescues, {outcomes['honest_infeasibility']['cases']} infeasible, {outcomes['no_action_needed']['cases']} no-action, {outcomes['security_blocked']['cases']} blocked",
+                                     f"Only {risk_met}/{counts['executed_rescues']} rescues meet the 10% simulated-risk target",
+                                     f"Injection: {attacks['true_positive']}/{attacks['malicious_denominator']} attacks detected; {attacks['false_positive']}/{attacks['benign_denominator']} benign messages flagged",
+                                     f"Payee: {payees['true_positive']}/{payees['malicious_denominator']} attacks detected; {payees['false_positive']}/{payees['benign_denominator']} benign cases flagged",
+                                     "Retained misses, raw outcomes and planner timings: evidence/upgrade-v1/scenarios/"]})
+    delay = _json("evidence/upgrade-v1/payment-delay.json") or {}
+    if delay.get("passed"):
+        change = delay["change"]
+        before = change["before"]["likely"]; after = change["after"]["likely"]
+        deck.insert(7, {"title": "A delay changes the decision", "subtitle": "Apply a real synthetic-ledger change; old authority is void",
+                        "bullets": [f"Bay Logistics: {change['old_date']} to {change['new_date']}",
+                                    f"Likely minimum BDT {before['minimum_cash_minor']/100:,.0f} to {after['minimum_cash_minor']/100:,.0f}",
+                                    "Old mandate refused; new proposal replaces supplier deferral with early-payment offers",
+                                    "Bay counters at 1.5%; fresh approvals, consent, execute once and verify",
+                                    "Runbook: docs/PAYMENT_DELAY_RUNBOOK.md; no video recorded"]})
+    team = _json("submission-team.public.json") or {}
     if team.get("team_name"):
         deck[0]["bullets"].append(team["team_name"])
         deck.append({"title": team["team_name"], "subtitle": "Bangladesh University of Engineering and Technology",

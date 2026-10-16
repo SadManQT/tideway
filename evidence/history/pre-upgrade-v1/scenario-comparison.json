@@ -1,0 +1,464 @@
+{
+  "run_at": "2026-10-15T17:54:50+00:00",
+  "scenario_spec_sha256": "cd99ca46623ab5eb491cd03c54d66b2df18f58202ebb891590c44d8653c3a4ac",
+  "cases": 20,
+  "method": "Fixed opening-cash perturbations in each fixture currency; compare a 14-day largest-permitted-bill rule with the unchanged Tideway optimiser. Authored before running this comparison.",
+  "rows": [
+    {
+      "id": "S01",
+      "fixture": "shapla-services",
+      "cash_delta_minor": -4000000,
+      "currency": "BDT",
+      "before_shortfall_minor": 10200000,
+      "spreadsheet_rule": {
+        "feasible": false,
+        "payroll_ok": false,
+        "shortfall_minor": 4200000,
+        "economic_cost_minor": 27616
+      },
+      "tideway": {
+        "feasible": false,
+        "payroll_ok": false,
+        "shortfall_minor": 3700000,
+        "actions": 2,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 28996,
+        "risk_target_met": false
+      }
+    },
+    {
+      "id": "S02",
+      "fixture": "shapla-services",
+      "cash_delta_minor": -2000000,
+      "currency": "BDT",
+      "before_shortfall_minor": 8200000,
+      "spreadsheet_rule": {
+        "feasible": false,
+        "payroll_ok": true,
+        "shortfall_minor": 2200000,
+        "economic_cost_minor": 27616
+      },
+      "tideway": {
+        "feasible": false,
+        "payroll_ok": true,
+        "shortfall_minor": 1700000,
+        "actions": 2,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 28996,
+        "risk_target_met": false
+      }
+    },
+    {
+      "id": "S03",
+      "fixture": "shapla-services",
+      "cash_delta_minor": -1000000,
+      "currency": "BDT",
+      "before_shortfall_minor": 7200000,
+      "spreadsheet_rule": {
+        "feasible": false,
+        "payroll_ok": true,
+        "shortfall_minor": 1200000,
+        "economic_cost_minor": 27616
+      },
+      "tideway": {
+        "feasible": false,
+        "payroll_ok": true,
+        "shortfall_minor": 700000,
+        "actions": 2,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 28996,
+        "risk_target_met": false
+      }
+    },
+    {
+      "id": "S04",
+      "fixture": "shapla-services",
+      "cash_delta_minor": 0,
+      "currency": "BDT",
+      "before_shortfall_minor": 6200000,
+      "spreadsheet_rule": {
+        "feasible": false,
+        "payroll_ok": true,
+        "shortfall_minor": 200000,
+        "economic_cost_minor": 27616
+      },
+      "tideway": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "actions": 2,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 47616,
+        "risk_target_met": true
+      }
+    },
+    {
+      "id": "S05",
+      "fixture": "shapla-services",
+      "cash_delta_minor": 1000000,
+      "currency": "BDT",
+      "before_shortfall_minor": 5200000,
+      "spreadsheet_rule": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "economic_cost_minor": 27616
+      },
+      "tideway": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "actions": 2,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 47616,
+        "risk_target_met": true
+      }
+    },
+    {
+      "id": "S06",
+      "fixture": "shapla-services",
+      "cash_delta_minor": 2000000,
+      "currency": "BDT",
+      "before_shortfall_minor": 4200000,
+      "spreadsheet_rule": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "economic_cost_minor": 27616
+      },
+      "tideway": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "actions": 1,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 27616,
+        "risk_target_met": true
+      }
+    },
+    {
+      "id": "S07",
+      "fixture": "shapla-services",
+      "cash_delta_minor": 4000000,
+      "currency": "BDT",
+      "before_shortfall_minor": 2200000,
+      "spreadsheet_rule": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "economic_cost_minor": 27616
+      },
+      "tideway": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "actions": 2,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 17489,
+        "risk_target_met": true
+      }
+    },
+    {
+      "id": "S08",
+      "fixture": "shapla-services",
+      "cash_delta_minor": 8000000,
+      "currency": "BDT",
+      "before_shortfall_minor": 0,
+      "spreadsheet_rule": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "economic_cost_minor": 0
+      },
+      "tideway": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "actions": 0,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 0,
+        "risk_target_met": null
+      }
+    },
+    {
+      "id": "S09",
+      "fixture": "lotus-print",
+      "cash_delta_minor": -3000000,
+      "currency": "CNY",
+      "before_shortfall_minor": 3700000,
+      "spreadsheet_rule": {
+        "feasible": false,
+        "payroll_ok": true,
+        "shortfall_minor": 2300000,
+        "economic_cost_minor": 6443
+      },
+      "tideway": {
+        "feasible": false,
+        "payroll_ok": true,
+        "shortfall_minor": 1126000,
+        "actions": 1,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 26000,
+        "risk_target_met": false
+      }
+    },
+    {
+      "id": "S10",
+      "fixture": "lotus-print",
+      "cash_delta_minor": -1000000,
+      "currency": "CNY",
+      "before_shortfall_minor": 1700000,
+      "spreadsheet_rule": {
+        "feasible": false,
+        "payroll_ok": true,
+        "shortfall_minor": 300000,
+        "economic_cost_minor": 6443
+      },
+      "tideway": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "actions": 1,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 26000,
+        "risk_target_met": true
+      }
+    },
+    {
+      "id": "S11",
+      "fixture": "lotus-print",
+      "cash_delta_minor": 0,
+      "currency": "CNY",
+      "before_shortfall_minor": 700000,
+      "spreadsheet_rule": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "economic_cost_minor": 6443
+      },
+      "tideway": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "actions": 1,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 3221,
+        "risk_target_met": true
+      }
+    },
+    {
+      "id": "S12",
+      "fixture": "lotus-print",
+      "cash_delta_minor": 1000000,
+      "currency": "CNY",
+      "before_shortfall_minor": 0,
+      "spreadsheet_rule": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "economic_cost_minor": 0
+      },
+      "tideway": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "actions": 0,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 0,
+        "risk_target_met": null
+      }
+    },
+    {
+      "id": "S13",
+      "fixture": "lotus-print",
+      "cash_delta_minor": 3000000,
+      "currency": "CNY",
+      "before_shortfall_minor": 0,
+      "spreadsheet_rule": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "economic_cost_minor": 0
+      },
+      "tideway": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "actions": 0,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 0,
+        "risk_target_met": null
+      }
+    },
+    {
+      "id": "S14",
+      "fixture": "lotus-print",
+      "cash_delta_minor": 6000000,
+      "currency": "CNY",
+      "before_shortfall_minor": 0,
+      "spreadsheet_rule": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "economic_cost_minor": 0
+      },
+      "tideway": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "actions": 0,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 0,
+        "risk_target_met": null
+      }
+    },
+    {
+      "id": "S15",
+      "fixture": "harbourline-traders",
+      "cash_delta_minor": -1000000,
+      "currency": "SGD",
+      "before_shortfall_minor": 6700000,
+      "spreadsheet_rule": {
+        "feasible": false,
+        "payroll_ok": false,
+        "shortfall_minor": 6700000,
+        "economic_cost_minor": 0
+      },
+      "tideway": {
+        "feasible": false,
+        "payroll_ok": false,
+        "shortfall_minor": 5215000,
+        "actions": 1,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 15000,
+        "risk_target_met": false
+      }
+    },
+    {
+      "id": "S16",
+      "fixture": "harbourline-traders",
+      "cash_delta_minor": 0,
+      "currency": "SGD",
+      "before_shortfall_minor": 5700000,
+      "spreadsheet_rule": {
+        "feasible": false,
+        "payroll_ok": false,
+        "shortfall_minor": 5700000,
+        "economic_cost_minor": 0
+      },
+      "tideway": {
+        "feasible": false,
+        "payroll_ok": false,
+        "shortfall_minor": 4215000,
+        "actions": 1,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 15000,
+        "risk_target_met": false
+      }
+    },
+    {
+      "id": "S17",
+      "fixture": "harbourline-traders",
+      "cash_delta_minor": 1000000,
+      "currency": "SGD",
+      "before_shortfall_minor": 4700000,
+      "spreadsheet_rule": {
+        "feasible": false,
+        "payroll_ok": false,
+        "shortfall_minor": 4700000,
+        "economic_cost_minor": 0
+      },
+      "tideway": {
+        "feasible": false,
+        "payroll_ok": false,
+        "shortfall_minor": 3215000,
+        "actions": 1,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 15000,
+        "risk_target_met": false
+      }
+    },
+    {
+      "id": "S18",
+      "fixture": "harbourline-traders",
+      "cash_delta_minor": 3000000,
+      "currency": "SGD",
+      "before_shortfall_minor": 2700000,
+      "spreadsheet_rule": {
+        "feasible": false,
+        "payroll_ok": false,
+        "shortfall_minor": 2700000,
+        "economic_cost_minor": 0
+      },
+      "tideway": {
+        "feasible": false,
+        "payroll_ok": true,
+        "shortfall_minor": 1215000,
+        "actions": 1,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 15000,
+        "risk_target_met": false
+      }
+    },
+    {
+      "id": "S19",
+      "fixture": "harbourline-traders",
+      "cash_delta_minor": 6000000,
+      "currency": "SGD",
+      "before_shortfall_minor": 0,
+      "spreadsheet_rule": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "economic_cost_minor": 0
+      },
+      "tideway": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "actions": 0,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 0,
+        "risk_target_met": null
+      }
+    },
+    {
+      "id": "S20",
+      "fixture": "harbourline-traders",
+      "cash_delta_minor": 10000000,
+      "currency": "SGD",
+      "before_shortfall_minor": 0,
+      "spreadsheet_rule": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "economic_cost_minor": 0
+      },
+      "tideway": {
+        "feasible": true,
+        "payroll_ok": true,
+        "shortfall_minor": 0,
+        "actions": 0,
+        "honest_no_safe_plan": false,
+        "economic_cost_minor": 0,
+        "risk_target_met": null
+      }
+    }
+  ],
+  "summary": {
+    "spreadsheet_rule": {
+      "feasible_cases": 10,
+      "payroll_funded_cases": 15
+    },
+    "tideway": {
+      "feasible_cases": 12,
+      "payroll_funded_cases": 16
+    }
+  },
+  "limitations": [
+    "Authored perturbations of three existing synthetic fixtures, not independent held-out SMEs.",
+    "Both methods use the same exact ledger evaluator; independent validation is not claimed.",
+    "The comparator is one stated simple rule, not Excel generally or a generic LLM.",
+    "No live model, real users, counterparty consent or realised cash improvement measured."
+  ]
+}

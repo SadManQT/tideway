@@ -57,9 +57,7 @@ extraction and TideLM are optional, with limitations in `docs/MODEL_CARD.md`.
 ## Team-controlled final steps
 
 The supplied roster is included. Confirm the team leader and actual roles, eligibility,
-registration acknowledgement, submission route and reviewer access. Record these
-facts in `submission-team.json` using the example file. Leave unconfirmed fields
-blank. Follow any organiser requirement for truthful AI-assistance disclosure.
+registration acknowledgement, submission route and reviewer access. Keep the supplied public names/institution in tracked `submission-team.public.json`; roles and leader stay blank until confirmed. Private administrative facts belong in ignored `submission-team.json` and are never copied into the source archive. Follow any organiser requirement for truthful AI-assistance disclosure.
 No roles, nationality, registration or consent have been invented.
 
 ## Published instructions checked on 15 October 2026
@@ -87,3 +85,9 @@ Post-fix TideVision inference on Apple Silicon remains unverified. There is no
 completed SME user study, live cloud-provider benchmark or external penetration
 test. Docker instructions are supplied, but a successful Docker build must only
 be claimed on a machine where it was actually run.
+
+## Contest upgrade evidence
+
+Use `docs/PAYMENT_DELAY_RUNBOOK.md` for the live linked approval/invalidation/reapproval sequence. `evidence/upgrade-v1/` contains the corrected chronological prediction benchmark, distinct scenario workflows and screening/performance measurements, real-model availability report and delay receipt. Historical observations are retained under `evidence/history/pre-upgrade-v1/` and `evidence/ml/`. See `docs/CONTEST_UPGRADE_REPORT.md` for measured results and remaining verification limits.
+
+The package source is tested and browser-checked at the same source digest; `python3 scripts/verify_package.py` checks archive hashes, extracted tests and a new loopback server with Python `-S`, no Git or developer configuration. This local preparation does not establish registration or submission readiness. The main site is dynamic and its full latest notices remain unverified.

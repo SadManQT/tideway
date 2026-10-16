@@ -76,6 +76,24 @@ python3 scripts/build_submission_pdfs.py   # pitch, architecture and security PD
 
 `python3 run.py --no-demo --db data/empty.sqlite3` starts an empty workspace. Node 22+ and Google Chrome are needed only for screenshots and PDFs.
 
+## Contest upgrade and reproducible evidence
+
+The linked demo now applies a real delay to a synthetic invoice, invalidates the old approvals, and requires a fresh proposal and approval before execution. The normal What-if sliders remain read-only. Follow [the live runbook](docs/PAYMENT_DELAY_RUNBOOK.md).
+
+```bash
+python3 scripts/demo_payment_delay.py
+python3 scripts/evaluate_tidepay_v2.py
+python3 scripts/evaluate_upgrade_scenarios.py
+python3 scripts/smoke_reasoning.py
+node scripts/capture_screens.mjs --test-payment-delay --out tmp/delay-browser
+```
+
+The [audited TidePay benchmark](docs/TIDEPAY_EVALUATION_V2.md) uses 2,376 identical chronological test invoices: simulated federation MAE 6.9568 days versus heuristic 7.4107 and local-only 7.2152. Pooled training is slightly better on MAE (6.9448). Training statistics and labels are available before the cutoffs; calibration bins, class balance, per-business results and uncertainty are saved. A historical prior used test-label statistics; its original report is preserved and clearly separated. The audit benchmark does not replace the shipped model or establish real-world accuracy or cryptographic privacy.
+
+The [scenario evaluation](docs/SCENARIO_EVALUATION_V2.md) covers 24 distinct conditions, with development and held-out sets, workflow outcomes, latency, false positives and retained misses. [The model runtime notes](docs/MODEL_REASONING_V2.md) distinguish model-selected calls from deterministic preflight and fallback. Current device inference remains unverified because MLX and the weights are absent; injected outputs are safety tests only.
+
+The confirmed public roster is tracked in `submission-team.public.json`; roles and leader remain blank. The local submission builder excludes private team metadata, keys, data and caches, and the [package verifier](scripts/verify_package.py) checks fresh extraction without Git or site packages. Recording is deferred. Registration, eligibility, organiser route and reviewer access remain separate team-controlled steps; see [checked sources](docs/CONTEST_SOURCES_CHECKED.md).
+
 ## What it does
 
 1. **Sees the gap.** Exact integer minor-unit cash projection with three scenarios (scheduled, likely, stress) and a 14-day look-ahead so a deferral cannot hide a problem just beyond the target date.
@@ -104,7 +122,7 @@ Tideway does not depend on a third-party AI API. TidePay is trained here on synt
 
 | Model | What it does | How it is trained | Evidence |
 |---|---|---|---|
-| **TidePay** | Probability that an open invoice is paid on time, 1-7, 8-15, 16-30 or 30+ days late | Pure-Python softmax trained with **federated learning** (FedAvg) across 40 synthetic SMEs, in a single-process simulation with illustrative pairwise masks. This experiment does not provide a deployed privacy guarantee | [tidepay_report.md](evidence/ml/tidepay_report.md): log loss 1.036 vs 1.55 for the old rule; on the smaller half of SMEs, MAE 6.12 days vs 6.64 training alone |
+| **TidePay** | Probability that an open invoice is paid on time, 1-7, 8-15, 16-30 or 30+ days late | Pure-Python softmax trained with **federated learning** (FedAvg) across 40 synthetic SMEs, in a single-process simulation with illustrative pairwise masks. This experiment does not provide a deployed privacy guarantee | [Chronological audit v2](evidence/upgrade-v1/tidepay/report.md): MAE 6.9568 vs heuristic 7.4107, log loss 1.0727 vs 1.5688, sum Brier 0.5777 vs 0.7905 on 2,376 records; older production-model experiment retained separately |
 | **TideLM** | (1) Turns an owner's message in English, Chinese, Spanish, Indonesian/Malay, French, Portuguese, Hinglish or Banglish into a typed tool plan; (2) turns pasted bank, card and mobile-money alerts (M-Pesa, UPI, WeChat Pay, Alipay, PayNow, DuitNow, GCash, Pix, SEPA, Faster Payments, Wise, bKash) and chat messages into draft records and flags injection | LoRA fine-tune of Qwen3-4B-Instruct (4-bit) with MLX on Apple Silicon, on 4,500 generated multilingual examples (500 validation); the 500 test examples use counterparty names never seen in training | [tidelm_report.md](evidence/ml/tidelm_report.md) (v2, eight languages): exact plans 26.7% → **96.7%**, intent 20% → **99%**, extraction F1 0.83 → **0.969**, injection flags 91.5% → **98.5%**, ~2.8 s per answer |
 
 The language model never touches money or records. Its plan passes a validator (known tools, typed arguments, names resolved against the ledger, read/propose tools only); a forbidden tool counts toward the circuit breaker. Replies are written by code from tool output, so every number comes from Tideway. Extracted records are drafts until a person confirms them, and a deterministic scan flags injection even if the model misses it.

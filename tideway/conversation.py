@@ -189,7 +189,8 @@ def plan_summary(plan, currency, lang="en"):
     else:
         lines.append(t(lang, "plan_nosafe", short=money_text(bundles[0]["remaining_shortfall_minor"] if bundles
                                                              else basis["reserve_shortfall_minor"], currency)))
-    lines.append(t(lang, "plan_wait"))
+    if bundles and bundles[0]["feasible"]:
+        lines.append(t(lang, "plan_wait"))
     return _join(lang, lines)
 
 

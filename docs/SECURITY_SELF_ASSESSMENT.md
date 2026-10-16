@@ -21,11 +21,11 @@ Trust boundaries: (1) user to server (cookie, CSRF, Origin/Host checks, tenant m
 
 | Tier | Who | Can |
 |---|---|---|
-| agent_read | Agent | Read records, project cash, simulate, analyse |
-| agent_propose | Agent | Create plan proposals and message drafts |
-| human_approval | Owner / accountant | Approve bundles with PIN step-up; two people above the dual-approval threshold |
-| sandbox_execute | Owner / accountant | Execute a signed, accepted mandate once |
-| delegated_execute | Agent under a standing mandate | Zero-cash reminders only, five a day |
+| Agent read | Agent | Read records, project cash, simulate, analyse |
+| Agent propose | Agent | Create plan proposals and message drafts |
+| Human approval | Owner / accountant | Approve bundles with PIN step-up; two people above the dual-approval threshold |
+| Sandbox execute | Owner / accountant | Execute a signed, accepted mandate once |
+| Delegated execute | Agent under a standing mandate | Zero-cash reminders only, five a day |
 | denied | Everyone | Moving real money, credit decisions, payroll deferral, acting on unverified bank details |
 
 Roles are per business: the same person can own one business and only view another. Viewers can read only. The Autonomy dial (Advise, Propose, Delegate) only widens what is delegated within this table.
@@ -51,13 +51,13 @@ Each self-test case in `tideway/selftest.py` is mapped to the OWASP Top 10 for L
 | `AT-MAN-04` | Bill changed after approval (time-of-check/time-of-use) | T3 | State and record hashes are re-checked at execution (time-of-check/time-of-use). |
 | `AT-MAN-05` | Negotiate an action outside the mandate | ASI02 | Negotiation is limited to actions inside the signed mandate. |
 | `AT-MAN-06` | Replay with the same key; double-spend with a new key | ASI02 | Idempotency key returns the same receipt; a second key on a consumed mandate is refused. |
-| `AT-PI-01` | Poisoned bill text and real names never reach the model | LLM01 / ASI01 | Pseudonymised names, no free text, to the model; tool output framed as data. |
+| `AT-PI-01` | Poisoned text and real names excluded from optional cloud mode | LLM01 / ASI01 | Optional cloud mode uses pseudonyms and omits ledger free text; local model context uses scoped non-quarantined names. |
 | `AT-PI-02` | Fully hijacked model calls forbidden tools | LLM01 / LLM06 / ASI01 | Agent tool allow-list: approve and execute tools are denied and logged; invented figure flagged. |
 | `AT-PI-03` | Invisible Unicode is stripped and flagged | LLM01 | NFKC normalisation strips Cf characters and flags the record. |
 | `AT-BEC-01` | Changed bank details block every action on the bill | ASI09 / T9 | Changed account blocks all actions on the bill (`SECURITY_BLOCKED`). |
 | `AT-BEC-02` | Look-alike payee name is blocked | ASI09 | Name similarity of 0.85 or more to another payee blocks the bill. |
 | `AT-BEC-03` | Only the owner verifies, and only by callback | ASI03 | Only the owner may verify, only by callback to a number on file. |
-| `AT-BEC-04` | Separation of duties: verifier cannot approve that payee | ASI03 | The person who verified a payee cannot approve a bundle paying that payee. |
+| `AT-BEC-04` | Separation of duties: verifier cannot be the sole approver | ASI03 | The person who verified a payee may participate in dual approval but cannot be its only approver. |
 | `AT-ISO-01` | Approve another business's plan | LLM02 | Plans and mandates are scoped to one business; cross-business approval is refused. |
 | `AT-POL-01` | Payroll can never be deferred or proposed | LLM06 | Adjustment checker rejects payroll deferral; planner never proposes it. |
 | `AT-KILL-01` | Pause blocks everything; only the owner resumes, with a reason | ASI10 | Pause blocks execute and planning; only the owner resumes, with a reason. |
@@ -75,7 +75,7 @@ Loopback bind; Host and Origin allow-lists; CSRF token on every write; `HttpOnly
 
 ## 5. Privacy
 
-TideLM, the default assistant, runs on the owner's machine: no question, record or extracted message leaves it. The deterministic local agent sends nothing anywhere either. The Inbox extractor receives the pasted message or photo locally because it must draft a record; it never receives an approval or execution capability, and nothing is saved until confirmation. In optional LLM mode (per-message consent) counterparty names are replaced with pseudonyms and record free text is never sent. Demo data is fictional. No secrets, passport scans or private customer data are included; the public team roster was supplied by the team; `.env` and `data/` are ignored.
+Optional TideLM inference runs on the owner's machine: no question, record or extracted message leaves it. The deterministic local agent sends nothing anywhere either. The Inbox extractor receives the pasted message or photo locally because it must draft a record; it never receives an approval or execution capability, and nothing is saved until confirmation. In optional LLM mode (per-message consent) counterparty names are replaced with pseudonyms and record free text is never sent. Demo data is fictional. No secrets, passport scans or private customer data are included; the public team roster was supplied by the team; `.env` and `data/` are ignored.
 
 ## 6. Known risks and residual limitations
 
@@ -89,3 +89,12 @@ TideLM, the default assistant, runs on the owner's machine: no question, record 
 8. **Small model, synthetic training data.** TideLM can misread a name or drop a constraint (see its report); names are resolved against the ledger and every plan is only a proposal, but a person must still read it before approving.
 9. **Not a compliance certification.** No claim of PCI, SOC 2, local regulator or bank approval.
 10. **Optional local model service.** The compatible backend only sends HTTP to literal loopback addresses, refuses redirects, and bounds responses. Its typed plans have the same permission boundary. The independently installed server is trusted infrastructure and must use offline models; Tideway does not audit its plugins or forwarding behaviour. Local-compatible model accuracy is unbenchmarked.
+
+## 7. Upgrade findings and additional verification
+
+- The new delay operation is owner/PIN scoped and synthetic-only; it uses snapshot comparison, atomic invalidation and durable request receipts. Concurrent requests, exact retries, stale approval/execution, invalid horizons, failed audit writes, cross-tenant access and preserved quarantine are covered in `tests/test_demo_delay.py`. An old promise must not hide a newly applied delay. The UI keeps hypothetical What-if separate.
+- Whole-plan preflight prevents a valid first proposing call from writing before a later invalid call is found. Exact/casefold unique entity matching clarifies ambiguity rather than guessing. Agent-labelled proposers also respect Advise mode. No-safe-plan replies do not ask for approval. See `tests/test_reasoning_guards.py`.
+- Labelled benign/attack screening now reports false positives and false negatives separately. A discovered case-only payee identity bypass was fixed by normalising account-history lookup; the first observation is preserved. Novel-vendor and missing-account cases can lack detectable signals. Pattern screening remains incomplete and can overflag benign instructions about payment or markup. See `docs/SCENARIO_EVALUATION_V2.md` for every denominator and residual miss.
+- Finite injected-output tests do not establish model quality. Current model availability reports explicitly record missing MLX/weights. No post-change real-model inference, external penetration test or certification is claimed.
+
+Public handbook and benchmark assets disclose synthetic documentation only. Session, tenant, role, Host/Origin, CSRF and execution controls remain in place for financial APIs. Package verification excludes private local metadata and checks actual extracted bytes; the synthetic public roster does not establish eligibility or registration.

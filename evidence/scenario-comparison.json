@@ -1,6 +1,6 @@
 {
-  "run_at": "2026-10-15T17:54:50+00:00",
-  "scenario_spec_sha256": "cd99ca46623ab5eb491cd03c54d66b2df18f58202ebb891590c44d8653c3a4ac",
+  "run_at": "2026-10-15T19:52:55+00:00",
+  "scenario_spec_sha256": "ea9a4be5f12e4eda1301839089bab020660f53c8316e74373fdd99d5876ee310",
   "cases": 20,
   "method": "Fixed opening-cash perturbations in each fixture currency; compare a 14-day largest-permitted-bill rule with the unchanged Tideway optimiser. Authored before running this comparison.",
   "rows": [

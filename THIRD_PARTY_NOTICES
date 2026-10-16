@@ -52,3 +52,13 @@ Optional verification tooling:
 The supplied synthetic records and generated screenshots are fictional demo
 material authored for this project. Do not replace them with private customer
 data without reviewing consent, licensing, and applicable law.
+
+Contest-upgrade evaluation and visual QA:
+
+* The core evaluation and linked-delay scripts use the Python standard library.
+  Synthetic fixtures and newly generated reports are project-authored evidence.
+* Optional PDF inspection uses pypdf and PyMuPDF, and photo/layout tests use
+  Pillow. `requirements-evaluation.txt` pins the QA environment used here.
+  These packages are installed separately, retain their upstream license terms,
+  and are not bundled in the source archive. No video was recorded or encoded
+  during the contest-upgrade workflow.

@@ -1,0 +1,141 @@
+test_deleted_witness_invalidates_evidence (test_audit_integrity.AuditWitnessIntegrityTests.test_deleted_witness_invalidates_evidence) ... ok
+test_first_time_without_witness_remains_valid (test_audit_integrity.AuditWitnessIntegrityTests.test_first_time_without_witness_remains_valid) ... ok
+test_tampered_witness_signature_invalidates_hash_chain (test_audit_integrity.AuditWitnessIntegrityTests.test_tampered_witness_signature_invalidates_hash_chain) ... ok
+test_truncated_audit_chain_invalidates_witness (test_audit_integrity.AuditWitnessIntegrityTests.test_truncated_audit_chain_invalidates_witness) ... ok
+test_valid_witness_is_consistent (test_audit_integrity.AuditWitnessIntegrityTests.test_valid_witness_is_consistent) ... ok
+test_bank_pack_is_escaped_and_complete (test_conversation.BankPack.test_bank_pack_is_escaped_and_complete) ... ok
+test_answers_differ_by_question (test_conversation.Conversation.test_answers_differ_by_question) ... ok
+test_classifier_is_multilingual_and_strict (test_conversation.Conversation.test_classifier_is_multilingual_and_strict) ... ok
+test_credit_check_in_banglish (test_conversation.Conversation.test_credit_check_in_banglish) ... ok
+test_greeting_is_a_personal_live_briefing (test_conversation.Conversation.test_greeting_is_a_personal_live_briefing) ... ok
+test_suggestions_follow_the_topic (test_conversation.Conversation.test_suggestions_follow_the_topic) ... ok
+test_unknown_is_never_a_dead_end (test_conversation.Conversation.test_unknown_is_never_a_dead_end) ... ok
+test_why_compares_the_alternatives (test_conversation.Conversation.test_why_compares_the_alternatives) ... ok
+test_never_pays_loses_the_whole_invoice_inside_the_horizon (test_conversation.CounterpartyRisk.test_never_pays_loses_the_whole_invoice_inside_the_horizon) ... ok
+test_payer_outside_the_horizon_is_explained_not_zeroed (test_conversation.CounterpartyRisk.test_payer_outside_the_horizon_is_explained_not_zeroed) ... ok
+test_discount_apr (test_core.AnalysisTests.test_discount_apr) ... ok
+test_monte_carlo_is_deterministic (test_core.AnalysisTests.test_monte_carlo_is_deterministic) ... ok
+test_selftest_suite_all_pass (test_core.AnalysisTests.test_selftest_suite_all_pass) ... ok
+test_shapla_projection_exact_numbers (test_core.AnalysisTests.test_shapla_projection_exact_numbers) ... ok
+test_csv_cell_escapes_formulas (test_core.DomainTests.test_csv_cell_escapes_formulas) ... ok
+test_csv_validation_is_all_or_nothing (test_core.DomainTests.test_csv_validation_is_all_or_nothing) ... ok
+test_currency (test_core.DomainTests.test_currency) ... ok
+test_hidden_unicode_is_stripped_and_flagged (test_core.DomainTests.test_hidden_unicode_is_stripped_and_flagged) ... ok
+test_injection_flags (test_core.DomainTests.test_injection_flags) ... ok
+test_money_is_exact_minor_units (test_core.DomainTests.test_money_is_exact_minor_units) ... ok
+test_cookie_flags (test_core.HttpTests.test_cookie_flags) ... [16/Oct/2026 00:07:44] "POST /api/session/login HTTP/1.1" 200 -
+ok
+test_csrf_origin_host (test_core.HttpTests.test_csrf_origin_host) ... [16/Oct/2026 00:07:44] "POST /api/session/login HTTP/1.1" 403 -
+[16/Oct/2026 00:07:44] "POST /api/session/login HTTP/1.1" 403 -
+[16/Oct/2026 00:07:44] "POST /api/session/login HTTP/1.1" 403 -
+[16/Oct/2026 00:07:44] "GET /api/config HTTP/1.1" 403 -
+ok
+test_dual_bundle_needs_typed_amount (test_core.HttpTests.test_dual_bundle_needs_typed_amount) ... [16/Oct/2026 00:07:44] "POST /api/session/login HTTP/1.1" 200 -
+[16/Oct/2026 00:07:44] "POST /api/plan/propose HTTP/1.1" 200 -
+[16/Oct/2026 00:07:44] "POST /api/plan/approve HTTP/1.1" 400 -
+[16/Oct/2026 00:07:45] "POST /api/plan/approve HTTP/1.1" 200 -
+ok
+test_requires_login (test_core.HttpTests.test_requires_login) ... [16/Oct/2026 00:07:45] "GET /api/dashboard?business_id=shapla-services HTTP/1.1" 401 -
+ok
+test_viewer_cannot_propose (test_core.HttpTests.test_viewer_cannot_propose) ... [16/Oct/2026 00:07:45] "POST /api/session/login HTTP/1.1" 200 -
+[16/Oct/2026 00:07:45] "POST /api/plan/propose HTTP/1.1" 403 -
+ok
+test_guide_javascript_has_viva_generator_and_thousand_questions (test_guide.GuidePageTests.test_guide_javascript_has_viva_generator_and_thousand_questions) ... ok
+test_guide_markup_has_sections_assets_disclaimer_and_setup (test_guide.GuidePageTests.test_guide_markup_has_sections_assets_disclaimer_and_setup) ... ok
+test_public_guide_assets_exist (test_guide.GuidePageTests.test_public_guide_assets_exist) ... ok
+test_server_exposes_guide_assets (test_guide.GuidePageTests.test_server_exposes_guide_assets) ... ok
+test_same_numbers_in_every_language (test_i18n.LocalisedAnswers.test_same_numbers_in_every_language) ... ok
+test_dates_follow_the_reader (test_i18n.Phrasebook.test_dates_follow_the_reader) ... ok
+test_detects_the_language_of_every_training_template (test_i18n.Phrasebook.test_detects_the_language_of_every_training_template) ... ok
+test_every_message_has_every_language_with_the_same_placeholders (test_i18n.Phrasebook.test_every_message_has_every_language_with_the_same_placeholders) ... ok
+test_http_redirect_is_never_followed (test_local_model.LocalInference.test_http_redirect_is_never_followed) ... ok
+test_local_model_still_cannot_execute_or_write (test_local_model.LocalInference.test_local_model_still_cannot_execute_or_write) ... ok
+test_missing_model_is_unavailable_and_label_is_unbenchmarked (test_local_model.LocalInference.test_missing_model_is_unavailable_and_label_is_unbenchmarked) ... ok
+test_oversized_or_malformed_output_fails_closed (test_local_model.LocalInference.test_oversized_or_malformed_output_fails_closed) ... ok
+test_remote_credentials_queries_and_cloud_models_are_rejected (test_local_model.LocalInference.test_remote_credentials_queries_and_cloud_models_are_rejected) ... ok
+test_valid_local_plan_uses_existing_tool_results (test_local_model.LocalInference.test_valid_local_plan_uses_existing_tool_results) ... ok
+test_text_load_failure_becomes_unavailable (test_local_model.OptionalModelFailures.test_text_load_failure_becomes_unavailable) ... ok
+test_vision_load_failure_becomes_unavailable (test_local_model.OptionalModelFailures.test_vision_load_failure_becomes_unavailable) ... ok
+test_malformed_argument_shapes_are_validation_errors (test_model_guards.ModelPlanGuards.test_malformed_argument_shapes_are_validation_errors) ... ok
+test_malformed_plan_cannot_reach_tool_execution (test_model_guards.ModelPlanGuards.test_malformed_plan_cannot_reach_tool_execution) ... ok
+test_shallow_extra_expense_is_a_safe_refusal (test_model_guards.ModelPlanGuards.test_shallow_extra_expense_is_a_safe_refusal) ... ok
+test_valid_nested_arguments_still_execute (test_model_guards.ModelPlanGuards.test_valid_nested_arguments_still_execute) ... ok
+test_anonymous_errors_are_not_audited (test_regressions.HttpRegressions.test_anonymous_errors_are_not_audited) ... [16/Oct/2026 00:07:50] "POST /api/session/login HTTP/1.1" 400 -
+ok
+test_malformed_requests_get_4xx (test_regressions.HttpRegressions.test_malformed_requests_get_4xx) ... [16/Oct/2026 00:07:50] "POST /api/session/login HTTP/1.1" 400 -
+[16/Oct/2026 00:07:50] "POST /api/session/login HTTP/1.1" 400 -
+[16/Oct/2026 00:07:50] "POST /api/session/login HTTP/1.1" 403 -
+ok
+test_advise_blocks_proposal_and_failed_replan_keeps_mandate (test_regressions.StoreRegressions.test_advise_blocks_proposal_and_failed_replan_keeps_mandate) ... ok
+test_breaker_counts_only_denials_since_resume (test_regressions.StoreRegressions.test_breaker_counts_only_denials_since_resume) ... ok
+test_chat_validation_errors_are_conversational (test_regressions.StoreRegressions.test_chat_validation_errors_are_conversational) ... ok
+test_counter_needs_a_counter_offer (test_regressions.StoreRegressions.test_counter_needs_a_counter_offer) ... ok
+test_csv_export_reimports_unchanged (test_regressions.StoreRegressions.test_csv_export_reimports_unchanged) ... ok
+test_daily_cap_survives_sandbox_reset (test_regressions.StoreRegressions.test_daily_cap_survives_sandbox_reset) ... ok
+test_dead_mandate_allows_reapproval_but_live_one_blocks (test_regressions.StoreRegressions.test_dead_mandate_allows_reapproval_but_live_one_blocks) ... ok
+test_discount_percent_keeps_fractions (test_regressions.StoreRegressions.test_discount_percent_keeps_fractions) ... ok
+test_identical_rows_with_ids_are_both_kept (test_regressions.StoreRegressions.test_identical_rows_with_ids_are_both_kept) ... ok
+test_non_text_identifiers_are_rejected (test_regressions.StoreRegressions.test_non_text_identifiers_are_rejected) ... ok
+test_payee_verifier_cannot_be_sole_approver (test_regressions.StoreRegressions.test_payee_verifier_cannot_be_sole_approver) ... ok
+test_policy_noop_and_cap_order (test_regressions.StoreRegressions.test_policy_noop_and_cap_order) ... ok
+test_profiles_carry_tidepay_delay (test_regressions.StoreRegressions.test_profiles_carry_tidepay_delay) ... ok
+test_reminder_does_not_invalidate_approved_mandate (test_regressions.StoreRegressions.test_reminder_does_not_invalidate_approved_mandate) ... ok
+test_resume_reason_uses_normalised_value (test_regressions.StoreRegressions.test_resume_reason_uses_normalised_value) ... ok
+test_sign_in_guessing_does_not_lock_step_up (test_regressions.StoreRegressions.test_sign_in_guessing_does_not_lock_step_up) ... ok
+test_verified_lookalike_is_cleared (test_regressions.StoreRegressions.test_verified_lookalike_is_cleared) ... ok
+test_viewer_chat_cannot_create_plans (test_regressions.StoreRegressions.test_viewer_chat_cannot_create_plans) ... ok
+test_what_if_rejects_bad_changes (test_regressions.StoreRegressions.test_what_if_rejects_bad_changes) ... ok
+test_feedback_keeps_only_a_hash_of_the_question (test_saas.Feedback.test_feedback_keeps_only_a_hash_of_the_question) ... ok
+test_invite_join_role_and_seat_limit (test_saas.SaaS.test_invite_join_role_and_seat_limit) ... [16/Oct/2026 00:07:59] "POST /api/signup HTTP/1.1" 200 -
+[16/Oct/2026 00:07:59] "POST /api/team/invite HTTP/1.1" 200 -
+[16/Oct/2026 00:07:59] "POST /api/team/join HTTP/1.1" 200 -
+[16/Oct/2026 00:07:59] "POST /api/plan/propose HTTP/1.1" 403 -
+[16/Oct/2026 00:07:59] "POST /api/team/join HTTP/1.1" 400 -
+[16/Oct/2026 00:07:59] "POST /api/team/invite HTTP/1.1" 200 -
+[16/Oct/2026 00:07:59] "POST /api/team/invite HTTP/1.1" 400 -
+[16/Oct/2026 00:07:59] "POST /api/team/invite HTTP/1.1" 400 -
+[16/Oct/2026 00:07:59] "GET /api/team?business_id=kestrel-b-66b875 HTTP/1.1" 200 -
+ok
+test_last_owner_cannot_be_removed_and_weak_pins_are_refused (test_saas.SaaS.test_last_owner_cannot_be_removed_and_weak_pins_are_refused) ... [16/Oct/2026 00:07:59] "POST /api/signup HTTP/1.1" 200 -
+[16/Oct/2026 00:07:59] "POST /api/team/remove HTTP/1.1" 400 -
+[16/Oct/2026 00:07:59] "POST /api/signup HTTP/1.1" 400 -
+[16/Oct/2026 00:07:59] "POST /api/signup HTTP/1.1" 400 -
+[16/Oct/2026 00:07:59] "POST /api/signup HTTP/1.1" 400 -
+[16/Oct/2026 00:07:59] "POST /api/signup HTTP/1.1" 400 -
+[16/Oct/2026 00:07:59] "POST /api/signup HTTP/1.1" 400 -
+ok
+test_signup_creates_an_isolated_workspace (test_saas.SaaS.test_signup_creates_an_isolated_workspace) ... [16/Oct/2026 00:07:59] "POST /api/signup HTTP/1.1" 200 -
+[16/Oct/2026 00:07:59] "GET /api/config HTTP/1.1" 200 -
+[16/Oct/2026 00:07:59] "GET /api/dashboard?business_id=kestrel-a-a67ed4 HTTP/1.1" 200 -
+[16/Oct/2026 00:07:59] "POST /api/session/login HTTP/1.1" 200 -
+[16/Oct/2026 00:07:59] "GET /api/dashboard?business_id=kestrel-a-a67ed4 HTTP/1.1" 403 -
+[16/Oct/2026 00:07:59] "GET /api/dashboard?business_id=shapla-services HTTP/1.1" 403 -
+[16/Oct/2026 00:07:59] "POST /api/plan/propose HTTP/1.1" 403 -
+ok
+test_missing_team_facts_are_never_marked_complete (test_submission_package.PackagePrivacy.test_missing_team_facts_are_never_marked_complete) ... ok
+test_private_paths_are_rejected (test_submission_package.PackagePrivacy.test_private_paths_are_rejected) ... ok
+test_source_and_public_config_template_remain_reproducible (test_submission_package.PackagePrivacy.test_source_and_public_config_template_remain_reproducible) ... ok
+test_source_archive_verification_does_not_require_git (test_submission_package.PackagePrivacy.test_source_archive_verification_does_not_require_git) ... ok
+test_tables_repeat_headers_and_code_is_escaped (test_submission_rendering.SubmissionRendering.test_tables_repeat_headers_and_code_is_escaped) ... ok
+test_wrapped_paragraphs_and_list_items_stay_together (test_submission_rendering.SubmissionRendering.test_wrapped_paragraphs_and_list_items_stay_together) ... ok
+test_forbidden_tool_is_refused_and_counts_as_security_denial (test_tidelm_runtime.TideLMRuntime.test_forbidden_tool_is_refused_and_counts_as_security_denial) ... ok
+test_garbage_output_is_answered_not_guessed (test_tidelm_runtime.TideLMRuntime.test_garbage_output_is_answered_not_guessed) ... ok
+test_inbox_flags_injection_and_saves_only_confirmed_valid_drafts (test_tidelm_runtime.TideLMRuntime.test_inbox_flags_injection_and_saves_only_confirmed_valid_drafts) ... ok
+test_numbers_come_from_tools_not_the_model (test_tidelm_runtime.TideLMRuntime.test_numbers_come_from_tools_not_the_model) ... ok
+test_small_talk_never_calls_the_model (test_tidelm_runtime.TideLMRuntime.test_small_talk_never_calls_the_model) ... ok
+test_viewer_cannot_propose_through_tidelm (test_tidelm_runtime.TideLMRuntime.test_viewer_cannot_propose_through_tidelm) ... ok
+test_model_prefers_slow_history (test_tidepay.TidePayTests.test_model_prefers_slow_history) ... ok
+test_quantile_and_cdf_are_consistent (test_tidepay.TidePayTests.test_quantile_and_cdf_are_consistent) ... ok
+test_report_shows_federated_beats_baselines (test_tidepay.TidePayTests.test_report_shows_federated_beats_baselines) ... ok
+test_secure_aggregation_masks_cancel (test_tidepay.TidePayTests.test_secure_aggregation_masks_cancel) ... ok
+test_document_addressed_to_us_is_a_bill (test_vision.Dates.test_document_addressed_to_us_is_a_bill) ... ok
+test_written_dates_become_iso_and_ambiguous_ones_are_flagged (test_vision.Dates.test_written_dates_become_iso_and_ambiguous_ones_are_flagged) ... ok
+test_drafts_and_injection_written_on_the_photo (test_vision.Vision.test_drafts_and_injection_written_on_the_photo) ... ok
+test_hostile_or_invalid_files_never_reach_the_model (test_vision.Vision.test_hostile_or_invalid_files_never_reach_the_model) ... ok
+test_photo_is_downscaled_and_metadata_removed (test_vision.Vision.test_photo_is_downscaled_and_metadata_removed) ... ok
+test_unreadable_output_is_a_clear_error (test_vision.Vision.test_unreadable_output_is_a_clear_error) ... ok
+
+----------------------------------------------------------------------
+Ran 97 tests in 34.609s
+
+OK

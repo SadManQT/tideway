@@ -328,25 +328,37 @@ def payee_checks(bills, verified_accounts=None):
     """Bank-detail changes and look-alike payee names (business-email-compromise signals)."""
     verified_accounts = dict(verified_accounts or {})
     history = defaultdict(Counter)
+    display_names = {}
     for row in bills:
         if row["status"] == "paid" and row.get("payee_account"):
-            history[row["payee"]][row["payee_account"]] += 1
-    known = {payee: counts.most_common(1)[0][0] for payee, counts in history.items()}
+            identity = row["payee"].casefold()
+            display_names.setdefault(identity, row["payee"])
+            history[identity][row["payee_account"]] += 1
+    known = {display_names[identity]: counts.most_common(1)[0][0] for identity, counts in history.items()}
     known.update({payee: account for payee, account in verified_accounts.items() if account})
+    # A capitalisation change must not turn an established supplier into an
+    # unknown payee and bypass the changed-bank-account check. Aggregate its
+    # paid history under the same case-insensitive identity; callback-verified
+    # accounts override that history under the same identity too.
+    known_by_identity = {identity: counts.most_common(1)[0][0] for identity, counts in history.items()}
+    verified_by_identity = {payee.casefold(): account for payee, account in verified_accounts.items() if account}
+    known_by_identity.update(verified_by_identity)
     established = sorted({row["payee"] for row in bills if row["status"] == "paid"})
+    established_identities = {payee.casefold() for payee in established}
     flagged, lookalikes = [], []
     for row in bills:
         if row["status"] not in ("open", "scheduled", "rescheduled"):
             continue
-        reference = known.get(row["payee"])
+        identity = row["payee"].casefold()
+        reference = known_by_identity.get(identity)
         if row.get("payee_account") and reference and reference != row["payee_account"]:
             flagged.append({"bill_id": row["id"], "payee": row["payee"],
                             "expected_account": mask_account(reference), "new_account": mask_account(row["payee_account"]),
                             "account": row["payee_account"],
                             "reason": "Bank details differ from the account used or verified before. Verify by calling "
                                       "a number already on file before any action."})
-        cleared = bool(row.get("payee_account")) and verified_accounts.get(row["payee"]) == row["payee_account"]
-        if row["payee"] not in established and not cleared:
+        cleared = bool(row.get("payee_account")) and verified_by_identity.get(identity) == row["payee_account"]
+        if identity not in established_identities and not cleared:
             for name in established:
                 ratio = difflib.SequenceMatcher(None, row["payee"].casefold(), name.casefold()).ratio()
                 if 0.85 <= ratio < 1:

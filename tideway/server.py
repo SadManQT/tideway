@@ -24,8 +24,10 @@ from .vision import TideVision, TideVisionUnavailable
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = {"/": "index.html", "/index.html": "index.html", "/styles.css": "styles.css", "/app.js": "app.js",
           "/favicon.svg": "favicon.svg", "/guide": "guide.html", "/guide.html": "guide.html",
-          "/guide.css": "guide.css", "/guide.js": "guide.js"}
-CONTENT_TYPES = {"html": "text/html", "css": "text/css", "js": "text/javascript", "svg": "image/svg+xml"}
+          "/guide.css": "guide.css", "/guide.js": "guide.js",
+          "/benchmarks/tidepay.json": "../evidence/upgrade-v1/tidepay/report.json",
+          "/benchmarks/tidepay-reliability.svg": "../evidence/upgrade-v1/tidepay/reliability.svg"}
+CONTENT_TYPES = {"html": "text/html", "css": "text/css", "js": "text/javascript", "svg": "image/svg+xml", "json": "application/json"}
 COOKIE = "tideway_session"
 
 
@@ -207,6 +209,13 @@ class Application:
             self.fields(body, ("business_id", "target_date"), ("business_id",))
             self.require(operator, "owner", "accountant")
             return self.agent.rescue_run(business_id, body.get("target_date"), "agent:local")
+        if path == "/api/demo/payment-delay":
+            self.fields(body, ("business_id", "invoice_id", "collection_date", "expected_snapshot", "request_id", "pin", "target_date"),
+                        ("business_id", "invoice_id", "collection_date", "expected_snapshot", "request_id", "pin"))
+            self.require(operator, "owner")
+            return self.tideway.apply_demo_delay(business_id, body["invoice_id"], body["collection_date"],
+                                                body["expected_snapshot"], body["request_id"], operator,
+                                                body["pin"], actor, body.get("target_date"))
         if path == "/api/chat":
             self.fields(body, ("business_id", "target_date", "message", "history", "consent"), ("business_id", "message"))
             history = body.get("history", [])

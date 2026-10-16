@@ -1,0 +1,36 @@
+{
+  "checked_at_utc": "2026-10-15T19:47:29+00:00",
+  "commands": [
+    "python3 scripts/evaluate_tidepay_v2.py",
+    "python3 scripts/evaluate_tidepay_v2.py --out /tmp/tidepay-v2-reproduction",
+    "python3 -m unittest discover -s tests -p 'test_tidepay*.py' -v"
+  ],
+  "focused_tests": {
+    "run": 12,
+    "failures": 0,
+    "skips": 0
+  },
+  "independent_rerun": {
+    "exact_deterministic_artifacts": [
+      "config.json",
+      "split_manifest.csv",
+      "predictions.csv",
+      "reliability.csv",
+      "reliability.svg",
+      "federated_model.json",
+      "per_business.csv",
+      "report.md"
+    ],
+    "test_validation_metrics_intervals_and_provenance_identical": true
+  },
+  "plot_qa": {
+    "rendered_with": "Google Chrome headless, 1240x900",
+    "visual_inspection": "All five panels, title, axes, sample-count labels and footer legible; no overlap after spacing correction.",
+    "standalone_artifact": "reliability.svg"
+  },
+  "historical_preserved": [
+    "evidence/ml/tidepay_report.json",
+    "evidence/ml/tidepay_report.md",
+    "tideway/ml/tidepay_model.json"
+  ]
+}

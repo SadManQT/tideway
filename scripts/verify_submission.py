@@ -16,12 +16,14 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 
-def source_digest():
-    paths = [ROOT / "run.py"]
+def source_digest(source_root=None):
+    """Hash runtime/test sources, optionally in an extracted release tree."""
+    root = Path(source_root) if source_root is not None else ROOT
+    paths = [root / "run.py"]
     for folder in ("tideway", "tests", "web", "scripts"):
-        paths.extend(p for p in (ROOT / folder).rglob("*") if p.suffix in (".py", ".js", ".mjs", ".css", ".html", ".json")
+        paths.extend(p for p in (root / folder).rglob("*") if p.suffix in (".py", ".js", ".mjs", ".css", ".html", ".json")
                      and "__pycache__" not in p.parts)
-    hashes = {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(paths)}
+    hashes = {p.relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(paths)}
     return hashlib.sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest(), hashes
 
 

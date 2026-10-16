@@ -95,3 +95,20 @@ python scripts/build_submission_pdfs.py
 Use `python3` where that is the interpreter command. Browser/PDF tooling needs
 Node 22+ and installed Chrome/Edge. Set `CHROME` for another Chromium executable.
 `make` is optional. Runtime setup requires neither Node nor a browser driver.
+
+## Contest upgrade verification
+
+The new evaluation and linked demo commands use only the Python standard library:
+
+```
+python3 scripts/evaluate_tidepay_v2.py
+python3 scripts/evaluate_upgrade_scenarios.py
+python3 scripts/smoke_reasoning.py
+python3 scripts/demo_payment_delay.py
+node scripts/capture_screens.mjs --test-payment-delay --out tmp/delay-browser
+python3 scripts/verify_package.py
+```
+
+Use `python` instead of `python3` where appropriate. The smoke command records actual model availability; it does not download weights or substitute another model. Current Mac arm64 checks used Python 3.14.7. The repository pins Python 3.11.11; this upgrade did not run Docker or another OS/device.
+
+Optional photo/PDF visual QA can use an isolated environment (`python3 -m venv tmp/upgrade-venv`) and `requirements-evaluation.txt`. These dependencies are not needed for runtime. Tests on the base interpreter skip the four optional Pillow image tests; use an environment with Pillow to exercise them. Never infer post-change real model success from injected-output tests or optional-package installation.

@@ -1,0 +1,50 @@
+{
+  "schema_version": "tideway-reasoning-v2",
+  "generated_at_utc": "2026-10-15T19:57:04.294858+00:00",
+  "machine": {
+    "platform": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.14.7",
+    "logical_cpus": 10,
+    "dependencies": {
+      "mlx": null,
+      "mlx-lm": null,
+      "huggingface-hub": null
+    },
+    "base_revision": "fb7961689bb9dc5a03bc52939999ade82966658d",
+    "working_tree_changes": "Source hashes identify this run; base revision alone is not the edited tree.",
+    "source_sha256": {
+      "tideway/tidelm.py": "3e05835e6570a31bb709c42dfebe868e75509f79b735d2724f68c7935a8a11b3",
+      "tideway/copilot.py": "a0e84544ed2d56ed11657cbf287785ad8620ff213f0a2e9f60f275d95e7d2dc1",
+      "tideway/local_model.py": "c133757192e175c7c91e4dcf83e06adf0e160a7d3ed28526fa241f101ded100f",
+      "tideway/agent.py": "260876021a2a33b32ad4447347b6c00f49880377c3ae6831ef01a2117a08849b",
+      "scripts/smoke_reasoning.py": "42739f21d4e9efc1c7daeac6d66a64fb6b982fa1b2b72131211496e514488aac"
+    }
+  },
+  "kind": "real installed model smoke",
+  "real_model_inference": false,
+  "model_status": {
+    "available": false,
+    "loaded": false,
+    "model": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+    "adapter": "models/tidelm-adapter",
+    "adapter_sha256": {},
+    "released_v2_adapter": false,
+    "backend": "mlx",
+    "label": "TideLM · adapter missing or unverified",
+    "reason": "Install mlx-lm (Apple Silicon)."
+  },
+  "requested_identity": {
+    "base_model": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+    "adapter_path": "models/tidelm-adapter",
+    "adapter_release": "tidelm-v2"
+  },
+  "adapter_files": {},
+  "downloads_allowed": false,
+  "successful": false,
+  "answers": [],
+  "outcome": "device_verification_outstanding",
+  "reason": "Install mlx-lm (Apple Silicon).",
+  "real_requests_attempted": 0,
+  "limitation": "No real model inference was run. Injected-output tests are a separate evidence file."
+}

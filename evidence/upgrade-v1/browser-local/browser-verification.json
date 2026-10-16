@@ -1,0 +1,40 @@
+{
+  "run_at": "2026-10-15T19:58:14.434Z",
+  "passed": true,
+  "browser": "Chrome/155.0.8059.40",
+  "source_tree_sha256": "371d54d47dc4a1a5e29ef76b215681ce1444ea6adb26d9e98f5ad19a7f92e1cb",
+  "viewport": {
+    "desktop": [
+      1440,
+      900
+    ],
+    "mobile": [
+      375,
+      812
+    ]
+  },
+  "page_errors": [],
+  "tidelm_available": true,
+  "test_only_local_backend": true,
+  "linked_payment_delay": false,
+  "model_inference_tested": false,
+  "coverage": [
+    "landing",
+    "cash projection",
+    "dual approval",
+    "negotiation",
+    "execution and read-back",
+    "assistant fallback",
+    "what-if",
+    "audit tamper drill",
+    "international fixtures",
+    "fraud blocks",
+    "security self-test",
+    "mobile overflow",
+    "signup",
+    "invite",
+    "viewer isolation",
+    "public guide routes and assets"
+  ],
+  "fixture": "fresh synthetic database; no real money or external provider"
+}

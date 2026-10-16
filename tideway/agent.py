@@ -56,7 +56,10 @@ def request_openai(payload, key):
                                      method="POST")
     try:
         with urllib.request.urlopen(request, timeout=40) as response:
-            return json.load(response)
+            raw = response.read(262145)
+            if len(raw) > 262144:
+                raise ProviderError("The AI response exceeded the 256 KiB limit.")
+            return json.loads(raw)
     except urllib.error.HTTPError as exc:
         raise ProviderError(f"AI service returned HTTP {exc.code}. Check the server-side key, model access and quota.") from None
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError):
@@ -302,7 +305,8 @@ class Agent:
         self.store.audit(business_id, "agent.run", actor, "agent_read",
                          {"steps": [{key: item.get(key) for key in ("step", "tool", "status")} for item in steps],
                           "plan_id": plan["plan_id"] if plan else None})
-        return {"mode": "local", "steps": steps, "plan_id": plan["plan_id"] if plan else None,
+        return {"mode": "local", "mode_label": "Deterministic rescue workflow (no model inference)",
+                "steps": steps, "plan_id": plan["plan_id"] if plan else None,
                 "delegated_receipts": delegated, "trace": trace}
 
     # ---- chat -----------------------------------------------------------------
@@ -378,10 +382,10 @@ class Agent:
             days = re.search(r"(\d{1,3})\s*-?\s*(?:days?|din)\b", text)
             amounts = [float(n.replace(",", "")) * (1000 if k else 1) for n, k in re.findall(r"(\d[\d,]*(?:\.\d+)?)\s*(k)?\b", text)
                        if not days or n != days.group(1)]
-            if not amounts:
+            if not amounts or not days:
                 answer = f"How much would {named} buy on credit, and for how many days? For example: \"{named}, 20,000 on 30 days\"."
             else:
-                check = copilot.credit_check(self.app, business_id, named, max(amounts), int(days.group(1)) if days else 30, target_date)
+                check = copilot.credit_check(self.app, business_id, named, max(amounts), int(days.group(1)), target_date)
                 trace.append({"tool": "credit_check", "permission": "agent_read"})
                 answer = copilot.reply_from_results([{"tool": "credit_check", "result": check}], currency)
             topic = "credit"
@@ -408,7 +412,11 @@ class Agent:
                 answer = "Viewers can read forecasts and risk, but only an owner or accountant can ask me to build a plan."
             else:
                 plan = self.tool("compare_plans", business_id, target, actor, trace)
-                answer, topic = plan["explanation"] + " The proposal is waiting for a human approval.", "plan"
+                best = plan.get("recommended")
+                suffix = (" The proposal is waiting for human approval." if best and best["feasible"] else
+                          " No safe proposal is available for approval." if plan["action_needed"] else
+                          " No recovery action is needed.")
+                answer, topic = plan["explanation"] + suffix, "plan"
         elif re.search(r"forecast|balance|cash (flow|position)|projection|lowest cash", text):
             projections = self.tool("project_cash", business_id, target, actor, trace)
             likely = projections["likely"]
@@ -420,7 +428,8 @@ class Agent:
         self.store.audit(business_id, "agent.answer", actor, "agent_read", {"mode": "local", "tools": [item["tool"] for item in trace]})
         follow = conversation.suggestions(conversation.situation(self.app, business_id, target_date), topic, focus,
                                           exclude=(message.strip(),))
-        return {"text": answer, "mode": "local", "trace": trace, "unverified_numbers": [], "suggestions": follow}
+        return {"text": answer, "mode": "local", "mode_label": "Deterministic assistant (no model inference)",
+                "model_called": False, "trace": trace, "unverified_numbers": [], "suggestions": follow}
 
     def _llm(self, business_id, target_date, message, history, actor, role="owner"):
         allowed = TOOL_NAMES if role in PLANNER_ROLES else tuple(name for name in TOOL_NAMES if name != "compare_plans")
@@ -434,10 +443,14 @@ class Agent:
         started = time.monotonic()
         try:
             for _turn in range(5):
+                if time.monotonic() - started >= 120:
+                    raise ProviderError("The 120-second answer budget was reached. Ask a narrower question.")
                 payload = {"model": self.model, "instructions": SYSTEM + f"\nScope: one business, target date {target}.",
                            "input": inputs, "tools": [item for item in TOOLS if item["name"] in allowed], "parallel_tool_calls": False, "store": False,
                            "max_output_tokens": 1500}
                 response = self.transport(payload, self.key)
+                if time.monotonic() - started >= 120:
+                    raise ProviderError("The 120-second answer budget was reached; no further tools were run.")
                 if not isinstance(response, dict) or not isinstance(response.get("output"), list):
                     raise ProviderError("The AI service returned a malformed response.")
                 pending, parts = [], []
@@ -457,6 +470,8 @@ class Agent:
                     text = "\n".join(parts).strip()
                     if not text:
                         raise ProviderError("The AI service returned no answer.")
+                    if len(text.encode()) > 16384:
+                        raise ProviderError("The AI answer exceeded the 16 KiB display limit.")
                     unverified = grounding_check(text, outputs)
                     restored = aliases.restore(text)
                     self.store.audit(business_id, "agent.answer", actor, "agent_read",

@@ -5,7 +5,7 @@
 // full demo story, fails on any page error, and writes PNGs to evidence/screens/.
 //
 //   node scripts/capture_screens.mjs [--chrome "/path/to/chrome"]
-import {spawn} from "node:child_process";
+import {spawn, spawnSync} from "node:child_process";
 import {mkdtempSync, mkdirSync, writeFileSync, rmSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join, dirname} from "node:path";
@@ -25,6 +25,7 @@ const CHROME = option("--chrome") || process.env.CHROME || [
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const errors = [];
 const testLocalBackend = process.argv.includes("--test-local-backend");
+const testPaymentDelay = process.argv.includes("--test-payment-delay");
 let modelServer;
 const modelEnvironment = {};
 if (testLocalBackend) {
@@ -123,7 +124,8 @@ try {
       message.error ? reject(new Error(`${method}: ${message.error.message}`)) : resolve(message.result);
     } else if (message.method === "Runtime.exceptionThrown") {
       errors.push(message.params.exceptionDetails.exception?.description || message.params.exceptionDetails.text);
-    } else if (message.method === "Log.entryAdded" && message.params.entry.level === "error" && !/favicon|401/.test(message.params.entry.text + (message.params.entry.url || ""))) {
+    } else if (message.method === "Log.entryAdded" && message.params.entry.level === "error" && !/favicon|401/.test(message.params.entry.text + (message.params.entry.url || ""))
+        && !(testPaymentDelay && /\/api\/mandate\/execute$/.test(message.params.entry.url || "") && /400/.test(message.params.entry.text))) {
       errors.push(message.params.entry.text);
     }
     listeners.forEach((listener) => listener(message));
@@ -172,7 +174,44 @@ try {
   await sleep(3300);
   await evaluate("document.querySelector('#approve-form').requestSubmit(), true");
   await until("!!document.querySelector('[data-action=negotiate]')", "mandate issued");
-  await click('[data-action="negotiate"]');
+  if (testPaymentDelay) {
+    await shot("19-delay-original-approved");
+    await view("whatif");
+    await evaluate(`(() => { const f = document.querySelector('#demo-delay-form'); f.elements.invoice_id.value = 'inv-shapla-bay-oct'; f.elements.collection_date.value = '2026-11-15'; f.elements.pin.value = '2468'; f.elements.confirmed.checked = true; f.requestSubmit(); return true; })()`);
+    await until("!!state.demoDelay && !!document.querySelector('[data-action=demo-stale]')", "demo delay applied");
+    await click('[data-action="demo-stale"]');
+    await until("state.demoDelay.staleResult?.includes('invalidated')", "stale authority refused");
+    await shot("20-delay-invalidated");
+    await viewport(375, 812, true);
+    await phoneCheck("demo delay", "#view");
+    await shot("21-delay-mobile");
+    await viewport(1440, 900);
+    await view("rescue");
+    await click('[data-action="run-agent"]');
+    await until("!!state.dashboard.plan && !!document.querySelector('[data-action=approve]')", "fresh rescue");
+    // Same protected APIs, PIN and typed exposure as the dialogs above; no forced consent.
+    const approveFresh = async () => {
+      const plan = await evaluate("state.dashboard.plan");
+      const bundle = plan.bundles.find(item => item.feasible);
+      if (!bundle) throw new Error("The delayed ledger has no safe fresh proposal");
+      for (const [who, pin] of [["imran", "1357"], ["nadia", "2468"]]) {
+        await loginAs(who, pin);
+        const result = await evaluate(`(async () => { const c = await (await fetch('/api/config')).json(); const r = await fetch('/api/plan/approve', {method:'POST', headers:{'Content-Type':'application/json','X-Tideway-Token':c.csrf_token},body:JSON.stringify(${JSON.stringify({business_id:"shapla-services",plan_id:plan.plan_id,bundle_id:bundle.bundle_id,pin,confirm_amount_minor:bundle.exposure_minor,review_ms:9000})})}); const answer = await r.json(); if (!r.ok) throw new Error(answer.error); return answer; })()`);
+        if (result.status === "mandate_issued") break;
+      }
+      await loginAs("nadia", "2468"); await reload(); await view("rescue");
+    };
+    await approveFresh();
+    await click('[data-action="negotiate"]');
+    await until("!!document.querySelector('[data-action=counter], [data-action=execute]')", "fresh negotiation");
+    if (await evaluate("!!document.querySelector('[data-action=counter]')")) {
+      await click('[data-action="counter"]');
+      await until("!!document.querySelector('[data-action=approve]')", "counter proposal");
+      await approveFresh();
+    }
+    await shot("22-delay-fresh-approval");
+  }
+  if (await evaluate("!!document.querySelector('[data-action=negotiate]')")) await click('[data-action="negotiate"]');
   await until("!!document.querySelector('[data-action=execute]')", "counterparties accepted");
   await shot("04-signed-mandate-negotiation");
   await click('[data-action="tamper-mandate"]');
@@ -286,14 +325,30 @@ try {
   await until("!!document.querySelector('#view .metric') && document.querySelector('#operator-role').textContent === 'viewer'", "joined as viewer");
   if (await evaluate("document.querySelector('#business-select').options.length") !== 1) throw new Error("joiner sees other businesses");
 
+  // Public handbook must render without a financial session, including its assets.
+  await evaluate(`(async () => { const c = await (await fetch('/api/config')).json(); await fetch('/api/session/logout', {method:'POST',headers:{'Content-Type':'application/json','X-Tideway-Token':c.csrf_token},body:'{}'}); return true; })()`);
+  for (const route of ["/guide", "/guide.html"]) {
+    await send("Page.navigate", {url:`http://127.0.0.1:${PORT}${route}`});
+    await until("document.querySelector('#viva-count')?.textContent.includes('1,200')", "public guide question bank");
+    if (!await evaluate("getComputedStyle(document.body).backgroundColor === 'rgb(245, 239, 228)'")) throw new Error("Guide stylesheet did not load");
+  }
+  await viewport(375, 812, true);
+  await phoneCheck("public guide", "body");
+  await shot("23-guide-mobile", false);
+  await viewport(1440, 900);
+  await shot("24-guide-desktop", false);
   if (errors.length) throw new Error(`Page errors: ${errors.join(" | ")}`);
+  const sourceHash = spawnSync(process.env.PYTHON || (process.platform === "win32" ? "python" : "python3"),
+    ["-c", "from scripts.verify_submission import source_digest; print(source_digest()[0])"], {cwd:ROOT,encoding:"utf8"});
+  if (sourceHash.status !== 0) throw new Error(`Could not hash browser-tested source: ${sourceHash.stderr}`);
   writeFileSync(join(OUT, "browser-verification.json"), JSON.stringify({
-    run_at: new Date().toISOString(), passed: true, browser: version.Browser,
+    run_at: new Date().toISOString(), passed: true, browser: version.Browser, source_tree_sha256:sourceHash.stdout.trim(),
     viewport: {desktop: [1440, 900], mobile: [375, 812]}, page_errors: errors,
-    tidelm_available: tidelmAvailable, test_only_local_backend: testLocalBackend, model_inference_tested: false,
+    tidelm_available: tidelmAvailable, test_only_local_backend: testLocalBackend, linked_payment_delay: testPaymentDelay, model_inference_tested: false,
     coverage: ["landing", "cash projection", "dual approval", "negotiation", "execution and read-back",
       "assistant fallback", "what-if", "audit tamper drill", "international fixtures", "fraud blocks",
-      "security self-test", "mobile overflow", "signup", "invite", "viewer isolation"],
+      "security self-test", "mobile overflow", "signup", "invite", "viewer isolation", "public guide routes and assets",
+      ...(testPaymentDelay ? ["approved payment delay", "stale execution refusal", "fresh proposal and counter approval", "delay mobile"] : [])],
     fixture: "fresh synthetic database; no real money or external provider",
   }, null, 2) + "\n");
   console.log("Browser end-to-end check passed with no page errors.");

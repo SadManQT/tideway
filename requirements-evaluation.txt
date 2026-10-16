@@ -1,0 +1,4 @@
+# Optional photo tests and PDF visual QA only; no runtime dependency.
+Pillow==12.3.0
+pypdf==6.20.1
+PyMuPDF==1.28.2

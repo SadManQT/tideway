@@ -37,6 +37,8 @@ from .domain import (
     validate_policy,
     validate_transaction,
     validate_username,
+    valid_date,
+    days_between,
 )
 from .projection import project, summary
 
@@ -879,6 +881,81 @@ class Store:
                                       {key: result[key] for key in ("added", "duplicates_skipped", "sample_records_removed",
                                                                     "quarantined_text", "source")}))
             return result
+
+    def apply_demo_delay(self, business_id, invoice_id, collection_date, expected_snapshot, request_id, operator, pin, actor):
+        """Explicit, atomic demo-only ledger mutation; never a hypothetical what-if.
+
+        Compare-and-swap plus a durable request receipt handles races and lost
+        responses. A retry returns the original receipt without another bump.
+        """
+        if operator.get("role") != "owner":
+            raise ValidationError("Only the owner can apply a synthetic demo change.")
+        if not isinstance(request_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]{8,80}", request_id):
+            raise ValidationError("Use a request id of 8-80 letters, digits, underscores or hyphens.")
+        if not isinstance(expected_snapshot, str) or not re.fullmatch(r"[a-f0-9]{64}", expected_snapshot):
+            raise ValidationError("A current snapshot hash is required.")
+        if not isinstance(invoice_id, str):
+            raise ValidationError("Invoice id must be text.")
+        collection_date = valid_date(collection_date, "Collection date")
+        self.verify_pin(operator["id"], pin)
+        signature = json_hash({"invoice_id": invoice_id, "collection_date": collection_date,
+                               "expected_snapshot": expected_snapshot, "operator": operator["id"]})
+        key = f"demo-delay:{business_id}:{request_id}"
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            membership = db.execute("SELECT role FROM memberships WHERE business_id=? AND operator_id=?",
+                                    (business_id, operator["id"])).fetchone()
+            if not membership or membership["role"] != "owner":
+                raise ValidationError("An owner membership in this business is required.")
+            cached = db.execute("SELECT value FROM metadata WHERE key=?", (key,)).fetchone()
+            if cached:
+                saved = json.loads(cached["value"])
+                if saved["signature"] != signature:
+                    raise ValidationError("This request id was already used for another demo change.")
+                return {**saved["receipt"], "replayed": True}
+            before = self._snapshot(db, business_id)
+            if not before["business"]["synthetic"]:
+                raise ValidationError("Demo changes are restricted to synthetic demo businesses.")
+            if before["policy"]["agent_paused"]:
+                raise ValidationError("The agent is paused. The owner must resume before a demo change.")
+            if before["snapshot_hash"] != expected_snapshot:
+                raise ValidationError("Records changed. Reload before applying a demo change.")
+            invoice = next((row for row in before["records"]["invoices"] if row["id"] == invoice_id), None)
+            if not invoice or invoice["source"] != "demo" or invoice["status"] not in OPEN_INVOICE_STATUSES:
+                raise ValidationError("Select an open invoice from the synthetic demo records.")
+            if any(action.get("record_id") == invoice_id for action in before["state"]["adjustments"]):
+                raise ValidationError("This invoice already has an executed adjustment. Use a fresh demo database.")
+            if not 1 <= days_between(invoice["expected_collection_date"], collection_date) <= 60:
+                raise ValidationError("The new collection date must be 1-60 days after the current date.")
+            if days_between(before["business"]["opening_date"], collection_date) > 366:
+                raise ValidationError("The collection date must be within the supported one-year horizon.")
+            updated = validate_invoice({**invoice, "expected_collection_date": collection_date}, business_id,
+                                       before["business"]["currency"])
+            old_plans = [row[0] for row in db.execute("SELECT id FROM plans WHERE business_id=? AND status IN ('pending','approved')", (business_id,))]
+            old_mandates = [row[0] for row in db.execute(f"SELECT id FROM mandates WHERE business_id=? AND kind='bundle' AND status IN {BUNDLE_LIVE}", (business_id,))]
+            flags = sorted(set(invoice["risk_flags"]) | set(updated["risk_flags"]))
+            db.execute("UPDATE invoices SET expected_collection_date=?,risk_flags=? WHERE business_id=? AND id=?",
+                       (updated["expected_collection_date"], canonical_json(flags), business_id, invoice_id))
+            # An explicit later collection update supersedes an earlier reminder
+            # promise. Otherwise the scheduled scenario would keep the old date.
+            old_promise = before["state"]["promises"].get(invoice_id)
+            if old_promise is not None:
+                state_row = db.execute("SELECT state_json FROM sandbox_state WHERE business_id=?", (business_id,)).fetchone()
+                state_data = json.loads(state_row["state_json"])
+                state_data.get("promises", {}).pop(invoice_id, None)
+                db.execute("UPDATE sandbox_state SET state_json=? WHERE business_id=?", (canonical_json(state_data), business_id))
+            version = self._bump(db, business_id)
+            after = self._snapshot(db, business_id)
+            receipt = {"request_id": request_id, "business_id": business_id, "invoice_id": invoice_id,
+                       "customer": invoice["customer"], "old_date": invoice["expected_collection_date"],
+                       "new_date": collection_date, "before_snapshot": before["snapshot_hash"],
+                       "after_snapshot": after["snapshot_hash"], "state_version": version,
+                       "invalidated_plans": old_plans, "invalidated_mandates": old_mandates,
+                       "superseded_promise": old_promise, "replayed": False, "before": before, "after": after}
+            receipt.update(self._audit(db, business_id, "demo.payment_delay", actor, "human_approval",
+                                      {k: v for k, v in receipt.items() if k not in ("before", "after")}))
+            db.execute("INSERT INTO metadata(key,value) VALUES (?,?)", (key, canonical_json({"signature": signature, "receipt": receipt})))
+            return receipt
 
     def _bump(self, db, business_id):
         """Advance the sandbox version and invalidate anything approved earlier."""

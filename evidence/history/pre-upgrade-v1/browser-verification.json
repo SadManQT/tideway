@@ -1,0 +1,36 @@
+{
+  "run_at": "2026-10-15T18:04:33.187Z",
+  "passed": true,
+  "browser": "Chrome/155.0.8059.40",
+  "viewport": {
+    "desktop": [
+      1440,
+      900
+    ],
+    "mobile": [
+      375,
+      812
+    ]
+  },
+  "page_errors": [],
+  "tidelm_available": false,
+  "model_inference_tested": false,
+  "coverage": [
+    "landing",
+    "cash projection",
+    "dual approval",
+    "negotiation",
+    "execution and read-back",
+    "assistant fallback",
+    "what-if",
+    "audit tamper drill",
+    "international fixtures",
+    "fraud blocks",
+    "security self-test",
+    "mobile overflow",
+    "signup",
+    "invite",
+    "viewer isolation"
+  ],
+  "fixture": "fresh synthetic database; no real money or external provider"
+}

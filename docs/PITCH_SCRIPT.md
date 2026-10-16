@@ -1,43 +1,17 @@
-# Tideway: pitch script (about 9 minutes 30 seconds, limit 10)
+# Tideway presentation script (target 9 minutes, maximum 10)
 
-Slides match `slides/pitch.pdf` (13 slides; every number on them is read from `evidence/` when the deck is built). Team: The Last BrainCell, Bangladesh University of Engineering and Technology. Confirm speaker roles before presenting. Say once that all data is synthetic.
+Match the regenerated `slides/pitch.pdf`. Keep the full linked live runbook ready; use a shorter live excerpt inside the pitch and offer the full workflow during questions. No recording is included.
 
-## 1. Tideway (slide 1, 0:00–0:30)
-"Tideway helps a small business never miss payroll again. It is on-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, and acts only with the owner's approval."
+| Time | Slides / message |
+|---|---|
+| 0:00-0:40 | Title/problem: SME owners need a dated payroll decision, with authority kept outside the model. Synthetic sandbox only. |
+| 0:40-1:15 | Cash forecast: exact amounts, three scenarios and a look-ahead that exposes delayed shortfalls. |
+| 1:15-2:05 | TidePay audit: same 2,376 chronological test invoices; federated MAE 6.96 vs heuristic 7.41 and local-only 7.22 days. Pooled MAE 6.94 is slightly better. Historical prior leakage was identified, preserved and corrected in a versioned benchmark. |
+| 2:05-2:35 | TideLM: historical synthetic v2 scores do not measure the new protocol. Trace distinguishes deterministic preflight from model selection after tool results. Current hardware lacks MLX/weights, so new device inference is outstanding. |
+| 2:35-5:35 | Live excerpt: approved original plan, apply Bay payment delay, blocked stale mandate, changed fresh proposal, normal approvals and counterparty consent. Use PAYMENT_DELAY_RUNBOOK.md; show read-back if time permits. |
+| 5:35-6:35 | Security: approval/PIN/dual approval/mandate/hash/version/idempotency remain deterministic controls. Pattern screening has measured misses and false positives; do not claim complete fraud protection. |
+| 6:35-7:35 | Evidence: 24 genuinely distinct synthetic conditions, split dev/held out, separated no-action/rescue/infeasible/blocked outcomes; latency, screening and current test counts come from reports. |
+| 7:35-8:15 | Product: English default, multilingual requests, workspaces/team roles, source-linked exports; core needs only Python stdlib. |
+| 8:15-9:00 | Limits/team: simulated federation/counterparties, no real money, no user study or external audit. Confirmed five-member BUET roster; leader/roles and administrative eligibility/registration remain unconfirmed. |
 
-## 2. The moment that matters (slide 2, 0:30–1:10)
-"Small businesses get paid late and still have to pay on time, and the gap lands on payroll day. The owner needs three answers fast: will I make payroll, who will pay late, and what do I do now? And an AI that helps must never be able to move money on its own."
-
-## 3. See it coming (slide 3, 1:10–1:50)
-"Shapla Services: BDT 120,000 in the bank, BDT 80,000 payroll, a BDT 70,000 supplier bill, BDT 20,000 coming in, a BDT 20,000 reserve. The schedule says minus BDT 10,000 on 31 October. These are exact integer calculations linked to source records, shown as cash weather with 1,000 simulated futures."
-
-## 4. TidePay (slide 4, 1:50–2:40)
-"Whether a customer pays late is the uncertainty that matters, so we built our own model for it. TidePay uses a federated-averaging simulation across forty synthetic businesses. One process holds the data and demonstrates pairwise mask cancellation; we claim no production privacy guarantee. On the held-out synthetic invoices it improves on the old rule, with the largest benefit shown here for smaller clients."
-
-## 5. TideLM (slide 5, 2:40–3:40)
-"For the conversation we did not rent an API. We fine-tuned our own model, TideLM, on a laptop: Qwen3-4B with a LoRA adapter trained on our own data. On a held-out test with company names it never saw, it went from the base model's numbers to ours on the slide: plans with every argument right, intent, reading records from bank and mobile-money messages, and catching hidden instructions. It speaks eight languages and runs on the owner's computer, so their books never leave it."
-
-## 6. Plan, approve, execute (slides 6–7, 3:40–5:00)
-"An exact optimiser searches deferrals and early-payment offers, keeps only plans that hold the reserve every day with payroll funded, and explains why the cheaper option is too risky. A person approves with a PIN; big amounts need two people and a typed amount. That issues a signed, expiring mandate bound to exactly these actions. Simulated counterparties accept, counter or refuse, and execution happens once, with read-back."
-
-## 7. Live demo (5:00–7:00)
-Run the demo script highlights: landing page and demo sign-in, cash weather, ask in Chinese or Spanish, rescue and approval, Harbourline fraud blocks and the honest "no safe plan".
-
-## 8. Security (slide 9, 7:00–8:00)
-"We assume the worst: a fully hijacked model and a rubber-stamp human. The model has no approve, pay or write tool; its plans pass a typed validator; a forbidden tool trips a circuit breaker. Injection and changed-bank-details screening work in eight languages. The audit log is hash-chained with a witness. Every attack in our suite is blocked; that is evidence for those cases, not proof."
-
-## 9. A product, with evidence and honest limits (slides 10–12, 8:00–9:00)
-"It is built as a product: sign up a business in any of 29 currencies, invite your accountant with a one-time code, and see which customer could hurt your cash most. Everything is reproducible with one command. Limits: synthetic data, simulated counterparties, demo-grade keys, no user study yet. Next: consented SME pilots, a real bank rail behind the same mandate, and federated TidePay across real users."
-
-## 10. Team (slide 13, 9:00-9:30)
-Introduce The Last BrainCell and the five members listed on the slide. State each member's actual contribution after the team confirms roles.
-
-## Likely judge questions
-- **Why train your own model instead of calling an API?** Privacy (books never leave the device), cost (no per-call fee), control (a narrow, tested skill set) and measurable gains on our task; the base-vs-tuned table is in `evidence/ml/`.
-- **What if the AI is wrong?** It cannot act. Figures come from tools; plans are validated; names are resolved against the ledger; every action needs a signed mandate approved by people.
-- **Isn't 4B too small?** It only has to choose tools and fill arguments, not reason about money; the arithmetic is deterministic code.
-- **Is TidePay privacy-preserving in production?** No. It is a single-process FedAvg simulation with predictable illustrative masks and pooled scaling. A deployed protocol would need client-held secrets, secure aggregation and a separate threat-model review.
-- **Why synthetic data?** Reproducibility and attack coverage; we report no real-user results.
-- **Is the mandate AP2?** Modelled on the idea; not an implementation of the AP2 specification.
-- **Who pays?** Hypothesis: small businesses or their accountants, per seat; plans shown are illustrative.
-- **Why no real bank?** The rules accept sandbox evidence; the ISO 20022 pain.001 draft shows the adapter boundary and is never sent.
+If a model times out, say so and use the labelled fallback. If execution is refused, explain the boundary; do not call it a successful payment. Submission route and video ambiguity are team-controlled administrative items, not technical claims.
