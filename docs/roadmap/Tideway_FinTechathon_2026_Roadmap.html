@@ -11,6 +11,7 @@ th { background: #e6f2ee; } tr { break-inside: avoid; }
 .box { background: #eef6f3; border-left: 4px solid #1f8a70; padding: 6px 10px; margin: 8px 0; } .warn { background: #fff6e5; border-left-color: #d9961a; }
 code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding: 0 3px; border-radius: 3px; } ul, ol { margin: 4px 0 8px 18px; padding: 0; } a { color: #1f6b58; }
 .sub { color: #35504a; font-size: 12pt; } pre { background: #eef4f2; padding: 8px; font-size: 8pt; white-space: pre-wrap; }
+.compact { font-size: 9.6pt; line-height: 1.32; } .compact p { margin: 6px 0; } .compact th, .compact td { padding: 2px 6px; } .compact .box { margin: 5px 0; padding: 5px 8px; } .compact h3 { margin-top: 9px; } .cases { columns: 2; column-gap: 20px; break-inside: avoid; } .cases li { break-inside: avoid; }
 </style></head><body>
 
 <section class="cover">
@@ -18,11 +19,11 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <p class="sub"><strong>Research and Project Roadmap</strong><br>International Track · Preparation for a Bangladeshi student team</p>
 <p>Historical research from 12 October 2026; contest sources and project evidence rechecked on 15 October 2026 for <strong>Tideway</strong>. This report covers the competition rules, previous winners, project choice, technical design, testing, submission and final-round preparation in one place.</p>
 <div class="box"><strong>Recommendation.</strong> Choose <strong>Topic E: SME Finance Copilot</strong> and build <strong>Tideway</strong>, an approval-gated cash-flow rescue agent for small businesses. (Earlier working title: Probaho.) It finds a cash gap, plans a recovery with a risk-aware optimiser, negotiates with simulated counterparties and, after human approval and a signed mandate, completes the action inside a sandbox. There is no guarantee of winning; the aim is a tested project that matches the published judging criteria closely.</div>
-<p><strong>Current scope.</strong> The team supplied five public member names, all at BUET, in tracked <code>submission-team.public.json</code>. Leader, roles, nationality, eligibility, registration and submission route remain unconfirmed. The contest upgrades are local working changes; the full verification status belongs in <code>docs/CONTEST_UPGRADE_REPORT.md</code>. Recording is explicitly deferred.</p>
+<p><strong>Current scope.</strong> The team supplied five public member names, all at BUET, in tracked <code>submission-team.public.json</code>. Leader, roles, nationality, eligibility, registration and submission route remain unconfirmed. The contest upgrades are local working changes; the current verification status belongs in <code>docs/READINESS_CURRENT.md</code>. Recording is explicitly deferred.</p>
 <div class="box warn"><strong>Most urgent now.</strong> The deadline is <strong>20 October 2026, 21:59 Bangladesh time</strong>. Our own target is to submit by 20:00 on 19 October. Confirm registration first; registration may close early if seats fill. [S1–S3]</div>
 <h3>Contents</h3>
 <ol>
-<li>Competition and eligibility</li><li>Timeline, prizes and how to apply</li><li>What to submit and how it is judged</li><li>Previous winners and lessons</li><li>Comparing six ideas</li><li>Chosen project and the user's problem</li><li>Technical design and data</li><li>Security and permission model</li><li>Testing and evidence</li><li>Plan for 15 to 20 October</li><li>Pitch, demo and judges' questions</li><li>Final preparation and cost</li><li>Submission checklist and open questions</li><li>Sources and limits of verification</li><li>Contest upgrade: evidence and live state change</li></ol>
+<li>Competition and eligibility</li><li>Timeline, prizes and how to apply</li><li>What to submit and how it is judged</li><li>Previous winners and lessons</li><li>Comparing six ideas</li><li>Chosen project and the user's problem</li><li>Technical design and data</li><li>Security and permission model</li><li>Testing and evidence</li><li>Plan for 15 to 20 October</li><li>Pitch, demo and judges' questions</li><li>Final preparation and cost</li><li>Submission checklist and open questions</li><li>Sources and limits of verification</li><li>Contest upgrade: evidence and live state change</li><li>Current review: exact evidence and approval gaps</li></ol>
 </section>
 
 <section>
@@ -168,7 +169,7 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <p><strong>Demo dataset:</strong> three synthetic businesses (Shapla Services in BDT, Lotus Print Studio in CNY, Harbourline Traders in SGD), each with settled history and open invoices and bills, designed so each tells a different story: a payroll gap, hidden risk from customer habits, and a case with no safe plan plus planted attacks. Synthetic and real results are never mixed.</p>
 </section>
 
-<section>
+<section class="compact">
 <h2>8. Security and permission model</h2>
 <p>Security and compliance are 30% of the official rubric. The tiers and controls below are our implementation, not an organiser-published tier numbering, and not a production compliance certification.</p>
 <table><tr><th>Tier</th><th>Who</th><th>Can</th></tr>
@@ -194,7 +195,7 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <p>The security assessment contains assets and trust boundaries, the permission matrix, a threat table mapping each of the 30 self-test case ids to OWASP LLM and Agentic identifiers, known risks and residual limitations. It does not claim certification against any bank or jurisdiction.</p>
 </section>
 
-<section>
+<section class="compact">
 <h2>9. Testing and evidence</h2>
 <p>Targets below are separated from achieved results. Development data and the final holdout must be kept separate; raw evidence must exist for every number we report.</p>
 <table><tr><th>Test</th><th>Set and target</th><th>Status</th></tr>
@@ -210,7 +211,7 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <h3>Historical comparison plan and new measured evidence</h3>
 <p>The preserved narrow experiment compares one fixed deferral rule with the optimiser on 20 opening-cash perturbations (10/20 versus 12/20 feasible). The new suite has 24 independently authored business conditions; 24/24 outcome handling, including 9 executed rescues, not 24 rescues. A generic-LLM quality comparison was not run. See docs/SCENARIO_EVALUATION_V2.md.</p>
 <h3>Failure cases to cover</h3>
-<ol><li>Duplicate invoice</li><li>Missing currency</li><li>Negative opening balance</li><li>Supplier refusal or no consent</li><li>Late receivable</li><li>Payroll and reserve conflict</li><li>Invalid model output</li><li>Timeout after execution</li><li>Expired mandate</li><li>Another business's object id</li><li>Changed payee</li><li>Prompt injection in an uploaded CSV</li></ol>
+<ol class="cases"><li>Duplicate invoice</li><li>Missing currency</li><li>Negative opening balance</li><li>Supplier refusal or no consent</li><li>Late receivable</li><li>Payroll and reserve conflict</li><li>Invalid model output</li><li>Timeout after execution</li><li>Expired mandate</li><li>Another business's object id</li><li>Changed payee</li><li>Prompt injection in an uploaded CSV</li></ol>
 <h3>Evidence record and claims</h3>
 <p>Per run: case id, category, OWASP mapping, pass or fail, elapsed time and observed outcome (<code>evidence/run-log.jsonl</code>, <code>results.csv</code>); a summary in <code>verification-summary.json</code>. We do not store hidden chain-of-thought; a short rationale and source evidence suffice.</p>
 <div class="box">We may say "30 of our 30 defined sandbox cases pass", if true. We may not make broad claims from a small synthetic benchmark such as "cash flow improves 40%" or "fraud is fully stopped". If time saved is measured on a small sample, state the sample size, task and method next to the number.</div>
@@ -322,7 +323,7 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <li>S12 LangGraph workflow design documentation: <a href="https://docs.langchain.com/oss/javascript/langgraph/thinking-in-langgraph">docs.langchain.com</a></li>
 <li>S13 CMU registration form: <a href="https://drive.scmc.cmu.ac.th/s/knkpsQd5HpwJ9qj">drive.scmc.cmu.ac.th</a></li></ul>
 <h3>Confirmed facts versus recommendations</h3>
-<p>The deadline, rubric and submission list are facts from the published rules. The budget, future acceptance targets, schedule and idea scores are our proposals, not measured outcomes or organiser approval. Current implemented features and finite measured results are separated in Section 15 and the versioned evidence reports.</p>
+<p>The deadline, rubric and submission list are facts from the published rules. The budget, future acceptance targets, schedule and idea scores are our proposals, not measured outcomes or organiser approval. Current implemented features and finite measured results are separated in Sections 15 and 16 and the versioned evidence reports.</p>
 <p>The dynamic content of the main website and the full Privacy Policy could not be verified. The fields in the CMU form download were not fully verified. An older English asset contained terms from a different competition; these were not used as 2026 International Track rules. No assumption fills those gaps. A separate enterprise competition with the same name exists; its winners are not included as FinTechathon student-track winners. Selected, verifiable results for 2022 to 2025 were taken; a complete archive of every prize in every year is not claimed.</p>
 </section>
 
@@ -338,6 +339,18 @@ code { font: 8.6pt ui-monospace, Menlo, monospace; background: #eef4f2; padding:
 <h3>Live financial decision</h3>
 <p>Approve the original Shapla proposal. As Nadia, explicitly apply Bay Logistics' collection date of 15 November through the separate owner/PIN demo action; What-if stays read-only. The new snapshot invalidates old authority and a stale execution attempt is refused. The fresh proposal replaces supplier deferral with early-payment offers; Bay's 1.5% counter requires fresh approval before negotiated execution and verified read-back. Use a fresh unused database filename for each full rehearsal; never erase earlier evidence.</p>
 <h3>Remaining verification and administration</h3>
-<p>The changed model-tool runtime is bounded, traced and tested with injected outputs; MLX and weights are absent here, so post-change real-model inference remains outstanding. Python/macOS/Chrome checks do not establish Windows, Docker or another device success. Recording, eligibility, registration, route confirmation, leader/roles and reviewer access remain team-controlled. No push, publication, submission, email or video recording is included in this work.</p>
+<p>The changed model-tool runtime is bounded, traced and tested with injected outputs; native MLX inference remains outstanding. Section 16 records the later actual compatible Qwen3 Mac challenge, a separate model path. Python/macOS/Chrome checks do not establish Windows, Docker or another device success. Recording, eligibility, registration, route confirmation, leader/roles and reviewer access remain team-controlled. No push, publication, submission, email or video recording is included in this work.</p>
+</section>
+<section>
+<h2>16. Current review: exact evidence and approval gaps</h2>
+<p>Current index: <code>docs/READINESS_CURRENT.md</code>. Earlier sections describe their dated experiments. The prototype remains within synthetic SME cash-flow planning, human approval and sandbox execution. No bank, lender or real-money rail is connected.</p>
+<h3>Exact shipped TidePay artifact</h3>
+<p>Frozen weights were evaluated without fitting on 7,427 new synthetic invoices from 80 new SMEs and four seeds. Shipped-artifact MAE is 8.5585 days, versus 10.2296 for the customer-history heuristic and 11.7453 for a historical-training prior. Log loss is 1.2850 and sum Brier 0.6712. The original 2,376-record chronological audit above evaluates different weights. No-history log loss is worse than the training prior; runtime/training history-order differences are disclosed. This is synthetic evidence, not real-world accuracy.</p>
+<h3>First unseen screening and actual native Mac inference</h3>
+<p>The independent sealed screening set detected 2/24 attacks and flagged 2/24 benign messages. Payee intent detected 10/12 attacks with 4/12 benign flags; the observable callback policy handled 24/24 cases. Unrelated impostors cannot reliably be distinguished from genuine new vendors using these fields alone. A missing warning is not a trust decision.</p>
+<p>Pinned Qwen3-4B Q4_K_M with llama.cpp b11678 was provisioned and verified on macOS arm64. The first 32-request challenge handled 28 correctly, with 23/24 relevant tool/argument cases and 5/8 safe stops; all 32 produced no money execution, mandate or financial-ledger mutation. Median request latency was 1.225 seconds. Amount/term confusion, unknown-name substitution, short-name expansion and incomplete conditional recovery were retained, then addressed with separate deterministic guard regressions. Repeating known examples is not a fresh blind result. Native MLX adapter and receipt-model evaluation remain outstanding.</p>
+<h3>Approval, repayment and release</h3>
+<p>Every above-target approver must explicitly accept stored residual risk. The server binds acknowledgement to plan ID/hash, bundle, probability and target, and retains it in audit, signed mandate and receipt. Stale or altered consent is rejected. Mock financing compares arrival, fee, total repayment, APR convention and unverified eligibility, then projects through repayment so borrowing cannot hide a later shortfall.</p>
+<p><code>python3 scripts/prepare_release.py</code> verifies one frozen LF source tree, tests desktop/mobile workflows, rebuilds five PDFs, creates the local ZIP and checks fresh extraction without Git or site packages. It neither downloads models nor submits anything. An anonymous consent-aware SME study kit is ready; actual participation is zero. GitHub-hosted CI, Docker, external security review and consented user feedback remain unverified. Team administration and video remain deferred.</p>
 </section>
 </body></html>

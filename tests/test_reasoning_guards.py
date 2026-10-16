@@ -54,7 +54,8 @@ class ReasoningGuards(unittest.TestCase):
     def test_no_safe_plan_is_escalated_without_approval_claim(self):
         snapshot = self.app.store.snapshot(BUSINESS)
         excluded = copilot.customers_of(snapshot) + copilot.suppliers_of(snapshot)
-        reply = self.ask(plan("propose_plan", exclude_counterparties=excluded))
+        reply = self.ask(plan("propose_plan", exclude_counterparties=excluded),
+                         "Build a recovery proposal excluding " + ", ".join(excluded))
         self.assertEqual(reply["decision_rationale"]["outcome"], "no_safe_plan")
         self.assertFalse(reply["decision_rationale"]["human_approval_required"])
         self.assertNotIn("waiting for human approval", reply["text"])

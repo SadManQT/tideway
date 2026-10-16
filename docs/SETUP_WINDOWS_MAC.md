@@ -56,7 +56,7 @@ Post-change native MLX text and vision inference remain outstanding. The Windows
 
 ## Optional checksum-pinned demo helper
 
-`scripts/local_demo_model.py` provisions a compatible GGUF text model and a pinned llama.cpp runtime. It supports Windows x64 and macOS arm64/x64; native Mac provisioning/inference has not been run here. Use Python **3.11.11 or newer** for hardened TAR extraction on Mac. This optional requirement does not change the core app's Python 3.11+ support.
+`scripts/local_demo_model.py` provisions a compatible GGUF text model and a pinned llama.cpp runtime. It supports Windows x64 and macOS arm64/x64; native macOS arm64 provisioning and Qwen3 inference were measured in the sealed v3 challenge. Native MLX/TideLM and receipt inference remain separate. Use Python **3.11.11 or newer** for hardened TAR extraction on Mac. This optional requirement does not change the core app's Python 3.11+ support.
 
 | Profile | Exact model alias | Model download |
 |---|---|---:|
@@ -83,7 +83,7 @@ $env:TIDEWAY_LOCAL_STRUCTURED_PLANS = '1'
 python run.py
 ```
 
-macOS Terminal A (supported setup commands, not a recorded Mac result):
+macOS Terminal A (macOS arm64 helper and Qwen3 path verified; other hardware remains unverified):
 
 ```bash
 python3 scripts/local_demo_model.py --download --profile qwen3-4b --cache-dir ~/Tideway-model-cache
@@ -162,6 +162,19 @@ node scripts/capture_screens.mjs --test-payment-delay --out tmp/delay-browser
 python3 scripts/verify_package.py
 ```
 
-Use `python` on Windows and `python3` on Mac. The smoke command records actual model availability; it does not download weights or substitute another model. Mac arm64 historical checks used Python 3.14.7; the Windows checks and real compatible-model smoke used Python 3.13.7. See `evidence/test-summary.json` for the latest suite and [READINESS_UPDATE.md](READINESS_UPDATE.md) for current scope. The repository pins Python 3.11.11; Docker and that pinned interpreter were not tested locally in these runs. The [CI workflow](CI.md) is tracked and locally validated; no hosted CI execution is claimed.
+Use `python` on Windows and `python3` on Mac. The smoke command records actual model availability; it does not download weights or substitute another model. Mac arm64 historical checks used Python 3.14.7; the Windows checks and real compatible-model smoke used Python 3.13.7. See `evidence/test-summary.json` and [READINESS_CURRENT.md](READINESS_CURRENT.md) for current scope and local interpreter checks. The repository pins Python 3.11.11; Docker was not tested because its daemon was unavailable. The [CI workflow](CI.md) is tracked and locally validated; no hosted CI execution is claimed.
 
 Optional photo/PDF visual QA can use an isolated environment (`python3 -m venv tmp/upgrade-venv`) and `requirements-evaluation.txt`. These dependencies are not needed for runtime. A base interpreter without Pillow skips optional image tests; actual counts and reasons are recorded in each run. Never infer post-change real model success from injected-output tests or optional-package installation.
+
+## Current release and evidence
+
+Run `python3 scripts/prepare_release.py --checks-only` for offline checks, or
+`python3 scripts/prepare_release.py` for browsers, five PDFs, ZIP and extraction.
+Use `python` on Windows. This enforces LF source bytes and stops if files change
+during verification. It never normalizes a hash to hide line-ending differences.
+The [current readiness index](READINESS_CURRENT.md) links exact-artifact prediction
+results and the first sealed actual Mac model run (28/32, four retained misses).
+The optional compatible model remains distinct from historical MLX adapter scores.
+
+Open `/guide.html` through the running app, for example
+`http://127.0.0.1:8787/guide.html`; opening the file in Finder does not start Python.

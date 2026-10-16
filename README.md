@@ -40,7 +40,7 @@ The default runtime is offline and uses only the Python standard library. The
 repository pins the supported interpreter in `.python-version` and keeps the
 dependency lock marker in `requirements.lock`.
 
-[Tracked CI](.github/workflows/ci.yml) defines Windows/macOS/Linux Python checks, a Pillow lane, browser flows and package extraction checks. [CI.md](docs/CI.md) explains coverage and local reproduction. The workflow was validated locally; no GitHub-hosted run is claimed. See [READINESS_UPDATE.md](docs/READINESS_UPDATE.md) for the final review and remaining team-controlled items.
+[Tracked CI](.github/workflows/ci.yml) defines Windows/macOS/Linux Python checks, a Pillow lane, browser flows and package extraction checks. [CI.md](docs/CI.md) explains coverage and local reproduction. The workflow was validated locally; no GitHub-hosted run is claimed. See [READINESS_CURRENT.md](docs/READINESS_CURRENT.md) for current measured results and remaining team-controlled items.
 
 ```bash
 # Native setup (Python 3.11.11)
@@ -80,6 +80,37 @@ python3 scripts/build_submission_pdfs.py   # pitch, architecture and security PD
 
 `python3 run.py --no-demo --db data/empty.sqlite3` starts an empty workspace. Node 22+ and Google Chrome are needed only for screenshots and PDFs.
 
+## Current review improvements and one-command verification
+
+[Current readiness](docs/READINESS_CURRENT.md) is the authoritative evidence index;
+older upgrade/Windows reports retain their original scope and failures.
+The additional [Python 3.11 standard-library report](evidence/readiness-v3/python311/test-summary.json) records its exact version, source and optional photo skips.
+
+```bash
+python3 scripts/prepare_release.py --checks-only  # tests, syntax, scenarios, linked delay
+python3 scripts/prepare_release.py                # also browser, PDFs, ZIP, extraction
+```
+
+The complete command needs Node 22+ and Chrome/Edge, checks one frozen LF source
+tree and does not download models or call a cloud provider. Its ZIP is
+`dist/Tideway-submission.zip`; inspect `dist/extraction-verification.json` and
+`dist/SHA256SUMS.txt`. Use `--reuse-pdfs` to retain PDFs already visually reviewed.
+
+The exact shipped TidePay weights now have an [unseen synthetic evaluation](docs/DEPLOYED_MODEL_EVALUATION.md).
+Mock funding comparisons include total repayment, arrival timing, unverified
+eligibility and reserve/payroll pressure through repayment. Above-target plans
+require each approver to acknowledge the exact remaining risk; the server binds
+that consent to the plan and retains it in the signed mandate and receipt.
+
+A [sealed native macOS model challenge](docs/BLIND_EVALUATION.md) initially handled
+28/32 requests correctly with no financial executions. Three amount/entity
+failures prompted separate guard regressions; the original failures remain.
+The subsequent [disclosed regression](evidence/readiness-v3/blind/model-post-fix-regression.json) handled 32/32; this is not a new blind score.
+A separate [real-model browser run](evidence/readiness-v3/browser-real/browser-verification.json) verifies risk answers, payment refusal and unchanged financial state on the current source.
+Instruction screening detected only 2/24 unfamiliar attacks and flagged 2/24
+benign messages. Structural permissions remain essential. No real-user feedback
+has been fabricated: use the [consented SME study kit](docs/USER_STUDY_KIT.md).
+
 ## Contest upgrade and reproducible evidence
 
 The linked demo now applies a real delay to a synthetic invoice, invalidates the old approvals, and requires a fresh proposal and approval before execution. The normal What-if sliders remain read-only. Follow [the live runbook](docs/PAYMENT_DELAY_RUNBOOK.md).
@@ -94,7 +125,7 @@ node scripts/capture_screens.mjs --test-payment-delay --out tmp/delay-browser
 
 The [audited TidePay benchmark](docs/TIDEPAY_EVALUATION_V2.md) uses 2,376 identical chronological test invoices: simulated federation MAE 6.9568 days versus heuristic 7.4107 and local-only 7.2152. Pooled training is slightly better on MAE (6.9448). Training statistics and labels are available before the cutoffs; calibration bins, class balance, per-business results and uncertainty are saved. A historical prior used test-label statistics; its original report is preserved and clearly separated. The audit benchmark does not replace the shipped model or establish real-world accuracy or cryptographic privacy.
 
-The [scenario evaluation](docs/SCENARIO_EVALUATION_V2.md) covers 24 distinct conditions, with development and held-out sets, workflow outcomes, latency, false positives and retained misses. [The model runtime notes](docs/MODEL_REASONING_V2.md) distinguish model-selected calls from deterministic preflight and fallback. Real Windows inference with the optional Qwen3 4B compatible model matched [6/6 authored smoke requests](evidence/readiness-v2/model/qwen3-final-smoke.json) and [12/12 expanded authored requests](evidence/readiness-v2/model/qwen3-final-expanded.json), with structured plans explicitly enabled. These overlapping smoke sets are not an accuracy benchmark. Earlier compact-model failures and the 4B model's initial 5/6 result are retained. Post-change Apple Silicon TideLM and vision inference remain outstanding; injected outputs are containment tests only.
+The [scenario evaluation](docs/SCENARIO_EVALUATION_V2.md) covers 24 distinct conditions, with development and held-out sets, workflow outcomes, latency, false positives and retained misses. [The model runtime notes](docs/MODEL_REASONING_V2.md) distinguish model-selected calls from deterministic preflight and fallback. Real Windows inference with the optional Qwen3 4B compatible model matched [6/6 authored smoke requests](evidence/readiness-v2/model/qwen3-final-smoke.json) and [12/12 expanded authored requests](evidence/readiness-v2/model/qwen3-final-expanded.json), with structured plans explicitly enabled. These overlapping smoke sets are not an accuracy benchmark. Earlier compact-model failures and the 4B model's initial 5/6 result are retained. These Windows runs are historical. The current sealed macOS compatible-model observation is linked above. Native MLX/TideLM and vision inference remain outstanding; injected outputs are containment tests only.
 
 The confirmed public roster is tracked in `submission-team.public.json`; roles and leader remain blank. The local submission builder excludes private team metadata, keys, data and caches, and the [package verifier](scripts/verify_package.py) checks fresh extraction without Git or site packages. Recording is deferred. Registration, eligibility, organiser route and reviewer access remain separate team-controlled steps; see [checked sources](docs/CONTEST_SOURCES_CHECKED.md).
 
@@ -103,13 +134,13 @@ The confirmed public roster is tracked in `submission-team.public.json`; roles a
 1. **Sees the gap.** Exact integer minor-unit cash projection with three scenarios (scheduled, likely, stress) and a 14-day look-ahead so a deferral cannot hide a problem just beyond the target date.
 2. **Predicts when each invoice will really be paid.** TidePay, Tideway's own model (below), gives every open invoice a probability for each lateness band. The likely and stress scenarios and the Monte Carlo use it; credibility-weighted customer profiles remain as the explainable fallback.
 3. **Quantifies risk.** A seeded Monte Carlo (1,000 runs; the same records and seed give the same answer) estimates the chance of breaching the reserve floor and is shown as a "cash weather" read-out.
-4. **Optimises.** An exact search over supplier deferrals, early-payment discounts and zero-cash reminders finds a feasible bundle and re-checks candidates with Monte Carlo. Residual risk is displayed when a bundle misses the 10% simulated-risk target; feasibility does not guarantee payroll or customer payment. Early-payment discounts are priced as an annual rate (2% for 20 days is about 37% APR).
+4. **Optimises.** An exact search over supplier deferrals, early-payment discounts and zero-cash reminders finds a feasible bundle and re-checks candidates with Monte Carlo. Residual risk is displayed and server-bound acknowledgement is required when a bundle misses the 10% simulated-risk target; feasibility does not guarantee payroll or customer payment. Early-payment discounts are priced as an annual rate (2% for 20 days is about 37% APR).
 5. **Negotiates.** Simulated suppliers and customers answer each request with accept, counter-offer or reject. A counter becomes a new proposal that needs fresh approval; a refusal triggers a re-plan without that counterparty.
 6. **Authorises like a bank.** Maker-checker approval with PIN step-up; high-value bundles need two people (including the owner) and a typed exposure amount. Approval issues an **HMAC-signed mandate** (modelled on the AP2 mandate idea: verifiable, scoped, expiring), bound to the exact actions, snapshot, policy and expiry.
 7. **Executes once, verifiably.** Idempotent execution against the sandbox, state hashes before and after, and a read-back check.
 8. **Stays stoppable.** A kill switch pauses the agent (only the owner resumes, with a reason). A circuit breaker pauses it automatically after repeated security denials.
-9. **Resists fraud.** Changed bank details and look-alike payee names block every action on the bill. Only flagged payees can be verified: by the owner, by callback to a number on file. Whoever verified a payee cannot be the only approver of actions for it (separation of duties).
-10. **Quarantines injection.** Hidden Unicode is stripped and flagged; instruction-like text already in ledger records is quarantined as data and excluded from planning/model context. Inbox text is intentionally read by the on-device extractor, but its deterministic scan, draft-only workflow and confirmation step keep it from becoming an instruction or an action.
+9. **Reviews fraud signals.** Changed bank details and look-alike payee names block every action on the bill. Only flagged payees can be verified: by the owner, by callback to a number on file. Whoever verified a payee cannot be the only approver of actions for it (separation of duties).
+10. **Separates message text from authority.** Flagged stored text is quarantined; unknown instructions can be missed. A fresh challenge detected only 2/24 attacks. Inbox extraction is draft-only, and every field needs human review. No text or model output can approve or execute a payment.
 11. **Optional cloud LLM mode.** Off by default; TideLM (below) is the on-device default. With a key and per-message consent, counterparty names are pseudonymised, record free text is never sent, and every number in the answer is checked against tool output (ungrounded numbers are flagged).
 12. **Proves what happened.** A hash-chained audit log with an independent witness checkpoint (truncation is detected), and a one-click tamper drill.
 13. **Dials autonomy.** Advise, Propose or Delegate. Under Delegate, a standing mandate lets the agent send zero-cash reminders only, capped per day. Moving money is never delegated.
@@ -122,11 +153,11 @@ The confirmed public roster is tracked in `submission-team.public.json`; roles a
 
 ## Tideway's own AI (trained here, runs on-device)
 
-Tideway does not depend on a third-party AI API. TidePay is trained here on synthetic data. TideLM is our LoRA adapter on the third-party Qwen3 base model. Optional TideVision uses a third-party Qwen2.5-VL model without a Tideway fine-tune. The evaluated MLX adapter requires Apple Silicon. Windows, Linux and macOS can use the deterministic assistant or an explicitly configured local compatible model server, labelled unbenchmarked. The helper provisions pinned Windows/macOS binaries; its native Mac path has not been run here. The initial optional model download needs internet access; cached inference is local. Compatible-model smoke results do not inherit the MLX adapter's historical scores.
+Tideway does not depend on a third-party AI API. TidePay is trained here on synthetic data. TideLM is our LoRA adapter on the third-party Qwen3 base model. Optional TideVision uses a third-party Qwen2.5-VL model without a Tideway fine-tune. The evaluated MLX adapter requires Apple Silicon. Windows, Linux and macOS can use the deterministic assistant or an explicitly configured local compatible model server, labelled unbenchmarked. The pinned Qwen3 helper was provisioned and exercised on macOS arm64; the released MLX adapter and receipt model remain separate, unverified device paths. The initial optional model download needs internet access; cached inference is local. Compatible-model smoke results do not inherit the MLX adapter's historical scores.
 
 | Model | What it does | How it is trained | Evidence |
 |---|---|---|---|
-| **TidePay** | Probability that an open invoice is paid on time, 1-7, 8-15, 16-30 or 30+ days late | Pure-Python softmax trained with **federated learning** (FedAvg) across 40 synthetic SMEs, in a single-process simulation with illustrative pairwise masks. This experiment does not provide a deployed privacy guarantee | [Chronological audit v2](evidence/upgrade-v1/tidepay/report.md): MAE 6.9568 vs heuristic 7.4107, log loss 1.0727 vs 1.5688, sum Brier 0.5777 vs 0.7905 on 2,376 records; older production-model experiment retained separately |
+| **TidePay** | Probability that an open invoice is paid on time, 1-7, 8-15, 16-30 or 30+ days late | Pure-Python softmax trained with **federated learning** (FedAvg) across 40 synthetic SMEs, in a single-process simulation with illustrative pairwise masks. This experiment does not provide a deployed privacy guarantee | [Exact shipped artifact](docs/DEPLOYED_MODEL_EVALUATION.md): 7,427 unseen synthetic invoices, MAE 8.5585 vs heuristic 10.2296, log loss 1.2850, sum Brier 0.6712; no-history weakness disclosed. Earlier chronological audit is a separate artifact |
 | **TideLM** | (1) Turns an owner's message in English, Chinese, Spanish, Indonesian/Malay, French, Portuguese, Hinglish or Banglish into a typed tool plan; (2) turns pasted bank, card and mobile-money alerts (M-Pesa, UPI, WeChat Pay, Alipay, PayNow, DuitNow, GCash, Pix, SEPA, Faster Payments, Wise, bKash) and chat messages into draft records and flags injection | LoRA fine-tune of Qwen3-4B-Instruct (4-bit) with MLX on Apple Silicon, on 4,500 generated multilingual examples (500 validation); the 500 test examples use counterparty names never seen in training | [tidelm_report.md](evidence/ml/tidelm_report.md) (v2, eight languages): exact plans 26.7% → **96.7%**, intent 20% → **99%**, extraction F1 0.83 → **0.969**, injection flags 91.5% → **98.5%**, ~2.8 s per answer |
 
 The language model cannot approve or execute money actions or save extracted records. Its plan passes a validator (known tools, typed arguments, names resolved against the ledger, read/propose tools only); a forbidden tool counts toward the circuit breaker. Replies are written by code from tool output, so every number comes from Tideway. Extracted records are drafts until a person confirms them. Deterministic screening adds warning signals but can miss attacks; the permission boundary does not depend on detection.

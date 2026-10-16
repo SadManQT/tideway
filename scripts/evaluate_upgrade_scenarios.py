@@ -96,10 +96,14 @@ def _cash_metrics(app, business_id, seed):
 def _approve(app, business_id, plan):
     bundle = plan["bundles"][0]
     approvals = []
+    risk_terms = app.store.risk_acknowledgement_terms(plan, bundle)
+    # Synthetic evaluator operators accept only this exact computed proposal's
+    # residual risk. Their consent is scripted and is labelled as such in evidence.
+    acknowledgement = {"acknowledged": True, **risk_terms} if risk_terms else None
     for operator_id, pin in (("eval-accountant", "374296"), ("eval-owner", "893741")):
         operator = app.store.verify_pin(operator_id, pin)
         result = app.store.approve(business_id, plan["plan_id"], bundle["bundle_id"], operator, pin,
-                                   actor="operator:" + operator_id, review_ms=9000)
+                                   actor="operator:" + operator_id, review_ms=9000, risk_acknowledgement=acknowledgement)
         approvals.append(operator_id)
         if result["status"] == "mandate_issued":
             return result["mandate"], approvals
@@ -162,7 +166,9 @@ def run_case(case, defaults):
                     break
                 mandate, approvers = _approve(app, business_id, plan)
                 row["trace"].append({"step": "human_approval", "attempt": attempt + 1, "approvers": approvers,
-                                     "dual_required": best["dual_approval_required"]})
+                                     "dual_required": best["dual_approval_required"], "risk": mandate["risk"],
+                                     "scripted_risk_acknowledged_by": [entry["operator_id"] for entry in mandate["approvals"]
+                                                                        if entry.get("risk_acknowledgement")]})
                 negotiation = app.negotiate(business_id, mandate["mandate_id"], "agent:scenario-evaluation")
                 row["trace"].append({"step": "simulated_negotiation", "status": negotiation["status"],
                                      "replies": [item["response"]["status"] for item in negotiation.get("replies", [])]})

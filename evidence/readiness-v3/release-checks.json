@@ -1,0 +1,30 @@
+{
+  "run_at_utc": "2026-10-16T06:11:33+00:00",
+  "source_tree_sha256": "c341c86f3299e17e622ce4a2a10e78762b6a76f30e9f85772dd36006ba6b460f",
+  "stages_passed": [
+    "Python compile",
+    "JavaScript syntax",
+    "Unit suite",
+    "Sandbox task and attack scorecard",
+    "Distinct financial scenarios",
+    "Payment delay and fresh approvals",
+    "Browser desktop/mobile and delay",
+    "Injected local-model integration",
+    "Current readiness index",
+    "PDF deliverables"
+  ],
+  "pdfs_rebuilt": true,
+  "visual_review_automated": false,
+  "pdf_sha256": {
+    "slides/pitch.pdf": "695dcdd2708ca4f6696f2076ed72bff674ae6c644bb3cf02fc8833f97e5dc8bc",
+    "docs/architecture.pdf": "84b53859133995f6afa5a47552d817b79046cc501edd9cda30c4050d5930e390",
+    "docs/security-assessment.pdf": "9555703e47c3e469b0ee7e83be74f27e0a15ff0d30109a97bd9ca5195b6e8543",
+    "docs/submission-notes.pdf": "202460253cfc383bb9a0ed4bc84abb195e714138fd8bbd6a813dd5025eded0d2",
+    "docs/Tideway_FinTechathon_2026_Roadmap.pdf": "928170e1fc7cda7633e0e3fb169472a565712ff2dddda536c6036d7e27fe92d2"
+  },
+  "scope": "Local synthetic checks; no hosted CI, model-quality rerun, SME participation or submission implied.",
+  "finalized_at_utc": "2026-10-16T06:17:36+00:00",
+  "pdf_visual_review": "evidence/readiness-v3/pdf-visual-review.json",
+  "final_pdf_refresh_note": "Technical documentation expanded and roadmap pagination polished after the complete pipeline; current hashes describe visually reviewed outputs.",
+  "actual_model_browser": "evidence/readiness-v3/browser-real/browser-verification.json"
+}

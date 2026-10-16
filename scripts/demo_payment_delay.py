@@ -32,10 +32,14 @@ def rehearse(db=":memory:"):
     def approve(plan):
         bundle = next(b for b in plan["bundles"] if b["feasible"])
         assert bundle["feasible"], "No safe recommendation: the demo cannot execute."
+        risk_terms = app.store.risk_acknowledgement_terms(plan, bundle)
+        # Scripted synthetic humans explicitly acknowledge the computed residual
+        # risk; this is rehearsal evidence, never a claim of real user consent.
+        risk_consent = {"risk_acknowledgement": {"acknowledged": True, **risk_terms}} if risk_terms else {}
         result = None
         for who, pin in (("imran", "1357"), ("nadia", "2468")):
             result = post("/api/plan/approve", {"plan_id": plan["plan_id"], "bundle_id": bundle["bundle_id"],
-                          "pin": pin, "confirm_amount_minor": bundle["exposure_minor"], "review_ms": 9000}, who)
+                          "pin": pin, "confirm_amount_minor": bundle["exposure_minor"], "review_ms": 9000, **risk_consent}, who)
             if result["status"] == "mandate_issued":
                 return result["mandate"]
         raise AssertionError("Ordinary approvals did not issue a mandate")

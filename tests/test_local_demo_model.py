@@ -175,7 +175,7 @@ class RuntimeArchives(unittest.TestCase):
 class ProfileSelection(unittest.TestCase):
     def test_explicit_cache_and_profile_control_verified_file_and_server_alias(self):
         with tempfile.TemporaryDirectory() as directory:
-            cache = Path(directory) / 'explicit-cache'
+            cache = Path(directory).resolve() / 'explicit-cache'
             cache.mkdir()
             runtime_bytes, model_bytes = b'pinned-runtime', b'pinned-larger-profile'
             (cache / 'runtime.zip').write_bytes(runtime_bytes)

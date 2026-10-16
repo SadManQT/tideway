@@ -1,3 +1,5 @@
+> Historical report for an earlier source version. See [READINESS_CURRENT.md](READINESS_CURRENT.md) for current evidence and remaining gaps.
+
 # Competition readiness follow-up - 16 October 2026
 
 Tideway remains a synthetic Topic E prototype. No bank, real counterparty or payment

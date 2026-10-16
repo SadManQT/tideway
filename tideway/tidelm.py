@@ -66,6 +66,73 @@ Every call uses the exact envelope {"tool":"tool_name","args":{}}. Each tool acc
 """
 
 
+def _named_request_arguments(call):
+    """Names that narrow or change the user's requested financial scenario."""
+    args, tool = call.get("args", {}), call["tool"]
+    if tool in ("credit_check", "customer_report"):
+        return [args["customer"]] if args.get("customer") else []
+    if tool == "what_if":
+        return list((args.get("customer_delays") or {}).keys()) + ([args["drop_invoice_customer"]]
+               if args.get("drop_invoice_customer") else [])
+    if tool == "propose_plan":
+        return args.get("exclude_counterparties") or []
+    if tool == "draft_reminders":
+        return args.get("customers") or []
+    return []
+
+
+def _request_contains_name(message, name):
+    """Require the full ledger spelling, with only case and spacing normalized.
+
+    Latin names may touch surrounding CJK prose, but cannot match the prefix
+    of another Latin name. No alias, substring or fuzzy match grants scope.
+    """
+    message, name = " ".join(message.casefold().split()), " ".join(name.casefold().split())
+    left = r"(?<![a-z0-9_])" if name[:1].isascii() else r"(?<!\w)"
+    right = r"(?![a-z0-9_])" if name[-1:].isascii() else r"(?!\w)"
+    return bool(re.search(left + re.escape(name) + right, message))
+
+
+def _ground_credit_numbers(message, args):
+    """Match amount and term to distinct occurrences, never a shared number.
+
+    A day or net-term number cannot supply an unstated sale amount. Other
+    dated or percentage numbers are also excluded from monetary candidates.
+    Unsupported language/number formats ask for clarification rather than
+    assuming financial inputs.
+    """
+    amounts, terms = set(), set()
+    pattern = r"(?<![\w.])(?P<number>\d[\d,]*(?:\.\d+)?)(?:\s*(?P<scale>k\b|thousand\b|lakh\b))?(?![\w.])"
+    day_suffix = r"^\s*[-–]?\s*(?:days?\b|d\b|jours?\b|d[ií]as?\b|hari\b|din\b|天|日|দিন)"
+    term_prefix = r"\b(?:net|terms?(?:\s+of)?)\s*[-:]?\s*$"
+    currency_words = "|".join(re.escape(code) for code in CURRENCIES) + r"|tk|taka"
+    money_prefix = r"(?:\b(?:" + currency_words + r"|amount|sale|credit)(?:\s+(?:amount|sale|of|for|on)){0,2}\s*[:=]?\s*|[৳$€£¥]\s*)$"
+    money_suffix = r"^\s*(?:(?:" + currency_words + r")\b|(?:of\s+)?(?:new\s+)?credit\b|(?:credit\s+)?sale\b)"
+    for match in re.finditer(pattern, message, re.I):
+        before, after = message[:match.start()], message[match.end():]
+        number = Decimal(match["number"].replace(",", ""))
+        scale = (match["scale"] or "").lower()
+        is_term = not scale and (re.search(day_suffix, after, re.I) or re.search(term_prefix, before, re.I))
+        if is_term:
+            terms.add(number)
+        elif (re.search(money_prefix, before, re.I) or re.search(money_suffix, after, re.I)) \
+                and not re.match(r"\s*(?:%|percent\b|[-/]\d)", after, re.I) and not re.search(r"\d[-/]$", before):
+            amounts.add(number * {"k": 1000, "thousand": 1000, "lakh": 100000}.get(scale, 1))
+    if Decimal(str(args["amount"])) not in amounts or Decimal(str(args["terms_days"])) not in terms:
+        raise ValidationError("State both the credit amount and terms in days explicitly; no values are assumed.")
+
+
+def _ground_request_arguments(plan, message):
+    """Bind model-selected request parameters before any selected tool runs."""
+    for call in plan["calls"]:
+        for name in _named_request_arguments(call):
+            if not _request_contains_name(message, name):
+                raise ValidationError("Use the complete counterparty name from this ledger in your request. "
+                                      "Unknown or shortened names need clarification; no customer is substituted.")
+        if call["tool"] == "credit_check":
+            _ground_credit_numbers(message, call["args"])
+
+
 class TideLMUnavailable(RuntimeError):
     """MLX or the trained adapter is missing; the caller must say so, not substitute something else."""
 
@@ -325,19 +392,12 @@ class TideLM:
             plan = copilot.preflight_plan(app, business_id, target_date, plan, role)
             if app.store.snapshot(business_id)["snapshot_hash"] != snapshot["snapshot_hash"]:
                 raise ValidationError("The ledger changed during model selection; ask again using the fresh state.")
-            # A well-shaped JSON amount can still be invented. Credit decisions
-            # need the owner's explicit numeric amount and terms before any tool runs.
-            stated_numbers = set()
-            for amount, unit in re.findall(r"(\d[\d,]*(?:\.\d+)?)\s*(k\b|thousand\b|lakh\b)?", message, re.I):
-                multiplier = {"k": 1000, "thousand": 1000, "lakh": 100000}.get(unit.lower(), 1)
-                stated_numbers.add(Decimal(amount.replace(",", "")) * multiplier)
-            for call in plan["calls"]:
-                if call["tool"] == "credit_check" and any(
-                        Decimal(str(call["args"][field])) not in stated_numbers for field in ("amount", "terms_days")):
-                    raise ValidationError("State both the credit amount and terms in days explicitly; no values are assumed.")
+            _ground_request_arguments(plan, message)
             selections.append({"iteration": 1, "source": "model_selected", "plan": plan})
             proposal_calls = [call for call in plan["calls"] if call["tool"] == "propose_plan"]
-            if proposal_calls:
+            conditional_recovery = bool(re.search(r"\b(?:recovery|rescue|proposal)\b", message, re.I)
+                                        and re.search(r"\bonly\s+if\b|\bwhether\b.{0,30}\bneed\b", message, re.I))
+            if proposal_calls or conditional_recovery:
                 if any(call["tool"] == "what_if" for call in plan["calls"]):
                     raise ValidationError("A hypothetical scenario cannot create a live proposal. Ask for the what-if separately.")
                 initial_reads = [call for call in plan["calls"] if call["tool"] not in PROPOSING_TOOLS]
@@ -359,6 +419,14 @@ class TideLM:
                     decision = {"outcome": "no_action_needed", "source": "deterministic_tool_results",
                                 "rationale": i18n.t(lang, "plan_none"),
                                 "reserve_shortfall_minor": 0, "probability_breach": risk["probability_breach"]}
+                elif not proposal_calls:
+                    # A conditional check must actually inspect the cash gap even
+                    # if the model selects only risk. Do not invent a proposal or
+                    # its constraints when the model omitted that selection.
+                    decision = {"outcome": "cash_gap_needs_proposal", "source": "deterministic_tool_results",
+                                "rationale": "Remaining cash risk needs review. Ask for a recovery proposal with your constraints.",
+                                "reserve_shortfall_minor": forecast["reserve_shortfall_minor"],
+                                "probability_breach": risk["probability_breach"]}
                 else:
                     if time.monotonic() >= deadline:
                         raise ValidationError("The 120-second turn budget was reached before proposal selection.")
@@ -372,6 +440,7 @@ class TideLM:
                                                         canonical_json(observations)))
                     rejected_selection = follow
                     follow = copilot.preflight_plan(app, business_id, target_date, follow, role)
+                    _ground_request_arguments(follow, message)
                     if len(trace) + len(follow["calls"]) > MAX_TOOL_CALLS:
                         raise ValidationError("The eight-call tool budget was reached; no follow-up calls were run.")
                     for call in follow["calls"]:

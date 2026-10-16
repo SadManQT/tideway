@@ -16,17 +16,29 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 
-def source_digest(source_root=None):
-    """Hash runtime/test sources, optionally in an extracted release tree."""
+def source_paths(source_root=None):
+    """The exact source set shared by tests, browser stamps and package checks."""
     root = Path(source_root) if source_root is not None else ROOT
     paths = [root / "run.py"]
     workflow = root / ".github/workflows/ci.yml"
     if workflow.is_file():
         paths.append(workflow)
     for folder in ("tideway", "tests", "web", "scripts"):
-        paths.extend(p for p in (root / folder).rglob("*") if p.suffix in (".py", ".js", ".mjs", ".css", ".html", ".json")
+        paths.extend(p for p in (root / folder).rglob("*") if p.suffix in (".py", ".js", ".mjs", ".css", ".html", ".json", ".svg")
                      and "__pycache__" not in p.parts)
-    hashes = {p.relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(paths)}
+    return sorted(paths)
+
+
+def line_ending_issues(source_root=None):
+    """Detect bytes that contradict tracked LF source policy; never alter hashes."""
+    root = Path(source_root) if source_root is not None else ROOT
+    return [p.relative_to(root).as_posix() for p in source_paths(root) if b"\r" in p.read_bytes()]
+
+
+def source_digest(source_root=None):
+    """Hash actual bytes, including line endings; no normalized-hash shortcut."""
+    root = Path(source_root) if source_root is not None else ROOT
+    hashes = {p.relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in source_paths(root)}
     return hashlib.sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest(), hashes
 
 
@@ -43,6 +55,8 @@ def base_commit():
 
 def main():
     out = ROOT / "evidence"
+    out.mkdir(parents=True, exist_ok=True)
+    before_digest, _ = source_digest()
     started = time.monotonic()
     suite = unittest.defaultTestLoader.discover(str(ROOT / "tests"))
     with (out / "test-run.log").open("w", encoding="utf-8") as log:
@@ -52,7 +66,8 @@ def main():
     report = {"run_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
               "python": platform.python_version(), "platform": platform.system(),
               "tests_run": result.testsRun, "failures": len(result.failures), "errors": len(result.errors),
-              "skipped": len(result.skipped), "passed": result.wasSuccessful(),
+              "skipped": len(result.skipped), "passed": result.wasSuccessful() and before_digest == digest,
+              "source_unchanged_during_tests": before_digest == digest,
               "seconds": round(time.monotonic() - started, 2),
               "base_commit": base_commit(),
               "source_tree_sha256": digest, "source_files": files,
@@ -62,7 +77,9 @@ def main():
     print(f"{result.testsRun} tests: {len(result.failures)} failures, {len(result.errors)} errors, {len(result.skipped)} skipped.")
     if not result.wasSuccessful():
         print((out / "test-run.log").read_text(encoding="utf-8")[-10000:])
-    return 0 if result.wasSuccessful() else 1
+    if before_digest != digest:
+        print("Source changed during tests. Restart verification after edits are complete.")
+    return 0 if report['passed'] else 1
 
 
 if __name__ == "__main__":

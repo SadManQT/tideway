@@ -1,3 +1,5 @@
+> Historical report for an earlier source version. See [READINESS_CURRENT.md](READINESS_CURRENT.md) for current evidence and remaining gaps.
+
 # Windows follow-up review - 16 October 2026
 
 Environment: Windows 11, Python 3.13.7, Chrome 155.0.8059.82. This review uses

@@ -27,7 +27,9 @@ STATIC = {"/": "index.html", "/index.html": "index.html", "/styles.css": "styles
           "/favicon.svg": "favicon.svg", "/guide": "guide.html", "/guide.html": "guide.html",
           "/guide.css": "guide.css", "/guide.js": "guide.js",
           "/benchmarks/tidepay.json": "../evidence/upgrade-v1/tidepay/report.json",
-          "/benchmarks/tidepay-reliability.svg": "../evidence/upgrade-v1/tidepay/reliability.svg"}
+          "/benchmarks/tidepay-reliability.svg": "../evidence/upgrade-v1/tidepay/reliability.svg",
+          "/benchmarks/tidepay-deployed.json": "../evidence/readiness-v3/tidepay/report.json",
+          "/benchmarks/tidepay-deployed-reliability.svg": "../evidence/readiness-v3/tidepay/reliability.svg"}
 CONTENT_TYPES = {"html": "text/html", "css": "text/css", "js": "text/javascript", "svg": "image/svg+xml", "json": "application/json"}
 COOKIE = "tideway_session"
 
@@ -246,13 +248,13 @@ class Application:
             self.require(operator, "owner", "accountant")
             return self.tideway.propose(business_id, body.get("target_date"), actor, proposed_by="agent")
         if path == "/api/plan/approve":
-            self.fields(body, ("business_id", "plan_id", "bundle_id", "pin", "review_ms", "confirm_amount_minor"),
+            self.fields(body, ("business_id", "plan_id", "bundle_id", "pin", "review_ms", "confirm_amount_minor", "risk_acknowledgement"),
                         ("business_id", "plan_id", "bundle_id", "pin"))
             bundle = self.bundle_for(business_id, body["plan_id"], body["bundle_id"])
             if bundle.get("dual_approval_required") and body.get("confirm_amount_minor") != bundle["exposure_minor"]:
                 raise ValidationError("High-value bundle: type the total exposure exactly to confirm you read it.")
             return self.store.approve(business_id, body["plan_id"], body["bundle_id"], operator, body["pin"], actor,
-                                      body.get("review_ms"))
+                                      body.get("review_ms"), body.get("risk_acknowledgement"))
         if path == "/api/mandate/negotiate":
             self.fields(body, ("business_id", "mandate_id"), ("business_id", "mandate_id"))
             self.require(operator, "owner", "accountant")

@@ -1,0 +1,17 @@
+{
+  "purpose": "Exact pre-fix runtime source for the first sealed model observation. Later argument-grounding regressions are separate; no first-run results are replaced.",
+  "files": {
+    "tideway/tidelm.py": {
+      "sha256": "48b00925c1351928253053d17c32799d734290c544dbbae6850e25e4415ed345",
+      "snapshot": "evidence/readiness-v3/blind/runtime-first-observation/tidelm.py"
+    },
+    "tideway/copilot.py": {
+      "sha256": "a0e84544ed2d56ed11657cbf287785ad8620ff213f0a2e9f60f275d95e7d2dc1",
+      "snapshot": "evidence/readiness-v3/blind/runtime-first-observation/copilot.py"
+    },
+    "tideway/plan_schema.py": {
+      "sha256": "4a6578b5f42fbd87f3a10936d7675b0dba39070dc5a64b6c754771b5227d44c3",
+      "snapshot": "evidence/readiness-v3/blind/runtime-first-observation/plan_schema.py"
+    }
+  }
+}

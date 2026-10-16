@@ -94,7 +94,8 @@ def main():
     team = json.loads(team_path.read_text(encoding="utf-8")) if team_path.is_file() else {}
     gaps = team_gaps(team)
     gaps.append("Demo video explicitly deferred by the team; add before sending or clarify evidence requirement")
-    gaps.append("Post-fix real-model smoke run on the team's Apple Silicon Mac")
+    gaps.append("Native MLX/TideLM adapter and receipt-model device verification (compatible Qwen3 inference is separate)")
+    gaps.append("Consented SME feedback, stronger unseen instruction screening and independent security review")
     if (ROOT / ".git").exists():
         names = subprocess.check_output(["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
                                         cwd=ROOT).decode("utf-8").split("\0")

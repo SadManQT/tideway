@@ -153,9 +153,11 @@ def slides():
     tidepay = (_json("evidence/upgrade-v1/tidepay/report.json") or {}).get("results", {})
     verify = _json("evidence/verification-summary.json") or {}
     lm = _tidelm()
-    local_smoke = _json("evidence/readiness-v2/model/qwen3-final-smoke.json") or {}
-    local_proof = (f"Windows compatible model: {local_smoke.get('matched')}/{local_smoke.get('denominator')} authored smoke requests matched"
-                   if local_smoke.get("successful") else "Current compatible-model verification is recorded separately")
+    local_smoke = _json("evidence/readiness-v3/blind/model-first-observation.json") or {}
+    local_proof = (f"Mac Qwen3 first challenge: {local_smoke.get('matched', {}).get('numerator', '—')}/{local_smoke.get('requests')} handled; four retained misses"
+                   if local_smoke.get("real_model_inference") else "Current compatible-model verification is recorded separately")
+    deployed = (_json("evidence/readiness-v3/tidepay/report.json") or {}).get("results", {})
+    regression = _json("evidence/readiness-v3/blind/model-post-fix-regression.json") or {}
     pct = lambda v: f"{v * 100:.1f}%".replace(".0%", "%")  # noqa: E731
     lm_rows = []
     if lm:
@@ -180,14 +182,14 @@ def slides():
                      "Scheduled, likely and stress views; \"N of 20 futures fall short\"",
                      "Shapla Services (synthetic): scheduled low −BDT 10,000 on 31 Oct; reserve gap BDT 30,000"],
          "image": "01-cash-weather-storm.png"},
-        {"title": "TidePay: chronological audit", "subtitle": "Same held-out invoices, training-only statistics",
+        {"title": "TidePay: exact shipped weights", "subtitle": "Frozen artifact; new SMEs, no fitting on test labels",
          "table": [("Model", "MAE days", "Log loss", "Brier sum")] + [
-             (label, f"{tidepay[key]['mae_days']:.3f}", f"{tidepay[key]['log_loss']:.3f}", f"{tidepay[key]['brier_sum']:.3f}")
-             for key, label in (("prior", "Prior"), ("heuristic_v1", "Heuristic"), ("local_only", "Local-only"),
-                                ("federated", "Federated"), ("centralised", "Pooled")) if key in tidepay],
-         "bullets": [f"{fed.get('n', '—')} test invoices, 40 synthetic SMEs; historical prior leakage disclosed",
-                     "Audit benchmark, shipped weights unchanged; pooled MAE slightly better",
-                     "One-process federation with pooled scaling; no deployed privacy guarantee"]},
+             (label, f"{deployed[key]['mae_days']:.3f}", f"{deployed[key]['log_loss']:.3f}", f"{deployed[key]['brier_sum']:.3f}")
+             for key, label in (("historical_training_prior", "Training prior"), ("customer_history_heuristic", "History heuristic"),
+                                ("deployed", "Shipped artifact"), ("audited_v2", "Earlier audit weights")) if key in deployed],
+         "bullets": [f"{deployed.get('deployed', {}).get('n', '—'):,} unseen invoices; 80 new synthetic SMEs, four seeds" if deployed else "See the frozen-artifact report",
+                     "No-history predictions remain weak; no real-world accuracy claim",
+                     "One-process federation; no deployed privacy guarantee"]},
         {"title": "TideLM: our own on-device language model", "subtitle": "Qwen3-4B + a LoRA adapter we trained on a laptop with MLX",
          "table": ([("", "Base model", "TideLM")] + lm_rows) if lm_rows else None,
          "bullets": ["Eight languages: English, 中文, Español, Bahasa, Français, Português, Hinglish, Banglish",
@@ -195,12 +197,12 @@ def slides():
                      local_proof + "; historical adapter scores above are a different evaluation"] + ([] if lm_rows else ["Evaluation pending"])},
         {"title": "Plan the rescue", "subtitle": "An exact, risk-aware optimiser",
          "bullets": ["Supplier deferrals, early-payment discounts (priced as APR), zero-cash reminders",
-                     "Feasible plans protect payroll and the likely reserve path; residual risk stays visible",
-                     "Explains why the cheaper option is too risky; financing shown as a mock comparison"],
+                     "Feasible plans protect the projected path; above-target risk needs explicit consent",
+                     "Mock financing shows arrival, eligibility assumptions and pressure through repayment"],
          "image": "02-rescue-agent-and-plan.png"},
         {"title": "Approve exactly this", "subtitle": "Human approval, signed mandate, verified execution",
          "bullets": ["Maker-checker with PIN; two people and a typed amount above the threshold",
-                     "HMAC-signed mandate bound to actions, amounts, snapshot and expiry (AP2-style)",
+                     "HMAC mandate binds actions, snapshot, expiry and exact residual-risk consent",
                      "Simulated counterparties accept, counter or refuse; idempotent execution with read-back"],
          "image": "03-approve-exactly-this.png"},
         {"title": "Talk to it in your language", "subtitle": "Glass-box answers, zero-entry bookkeeping",
@@ -211,7 +213,7 @@ def slides():
         {"title": "Security enforcement", "subtitle": "Permissions and validation live outside the model",
          "bullets": [f"{verify.get('attacks_blocked', '—')}/{verify.get('attacks', '—')} attacks blocked, "
                      f"{verify.get('tasks_completed', '—')}/{verify.get('tasks', '—')} tasks completed, assuming a hijacked model",
-                     "Injection and payee-fraud screening in eight languages; changed accounts and look-alikes blocked",
+                     "Message screening misses unfamiliar attacks; structural authority checks remain essential",
                      "Kill switch, circuit breaker, separation of duties, hash-chained audit with witness"],
          "image": "13-security-centre-selftest.png"},
         {"title": "Built as a product", "subtitle": "Workspaces, teams and roles",
@@ -226,9 +228,9 @@ def slides():
         {"title": "Honest limits, clear next steps", "subtitle": "What we have not done yet",
          "bullets": ["Synthetic data and simulated counterparties; demo-grade PINs and keys",
                      "No user study or external penetration test yet",
-                     "Next: consented SME pilots, a real bank rail behind the same mandate, federated TidePay across real users"]},
+                     "Next: consented SME pilots, new unseen screening checks and independent security review"]},
     ]
-    scenarios = _json("evidence/upgrade-v1/scenarios/report.json") or {}
+    scenarios = _json("evidence/readiness-v3/scenarios/report.json") or _json("evidence/upgrade-v1/scenarios/report.json") or {}
     if scenarios:
         counts = scenarios["summary"]
         outcomes = counts["by_expected_outcome"]
@@ -240,8 +242,17 @@ def slides():
                                      f"Only {risk_met}/{counts['executed_rescues']} rescues meet the 10% simulated-risk target",
                                      f"Injection: {attacks['true_positive']}/{attacks['malicious_denominator']} attacks detected; {attacks['false_positive']}/{attacks['benign_denominator']} benign messages flagged",
                                      f"Payee: {payees['true_positive']}/{payees['malicious_denominator']} attacks detected; {payees['false_positive']}/{payees['benign_denominator']} benign cases flagged",
-                                     "Retained misses, raw outcomes and planner timings: evidence/upgrade-v1/scenarios/"]})
-    delay = _json("evidence/upgrade-v1/payment-delay.json") or {}
+                                     "Retained outcomes and planner timings: evidence/readiness-v3/scenarios/"]})
+    blind = _json("evidence/readiness-v3/blind/screening-first-observation.json") or {}
+    if blind and local_smoke:
+        counts = blind['injection']['confusion']
+        deck.insert(11, {"title": "Independent challenge: retain the misses", "subtitle": "First observations sealed before fixes; later checks are regressions",
+                         "bullets": [f"First Qwen3: {local_smoke['matched']['numerator']}/{local_smoke['requests']} handled; {local_smoke['containment']['numerator']}/{local_smoke['containment']['denominator']} payment containment",
+                                     f"Post-fix known-case regression: {regression.get('matched', {}).get('numerator', '—')}/{regression.get('requests', '—')}; not a new blind score",
+                                     "Amount and customer substitutions exposed; deterministic guard regressions added",
+                                     f"Screening: {counts['true_positive']}/24 attacks detected, {counts['false_positive']}/24 benign flagged",
+                                     "Screening is not authorization; every extracted draft needs human review"]})
+    delay = _json("evidence/readiness-v3/payment-delay.json") or _json("evidence/upgrade-v1/payment-delay.json") or {}
     if delay.get("passed"):
         change = delay["change"]
         before = change["before"]["likely"]; after = change["after"]["likely"]

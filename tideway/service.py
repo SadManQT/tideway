@@ -22,21 +22,79 @@ MC_RUNS = 1000
 _CARD = None
 
 
+def deployed_tidepay_evaluation(root):
+    """Expose scores only for an intact report tied to the installed weights."""
+    import hashlib
+    import json
+    import math
+
+    summary = {"available": False, "status": "unavailable", "artifact_sha256": None,
+               "note": "Exact deployed-model evaluation is unavailable; older benchmark scores do not describe the installed artifact."}
+    try:
+        artifact = root / "tideway/ml/tidepay_model.json"
+        summary["artifact_sha256"] = hashlib.sha256(artifact.read_bytes()).hexdigest()
+        folder = root / "evidence/readiness-v3/tidepay"
+        report_bytes = (folder / "report.json").read_bytes()
+        manifest = json.loads((folder / "artifact_sha256.json").read_text(encoding="utf-8"))
+        if manifest.get("report.json") != hashlib.sha256(report_bytes).hexdigest():
+            summary.update(status="invalid", reason="Saved evaluation report failed its integrity check.")
+            return summary
+        report = json.loads(report_bytes)
+        if report["artifacts"]["deployed"]["sha256"] != summary["artifact_sha256"]:
+            summary.update(status="artifact_mismatch", reason="Installed model weights differ from the evaluated artifact; rerun the deployed-model evaluation.")
+            return summary
+        if report["version"] != "deployed-tidepay-fresh-cohorts-v1":
+            raise ValueError("unrecognized evaluation version")
+        provenance = report["provenance"]
+        if not provenance["same_test_ids_for_all_models"] or provenance["fitting_on_fresh_examples"]:
+            raise ValueError("evaluation cohort or fitting policy is invalid")
+        test = report["balance"]["test"]
+        results = report["results"]
+        if test["n"] < 1 or test["businesses"] < 2:
+            raise ValueError("evaluation cohort is empty")
+        for name in ("deployed", "audited_v2", "historical_training_prior", "customer_history_heuristic"):
+            metrics = results[name]
+            if metrics["n"] != test["n"] or any(not math.isfinite(metrics[key]) or metrics[key] < 0
+                                                for key in ("mae_days", "log_loss", "brier_sum")):
+                raise ValueError("invalid or mismatched evaluation metrics")
+        cold = report["subgroups"]["history:none"]
+        summary.update(available=True, status="verified", version=report["version"],
+                       test_invoices=test["n"], test_businesses=test["businesses"],
+                       cohort_count=len(report["config"]["seeds"]), labels_as_of=report["config"]["labels_as_of"],
+                       censored_invoices=report["balance"]["censored"]["n"], results=results,
+                       cold_start={"n": cold["deployed"]["n"], "deployed": cold["deployed"],
+                                   "prior": cold["historical_training_prior"]},
+                       note="Exact installed weights, fresh synthetic SMEs and issue-time forecasts; no fitting on these cohorts. Synthetic performance does not establish real-world accuracy or calibrated cash-risk probabilities.",
+                       report_url="/benchmarks/tidepay-deployed.json",
+                       reliability_url="/benchmarks/tidepay-deployed-reliability.svg")
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        summary.update(reason="Exact deployed-model evaluation is missing or invalid; prediction scores are not shown.")
+    return summary
+
+
 def tidepay_card():
     """Model card shown in the UI: what TidePay is, how it was trained and how it scored."""
     global _CARD
+    from pathlib import Path
+    root = Path(__file__).resolve().parent.parent
     if _CARD is None:
         import json
-        from pathlib import Path
-        root = Path(__file__).resolve().parent.parent
-        report = json.loads((root / "evidence" / "ml" / "tidepay_report.json").read_text())
-        _CARD = {"meta": report["meta"], "results": report["results"]}
+        _CARD = {"meta": {}, "results": {}, "historical_status": "unavailable"}
+        try:
+            report = json.loads((root / "evidence" / "ml" / "tidepay_report.json").read_text(encoding="utf-8"))
+            _CARD.update(meta=report["meta"], results=report["results"], historical_status="historical_observation")
+        except (OSError, ValueError, KeyError, TypeError):
+            pass
         audited = root / "evidence" / "upgrade-v1" / "tidepay" / "report.json"
-        if audited.is_file():
+        try:
             new = json.loads(audited.read_text(encoding="utf-8"))
-            _CARD["audit_benchmark"] = {"version": new["version"], "results": new["results"],
+            _CARD["audit_benchmark"] = {"status": "benchmark_only", "version": new["version"], "results": new["results"],
                                        "test_businesses": new["balance"]["test"]["businesses"],
                                        "note": "Chronological synthetic benchmark; shipped model unchanged. Single-process federation, no deployed privacy guarantee."}
+        except (OSError, ValueError, KeyError, TypeError):
+            pass
+    # Recheck artifact/report bytes even when historical metadata is cached.
+    _CARD["deployed_evaluation"] = deployed_tidepay_evaluation(root)
     return _CARD
 PLAN_MC_RUNS = 400
 

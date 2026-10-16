@@ -1,3 +1,5 @@
+> Historical report for an earlier source version. See [READINESS_CURRENT.md](READINESS_CURRENT.md) for current evidence and remaining gaps.
+
 # Contest upgrade implementation and evidence
 
 Local work for Topic E: cash-flow support, analysis and bounded financing comparisons. Synthetic only; no bank/payment integration, external publication or video recording.

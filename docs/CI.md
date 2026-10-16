@@ -44,3 +44,14 @@ Actions are pinned to full commit hashes, checkout credentials are not persisted
 The matrix samples the minimum supported Python and a current Python release; it does not establish compatibility with every interpreter or machine. It does not download model weights, test MLX hardware inference, make cloud-model calls, connect to banks or use repository secrets. Hosted-runner availability, external action/dependency downloads and GitHub Actions settings are outside a local validation run. Passing CI is regression evidence for these checks, not a guarantee of no remaining errors or proof of security.
 
 The workflow is based on the [official GitHub workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax), official [checkout](https://github.com/actions/checkout), [setup-python](https://github.com/actions/setup-python), [setup-node](https://github.com/actions/setup-node) and [upload-artifact](https://github.com/actions/upload-artifact) actions, and the [Ubuntu 24.04 hosted-image inventory](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md). Action hashes and the installed-browser approach were checked against upstream on 2026-10-16.
+
+## One frozen-source release
+
+`python3 scripts/prepare_release.py` runs the local release sequence with cloud
+credentials disabled, fresh synthetic databases and exact source hashes.
+`--checks-only` omits browsers, PDFs and ZIP creation. `--reuse-pdfs` retains
+previously reviewed PDFs. LF checks report offending paths without rewriting
+them. Editing code during verification invalidates the run. Historical Windows
+CRLF reports are preserved under `evidence/history/readiness-v2-windows/`; the
+latest ZIP must match the current tests and browser stamp byte for byte. This
+local command does not execute the GitHub-hosted OS matrix.

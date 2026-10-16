@@ -110,3 +110,19 @@ node scripts/capture_screens.mjs
 ```
 
 Seeds derive from business, snapshot hash and target date, so repeated runs give identical numbers.
+
+## Current v3 evidence and study discipline
+
+Use `docs/READINESS_CURRENT.md` as the index. Exact shipped-model evaluation
+freezes artifact bytes and measures all comparators on the same 7,427 fresh
+synthetic invoice IDs. Report calibration, grouped uncertainty and no-history
+performance; do not tune weights on these observations. Independent screening
+and Qwen3 fixtures were sealed before evaluation, and their first failures are
+retained. Once disclosed, these examples are regression material. New quality
+claims require a newly authored, separately sealed set or external data.
+
+The user-study kit records only consented anonymous responses, optional SUS
+items, completion status and elapsed time. Unavailable optional models are
+recorded as unavailable, not participant mistakes. No participants means no
+completion or SUS average. Real SME validation and external security testing
+remain future work. Repeatable code checks are not substitutes for either.

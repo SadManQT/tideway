@@ -14,6 +14,13 @@ import {createServer} from "node:http";
 import {fileURLToPath} from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+function sourceDigest() {
+  const result = spawnSync(process.env.PYTHON || (process.platform === "win32" ? "python" : "python3"),
+    ["-c", "from scripts.verify_submission import source_digest; print(source_digest()[0])"], {cwd:ROOT,encoding:"utf8"});
+  if (result.status !== 0) throw new Error(`Could not hash browser-tested source: ${result.stderr}`);
+  return result.stdout.trim();
+}
+const initialSourceDigest = sourceDigest();
 const option = (name) => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
 const OUT = option("--out") || join(ROOT, "evidence", "screens");
 const PORT = Number(process.env.TIDEWAY_E2E_PORT || 8799), DEBUG_PORT = Number(process.env.TIDEWAY_DEBUG_PORT || 9333);
@@ -116,6 +123,16 @@ const loginAs = (id, pin) => evaluate(`(async () => {
   return response.status; })()`);
 async function reload() { await send("Page.reload"); await until("document.readyState === 'complete' && !!document.querySelector('#view .metric, #login:not([hidden])')", "page ready"); }
 async function view(name) { await click(`[data-view="${name}"]`); await sleep(300); }
+async function confirmRisk() {
+  // Exercise the visible human consent control, rather than bypassing it.
+  const required = await evaluate("!document.querySelector('#approve-risk-label').hidden");
+  if (required) {
+    if (!await evaluate("document.querySelector('#approve-risk-ack').required && !document.querySelector('#approve-risk-ack').checked")) {
+      throw new Error("Above-target approval must require fresh, unchecked risk consent");
+    }
+    await click('#approve-risk-ack');
+  }
+}
 
 try {
   mkdirSync(OUT, {recursive: true});
@@ -183,12 +200,14 @@ try {
   await shot("01-cash-weather-storm");
   await click('[data-action="run-agent"]');
   await until("!!document.querySelector('.timeline') && !!document.querySelector('[data-action=approve]')", "agent run");
-  if (!await evaluate("(() => { const plan = state.dashboard.plan; const sample = {...plan.bundles[0], feasible:true, probability_breach_after:0.185, risk_target_met:false}; const warning = residualRiskHtml({...plan, risk_target:0.1}, sample); return warning.includes('18.5%') && warning.includes('does not meet the 10% risk target') && residualRiskHtml(plan, {...sample, risk_target_met:true}) === ''; })()")) throw new Error("residual-risk disclosure is missing or misleading");
+  if (!await evaluate("(() => { const plan = state.dashboard.plan; const sample = {...plan.bundles[0], feasible:true, probability_breach_after:0.185, risk_target_met:false}; const warning = residualRiskHtml({...plan, risk_target:0.1}, sample); return warning.includes('18.5%') && warning.includes('does not meet the 10% risk target') && residualRiskHtml({...plan, risk_target:0.1}, {...sample, risk_target_met:true}).includes('18.5%') && residualRiskHtml({...plan, risk_target:0.1}, {...sample, probability_breach_after:0.1}) === ''; })()")) throw new Error("residual-risk disclosure is missing or misleading");
   await sleep(1300);
   await shot("02-rescue-agent-and-plan");
+  if (!await evaluate("document.querySelector('#view').textContent.includes('Total repayment') && document.querySelector('#view').textContent.includes('unverified')")) throw new Error("Funding comparison omits repayment or unverified eligibility");
   await click('[data-action="approve"]');
   await until("document.querySelector('#approve-dialog').open", "approve dialog");
   await evaluate(`(() => { const amount = document.querySelector('#approve-summary').textContent.match(/Total exposure(BDT [\\d,]+)/); document.querySelector('#confirm-amount').value = amount ? amount[1] : ''; document.querySelector('#approve-pin').value = '1357'; return true; })()`);
+  await confirmRisk();
   await sleep(3300);
   await shot("03-approve-exactly-this", false);
   await evaluate("document.querySelector('#approve-form').requestSubmit(), true");
@@ -200,6 +219,7 @@ try {
   await click('[data-action="approve"]');
   await until("document.querySelector('#approve-dialog').open", "approve dialog (owner)");
   await evaluate(`(() => { const amount = document.querySelector('#approve-summary').textContent.match(/Total exposure(BDT [\\d,]+)/); document.querySelector('#confirm-amount').value = amount ? amount[1] : ''; document.querySelector('#approve-pin').value = '2468'; return true; })()`);
+  await confirmRisk();
   await sleep(3300);
   await evaluate("document.querySelector('#approve-form').requestSubmit(), true");
   await until("!!document.querySelector('[data-action=negotiate]')", "mandate issued");
@@ -225,7 +245,8 @@ try {
       if (!bundle) throw new Error("The delayed ledger has no safe fresh proposal");
       for (const [who, pin] of [["imran", "1357"], ["nadia", "2468"]]) {
         await loginAs(who, pin);
-        const result = await evaluate(`(async () => { const c = await (await fetch('/api/config')).json(); const r = await fetch('/api/plan/approve', {method:'POST', headers:{'Content-Type':'application/json','X-Tideway-Token':c.csrf_token},body:JSON.stringify(${JSON.stringify({business_id:"shapla-services",plan_id:plan.plan_id,bundle_id:bundle.bundle_id,pin,confirm_amount_minor:bundle.exposure_minor,review_ms:9000})})}); const answer = await r.json(); if (!r.ok) throw new Error(answer.error); return answer; })()`);
+        const consent = bundle.probability_breach_after > plan.risk_target ? {risk_acknowledgement:{acknowledged:true,plan_id:plan.plan_id,plan_hash:plan.plan_hash,bundle_id:bundle.bundle_id,probability_breach_after:bundle.probability_breach_after,risk_target:plan.risk_target}} : {};
+        const result = await evaluate(`(async () => { const c = await (await fetch('/api/config')).json(); const r = await fetch('/api/plan/approve', {method:'POST', headers:{'Content-Type':'application/json','X-Tideway-Token':c.csrf_token},body:JSON.stringify(${JSON.stringify({business_id:"shapla-services",plan_id:plan.plan_id,bundle_id:bundle.bundle_id,pin,confirm_amount_minor:bundle.exposure_minor,review_ms:9000,...consent})})}); const answer = await r.json(); if (!r.ok) throw new Error(answer.error); return answer; })()`);
         if (result.status === "mandate_issued") break;
       }
       await loginAs("nadia", "2468"); await reload(); await view("rescue");
@@ -425,11 +446,11 @@ try {
   await viewport(1440, 900);
   await shot("24-guide-desktop", false);
   if (errors.length) throw new Error(`Page errors: ${errors.join(" | ")}`);
-  const sourceHash = spawnSync(process.env.PYTHON || (process.platform === "win32" ? "python" : "python3"),
-    ["-c", "from scripts.verify_submission import source_digest; print(source_digest()[0])"], {cwd:ROOT,encoding:"utf8"});
-  if (sourceHash.status !== 0) throw new Error(`Could not hash browser-tested source: ${sourceHash.stderr}`);
+  const finalSourceDigest = sourceDigest();
+  if (initialSourceDigest !== finalSourceDigest) throw new Error("Source changed during browser verification; repeat after edits are complete.");
   writeFileSync(join(OUT, "browser-verification.json"), JSON.stringify({
-    run_at: new Date().toISOString(), passed: true, browser: version.Browser, source_tree_sha256:sourceHash.stdout.trim(),
+    run_at: new Date().toISOString(), passed: true, browser: version.Browser, source_tree_sha256:finalSourceDigest,
+    source_unchanged_during_browser:true,
     viewport: {desktop: [1440, 900], mobile: [375, 812]}, page_errors: errors,
     tidelm_available: tidelmAvailable, test_only_local_backend: testLocalBackend, test_real_backend:testRealBackend,
     linked_payment_delay: testPaymentDelay, model_inference_tested:realModelVerification?.passed === true,
@@ -440,7 +461,7 @@ try {
       "what-if", "audit tamper drill", "international fixtures", "fraud blocks",
       "security self-test", "mobile overflow", "signup", "invite", "viewer isolation", "public guide routes and assets",
       "role-aware first-use guidance", "guidance preferences and keyboard focus", "guidance never changes financial state", "residual-risk disclosure",
-      "missing payment-account disclosure and callback controls",
+      "missing payment-account disclosure and callback controls", "bound risk acknowledgement", "funding repayment and eligibility disclosure",
       ...(testPaymentDelay ? ["approved payment delay", "stale execution refusal", "fresh proposal and counter approval", "delay mobile"] : [])],
     fixture: "fresh synthetic database; no real money or external provider",
   }, null, 2) + "\n");

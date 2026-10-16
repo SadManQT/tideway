@@ -186,6 +186,7 @@
     <form id="approve-form" method="dialog">
       <h2 id="approve-title">Approve exactly this</h2>
       <div id="approve-summary" class="approve-summary"></div>
+      <label id="approve-risk-label" class="small" hidden><input id="approve-risk-ack" type="checkbox"> <span>I understand this option exceeds the simulated risk target and accept the remaining risk shown above. This is not a guarantee that the reserve or payroll will be funded.</span></label>
       <label id="confirm-amount-label" class="field" hidden>Type the total exposure to confirm you read it<input id="confirm-amount" inputmode="decimal" autocomplete="off"></label>
       <label class="field">Your PIN<input id="approve-pin" type="password" inputmode="numeric" maxlength="12" required autocomplete="off"></label>
       <div id="approve-error" class="form-error" role="alert"></div>

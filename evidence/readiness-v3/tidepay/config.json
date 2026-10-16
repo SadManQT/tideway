@@ -1,0 +1,15 @@
+{
+  "seeds": [
+    410281,
+    598217,
+    730639,
+    951313
+  ],
+  "businesses_per_seed": 20,
+  "generator_start": "2025-11-01",
+  "generator_months": 6,
+  "labels_as_of": "2026-10-15",
+  "bootstrap_seed": 284117,
+  "bootstrap_repetitions": 1000,
+  "calibration_bins": 10
+}

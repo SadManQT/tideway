@@ -1,0 +1,50 @@
+{
+  "run_at": "2026-10-16T06:11:30.154Z",
+  "passed": true,
+  "browser": "Chrome/155.0.8059.80",
+  "source_tree_sha256": "c341c86f3299e17e622ce4a2a10e78762b6a76f30e9f85772dd36006ba6b460f",
+  "source_unchanged_during_browser": true,
+  "viewport": {
+    "desktop": [
+      1440,
+      900
+    ],
+    "mobile": [
+      375,
+      812
+    ]
+  },
+  "page_errors": [],
+  "tidelm_available": true,
+  "test_only_local_backend": true,
+  "test_real_backend": false,
+  "linked_payment_delay": false,
+  "model_inference_tested": false,
+  "real_model_verification": null,
+  "coverage": [
+    "landing",
+    "cash projection",
+    "dual approval",
+    "negotiation",
+    "execution and read-back",
+    "test-double local model browser integration",
+    "what-if",
+    "audit tamper drill",
+    "international fixtures",
+    "fraud blocks",
+    "security self-test",
+    "mobile overflow",
+    "signup",
+    "invite",
+    "viewer isolation",
+    "public guide routes and assets",
+    "role-aware first-use guidance",
+    "guidance preferences and keyboard focus",
+    "guidance never changes financial state",
+    "residual-risk disclosure",
+    "missing payment-account disclosure and callback controls",
+    "bound risk acknowledgement",
+    "funding repayment and eligibility disclosure"
+  ],
+  "fixture": "fresh synthetic database; no real money or external provider"
+}

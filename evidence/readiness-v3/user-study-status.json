@@ -1,0 +1,145 @@
+{
+  "schema_version": "tideway-user-study-v1",
+  "generated_at_utc": "2026-10-16T06:05:11.578585+00:00",
+  "status": "pending_no_consented_participants",
+  "consented_participants": 0,
+  "excluded_rows_without_consent": 1,
+  "roles": {
+    "accountant": 0,
+    "bookkeeper": 0,
+    "owner": 0
+  },
+  "tasks": {
+    "t1": {
+      "counts": {
+        "assisted": 0,
+        "completed": 0,
+        "failed": 0,
+        "not_attempted": 0,
+        "unavailable_model": 0
+      },
+      "attempted_denominator": 0,
+      "unassisted_completion": {
+        "numerator": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "completion_including_assistance": {
+        "numerator": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "timing_observations": 0,
+      "median_seconds": null,
+      "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
+    },
+    "t2": {
+      "counts": {
+        "assisted": 0,
+        "completed": 0,
+        "failed": 0,
+        "not_attempted": 0,
+        "unavailable_model": 0
+      },
+      "attempted_denominator": 0,
+      "unassisted_completion": {
+        "numerator": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "completion_including_assistance": {
+        "numerator": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "timing_observations": 0,
+      "median_seconds": null,
+      "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
+    },
+    "t3": {
+      "counts": {
+        "assisted": 0,
+        "completed": 0,
+        "failed": 0,
+        "not_attempted": 0,
+        "unavailable_model": 0
+      },
+      "attempted_denominator": 0,
+      "unassisted_completion": {
+        "numerator": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "completion_including_assistance": {
+        "numerator": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "timing_observations": 0,
+      "median_seconds": null,
+      "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
+    },
+    "t4": {
+      "counts": {
+        "assisted": 0,
+        "completed": 0,
+        "failed": 0,
+        "not_attempted": 0,
+        "unavailable_model": 0
+      },
+      "attempted_denominator": 0,
+      "unassisted_completion": {
+        "numerator": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "completion_including_assistance": {
+        "numerator": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "timing_observations": 0,
+      "median_seconds": null,
+      "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
+    },
+    "t5": {
+      "counts": {
+        "assisted": 0,
+        "completed": 0,
+        "failed": 0,
+        "not_attempted": 0,
+        "unavailable_model": 0
+      },
+      "attempted_denominator": 0,
+      "unassisted_completion": {
+        "numerator": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "completion_including_assistance": {
+        "numerator": 0,
+        "denominator": 0,
+        "rate": null
+      },
+      "timing_observations": 0,
+      "median_seconds": null,
+      "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
+    }
+  },
+  "sus": {
+    "complete_responses": 0,
+    "partial_responses_not_scored": 0,
+    "missing_responses": 0,
+    "mean_score": null,
+    "median_score": null,
+    "scale": "0 to 100, not a percentage of tasks completed",
+    "formula": "2.5 * sum(odd response - 1, 5 - even response), one-based item numbering"
+  },
+  "limitations": [
+    "No participants or responses are synthesized by this helper. Zero participants means user validation remains outstanding.",
+    "Small convenience samples support exploratory feedback only, not representative usability or market-fit claims.",
+    "Unattempted and unavailable-model tasks are excluded from attempted-task denominators and reported separately.",
+    "Only complete ten-item SUS responses are scored; partial or missing responses produce no fabricated score.",
+    "Public output contains aggregates only: no participant IDs, raw rows, response items, free text, contact details or input paths."
+  ]
+}

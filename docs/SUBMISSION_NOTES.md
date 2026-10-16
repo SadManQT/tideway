@@ -94,7 +94,7 @@ The package source is tested and browser-checked at the same source digest; `pyt
 
 ## Readiness follow-up
 
-See `docs/READINESS_UPDATE.md` for the four-step first-use guide, explicit residual-risk
+Historical `docs/READINESS_UPDATE.md` describes the four-step first-use guide and residual-risk
 warnings, contextual screening regressions, tracked cross-platform CI and Windows
 real-model smoke. The compatible Qwen3 backend matched 6/6 original and 12/12 additional
 authored smoke requests; raw failures and generations are preserved separately from
@@ -102,3 +102,25 @@ historical TideLM adapter results. No model/runtime binaries are bundled. Follow
 `docs/SETUP_WINDOWS_MAC.md` to provision and start the optional model; the core needs
 neither weights nor an API key. CI is configured and locally checked; hosted CI has
 not run. Team-controlled administrative facts and video remain deferred.
+
+## Current evidence v3
+
+Start with `docs/READINESS_CURRENT.md`. The exact shipped TidePay model is
+evaluated on 7,427 new synthetic invoices; mean absolute timing error is 8.5585
+days versus 10.2296 for the history heuristic. The low-history limitation is
+reported separately. Historical audit-model scores do not transfer to shipped
+weights. Native macOS Qwen3 first handled 28/32 sealed requests; all four misses
+and source snapshots are preserved alongside later guard regressions.
+
+Independent message screening detected only 2/24 unfamiliar attacks and flagged
+2/24 benign messages. Payment authority therefore remains outside the model and
+screening. Above-target plans require each approver's server-checked, plan-bound
+risk acknowledgement. Mock financing includes timing, total repayment,
+unverified eligibility and affordability through repayment.
+
+`python3 scripts/prepare_release.py` rebuilds and checks one frozen LF source
+tree, refreshes browser and PDF evidence, builds the local ZIP and verifies its
+fresh extraction. `--checks-only` runs core checks; Node 22+ and Chrome/Edge are
+required for the full command. No weight download, cloud provider, push or
+submission occurs. Real-user study status is pending with zero participants;
+the consent-aware kit does not invent feedback.

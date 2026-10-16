@@ -24,6 +24,7 @@ import itertools
 from . import analytics
 from .domain import OPEN_INVOICE_STATUSES, add_days, days_between, human_date, money_text
 from .projection import build_events, horizon_end, project, summary
+from .financing import CATALOGUE as FINANCING_CATALOGUE, compare as compare_financing
 
 
 SUPPLIER_CREDIT_APR_BPS = 1200      # modelling assumption: asking a supplier to wait "costs" 12% a year
@@ -33,14 +34,6 @@ DISCOUNT_STEPS_BPS = (100, 200, 300)
 MAX_GROUPS = 6
 ROBUST_CANDIDATES = 40
 RISK_TARGET = 0.10                  # recommended plans should breach in at most 2 of 20 simulated futures
-FINANCING_CATALOGUE = (
-    {"variant": "invoice_advance", "label": "MOCK invoice advance", "fee_bps": 200, "term_days": 30,
-     "days_to_cash": 2, "collateral": "Assigned receivable", "eligibility": "Illustrative: needs a confirmed invoice"},
-    {"variant": "working_capital", "label": "MOCK working-capital line", "fee_bps": 350, "term_days": 60,
-     "days_to_cash": 5, "collateral": "None (unsecured)", "eligibility": "Illustrative: lender credit check"},
-    {"variant": "guaranteed_loan", "label": "MOCK credit-guarantee bank loan", "fee_bps": 180, "term_days": 90,
-     "days_to_cash": 21, "collateral": "Guarantee scheme", "eligibility": "Illustrative: weeks of paperwork"},
-)
 
 
 def _round_up(value, step=100_000):
@@ -386,20 +379,8 @@ def plan_recovery(business, policy, records, target_date, *, accepted=(), promis
                 levers.append({"kind": "customer_on_time", "economic_cost_minor": 0,
                                "text": f"{invoice['customer']} pays invoice {invoice['id']} on its due date ({human_date(invoice['due_date'])})"})
     gap = basis_projection["reserve_shortfall_minor"]
-    financing = []
-    for item in FINANCING_CATALOGUE:
-        principal = _round_up(gap)
-        fee = principal * item["fee_bps"] // 10_000
-        financing.append({"action_id": f"mock-{item['variant']}", "type": "mock_financing", "variant": item["variant"],
-                          "label": item["label"], "principal_minor": principal, "fee_minor": fee,
-                          "repayment_minor": principal + fee, "term_days": item["term_days"],
-                          "apr_bps": analytics.apr_bps(fee, principal, item["term_days"]),
-                          "days_to_cash": item["days_to_cash"], "collateral": item["collateral"],
-                          "eligibility": item["eligibility"],
-                          "arrives_in_time": bool(breach) and add_days(business["opening_date"], item["days_to_cash"]) < breach,
-                          "economic_cost_minor": fee, "currency": business["currency"],
-                          "executable": False, "mock": True, "feasible": bool(principal),
-                          "note": "Illustrative catalogue comparison only. No lender, credit decision or money movement."})
+    financing = compare_financing(business, policy, records, target_date, gap, breach, as_of=as_of,
+                                  adjustments=accepted, invoice_dates=dates, promises=promises)
     customer_profiles = (profiles or {}).get("customers", {})
     offered = {action["record_id"] for action in (recommended or {}).get("actions", []) if action["type"] == "early_payment_offer"}
     open_invoices = [row for row in records["invoices"] if row["status"] in OPEN_INVOICE_STATUSES

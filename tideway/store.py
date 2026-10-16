@@ -168,6 +168,7 @@ CREATE TABLE IF NOT EXISTS plans (
 CREATE TABLE IF NOT EXISTS approvals (
     id TEXT PRIMARY KEY, business_id TEXT NOT NULL, plan_id TEXT NOT NULL, bundle_id TEXT NOT NULL,
     operator_id TEXT NOT NULL, role TEXT NOT NULL, review_ms INTEGER, created_at TEXT NOT NULL,
+    risk_acknowledgement TEXT,
     UNIQUE(plan_id,bundle_id,operator_id));
 CREATE TABLE IF NOT EXISTS mandates (
     id TEXT PRIMARY KEY, business_id TEXT NOT NULL, plan_id TEXT, bundle_id TEXT, kind TEXT NOT NULL,
@@ -214,6 +215,11 @@ class Store:
         self._witness_memory = {}
         with self.connect() as db:
             db.executescript(SCHEMA)
+            db.execute("BEGIN IMMEDIATE")
+            # Existing local workspaces retain their approvals. A missing acknowledgement
+            # is never treated as consent when issuing or executing a risky mandate.
+            if "risk_acknowledgement" not in {row["name"] for row in db.execute("PRAGMA table_info(approvals)")}:
+                db.execute("ALTER TABLE approvals ADD COLUMN risk_acknowledgement TEXT")
 
     def close(self):
         """Release the keeper connection used by shared in-memory databases."""
@@ -1131,8 +1137,9 @@ class Store:
             row = db.execute("SELECT * FROM plans WHERE business_id=? AND id=?", (business_id, plan_id)).fetchone()
             if not row:
                 raise ValidationError("Plan was not found for this business.")
-            approvals = [dict(item) for item in db.execute(
-                "SELECT bundle_id,operator_id,role,review_ms,created_at FROM approvals WHERE plan_id=? ORDER BY created_at", (plan_id,))]
+            approvals = [self._approval_dict(item) for item in db.execute(
+                "SELECT bundle_id,operator_id,role,review_ms,created_at,risk_acknowledgement FROM approvals "
+                "WHERE plan_id=? ORDER BY created_at", (plan_id,))]
         return {**json.loads(row["payload"]), "plan_id": row["id"], "plan_hash": row["plan_hash"], "status": row["status"],
                 "approvals": approvals}
 
@@ -1204,7 +1211,40 @@ class Store:
                               (business_id, utc_now()[:10] + "%")).fetchall()
         return sum(json.loads(row["receipt_json"]).get("exposure_minor", 0) for row in rows)
 
-    def approve(self, business_id, plan_id, bundle_id, operator, pin, actor, review_ms=None):
+    @staticmethod
+    def _approval_dict(row):
+        item = dict(row)
+        value = item.get("risk_acknowledgement")
+        item["risk_acknowledgement"] = json.loads(value) if value else None
+        return item
+
+    @staticmethod
+    def risk_acknowledgement_terms(plan, bundle):
+        """Return the exact proposal context that a human must acknowledge.
+
+        Risk is compared using the stored probabilities, independently of the
+        display flag and rounded percentage. This method does not grant consent.
+        """
+        probability, target = bundle.get("probability_breach_after"), plan.get("risk_target")
+        if any(type(value) not in (int, float) or not 0 <= value <= 1 for value in (probability, target)):
+            raise ValidationError("This proposal has no valid simulated risk estimate; create a fresh plan before approving.")
+        if probability <= target:
+            return None
+        return {"plan_id": plan["plan_id"], "plan_hash": plan["plan_hash"], "bundle_id": bundle["bundle_id"],
+                "probability_breach_after": probability, "risk_target": target}
+
+    @staticmethod
+    def _validate_risk_acknowledgement(terms, acknowledgement):
+        if terms is None:
+            if acknowledgement is not None:
+                raise ValidationError("Risk acknowledgement does not match this proposal; refresh and review it again.")
+            return
+        expected = {"acknowledged": True, **terms}
+        if not isinstance(acknowledgement, dict) or canonical_json(acknowledgement) != canonical_json(expected):
+            raise ValidationError("This bundle exceeds the simulated risk target. Explicitly acknowledge its exact "
+                                  "remaining risk before approving; refresh if the proposal changed.")
+
+    def approve(self, business_id, plan_id, bundle_id, operator, pin, actor, review_ms=None, risk_acknowledgement=None):
         if operator["role"] not in APPROVER_ROLES:
             raise ValidationError("Only an owner or accountant can approve; viewers and the agent cannot.")
         self.verify_pin(operator["id"], pin)
@@ -1219,6 +1259,8 @@ class Store:
             if not bundle:
                 raise ValidationError("Bundle was not found in this plan.")
             exposure = self._check_bundle(snapshot, derived, bundle)
+            risk_terms = self.risk_acknowledgement_terms({**payload, "plan_id": plan_id, "plan_hash": row["plan_hash"]}, bundle)
+            self._validate_risk_acknowledgement(risk_terms, risk_acknowledgement)
             for live in db.execute(f"SELECT id,document FROM mandates WHERE business_id=? AND plan_id=? AND kind='bundle' "
                                    f"AND status IN {BUNDLE_LIVE}", (business_id, plan_id)).fetchall():
                 if _expired(json.loads(live["document"])["expires_at"]):
@@ -1230,11 +1272,22 @@ class Store:
             if db.execute("SELECT 1 FROM approvals WHERE plan_id=? AND bundle_id=? AND operator_id=?",
                           (plan_id, bundle_id, operator["id"])).fetchone():
                 raise ValidationError("You already approved this bundle. A second approval must come from a different person.")
+            if risk_terms is not None:
+                # An approval from an older version cannot silently supply the second
+                # person's consent to residual risk. Both people must review again.
+                for prior in db.execute("SELECT risk_acknowledgement FROM approvals WHERE plan_id=? AND bundle_id=?",
+                                        (plan_id, bundle_id)):
+                    if not prior[0]:
+                        raise ValidationError("An existing approval predates risk acknowledgement. Create a fresh plan "
+                                              "so every approver can review its remaining risk.")
+                    self._validate_risk_acknowledgement(risk_terms, json.loads(prior[0]) if prior[0] else None)
             review = review_ms if isinstance(review_ms, int) and not isinstance(review_ms, bool) and 0 <= review_ms < 86_400_000 else None
-            db.execute("INSERT INTO approvals(id,business_id,plan_id,bundle_id,operator_id,role,review_ms,created_at) VALUES (?,?,?,?,?,?,?,?)",
-                       (uuid.uuid4().hex, business_id, plan_id, bundle_id, operator["id"], operator["role"], review, utc_now()))
-            approvals = [dict(item) for item in db.execute(
-                "SELECT operator_id,role,review_ms,created_at FROM approvals WHERE plan_id=? AND bundle_id=? ORDER BY created_at",
+            db.execute("INSERT INTO approvals(id,business_id,plan_id,bundle_id,operator_id,role,review_ms,created_at,risk_acknowledgement) "
+                       "VALUES (?,?,?,?,?,?,?,?,?)", (uuid.uuid4().hex, business_id, plan_id, bundle_id, operator["id"],
+                       operator["role"], review, utc_now(), canonical_json(risk_acknowledgement) if risk_terms else None))
+            approvals = [self._approval_dict(item) for item in db.execute(
+                "SELECT operator_id,role,review_ms,created_at,risk_acknowledgement FROM approvals "
+                "WHERE plan_id=? AND bundle_id=? ORDER BY created_at",
                 (plan_id, bundle_id))]
             policy = snapshot["policy"]
             dual = exposure > policy["dual_approval_threshold_minor"]
@@ -1251,7 +1304,9 @@ class Store:
             db.execute("UPDATE plans SET status='approved' WHERE id=?", (plan_id,))
             details = {"plan_id": plan_id, "bundle_id": bundle_id, "exposure_minor": exposure,
                        "dual_approval_required": dual, "approvals": approvals, "step_up": "PIN re-entered",
-                       "review_ms": review, "fast_approval_flag": fast, "separation_of_duties": sod}
+                       "review_ms": review, "fast_approval_flag": fast, "separation_of_duties": sod,
+                       "risk": {"probability_breach_after": bundle["probability_breach_after"],
+                                "risk_target": payload["risk_target"], "acknowledgement_required": risk_terms is not None}}
             if not satisfied:
                 receipt = self._audit(db, business_id, "plan.approve", actor, "human_approval",
                                       {**details, "status": "awaiting_second_approval"})
@@ -1269,7 +1324,7 @@ class Store:
                         "constraints": {"payment.allowed_counterparties": sorted({action["counterparty"] for action in bundle["actions"]}),
                                         "payment.budget_minor": exposure, "execution.not_after": _later(minutes=MANDATE_MINUTES),
                                         "consent.required": [action["action_id"] for action in bundle["actions"]]},
-                        "exposure_minor": exposure, "approvals": approvals, "dual_approval": dual,
+                        "exposure_minor": exposure, "approvals": approvals, "dual_approval": dual, "risk": details["risk"],
                         "human_present": True, "issued_at": utc_now(), "expires_at": _later(minutes=MANDATE_MINUTES),
                         "nonce": secrets.token_urlsafe(16)}
             document["signature"] = security.sign(self.key, document)
@@ -1424,6 +1479,13 @@ class Store:
                 raise ValidationError("The plan hash does not match the mandate.")
             bundle = next(item for item in payload["bundles"] if item["bundle_id"] == document["bundle_id"])
             self._check_bundle(snapshot, derived, bundle)
+            risk_terms = self.risk_acknowledgement_terms(
+                {**payload, "plan_id": document["plan_id"], "plan_hash": plan_row["plan_hash"]}, bundle)
+            if risk_terms is not None:
+                if not document.get("approvals"):
+                    raise ValidationError("This above-target mandate needs fresh human approval and risk acknowledgement.")
+                for approval in document["approvals"]:
+                    self._validate_risk_acknowledgement(risk_terms, approval.get("risk_acknowledgement"))
             if [bound_terms(action) for action in bundle["actions"]] != document["actions"]:
                 raise SecurityError("unresolved_constraint", "the bundle no longer matches the signed terms.")
             latest = {}
@@ -1466,6 +1528,8 @@ class Store:
                        "bundle_id": document["bundle_id"], "idempotency_key": idempotency_key,
                        "executed_by": operator["id"], "executed_role": operator["role"], "human_present": True,
                        "approvals": document["approvals"], "actions": document["actions"],
+                       "risk": document.get("risk", {"probability_breach_after": bundle["probability_breach_after"],
+                                                       "risk_target": payload["risk_target"], "acknowledgement_required": False}),
                        "adjustments": adjustments, "exposure_minor": document["exposure_minor"],
                        "cash_moved_minor": 0, "synthetic": True,
                        "state_before": {"version": state["version"], "state_hash": state["state_hash"]},
@@ -1476,7 +1540,7 @@ class Store:
             receipt.update(self._audit(db, business_id, "mandate.execute", actor, "sandbox_execute",
                                        {key: receipt[key] for key in ("receipt_id", "mandate_id", "plan_id", "bundle_id",
                                                                       "idempotency_key", "actions", "exposure_minor",
-                                                                      "state_before", "state_after", "executed_by")}))
+                                                                      "state_before", "state_after", "executed_by", "risk", "approvals")}))
             db.execute("INSERT INTO executions(id,business_id,mandate_id,idempotency_key,receipt_json,created_at) VALUES (?,?,?,?,?,?)",
                        (receipt["receipt_id"], business_id, mandate_id, idempotency_key, canonical_json(receipt), utc_now()))
         receipt["witness"] = self.witness_cosign(business_id)

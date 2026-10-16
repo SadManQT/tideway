@@ -119,6 +119,8 @@ def main():
                 raise RuntimeError('Extracted server did not start')
             for route, expected in (('/', 200), ('/guide', 200), ('/guide.html', 200), ('/guide.css', 200),
                                     ('/guide.js', 200), ('/benchmarks/tidepay.json', 200),
+                                    ('/benchmarks/tidepay-deployed.json', 200),
+                                    ('/benchmarks/tidepay-deployed-reliability.svg', 200),
                                     ('/api/dashboard?business_id=shapla-services', 401)):
                 connection = http.client.HTTPConnection('127.0.0.1', port, timeout=2)
                 connection.request('GET', route); response = connection.getresponse(); response.read(); connection.close()

@@ -458,6 +458,21 @@ function chartSvg({lines = [], fan = null, reserve = null, markers = [], height 
 
 function seriesOf(projection) { return (projection?.days || []).map((item) => ({date: item.date, value: item.closing_cash_minor})); }
 
+function tidepayEvidenceHtml(card) {
+  const deployed = card?.deployed_evaluation, audit = card?.audit_benchmark;
+  let current = `<p class="hint">${esc(deployed?.reason || "Exact deployed-model evaluation is unavailable; older benchmark scores do not describe the installed artifact.")}</p>`;
+  if (deployed?.available) {
+    const results = deployed.results, cold = deployed.cold_start;
+    current = `<p class="small"><strong>Installed prediction model:</strong> ${esc(deployed.test_invoices.toLocaleString())} invoices from ${esc(deployed.test_businesses)} new synthetic businesses across ${esc(deployed.cohort_count)} cohorts. Average error ${esc(results.deployed.mae_days.toFixed(2))} days, versus ${esc(results.customer_history_heuristic.mae_days.toFixed(2))} for the fixed customer-history rule.</p>
+      <p class="hint">${esc(deployed.note)}</p>
+      <p class="small">New customers need care: ${esc(cold.n.toLocaleString())} invoices had no settled customer history. Their average error was ${esc(cold.deployed.mae_days.toFixed(2))} days; probability log loss was ${esc(cold.deployed.log_loss.toFixed(3))}, versus ${esc(cold.prior.log_loss.toFixed(3))} for the frozen prior (lower is better).</p>
+      <p class="small"><a href="/benchmarks/tidepay-deployed.json" target="_blank" rel="noopener">Installed-model metrics and limitations</a> · <a href="/benchmarks/tidepay-deployed-reliability.svg" target="_blank" rel="noopener">Reliability plot</a></p>
+      <details><summary>Evaluated model identity</summary><p class="small">SHA-256</p><pre>${esc(deployed.artifact_sha256)}</pre></details>`;
+  }
+  const historical = audit ? `<details class="section-gap"><summary>Earlier audit benchmark · separate model</summary><p class="small">${esc(audit.results.federated.n.toLocaleString())} held-out synthetic invoices across ${esc(audit.test_businesses)} existing businesses. Average error ${esc(audit.results.federated.mae_days.toFixed(2))} days for the audit artifact. These scores belong to a separate model and test cohort.</p><p class="hint">${esc(audit.note)}</p><p class="small"><a href="/benchmarks/tidepay.json" target="_blank" rel="noopener">Earlier benchmark report</a> · <a href="/benchmarks/tidepay-reliability.svg" target="_blank" rel="noopener">Earlier reliability plot</a></p></details>` : "";
+  return `<details class="section-gap"><summary>TidePay prediction evidence</summary>${current}${historical}</details>`;
+}
+
 function renderOverview() {
   const d = state.dashboard;
   const base = d.projections.base, likely = d.projections.likely, sim = d.simulation;
@@ -475,7 +490,6 @@ function renderOverview() {
     fan: sim.fan, reserve: d.policy.reserve_floor_minor, markers});
   const customers = Object.values(d.profiles.customers || {});
   const k = d.kpis;
-  const audit = d.tidepay?.card?.audit_benchmark;
   return `${onboardingHtml(d)}
   <section class="brief ${esc(d.weather.level)}">
     <div class="weather-badge">${icon(weatherIcon(d.weather.level))}${esc(d.weather.label)}</div>
@@ -497,7 +511,7 @@ function renderOverview() {
       <p class="dots-caption"><strong>${pct(sim.probability_breach)}</strong> breach the reserve floor · payroll unfunded in ${pct(sim.probability_payroll_unfunded)} · most common first breach ${esc(day(sim.most_common_breach_date))}.</p>
       <details class="section-gap"><summary>How this is calculated</summary><p class="small muted">${esc(sim.method)} Seed ${esc(sim.seed)}: the same records always give the same result.</p>
       ${d.backtest.available ? `<p class="small muted section-gap">Backtest (leave-one-out, synthetic history): typical error ${esc(d.backtest.mean_absolute_error_days)} days; ${pct(d.backtest.p80_coverage)} of settled invoices fell inside the P80 delay. ${esc(d.backtest.note)}</p>` : `<p class="small muted section-gap">${esc(d.backtest.reason)}</p>`}</details>
-      ${audit ? `<details class="section-gap"><summary>TidePay prediction evidence</summary><p class="small">${esc(audit.results.federated.n)} held-out synthetic invoices across ${esc(audit.test_businesses)} businesses. Average error ${esc(audit.results.federated.mae_days.toFixed(2))} days for simulated federation versus ${esc(audit.results.heuristic_v1.mae_days.toFixed(2))} for the heuristic.</p><p class="hint">${esc(audit.note)}</p><p class="small"><a href="/benchmarks/tidepay.json" target="_blank" rel="noopener">Metrics, splits and limitations</a> · <a href="/benchmarks/tidepay-reliability.svg" target="_blank" rel="noopener">Reliability plot</a></p></details>` : ""}
+      ${tidepayEvidenceHtml(d.tidepay?.card)}
     </div>
   </section>
   <section class="grid cols-2 section-gap">
@@ -721,10 +735,11 @@ function bundleCard(plan, bundle, index) {
 }
 
 function residualRiskHtml(plan, bundle) {
-  if (!bundle.feasible || bundle.risk_target_met !== false || !isNum(bundle.probability_breach_after)) return "";
+  if (!bundle.feasible || !isNum(bundle.probability_breach_after) || !isNum(plan.risk_target)
+      || bundle.probability_breach_after <= plan.risk_target) return "";
   const risk = Math.round(bundle.probability_breach_after * 1000) / 10;
   const target = isNum(plan.risk_target) ? Math.round(plan.risk_target * 1000) / 10 : 10;
-  return `<div class="alert warning residual-risk" role="note">${icon("alert")}<div><strong>Residual risk: ${esc(risk)}% of simulated futures fall below reserve</strong><span>The likely forecast holds the reserve, but this option does not meet the ${esc(target)}% risk target. Review the remaining exposure before approving; this is not a guaranteed rescue.</span></div></div>`;
+  return `<div class="alert warning residual-risk" role="note">${icon("alert")}<div><strong>Residual risk: ${esc(risk)}% of simulated futures fall below reserve</strong><span>The likely forecast holds the reserve, but this option does not meet the ${esc(target)}% risk target. Each approver must explicitly accept this remaining risk; this is not a guaranteed rescue.</span></div></div>`;
 }
 
 function mandateCard(view) {
@@ -810,9 +825,9 @@ function renderRescue() {
       <div class="card"><div class="card-head"><div><h3>What would need to change</h3><p>Any one of these alone would hold the reserve floor.</p></div></div>${levers.length ? `<ul class="small">${levers.map((item) => `<li>${esc(item.text)}${item.economic_cost_minor ? ` · ${money(item.economic_cost_minor)}` : ""}</li>`).join("")}</ul>` : `<p class="small muted">No single change is enough; that is why the plan combines actions.</p>`}</div>
       <div class="card"><div class="card-head"><div><h3>Blocked by policy or security</h3><p>Never proposed, whatever the agent concludes.</p></div></div>${(plan.rejected || []).length ? plan.rejected.map((item) => `<div class="alert ${item.code === "SECURITY_BLOCKED" ? "critical" : "info"}">${icon(item.code === "SECURITY_BLOCKED" ? "shield" : "lock")}<div><strong>${esc(item.code)} · ${esc(item.counterparty)}</strong><span>${esc(item.reason)}</span></div></div>`).join("") : `<p class="small muted">Nothing blocked for this business.</p>`}</div></section>`);
     parts.push(`<section class="card section-gap"><div class="card-head"><div><h3>Financing options compared (mock catalogue)</h3><p>Topic E financing-option matching: every option normalised to cost and annual rate. None is executable; no lender or credit decision is connected.</p></div><span class="pill mock">MOCK</span></div>
-      <div class="table-wrap"><table><thead><tr><th>Option</th><th class="num">Principal</th><th class="num">Fee</th><th class="num">≈ APR</th><th class="num">Days to cash</th><th>Collateral</th><th>Eligibility</th></tr></thead><tbody>
-      ${plan.financing.map((item) => `<tr><td><strong>${esc(item.label)}</strong></td><td class="num">${money(item.principal_minor)}</td><td class="num">${money(item.fee_minor)}</td><td class="num">${isNum(item.apr_bps) ? `${(item.apr_bps / 100).toFixed(1)}%` : "—"}</td><td class="num">${esc(item.days_to_cash)}</td><td>${esc(item.collateral)}</td><td class="small muted">${esc(item.eligibility)}</td></tr>`).join("")}
-      ${plan.bundles[0]?.feasible ? `<tr><td><strong>${plan.bundles[0].bundle_id === "counter-offer" ? "Counter-offer bundle" : "Recommended bundle"}</strong> <span class="tag good">executable</span></td><td class="num">—</td><td class="num">${money(plan.bundles[0].economic_cost_minor)}</td><td class="num">—</td><td class="num">on agreement</td><td>None</td><td class="small muted">Counterparties must agree</td></tr>` : ""}
+      <div class="table-wrap"><table><thead><tr><th>Option</th><th class="num">Principal</th><th class="num">Fee</th><th class="num">Total repayment</th><th class="num">≈ APR</th><th>Timing</th><th>Assumptions and repayment pressure</th></tr></thead><tbody>
+      ${plan.financing.map((item) => `<tr><td><strong>${esc(item.label)}</strong><p class="small">${esc(item.collateral)}</p></td><td class="num">${money(item.principal_minor)}</td><td class="num">${money(item.fee_minor)}</td><td class="num">${money(item.repayment_minor)}</td><td class="num">${isNum(item.apr_bps) ? `${(item.apr_bps / 100).toFixed(1)}%` : "—"}</td><td>${esc(item.days_to_cash)} days to cash${item.available_date ? `<p class="small">Illustrated arrival ${esc(day(item.available_date))}; repay ${esc(day(item.repayment_date, true))}</p>` : ""}</td><td class="small"><strong>Eligibility unverified</strong><p>${esc(item.eligibility)}</p>${item.repayment_projection ? `<p>Reserve shortfall through repayment: ${money(item.repayment_projection.reserve_shortfall_minor)}; payroll ${item.repayment_projection.payroll_at_risk ? "at risk" : "funded on the projected path"}.</p>` : ""}<details><summary>Review assumptions</summary><ul>${[...(item.reasons || []), ...(item.eligibility_unknowns || [])].map((reason) => `<li>${esc(reason)}</li>`).join("")}</ul><p>${esc(item.apr_convention || "")}</p></details></td></tr>`).join("")}
+      ${plan.bundles[0]?.feasible ? `<tr><td><strong>${plan.bundles[0].bundle_id === "counter-offer" ? "Counter-offer bundle" : "Recommended bundle"}</strong> <span class="tag good">sandbox proposal</span></td><td class="num">—</td><td class="num">${money(plan.bundles[0].economic_cost_minor)}<p class="small">Economic comparison cost</p></td><td class="num">—</td><td class="num">—</td><td>On agreement</td><td class="small muted">Human approvals and exact counterparty consent are required before any sandbox execution.</td></tr>` : ""}
       </tbody></table></div></section>`);
     if ((plan.reminders || []).length) {
       parts.push(`<section class="card section-gap"><div class="card-head"><div><h3>Collection reminders, ranked by risk to the plan</h3><p>Zero-cash messages. A reply is a promise to pay: tracked, never counted as cash.${policy.autonomy_level === "delegate" ? " Under delegated autonomy the agent may send these alone (5 a day)." : ""}</p></div></div>
@@ -1054,7 +1069,7 @@ function renderInbox() {
       <label class="field">SMS, WhatsApp or bank text<textarea id="inbox-text" maxlength="2000" spellcheck="false" placeholder="e.g. Invoice INV-2291 to Nila Traders, BDT 42,500, due 5 Nov">${esc(state.inbox.text)}</textarea></label>
       <div class="row section-gap"><button class="button primary" type="submit" ${on ? "" : "disabled"}>${icon("spark")}Extract</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="clean">Sample: invoice SMS</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="injection">Sample: injection attempt</button></div>
       ${photoHtml()}</form>
-    <div class="card"><h3>How the inbox stays safe</h3><ul class="small"><li>Drafts only: nothing reaches the ledger until you tick it and save.</li><li>Every field is validated again by Tideway's own rules when you save.</li><li>Instructions hidden in the text are flagged and never followed.</li><li>Pasted text never leaves this computer; the audit trail keeps only its hash.</li></ul></div></section>
+    <div class="card"><h3>Review every draft</h3><ul class="small"><li>Drafts only: nothing reaches the ledger until you tick it and save.</li><li>Check the party, amount, dates and record type against the original message before saving.</li><li>Screening misses some hidden instructions. No warning does not mean a message is trusted. Message text cannot grant payment authority.</li><li>Every field is validated again when you save. Pasted text stays on this computer; the audit trail keeps only its hash.</li></ul></div></section>
     <div id="inbox-results" aria-live="polite">${inboxResultsHtml()}</div>`;
 }
 
@@ -1204,7 +1219,7 @@ function renderRecords() {
   return `<section class="card"><div class="row between"><div class="row"><select id="record-filter" aria-label="Record type">${["all", "transaction", "invoice", "bill", "flagged"].map((value) => `<option value="${value}" ${state.recordFilter === value ? "selected" : ""}>${value === "flagged" ? "Quarantined / flagged" : value === "all" ? "All records" : value[0].toUpperCase() + value.slice(1) + "s"}</option>`).join("")}</select><input id="record-search" class="search" placeholder="Search id, party or text" value="${esc(state.recordQuery)}" aria-label="Search records"></div>
     <div class="row"><a class="button ghost" href="/api/export?kind=records&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Export CSV</a>${canApprove() ? `<button class="button primary" data-action="import">${icon("upload")}Import CSV</button>` : ""}</div></div>
     <div class="table-wrap section-gap"><table><thead><tr><th>Type</th><th>Record</th><th>Party</th><th>Date</th><th class="num">Amount</th><th>Status</th><th>Screening</th></tr></thead><tbody>
-    ${shown.map((row) => `<tr class="${row.flags.length ? "flagged" : ""}"><td><span class="tag">${esc(row.kind)}</span></td><td><strong>${esc(row.id)}</strong><div class="small muted">${esc(row.text)}</div></td><td>${esc(row.party)}</td><td class="nowrap">${esc(day(row.date, true))}</td><td class="num ${row.amount < 0 ? "negative" : "positive"}">${money(row.amount)}</td><td class="small">${esc(row.status)}</td><td>${row.flags.length ? row.flags.map((flag) => `<span class="tag bad">${esc(flag.replaceAll("_", " "))}</span>`).join(" ") : `<span class="tag good">clean</span>`}</td></tr>`).join("")}
+    ${shown.map((row) => `<tr class="${row.flags.length ? "flagged" : ""}"><td><span class="tag">${esc(row.kind)}</span></td><td><strong>${esc(row.id)}</strong><div class="small muted">${esc(row.text)}</div></td><td>${esc(row.party)}</td><td class="nowrap">${esc(day(row.date, true))}</td><td class="num ${row.amount < 0 ? "negative" : "positive"}">${money(row.amount)}</td><td class="small">${esc(row.status)}</td><td>${row.flags.length ? row.flags.map((flag) => `<span class="tag bad">${esc(flag.replaceAll("_", " "))}</span>`).join(" ") : `<span class="tag">no flags</span>`}</td></tr>`).join("")}
     </tbody></table></div><p class="hint section-gap">Showing ${shown.length} of ${rows.length}. Text is rendered as data. Flags mean the agent never receives that text and it cannot change any action.</p></section>`;
 }
 
@@ -1295,12 +1310,19 @@ function openApprove(planId, bundleId) {
   const plan = state.dashboard.plan;
   const bundle = plan?.bundles.find((item) => item.bundle_id === bundleId);
   if (!bundle) return toast("That proposal changed. Run the agent again.");
-  state.approving = {planId, bundleId, bundle, opened: Date.now()};
+  const riskTerms = isNum(bundle.probability_breach_after) && isNum(plan.risk_target)
+    && bundle.probability_breach_after > plan.risk_target
+    ? {plan_id: planId, plan_hash: plan.plan_hash, bundle_id: bundleId,
+       probability_breach_after: bundle.probability_breach_after, risk_target: plan.risk_target} : null;
+  state.approving = {planId, bundleId, bundle, riskTerms, opened: Date.now()};
   const nat = (minor) => money(minor, currency(), {native: true});
   const lines = bundle.actions.map((action) => `<div class="line"><span>${esc(action.counterparty)} · ${action.type === "supplier_deferral" ? `move ${nat(action.amount_minor)} to ${esc(day(action.to_date))}` : `${esc(action.discount_bps / 100)}% off, pay ${nat(action.amount_minor)} by ${esc(day(action.to_date))}`}</span><b>${nat(action.economic_cost_minor)}</b></div>`);
   lines.push(`<div class="line"><span>Total exposure</span><b>${nat(bundle.exposure_minor)}</b></div>`);
   lines.push(`<div class="line"><span>Simulated futures still short after</span><b>${esc(bundle.futures_short_of_20_after ?? "—")} of 20</b></div>`);
   $("#approve-summary").innerHTML = lines.join("") + residualRiskHtml(plan, bundle) + `<p class="small muted">You approve these exact terms. Any change to the records, policy, payee, amount or dates voids this approval before execution. ${bundle.dual_approval_required ? "This exceeds the dual-approval threshold: a second person, including the owner, must approve too." : ""}</p>`;
+  $("#approve-risk-label").hidden = !riskTerms;
+  $("#approve-risk-ack").checked = false;
+  $("#approve-risk-ack").required = Boolean(riskTerms);
   $("#confirm-amount-label").hidden = !bundle.dual_approval_required;
   $("#confirm-amount").value = "";
   $("#approve-pin").value = "";
@@ -1319,6 +1341,13 @@ async function submitApprove(event) {
   const pending = state.approving;
   if (!pending) return;
   const body = {business_id: state.businessId, plan_id: pending.planId, bundle_id: pending.bundleId, pin: $("#approve-pin").value, review_ms: Date.now() - pending.opened};
+  if (pending.riskTerms) {
+    if (!$("#approve-risk-ack").checked) {
+      $("#approve-error").textContent = "Review and acknowledge the remaining simulated risk before approving.";
+      return;
+    }
+    body.risk_acknowledgement = {acknowledged: true, ...pending.riskTerms};
+  }
   if (pending.bundle.dual_approval_required) body.confirm_amount_minor = parseMinor($("#confirm-amount").value);
   try {
     const result = await api("/api/plan/approve", body);

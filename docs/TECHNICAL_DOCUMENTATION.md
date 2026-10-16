@@ -101,7 +101,7 @@ A single-page app: a landing page with sign-up, live demo and join-by-code; then
 
 ## 15. Tideway's own AI
 
-**TidePay** predicts, for each open invoice, the probability of five lateness bands (on time; 1-7, 8-15, 16-30, more than 30 days late) from 14 features (customer history, amount, terms, seasonality, portfolio pattern). It is a softmax model in pure Python, trained with **simulated federated averaging** across 40 synthetic SMEs. One process holds all synthetic client data and creates reproducible pairwise masks. Global scaling uses pooled training features. This demonstrates aggregation arithmetic, not a distributed cryptographic protocol or a guarantee against a curious server. The historical experiment reported log loss 1.036 versus 1.55 and a small-business subgroup gain; its older split and leaked prior-day baseline must be read with the audit caveats in Section 21. Its distribution drives the likely and stress scenarios and the Monte Carlo. Report: `evidence/ml/tidepay_report.md`.
+**TidePay** predicts, for each open invoice, the probability of five lateness bands (on time; 1-7, 8-15, 16-30, more than 30 days late) from 14 features (customer history, amount, terms, seasonality, portfolio pattern). It is a softmax model in pure Python, trained with **simulated federated averaging** across 40 synthetic SMEs. One process holds all synthetic client data and creates reproducible pairwise masks. Global scaling uses pooled training features. This demonstrates aggregation arithmetic, not a distributed cryptographic protocol or a guarantee against a curious server. Its distribution drives the likely and stress scenarios and the Monte Carlo. The exact shipped artifact now scores 8.5585 days MAE / 1.2850 natural-log loss / 0.6712 sum Brier on 7,427 fresh synthetic invoices from 80 unseen SMEs; the matching frozen prior scores 11.7453 / 1.5769 / 0.7871. These are synthetic issue-time forecasts, including 2,640 cold starts whose model log loss is slightly worse than that prior. See `docs/DEPLOYED_MODEL_EVALUATION.md`; the historical experiment and separate audit model retain their own distinct reports and caveats in Section 21.
 
 **TideLM** is Qwen3-4B-Instruct (4-bit) with a LoRA adapter trained here with MLX on Apple Silicon (rank 16, 16 layers). It has two skills: turning an owner's message in eight languages into a typed tool plan, and turning pasted bank, card and mobile-money alerts and chat messages into draft records while flagging injection. Training data is generated (`tideway/ml/tidelm_data.py`); the test set uses counterparty names never seen in training. Results against the base model are in `evidence/ml/tidelm_report.md`. At runtime (`tidelm.py`), a bounded cache holds scoped prompt prefixes; the request and observed tool results are processed as needed. Model loading can run in the background at start-up. Device verification of the changed protocol remains outstanding. The model cannot mutate money or records directly: plans pass `copilot.validate_plan` (known tools, typed arguments, names resolved against the ledger, read/propose tools only), a forbidden tool counts toward the circuit breaker, replies are composed by code from tool output, and extracted records are drafts until a person confirms them.
 
@@ -129,6 +129,10 @@ Synthetic data; counterparties are rules, not people; the Monte Carlo models pay
 
 The separate benchmark in `evidence/upgrade-v1/tidepay/` fixes the historical prior's test-label mean leakage and uses global chronological boundaries with label-maturity purges. All fitted statistics use training data; later rolling history includes only payments observable at issue time. On the same 2,376 final-test invoices, federated MAE is 6.9568 days, log loss 1.0727 and sum-over-five-classes Brier 0.5777. Heuristic results are 7.4107 / 1.5688 / 0.7905; local-only 7.2152 / 1.2329 / 0.6407; pooled MAE is slightly better at 6.9448. This audited model is a benchmark artifact; the shipped prediction weights and historical raw evidence are preserved. See `docs/TIDEPAY_EVALUATION_V2.md` for class balance, maturity selection effects, per-business results, confidence intervals and reliability bins. The app links the report/plot publicly; financial APIs retain authentication.
 
+The exact deployed weights are separately evaluated in `evidence/readiness-v3/tidepay/`, with SHA-256 `00639d9b3e408f1a51df20130e804db2f8a031772a772d706f09e6a7428aa466`. Four frozen fresh seeds yield 7,427 invoices from 80 new synthetic SMEs, including cold starts; all outcomes mature by the fixed 15 October 2026 ascertainment date. No fitting/calibration/selection uses those new examples. Original training-prior statistics reproduce the installed scaler and bucket means exactly. Features follow the running app's payment-date history order (unlike the training dataset's issue order), and tests prove agreement with `analytics.tidepay_predictions`. The 95% business-cluster MAE interval is [8.0999, 9.0233]; cold-start MAE is 11.6254 days, versus 6.8671 with history. Fresh same-generator data does not validate real customers or overdue conditional forecasts.
+
+`GET /api/dashboard` includes `tidepay.card.deployed_evaluation`: `available`, `status`, exact `artifact_sha256`, cohort counts, `results`, `cold_start` metrics, caveats and public evidence links. The service verifies the report's integrity manifest and its weight hash on each card access. Missing, malformed, mismatched-cohort or different-weight evidence produces `available: false` with a reason and no scores. `status: verified` describes local artifact/report agreement, not external certification. The older `audit_benchmark` remains explicitly `benchmark_only`. Only two new fixed public routes are allowed: `/benchmarks/tidepay-deployed.json` and `/benchmarks/tidepay-deployed-reliability.svg`; private financial APIs retain their existing access checks.
+
 `docs/MODEL_REASONING_V2.md` describes bounded, result-aware local model tool selection. The observable trace separates deterministic preflight from model-selected calls and ties outputs to hashes. Whole-plan contextual validation runs before any proposing tool, with explicit entity clarification, roles, native currency/units, dates and call/output budgets. A safe proposal may require a second model selection after computed cash/risk facts. This is a new runtime protocol, not a rerun of historical TideLM v2 quality scores. The model and weights are absent on the current machine; actual device inference remains outstanding.
 
 `docs/SCENARIO_EVALUATION_V2.md` and `evidence/upgrade-v1/scenarios/` report independently authored ledgers split into development and held-out conditions, labelled benign/attack screening, planner latency and injected-model failure containment. Outcome handling, feasible execution and no-safe-plan escalation have distinct denominators. Screening misses and false positives are retained. No general spreadsheet or generic-LLM comparison is inferred.
@@ -136,3 +140,39 @@ The separate benchmark in `evidence/upgrade-v1/tidepay/` fixes the historical pr
 `POST /api/demo/payment-delay` is an explicit owner/PIN operation, separate from read-only What-if. It is limited to synthetic demo invoices, validates the whole requested horizon before commit, compares the expected snapshot inside `BEGIN IMMEDIATE`, preserves quarantine, removes a superseded reminder promise, changes the collection date and calls `_bump`. That invalidates pending/approved proposals and live bundle mandates. A unique request id and payload hash replay the same original receipt on retry; conflicts fail. Audit, version and receipt commit atomically. The old approvals remain as evidence; they cannot authorise the changed ledger. A fresh proposal must pass the ordinary approval, signed mandate, simulated negotiation and idempotent execution path. See `docs/PAYMENT_DELAY_RUNBOOK.md` and `scripts/demo_payment_delay.py`.
 
 The tracked `submission-team.public.json` supplies only confirmed public names/institution. Private `submission-team.json`, .env files, databases, signing keys, caches and unrelated root files are excluded from the distributable package. The package builder requires current source hashes in both test and browser reports. `scripts/verify_package.py` verifies distributed bytes, runs extracted tests with Python `-S` and checks fresh startup/public handbook/protected API boundaries without Git or site packages.
+
+## Current financing and residual-risk contract
+
+`financing.py` owns the three illustrative catalogue offers. Each row discloses
+principal, fee, total repayment, simple annualised fee convention, simulated
+arrival and repayment dates, collateral and eligibility unknowns. Confirmed
+non-quarantined invoice face value is only an observable catalogue condition;
+lender acceptance, assignment and creditworthiness remain unverified. Accepted
+early-payment agreements can reduce actual assignable collateral, so this face
+value must not be treated as a credit limit. These offers are never executable.
+
+Each comparison extends the deterministic cash path through the later of the
+normal horizon and repayment, with principal inflow and principal-plus-fee
+outflow. It rejects late arrival, remaining reserve shortfall or unfunded payroll
+on that path. Unsupported repayment horizons are explicitly unevaluated. No
+comparison writes records or constitutes a real loan decision.
+
+For a feasible bundle above the stored simulated risk target, `/api/plan/approve`
+requires `risk_acknowledgement` with `acknowledged: true`, plan ID/hash, bundle ID,
+exact breach probability and target. The server derives these terms from its
+stored plan rather than trusting display flags or client probabilities. Every
+approver must supply fresh consent, which is retained in approval, audit, signed
+mandate and receipt. Stale or altered acknowledgements are rejected; legacy risky
+authority without bound acknowledgement cannot execute.
+
+The model preflight requires exact user-named counterparties and separately
+grounded monetary amount and day terms before credit tools run. Unknown or
+abbreviated names ask for clarification. Conditional recovery requests get
+forecast/risk/security checks even if model selection omits them; a gap without
+a proposed action asks for constraints instead of inventing an approval path.
+
+`prepare_release.py` checks LF source policy, tests, syntax, fresh-browser flows,
+PDF rebuilding, archive integrity and a new extracted server. Source changes
+during tests, browser runs or release stages invalidate verification. The
+current evidence index is `docs/READINESS_CURRENT.md`; historical source hashes
+describe their own earlier runs.

@@ -1,0 +1,46 @@
+{
+  "reviewed_at_utc": "2026-10-16T06:17:36+00:00",
+  "source_tree_sha256": "c341c86f3299e17e622ce4a2a10e78762b6a76f30e9f85772dd36006ba6b460f",
+  "passed": true,
+  "review_type": "Internal visual review, not an external audit",
+  "method": "Rendered all pages, inspected contact sheets and full-size changed/dense pages; checked extracted text bounds and blank pages.",
+  "total_pages": 52,
+  "files": [
+    {
+      "path": "slides/pitch.pdf",
+      "pages": 16,
+      "issues": [],
+      "sha256": "695dcdd2708ca4f6696f2076ed72bff674ae6c644bb3cf02fc8833f97e5dc8bc"
+    },
+    {
+      "path": "docs/architecture.pdf",
+      "pages": 8,
+      "issues": [],
+      "sha256": "84b53859133995f6afa5a47552d817b79046cc501edd9cda30c4050d5930e390"
+    },
+    {
+      "path": "docs/security-assessment.pdf",
+      "pages": 7,
+      "issues": [],
+      "sha256": "9555703e47c3e469b0ee7e83be74f27e0a15ff0d30109a97bd9ca5195b6e8543"
+    },
+    {
+      "path": "docs/submission-notes.pdf",
+      "pages": 3,
+      "issues": [],
+      "sha256": "202460253cfc383bb9a0ed4bc84abb195e714138fd8bbd6a813dd5025eded0d2"
+    },
+    {
+      "path": "docs/Tideway_FinTechathon_2026_Roadmap.pdf",
+      "pages": 18,
+      "issues": [],
+      "sha256": "928170e1fc7cda7633e0e3fb169472a565712ff2dddda536c6036d7e27fe92d2"
+    }
+  ],
+  "findings_resolved": [
+    "Roadmap current section added to contents",
+    "Security and testing pagination tightened; no near-empty overflow pages",
+    "Failure-case list kept together in two columns"
+  ],
+  "remaining_layout_blockers": []
+}

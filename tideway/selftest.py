@@ -83,9 +83,14 @@ def ut_counter_offer(app):
     revised = app.accept_counter(LOTUS, mandate["mandate_id"], "agent:test")
     bundle = revised["bundles"][0]
     accountant = app.store.verify_pin("imran", "1357")
-    approval = app.store.approve(LOTUS, revised["plan_id"], "counter-offer", accountant, "1357", "operator:imran", 9000)
+    terms = app.store.risk_acknowledgement_terms(revised, bundle)
+    # The test's synthetic humans separately acknowledge the actual revised risk.
+    acknowledgement = {"acknowledged": True, **terms} if terms else None
+    approval = app.store.approve(LOTUS, revised["plan_id"], "counter-offer", accountant, "1357", "operator:imran", 9000,
+                                 risk_acknowledgement=acknowledgement)
     if approval["status"] != "mandate_issued":
-        approval = app.store.approve(LOTUS, revised["plan_id"], "counter-offer", owner, "2468", "operator:nadia", 9000)
+        approval = app.store.approve(LOTUS, revised["plan_id"], "counter-offer", owner, "2468", "operator:nadia", 9000,
+                                     risk_acknowledgement=acknowledgement)
     app.negotiate(LOTUS, approval["mandate"]["mandate_id"], "agent:test")
     receipt = app.store.execute(LOTUS, approval["mandate"]["mandate_id"], "ut-2", owner, "operator:nadia")
     return receipt["status"] == "executed", (f"counter terms re-approved and executed; risk after counter "

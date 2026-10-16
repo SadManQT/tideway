@@ -14,6 +14,48 @@ global date cutoffs and a payment-label maturity purge. Those observations are
 preserved rather than presented as a clean chronological benchmark. Legacy
 training reruns now require training delays for the prior day forecast.
 
+The **exact deployed artifact** now has a separate fresh-cohort evaluation:
+**7,427 invoices from 80 new synthetic SMEs across four seeds**, issued
+1 November 2025–29 April 2026, with all labels matured by the fixed
+15 October 2026 ascertainment date. The frozen shipped weights have SHA-256
+`00639d9b3e408f1a51df20130e804db2f8a031772a772d706f09e6a7428aa466`.
+No training, calibration or model selection uses the fresh cohorts. Historical
+training statistics are reconstructed and matched exactly before fitting the
+frozen prior baseline; none of its statistics come from the test outcomes.
+
+| Fresh-cohort frozen predictor | MAE days | Natural-log loss | Sum Brier |
+|---|---:|---:|---:|
+| Exact deployed artifact | 8.5585 | 1.2850 | 0.6712 |
+| Existing v2 audit artifact | 8.5754 | 1.2799 | 0.6726 |
+| Historical training prior | 11.7453 | 1.5769 | 0.7871 |
+| Fixed customer-history heuristic | 10.2296 | 1.7931 | 0.9156 |
+
+These scores use identical invoices and **production payment-date-ordered
+issue-time history**. Training histories were ordered by issuance instead; the
+evaluation follows production and tests agreement with the real prediction
+function. MAE uses app precision (0.1 day); probability scores use the raw model
+probabilities before display rounding. Earlier outcomes may enter later
+features once observed, with weights/statistics frozen. Forecasts made after
+issuance, including conditional overdue forecasts, remain outside this test.
+
+Cold starts remain a weakness: 2,640 invoices without settled customer history
+have deployed MAE **11.6254 days** and log loss **1.6161**, versus the frozen
+prior's **1.5932** log loss. With history, deployed MAE is **6.8671** over 4,787
+invoices. The overall deployed MAE 95% business-cluster interval is
+**[8.0999, 9.0233]**; the MAE difference from the audit artifact crosses zero,
+and the audit artifact has slightly better overall log loss. No automatic
+artifact replacement is justified by these observations.
+
+See [`DEPLOYED_MODEL_EVALUATION.md`](DEPLOYED_MODEL_EVALUATION.md) and
+[`evidence/readiness-v3/tidepay/report.json`](../evidence/readiness-v3/tidepay/report.json)
+for raw data, per-example predictions, class balances, hashes, all reliability
+bins and subgroups. The Overview card exposes this report separately from the
+earlier benchmark, and suppresses its scores if the report is missing, invalid
+or its artifact hash differs from the installed weights. “Verified” here means
+local report integrity and artifact-byte agreement, not independent model
+certification. These remain retrospective synthetic cohorts from the same
+generator family, not real users or an independently administered blind trial.
+
 The versioned **v2 audit benchmark**, separate from the shipped artifact, uses
 7,745 matured training invoices before 1 March 2025, 1,433 validation invoices
 before 1 July and 2,376 identical final-test invoices from 40 existing synthetic

@@ -13,7 +13,7 @@
 | Audit trail | Accountability | Hash chain plus independent witness |
 | Signing and witness keys | Mandate trust | Local key files, kept out of Git (`data/` is ignored) |
 
-Trust boundaries: (1) user to server (cookie, CSRF, Origin/Host checks, tenant membership); (2) model to tools (TideLM plans pass a typed validator; allow-list, read/propose only; a forbidden tool counts toward the circuit breaker); (3) tools to store (the only code that can approve, sign or execute); (4) stored record text to anything that reasons (quarantine and pseudonymisation). Inbox messages and photos are the deliberate exception: the local extractor must read them to draft records, but deterministic screening, validation and human confirmation keep that input from becoming an instruction or an action.
+Trust boundaries: (1) user to server (cookie, CSRF, Origin/Host checks, tenant membership); (2) model to tools (TideLM plans pass a typed validator; allow-list, read/propose only; a forbidden tool counts toward the circuit breaker); (3) tools to store (the only code that can approve, sign or execute); (4) stored record text to anything that reasons (quarantine and pseudonymisation). Inbox messages and photos are the deliberate exception: the local extractor must read them to draft records, but deterministic permissions prohibit approval/execution, field validation limits drafts, and a person must review before saving. Screening itself can miss instructions.
 
 **Worst-case assumptions used in testing.** The model is fully hijacked and the human approver rubber-stamps whatever is proposed. The claim under test is that money cannot move on a fooled model's word, because enforcement lives outside the model.
 
@@ -88,7 +88,7 @@ Optional TideLM inference runs on the owner's machine: no question, record or ex
 7. **Verification scope.** Authored Windows local-model smoke results are in `evidence/readiness-v2/model/`. The released MLX adapter, receipt model, SME user study and external penetration test remain unverified for this runtime.
 8. **Small model, synthetic training data.** TideLM can misread a name or drop a constraint (see its report); names are resolved against the ledger and every plan is only a proposal, but a person must still read it before approving.
 9. **Not a compliance certification.** No claim of PCI, SOC 2, local regulator or bank approval.
-10. **Optional local model service.** The compatible backend only sends HTTP to literal loopback addresses, refuses redirects, and bounds responses. Its typed plans have the same permission boundary. The independently installed server is trusted infrastructure and must use offline models; Tideway does not audit its plugins or forwarding behaviour. Local-compatible model accuracy is unbenchmarked.
+10. **Optional local model service.** The compatible backend only sends HTTP to literal loopback addresses, refuses redirects, and bounds responses. Its typed plans have the same permission boundary. The independently installed server is trusted infrastructure and must use offline models; Tideway does not audit its plugins or forwarding behaviour. The first sealed Qwen3 compatible-model challenge is reported separately from the historical MLX adapter benchmark.
 
 ## 7. Upgrade findings and additional verification
 
@@ -118,3 +118,38 @@ normal human approvals and simulated consent. Quick-start shortcuts only navigat
 browser checks verify they do not mutate financial state or open approval dialogs.
 
 Public handbook and benchmark assets disclose synthetic documentation only. Session, tenant, role, Host/Origin, CSRF and execution controls remain in place for financial APIs. Package verification excludes private local metadata and checks actual extracted bytes; the synthetic public roster does not establish eligibility or registration.
+
+## 9. Current independent checks and strengthened approval
+
+The first sealed challenge detected **2/24 unfamiliar instruction attacks** and
+flagged **2/24 benign messages**. This is a severe detection gap, retained in
+`evidence/readiness-v3/blind/`, not repaired by reporting regression scores as
+unseen results. Observable payee callback policy handled 24/24 authored cases;
+intent classification detected 10/12 malicious cases and flagged 4/12 benign
+cases. Legitimate changed details can require callback; an unrelated impostor
+and a genuine new vendor can be indistinguishable in the supplied fields.
+
+Actual native macOS Qwen3 inference initially handled 28/32 requests correctly
+with 32/32 money containment, 23/24 tool/argument cases and 5/8 safe stops.
+After preserving these observations and pre-fix source bytes, deterministic
+guards reject credit amounts taken from day terms, unknown customer substitution
+and shortened-name expansion. Exact names and separately grounded amount/term
+inputs are required; unsupported forms ask for clarification. Conditional
+recovery questions receive forecast/risk/security preflight and a no-action
+result when appropriate. These are disclosed regression fixes, not a fresh
+quality score. Native MLX adapter and receipt inference remain unverified.
+
+Plans above their stored risk target require `risk_acknowledgement` from every
+approver. The server derives immutable terms from the stored plan and compares
+plan ID/hash, bundle, probability and target, with strict finite numeric types.
+A client cannot lower risk, reuse old consent or omit consent by hiding the UI.
+Consent is retained in approvals, audit, signed mandate and receipt; legacy
+above-target authority without it cannot execute. See
+`tests/test_risk_acknowledgement.py` and `tests/test_model_argument_grounding.py`.
+
+Unflagged records are labelled "no flags", not "clean". Inbox guidance requires
+checking each party, amount, date and record type; a missing warning is not a
+trust decision. Mock financing is read-only and checks cash through repayment,
+while lender eligibility and receivable assignment remain unverified.
+
+Current authoritative scope and reproducible commands: `docs/READINESS_CURRENT.md`.

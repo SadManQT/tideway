@@ -1,0 +1,21 @@
+{
+  "run_at": "2026-10-16T06:10:05.279317+00:00",
+  "python": "3.11.16",
+  "platform": "Darwin",
+  "tests_run": 252,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 4,
+  "passed": true,
+  "source_tree_sha256": "c341c86f3299e17e622ce4a2a10e78762b6a76f30e9f85772dd36006ba6b460f",
+  "source_unchanged_during_tests": true,
+  "seconds": 24.98,
+  "skip_reasons": [
+    "Pillow is not installed (optional photo feature)",
+    "Pillow is not installed (optional photo feature)",
+    "Pillow is not installed (optional photo feature)",
+    "Pillow is not installed (optional photo feature)"
+  ],
+  "site_packages_enabled": false,
+  "model_inference_tested": false
+}
