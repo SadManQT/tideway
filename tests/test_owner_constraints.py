@@ -101,6 +101,19 @@ class OwnerConstraints(unittest.TestCase):
                                        replaces_mandate=mandate["mandate_id"])
         self.assertEqual(before, self.counts())
 
+    def test_store_records_effective_ceiling_not_a_wider_raw_producer_value(self):
+        plan = self.propose()
+        payload = copy.deepcopy(plan)
+        payload["owner_constraints"]["max_discount_bps"] = 1000
+        fresh = self.app.store.create_plan(BUSINESS, payload, plan["snapshot_hash"], "agent:test", "agent:test")
+        self.assertEqual(fresh["owner_constraints"]["max_discount_bps"], 300)
+
+    def test_zero_ceiling_is_retained_by_real_planning(self):
+        plan = self.propose(cap=0)
+        self.assertEqual(plan["owner_constraints"]["max_discount_bps"], 0)
+        self.assertTrue(all(action.get("discount_bps", 0) == 0
+                            for bundle in plan["bundles"] for action in bundle["actions"]))
+
     def test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions(self):
         plan, mandate = self.negotiated()
         for key in ("preference", "exclusions"):
@@ -172,12 +185,13 @@ class RiskDisplayBoundaries(unittest.TestCase):
         source = (Path(__file__).resolve().parents[1] / "web/app.js").read_text()
         function = source[source.index("function residualRiskHtml("):source.index("function mandateCard(")]
         script = ('const isNum=Number.isFinite, esc=String, icon=()=>"";\n' + function +
-                  '\nconsole.log(JSON.stringify([.1178,.10000001,.10].map(probability_breach_after => '
+                  '\nconsole.log(JSON.stringify([.1178,.10000001,.10,.10000000000000002].map(probability_breach_after => '
                   'residualRiskHtml({risk_target:.10},{feasible:true,probability_breach_after}))));')
         rendered = json.loads(subprocess.check_output(["node", "-e", script], text=True))
         self.assertIn("11.78%", rendered[0])
         self.assertIn("10.000001%", rendered[1])
         self.assertEqual(rendered[2], "")
+        self.assertIn("10.000000000000002%", rendered[3])
 
     def test_exact_risk_target_and_rounding_do_not_supply_implicit_consent(self):
         from tideway.store import Store
