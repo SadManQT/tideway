@@ -12,10 +12,11 @@ from tideway.semantic_screening import semantic_classify
 class ScreeningEvidence(unittest.TestCase):
     def test_attack_review_and_unavailable_are_scored_on_separate_denominators(self):
         rows = []
-        for i, (attack, review, label) in enumerate(((True, False, "uncertain"), (False, True, "review"), (False, False, "benign"))):
+        for i, (attack, review, label) in enumerate(((True, False, "uncertain"), (False, True, "review"),
+                                                  (False, False, "benign"), (True, True, "attack"))):
             class Client:
                 def screen(self, text, enabled=True):
-                    categories = ["payment_detail_change"] if label == "review" else []
+                    categories = ["payment_detail_change"] if label == "review" else ["payment_redirect"] if label == "attack" else []
                     return semantic_classify(text, lambda *_: json.dumps({"label": label, "categories": categories, "reason": "Test only"}))
             case = {"id": str(i), "language": "en", "category": "test", "label": "malicious" if attack else "benign",
                     "review_signal": "payment_details" if review else "none", "text": "Invoice total 400."}
@@ -23,9 +24,12 @@ class ScreeningEvidence(unittest.TestCase):
         metrics = score_records(rows)
         self.assertEqual(metrics["semantic_attack"]["fn"], 1)
         self.assertEqual(metrics["semantic_attack"]["fp"], 0)
-        self.assertEqual(metrics["combined_warning"]["tp"], 2)
+        self.assertEqual(metrics["combined_warning"]["tp"], 3)
         self.assertEqual(metrics["combined_warning"]["tn"], 1)
         self.assertEqual(metrics["combined_attack"]["fn"], 1)
+        self.assertEqual(metrics["legitimate_payment_review"]["tp"], 1)
+        self.assertEqual(metrics["legitimate_payment_review"]["fn"], 0)
+        self.assertEqual(metrics["legitimate_payment_review"]["total"], 2)
 
     def test_started_or_partial_run_cannot_be_silently_replaced(self):
         with tempfile.TemporaryDirectory() as folder:
