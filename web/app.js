@@ -129,6 +129,70 @@ function showLogin() {
   const select = $("#signup-currency");
   if (!select.options.length) select.innerHTML = currencies.map((item) => `<option value="${esc(item.code)}" ${item.code === "USD" ? "selected" : ""}>${esc(item.code)} · ${esc(item.name)}</option>`).join("");
   $("#login-pin").value = "";
+  revealOnScroll($("#login"));
+}
+
+// ---------------------------------------------------------------------------- motion
+// Motion only marks change: a page arriving, a number settling, a line drawing in.
+// Nothing waits for an animation, and reduced motion skips all of it.
+
+const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function revealOnScroll(root) {
+  if (reducedMotion() || !("IntersectionObserver" in window)) return;
+  const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add("in");
+    observer.unobserve(entry.target);
+  }), {rootMargin: "0px 0px -8% 0px"});
+  const groups = [".demo-card", ".section-title", ".value-card", ".how-steps li", ".plan-card", ".auth-card"];
+  root.querySelectorAll(groups.join(",")).forEach((element) => {
+    if (element.classList.contains("in")) return;
+    const siblings = [...element.parentElement.children].filter((item) => item.matches(groups.join(",")));
+    element.style.setProperty("--i", String(Math.max(0, siblings.indexOf(element))));
+    element.classList.add("reveal-up");
+    observer.observe(element);
+  });
+}
+
+// Counts a headline number up to its final text, then restores that exact text.
+// Screen readers get the final value immediately.
+function countUp(root) {
+  if (reducedMotion()) return;
+  root.querySelectorAll(".metric .value").forEach((element) => {
+    const text = element.textContent;
+    const match = text.match(/^(.*?)(\d{1,3}(?:,\d{3})+|\d{2,})(.*)$/);
+    if (!match) return;
+    const [, before, digits, after] = match;
+    const target = Number(digits.replace(/,/g, ""));
+    element.innerHTML = `<span class="sr-only">${esc(text)}</span><span aria-hidden="true"></span>`;
+    const out = element.lastChild;
+    const started = performance.now();
+    const step = (now) => {
+      if (!element.isConnected) return;
+      const t = Math.min(1, (now - started) / 750);
+      out.textContent = before + Math.round(target * (1 - Math.pow(1 - t, 3))).toLocaleString("en-US") + after;
+      if (t < 1) requestAnimationFrame(step);
+      else element.textContent = text;
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+let lastScene = "";
+let lastChatLength = 0;
+function playEntrance(previousView) {
+  const main = $("#view").closest("main");
+  const scene = `${state.businessId}|${state.view}`;
+  const entering = Boolean(state.dashboard) && scene !== lastScene;
+  if (state.dashboard) lastScene = scene;
+  main.classList.remove("view-enter");
+  if (!entering || reducedMotion()) return false;
+  const order = Object.keys(VIEWS);
+  main.dataset.dir = order.indexOf(state.view) < order.indexOf(previousView) ? "back" : "forward";
+  void main.offsetWidth;  // restart the title animation even when the class was already present
+  main.classList.add("view-enter");
+  return true;
 }
 
 const ROLE_PILL = {owner: "teal", accountant: "info", viewer: ""};
@@ -393,7 +457,15 @@ function render() {
   const renderers = {overview: renderOverview, rescue: renderRescue, assistant: renderAssistant, inbox: renderInbox, whatif: renderWhatIf,
     records: renderRecords, team: renderTeam, security: renderSecurity, evidence: renderEvidence};
   $("#fx-note").hidden = !state.displayCurrency || state.displayCurrency === currency();
+  const entering = playEntrance(lastScene.split("|")[1]);
   $("#view").innerHTML = state.dashboard ? (renderers[state.view] || renderOverview)() : `<div class="loading">Loading…</div>`;
+  if (entering) {
+    $("#view").querySelectorAll(".dot-future").forEach((dot, index) => dot.style.setProperty("--i", String(index)));
+    if (state.view === "overview") countUp($("#view"));
+  }
+  const chatLog = $("#chat-log");
+  if (chatLog) chatLog.classList.toggle("grew", !entering && state.chat.length > lastChatLength);
+  lastChatLength = state.chat.length;
   window.TidewayQuickStart.render(state.dashboard ? {operatorId: state.operator?.id, businessId: state.businessId,
     role: role(), synthetic: state.dashboard.business.synthetic, view: state.view, hasProposal: !!plan,
     hasRecords: Object.values(state.dashboard.records || {}).some((rows) => Array.isArray(rows) && rows.length)} : null);
@@ -440,7 +512,8 @@ function chartSvg({lines = [], fan = null, reserve = null, markers = [], height 
     parts.push(`<polygon class="fan" points="${upper.concat(lower).join(" ")}"><title>P10 to P90 of simulated futures</title></polygon>`);
   }
   if (reserve !== null) parts.push(`<line class="reserve-line" x1="${left}" x2="${width - right}" y1="${y(reserve)}" y2="${y(reserve)}"></line><text class="label-reserve" x="${width - right}" y="${y(reserve) - 4}" text-anchor="end">reserve floor</text>`);
-  lines.forEach((line) => parts.push(`<polyline class="${line.cls}" points="${line.points.map((point, index) => `${x(index)},${y(point.value)}`).join(" ")}"><title>${esc(line.label)}</title></polyline>`));
+  // pathLength lets solid lines draw in; the dashed base line keeps its real dash lengths.
+  lines.forEach((line) => parts.push(`<polyline class="${line.cls}" ${line.cls === "line-base" ? "" : `pathLength="1" `}points="${line.points.map((point, index) => `${x(index)},${y(point.value)}`).join(" ")}"><title>${esc(line.label)}</title></polyline>`));
   markers.forEach((marker) => {
     const index = dates.indexOf(marker.date);
     if (index < 0) return;
