@@ -1,9 +1,9 @@
 {
   "version": "docker-local-verification-v5",
-  "started_at_utc": "2026-10-17T06:57:05+00:00",
+  "started_at_utc": "2026-10-17T07:08:43+00:00",
   "host_python": "3.12.3",
   "host_platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
-  "source_tree_sha256_before": "83b8ada2d90e6a3e8484880952df07fb8ba0463c227d5f0602116cae3025d32a",
+  "source_tree_sha256_before": "4d640007a6be2ecd247d14f31609aa229940216a5e54c4b382ca2d32d7659905",
   "source_files_before": {
     ".dockerignore": "dec967d938fb42f3e47530c65273d80780d9181df4777d84b3865653811fc817",
     ".github/workflows/ci.yml": "d02d20ed75b25b788aa7035c161ae8c131ec442cbb7a9b1bb41598e44665d7da",
@@ -35,7 +35,7 @@
     "scripts/smoke_models.py": "8982dc33a5071671f51702e84e8d8563d916eee02abaff0ae97a9f0578bc79f7",
     "scripts/smoke_reasoning.py": "a8ae81b26e1e3b93f1ad3571aecbf35f94b256180acff4d371eb9227ea0a137f",
     "scripts/user_study.py": "05f5666c9706341a8b36e72a7e95aceeb6012002dacfe32a6047e56bc11e24b0",
-    "scripts/verify_docker.py": "052bba2b620e5b3bf044c5f8e23d46d6b3edeb27eb5a18402d9b58fc334482da",
+    "scripts/verify_docker.py": "b414ed317c674b325551cbc8a337b0bf49aed6c879cf78efc10965f105676099",
     "scripts/verify_package.py": "1fb2725852ea5f3459136b7421a2544be8b9cbcf94b3a4231ff97a3e3a21fa59",
     "scripts/verify_submission.py": "36789e45eda39d02c8c7c0cce62d0a823211db39e3d37e204fc8d6d6a5fb13f3",
     "tests/fixtures/cash_scenarios.json": "ea9a4be5f12e4eda1301839089bab020660f53c8316e74373fdd99d5876ee310",
@@ -126,7 +126,7 @@
     "web/styles.css": "3e1ebe760a11d613ed50c6127927514c4c223dd83987ca77471ad3e72a6156d4"
   },
   "legacy_builder": false,
-  "image_tag": "tideway-verification:a40a2b30c47b",
+  "image_tag": "tideway-verification:170138f6f99e",
   "passed": true,
   "checks": {
     "http_workflow": {
@@ -151,7 +151,7 @@
         "audit_chain_valid": true,
         "private_signing_key_permissions": true
       },
-      "receipt_id": "a72c0f858ace40eaa316d0b6e25e9bfc",
+      "receipt_id": "ceba82487f2f4fe382ff0af14997eea0",
       "approval_trace": [
         {
           "attempt": 1,
@@ -302,7 +302,7 @@
         "persistent_audit_chain_valid": true,
         "private_signing_key_permissions": true
       },
-      "receipt_id": "a72c0f858ace40eaa316d0b6e25e9bfc",
+      "receipt_id": "ceba82487f2f4fe382ff0af14997eea0",
       "requests": [
         {
           "method": "GET",
@@ -361,7 +361,7 @@
         "{{json .}}"
       ],
       "exit_code": 0,
-      "seconds": 0.116,
+      "seconds": 0.121,
       "log": "engine-version.log"
     },
     {
@@ -371,7 +371,7 @@
         "python:3.11-slim-bookworm@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903ca5fd283f501e3a805f5f89"
       ],
       "exit_code": 0,
-      "seconds": 0.975,
+      "seconds": 0.937,
       "log": "base-pull.log"
     },
     {
@@ -382,7 +382,7 @@
         "python:3.11-slim-bookworm@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903ca5fd283f501e3a805f5f89"
       ],
       "exit_code": 0,
-      "seconds": 0.102,
+      "seconds": 0.104,
       "log": "base-inspect.log"
     },
     {
@@ -393,11 +393,11 @@
         "none",
         "--no-cache",
         "--tag",
-        "tideway-verification:a40a2b30c47b",
+        "tideway-verification:170138f6f99e",
         "."
       ],
       "exit_code": 0,
-      "seconds": 62.093,
+      "seconds": 65.946,
       "log": "build.log"
     },
     {
@@ -405,10 +405,10 @@
       "arguments": [
         "image",
         "inspect",
-        "tideway-verification:a40a2b30c47b"
+        "tideway-verification:170138f6f99e"
       ],
       "exit_code": 0,
-      "seconds": 0.111,
+      "seconds": 0.113,
       "log": "image-inspect.log"
     },
     {
@@ -416,10 +416,10 @@
       "arguments": [
         "volume",
         "create",
-        "tideway-verification-data-a40a2b30c47b"
+        "tideway-verification-data-170138f6f99e"
       ],
       "exit_code": 0,
-      "seconds": 0.105,
+      "seconds": 0.116,
       "log": "volume-create.log"
     },
     {
@@ -428,7 +428,7 @@
         "run",
         "--detach",
         "--name",
-        "tideway-verification-a40a2b30c47b-initial",
+        "tideway-verification-170138f6f99e-initial",
         "--network",
         "none",
         "--cap-drop",
@@ -436,18 +436,18 @@
         "--security-opt",
         "no-new-privileges=true",
         "--mount",
-        "type=volume,source=tideway-verification-data-a40a2b30c47b,target=/app/data",
-        "tideway-verification:a40a2b30c47b"
+        "type=volume,source=tideway-verification-data-170138f6f99e,target=/app/data",
+        "tideway-verification:170138f6f99e"
       ],
       "exit_code": 0,
-      "seconds": 0.37,
+      "seconds": 0.391,
       "log": "run-workflow.log"
     },
     {
       "stage": "http-workflow",
       "arguments": [
         "exec",
-        "tideway-verification-a40a2b30c47b-initial",
+        "tideway-verification-170138f6f99e-initial",
         "python",
         "-S",
         "scripts/container_http_smoke.py",
@@ -455,41 +455,41 @@
         "workflow"
       ],
       "exit_code": 0,
-      "seconds": 1.436,
+      "seconds": 1.484,
       "log": "http-workflow.log"
     },
     {
       "stage": "build-test-summary",
       "arguments": [
         "exec",
-        "tideway-verification-a40a2b30c47b-initial",
+        "tideway-verification-170138f6f99e-initial",
         "cat",
         "/app/evidence/test-summary.json"
       ],
       "exit_code": 0,
-      "seconds": 0.183,
+      "seconds": 0.18,
       "log": "build-test-summary.log"
     },
     {
       "stage": "build-test-log",
       "arguments": [
         "exec",
-        "tideway-verification-a40a2b30c47b-initial",
+        "tideway-verification-170138f6f99e-initial",
         "cat",
         "/app/evidence/test-run.log"
       ],
       "exit_code": 0,
-      "seconds": 0.182,
+      "seconds": 0.166,
       "log": "build-test-log.log"
     },
     {
       "stage": "server-log-workflow",
       "arguments": [
         "logs",
-        "tideway-verification-a40a2b30c47b-initial"
+        "tideway-verification-170138f6f99e-initial"
       ],
       "exit_code": 0,
-      "seconds": 0.102,
+      "seconds": 0.106,
       "log": "server-log-workflow.log"
     },
     {
@@ -498,20 +498,20 @@
         "stop",
         "--timeout",
         "10",
-        "tideway-verification-a40a2b30c47b-initial"
+        "tideway-verification-170138f6f99e-initial"
       ],
       "exit_code": 0,
-      "seconds": 10.399,
+      "seconds": 10.419,
       "log": "stop-workflow.log"
     },
     {
       "stage": "remove-workflow",
       "arguments": [
         "rm",
-        "tideway-verification-a40a2b30c47b-initial"
+        "tideway-verification-170138f6f99e-initial"
       ],
       "exit_code": 0,
-      "seconds": 0.112,
+      "seconds": 0.114,
       "log": "remove-workflow.log"
     },
     {
@@ -520,7 +520,7 @@
         "run",
         "--detach",
         "--name",
-        "tideway-verification-a40a2b30c47b-recreated",
+        "tideway-verification-170138f6f99e-recreated",
         "--network",
         "none",
         "--cap-drop",
@@ -528,18 +528,18 @@
         "--security-opt",
         "no-new-privileges=true",
         "--mount",
-        "type=volume,source=tideway-verification-data-a40a2b30c47b,target=/app/data",
-        "tideway-verification:a40a2b30c47b"
+        "type=volume,source=tideway-verification-data-170138f6f99e,target=/app/data",
+        "tideway-verification:170138f6f99e"
       ],
       "exit_code": 0,
-      "seconds": 0.287,
+      "seconds": 0.366,
       "log": "run-persisted.log"
     },
     {
       "stage": "http-persisted",
       "arguments": [
         "exec",
-        "tideway-verification-a40a2b30c47b-recreated",
+        "tideway-verification-170138f6f99e-recreated",
         "python",
         "-S",
         "scripts/container_http_smoke.py",
@@ -547,14 +547,14 @@
         "persisted"
       ],
       "exit_code": 0,
-      "seconds": 0.43,
+      "seconds": 0.426,
       "log": "http-persisted.log"
     },
     {
       "stage": "server-log-persisted",
       "arguments": [
         "logs",
-        "tideway-verification-a40a2b30c47b-recreated"
+        "tideway-verification-170138f6f99e-recreated"
       ],
       "exit_code": 0,
       "seconds": 0.106,
@@ -566,20 +566,20 @@
         "stop",
         "--timeout",
         "10",
-        "tideway-verification-a40a2b30c47b-recreated"
+        "tideway-verification-170138f6f99e-recreated"
       ],
       "exit_code": 0,
-      "seconds": 10.445,
+      "seconds": 10.435,
       "log": "stop-persisted.log"
     },
     {
       "stage": "remove-persisted",
       "arguments": [
         "rm",
-        "tideway-verification-a40a2b30c47b-recreated"
+        "tideway-verification-170138f6f99e-recreated"
       ],
       "exit_code": 0,
-      "seconds": 0.107,
+      "seconds": 0.119,
       "log": "remove-persisted.log"
     },
     {
@@ -587,10 +587,10 @@
       "arguments": [
         "volume",
         "rm",
-        "tideway-verification-data-a40a2b30c47b"
+        "tideway-verification-data-170138f6f99e"
       ],
       "exit_code": 0,
-      "seconds": 0.104,
+      "seconds": 0.108,
       "log": "cleanup-volume.log"
     }
   ],
@@ -612,11 +612,11 @@
     "Os": "linux"
   },
   "image": {
-    "Id": "sha256:3f349473f603643fe534c35248d51ae9d9644198107f99222363a97cbb97cee3",
-    "Created": "2026-10-17T06:58:07.409418783Z",
+    "Id": "sha256:5a1193957228918f7fb543210aea2ca63d5c1b51bf53c636007053638b8d8ec3",
+    "Created": "2026-10-17T07:09:48.939611441Z",
     "Architecture": "amd64",
     "Os": "linux",
-    "Size": 295019739,
+    "Size": 295022408,
     "user": "tideway",
     "cmd": [
       "python",
@@ -630,7 +630,7 @@
     ]
   },
   "build_tests": {
-    "run_at": "2026-10-17T06:58:04+00:00",
+    "run_at": "2026-10-17T07:09:45+00:00",
     "python": "3.11.17",
     "platform": "Linux",
     "tests_run": 319,
@@ -639,9 +639,9 @@
     "skipped": 4,
     "passed": true,
     "source_unchanged_during_tests": true,
-    "seconds": 49.68,
+    "seconds": 53.92,
     "base_commit": null,
-    "source_tree_sha256": "83b8ada2d90e6a3e8484880952df07fb8ba0463c227d5f0602116cae3025d32a",
+    "source_tree_sha256": "4d640007a6be2ecd247d14f31609aa229940216a5e54c4b382ca2d32d7659905",
     "source_files": {
       ".dockerignore": "dec967d938fb42f3e47530c65273d80780d9181df4777d84b3865653811fc817",
       ".github/workflows/ci.yml": "d02d20ed75b25b788aa7035c161ae8c131ec442cbb7a9b1bb41598e44665d7da",
@@ -673,7 +673,7 @@
       "scripts/smoke_models.py": "8982dc33a5071671f51702e84e8d8563d916eee02abaff0ae97a9f0578bc79f7",
       "scripts/smoke_reasoning.py": "a8ae81b26e1e3b93f1ad3571aecbf35f94b256180acff4d371eb9227ea0a137f",
       "scripts/user_study.py": "05f5666c9706341a8b36e72a7e95aceeb6012002dacfe32a6047e56bc11e24b0",
-      "scripts/verify_docker.py": "052bba2b620e5b3bf044c5f8e23d46d6b3edeb27eb5a18402d9b58fc334482da",
+      "scripts/verify_docker.py": "b414ed317c674b325551cbc8a337b0bf49aed6c879cf78efc10965f105676099",
       "scripts/verify_package.py": "1fb2725852ea5f3459136b7421a2544be8b9cbcf94b3a4231ff97a3e3a21fa59",
       "scripts/verify_submission.py": "36789e45eda39d02c8c7c0cce62d0a823211db39e3d37e204fc8d6d6a5fb13f3",
       "tests/fixtures/cash_scenarios.json": "ea9a4be5f12e4eda1301839089bab020660f53c8316e74373fdd99d5876ee310",
@@ -767,9 +767,9 @@
     "note": "Counts include offline tests with injected model outputs; this is not a real-model benchmark."
   },
   "cleanup_failures": [],
-  "source_tree_sha256_after": "83b8ada2d90e6a3e8484880952df07fb8ba0463c227d5f0602116cae3025d32a",
+  "source_tree_sha256_after": "4d640007a6be2ecd247d14f31609aa229940216a5e54c4b382ca2d32d7659905",
   "source_unchanged": true,
-  "finished_at_utc": "2026-10-17T06:58:33+00:00",
+  "finished_at_utc": "2026-10-17T07:10:14+00:00",
   "source_files_after": {
     ".dockerignore": "dec967d938fb42f3e47530c65273d80780d9181df4777d84b3865653811fc817",
     ".github/workflows/ci.yml": "d02d20ed75b25b788aa7035c161ae8c131ec442cbb7a9b1bb41598e44665d7da",
@@ -801,7 +801,7 @@
     "scripts/smoke_models.py": "8982dc33a5071671f51702e84e8d8563d916eee02abaff0ae97a9f0578bc79f7",
     "scripts/smoke_reasoning.py": "a8ae81b26e1e3b93f1ad3571aecbf35f94b256180acff4d371eb9227ea0a137f",
     "scripts/user_study.py": "05f5666c9706341a8b36e72a7e95aceeb6012002dacfe32a6047e56bc11e24b0",
-    "scripts/verify_docker.py": "052bba2b620e5b3bf044c5f8e23d46d6b3edeb27eb5a18402d9b58fc334482da",
+    "scripts/verify_docker.py": "b414ed317c674b325551cbc8a337b0bf49aed6c879cf78efc10965f105676099",
     "scripts/verify_package.py": "1fb2725852ea5f3459136b7421a2544be8b9cbcf94b3a4231ff97a3e3a21fa59",
     "scripts/verify_submission.py": "36789e45eda39d02c8c7c0cce62d0a823211db39e3d37e204fc8d6d6a5fb13f3",
     "tests/fixtures/cash_scenarios.json": "ea9a4be5f12e4eda1301839089bab020660f53c8316e74373fdd99d5876ee310",

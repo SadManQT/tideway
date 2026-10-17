@@ -120,7 +120,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
 - [User study protocol](USER_STUDY_KIT.md) and
   [pending participation status](../evidence/readiness-v3/user-study-status.json).
 
-Current test source digest: `83b8ada2d90e6a3e8484880952df07fb8ba0463c227d5f0602116cae3025d32a`.
+Current test source digest: `4d640007a6be2ecd247d14f31609aa229940216a5e54c4b382ca2d32d7659905`.
 Reports contain their own timestamps and hashes; older Windows/upgrade evidence
 is historical and does not attest to the current checkout.
 

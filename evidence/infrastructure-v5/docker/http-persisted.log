@@ -14,7 +14,7 @@
     "persistent_audit_chain_valid": true,
     "private_signing_key_permissions": true
   },
-  "receipt_id": "a72c0f858ace40eaa316d0b6e25e9bfc",
+  "receipt_id": "ceba82487f2f4fe382ff0af14997eea0",
   "requests": [
     {
       "method": "GET",

@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-10-17T06:56:25+00:00",
+  "run_at": "2026-10-17T07:08:20+00:00",
   "python": "3.13.7",
   "platform": "Windows",
   "tests_run": 319,
@@ -8,9 +8,9 @@
   "skipped": 5,
   "passed": true,
   "source_unchanged_during_tests": true,
-  "seconds": 68.09,
-  "base_commit": "19c781a2c6978c00456198d19d76313e2e877c1b",
-  "source_tree_sha256": "83b8ada2d90e6a3e8484880952df07fb8ba0463c227d5f0602116cae3025d32a",
+  "seconds": 86.0,
+  "base_commit": "d10f2ee1a976dd40ead2076901cee66944be3976",
+  "source_tree_sha256": "4d640007a6be2ecd247d14f31609aa229940216a5e54c4b382ca2d32d7659905",
   "source_files": {
     ".dockerignore": "dec967d938fb42f3e47530c65273d80780d9181df4777d84b3865653811fc817",
     ".github/workflows/ci.yml": "d02d20ed75b25b788aa7035c161ae8c131ec442cbb7a9b1bb41598e44665d7da",
@@ -42,7 +42,7 @@
     "scripts/smoke_models.py": "8982dc33a5071671f51702e84e8d8563d916eee02abaff0ae97a9f0578bc79f7",
     "scripts/smoke_reasoning.py": "a8ae81b26e1e3b93f1ad3571aecbf35f94b256180acff4d371eb9227ea0a137f",
     "scripts/user_study.py": "05f5666c9706341a8b36e72a7e95aceeb6012002dacfe32a6047e56bc11e24b0",
-    "scripts/verify_docker.py": "052bba2b620e5b3bf044c5f8e23d46d6b3edeb27eb5a18402d9b58fc334482da",
+    "scripts/verify_docker.py": "b414ed317c674b325551cbc8a337b0bf49aed6c879cf78efc10965f105676099",
     "scripts/verify_package.py": "1fb2725852ea5f3459136b7421a2544be8b9cbcf94b3a4231ff97a3e3a21fa59",
     "scripts/verify_submission.py": "36789e45eda39d02c8c7c0cce62d0a823211db39e3d37e204fc8d6d6a5fb13f3",
     "tests/fixtures/cash_scenarios.json": "ea9a4be5f12e4eda1301839089bab020660f53c8316e74373fdd99d5876ee310",
