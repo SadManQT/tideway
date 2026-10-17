@@ -1,58 +1,27 @@
 {
-  "checked_at_utc": "2026-10-17T06:22:44+00:00",
+  "checked_at_utc": "2026-10-17T07:18:08+00:00",
   "remote_repository": "https://github.com/SadManQT/tideway",
-  "remote_commit": "bd8c061a20e23c3955ae7535946f629e6ff1c4e9",
-  "run_url": "https://github.com/SadManQT/tideway/actions/runs/38860765405",
-  "remote_baseline_conclusion": "failure",
+  "remote_commit": "ab3a497fcda15c3ef569ebe3cbcd4319588996b1",
+  "run_number": 6,
+  "run_id": 39012756910,
+  "run_url": "https://github.com/SadManQT/tideway/actions/runs/39012756910",
+  "conclusion": "success",
   "jobs": [
-    {
-      "name": "Optional photo validation / Pillow",
-      "conclusion": "success",
-      "failed_steps": []
-    },
-    {
-      "name": "stdlib / macos-14 / Python 3.14",
-      "conclusion": "success",
-      "failed_steps": []
-    },
-    {
-      "name": "stdlib / macos-14 / Python 3.11",
-      "conclusion": "success",
-      "failed_steps": []
-    },
-    {
-      "name": "stdlib / ubuntu-24.04 / Python 3.14",
-      "conclusion": "success",
-      "failed_steps": []
-    },
-    {
-      "name": "stdlib / windows-2022 / Python 3.14",
-      "conclusion": "failure",
-      "failed_steps": [
-        "Run complete stdlib test suite and record actual counts"
-      ]
-    },
-    {
-      "name": "Browser workflows and extracted package",
-      "conclusion": "success",
-      "failed_steps": []
-    },
-    {
-      "name": "stdlib / windows-2022 / Python 3.11",
-      "conclusion": "failure",
-      "failed_steps": [
-        "Run complete stdlib test suite and record actual counts"
-      ]
-    },
-    {
-      "name": "stdlib / ubuntu-24.04 / Python 3.11",
-      "conclusion": "success",
-      "failed_steps": []
-    }
+    {"name": "Isolated Docker build and persisted HTTP workflow", "conclusion": "success", "failed_steps": []},
+    {"name": "stdlib / ubuntu-24.04 / Python 3.14", "conclusion": "success", "failed_steps": []},
+    {"name": "stdlib / macos-14 / Python 3.11", "conclusion": "success", "failed_steps": []},
+    {"name": "stdlib / ubuntu-24.04 / Python 3.11", "conclusion": "success", "failed_steps": []},
+    {"name": "Optional photo validation / Pillow", "conclusion": "success", "failed_steps": []},
+    {"name": "Browser workflows and extracted package", "conclusion": "success", "failed_steps": []},
+    {"name": "stdlib / windows-2022 / Python 3.11", "conclusion": "success", "failed_steps": []},
+    {"name": "stdlib / windows-2022 / Python 3.14", "conclusion": "success", "failed_steps": []},
+    {"name": "stdlib / macos-14 / Python 3.14", "conclusion": "success", "failed_steps": []}
   ],
-  "authenticated_job_log_access": "HTTP401; no usable Actions log access established",
-  "current_local_changes_uploaded": false,
-  "push_performed": false,
-  "current_source_hosted_ci_verified": false,
-  "reason": "Final fixes are local and existing instruction forbids pushing; remote baseline cannot attest to current source. Local Windows and isolated Linux/Docker verification are separate evidence."
+  "authenticated_job_log_access": "Public Actions API exposed the run and job receipts; no token-bearing logs were copied.",
+  "current_local_changes_uploaded": true,
+  "push_performed": true,
+  "current_source_hosted_ci_verified": true,
+  "superseded_run": {"run_number": 5, "run_id": 39012566246, "conclusion": "cancelled", "reason": "Concurrency cancellation after the current-source run started."},
+  "reason": "The current implementation source was pushed to the remote repository and GitHub-hosted Offline validation run 6 passed all 9 jobs: Linux, Windows, macOS, Pillow, browser/package, and Docker.",
+  "scope": "Hosted CI receipts only; no claim of native MLX inference, real users, real money, or production deployment."
 }

@@ -48,6 +48,7 @@ Historical upgrade and Windows reports describe earlier source versions.
 | Financial scenarios | 24/24 expected workflows; 9 rescues | 7/9 executed rescues meet the 10% simulated risk target |
 | Planner rescue follow-up | D06 0.00% mean risk; H11 11.78% mean risk over 30,000 fresh draws | D06 keeps the accepted 7-day counter-offer and adds recovery; H11 shortlists risk-diverse candidates but remains above target and requires owner decision/acknowledgement |
 | Docker v5 verification | Build and HTTP workflow passed; persisted receipt/replay/audit passed; 319 tests, 0 failures, 0 errors | Linux amd64 WSL2, Python 3.11.17, non-root uid 10001; synthetic sandbox only |
+| Hosted GitHub Actions run 6 | 9/9 jobs passed | Ubuntu, Windows and macOS stdlib lanes; Pillow; browser/package; and Docker; receipt at `evidence/infrastructure-v5/hosted-ci-status.json` |
 | Shipped TidePay | 7,427 unseen synthetic invoices; MAE 8.5585 days | Heuristic 10.2296; training-only prior 11.7453; no weight changes |
 | First actual Qwen3 challenge | 28/32 correct; 32/32 contained | Four retained misses; no mandate, execution or financial-ledger mutation |
 | Post-fix Qwen3 regression | 32/32 known cases handled; 8/8 safe stops | One real-model pass after disclosed guard fixes; not a new blind score |
@@ -109,6 +110,8 @@ Use a completed LF checkout: source edits during the run invalidate verification
   D06 counter-offer repair and H11 fresh-seed validation.
 - [Docker v5 report](../evidence/infrastructure-v5/docker/report.json), including
   build tests, non-root HTTP flow and persisted receipt replay.
+- [Hosted CI receipt](../evidence/infrastructure-v5/hosted-ci-status.json), linking
+  the current remote commit and all nine successful jobs.
 - [Separate post-fix model regression](../evidence/readiness-v3/blind/model-post-fix-regression.json)
   and [Python 3.11 standard-library run](../evidence/readiness-v3/python311/test-summary.json).
 - [Release stages and PDF hashes](../evidence/readiness-v3/release-checks.json).
@@ -132,10 +135,10 @@ work and another separately sealed evaluation; repeating known examples is
 regression only. Real consented SME feedback, native MLX/TideLM and receipt-model
 evaluation, external security testing and real-data calibration remain outstanding.
 Partial settlements, reversals and real lender eligibility require separate
-financial design before live integration. GitHub-hosted CI is configured and will
-be triggered by the requested push; its result must be recorded separately from
-this local evidence. Docker v5 has passed locally on Linux/WSL2, but that is not
-hosted CI or production deployment.
+financial design before live integration. GitHub-hosted Offline validation run 6
+passed all nine jobs for the pushed implementation; its receipt is recorded
+separately from local evidence. Docker v5 has passed locally on Linux/WSL2, but
+neither check is production deployment.
 
 The supplied five-person BUET roster is retained. Leader, contribution roles,
 eligibility, registration, submission route, reviewer access and the deferred
