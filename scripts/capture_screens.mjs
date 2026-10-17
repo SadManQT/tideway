@@ -438,7 +438,7 @@ try {
   for (const route of ["/guide", "/guide.html"]) {
     await send("Page.navigate", {url:`http://127.0.0.1:${PORT}${route}`});
     await until("document.querySelector('#viva-count')?.textContent.includes('1,200')", "public guide question bank");
-    if (!await evaluate("getComputedStyle(document.body).backgroundColor === 'rgb(245, 239, 228)'")) throw new Error("Guide stylesheet did not load");
+    if (!await evaluate("getComputedStyle(document.body).backgroundColor === 'rgb(207, 233, 75)'")) throw new Error("Guide stylesheet did not load");
   }
   await viewport(375, 812, true);
   await phoneCheck("public guide", "body");

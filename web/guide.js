@@ -472,7 +472,26 @@ window.addEventListener("afterprint", () => {
   state.printMode = "page";
 });
 
+// Static sections rise in as they scroll into view; the question bank animates on render instead.
+function revealOnScroll() {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) return;
+  const observer = new IntersectionObserver((entries) => entries.forEach((entry) => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add("in");
+    observer.unobserve(entry.target);
+  }), {rootMargin: "0px 0px -8% 0px"});
+  const groups = [".chapter-heading", ".editorial-card", ".quote-band", ".problem-row", ".lifecycle-step", ".example-panel",
+    ".feature-card", ".setup-card", ".demo-card", ".scope-callout", ".viva-featured-grid > *"];
+  $$(groups.join(",")).forEach((element) => {
+    const siblings = [...element.parentElement.children].filter((item) => item.matches(groups.join(",")));
+    element.style.setProperty("--i", String(Math.min(6, Math.max(0, siblings.indexOf(element)))));
+    element.classList.add("reveal-up");
+    observer.observe(element);
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   wireNavigation();
   wireViva();
+  revealOnScroll();
 });
