@@ -40,7 +40,7 @@ def start_run(path, metadata):
 
 def verify_author_seal(fixture, seal):
     authored = json.loads(Path(seal).read_text(encoding="utf-8"))
-    if authored.get("fixture_sha256") != sha256(fixture):
+    if authored.get("fixture_sha256", authored.get("sha256")) != sha256(fixture):
         raise ValueError("Fresh fixture does not match the independent author seal.")
     return authored
 
@@ -73,7 +73,8 @@ def baseline_module():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--phase", choices=("baseline-development", "improved-development", "baseline-base-development",
-                                            "improved-base-development", "improved-base-development-r2", "fresh"), required=True)
+                                            "improved-base-development", "improved-base-development-r2",
+                                            "improved-base-development-r3", "fresh"), required=True)
     args = parser.parse_args()
     # Must be set before importing inference libraries. Never download weights.
     os.environ.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", TIDEWAY_LOCAL_TEXT_MODEL="",
