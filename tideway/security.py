@@ -105,6 +105,10 @@ class RateLimiter:
         with self.lock:
             tokens, updated = self.buckets.get(key, (self.capacity, now))
             tokens = min(self.capacity, tokens + (now - updated) * self.refill)
+            if len(self.buckets) > 10_000:
+                # A bucket that has refilled to capacity is identical to a fresh one, so dropping it changes nothing.
+                full_after = self.capacity / self.refill
+                self.buckets = {k: v for k, v in self.buckets.items() if now - v[1] < full_after}
             if tokens < 1:
                 self.buckets[key] = (tokens, now)
                 return False

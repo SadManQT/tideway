@@ -1440,6 +1440,8 @@ class Store:
                 raise ValidationError("Mandate was not found for this business.")
             if row["status"] == "used":
                 raise ValidationError("An executed mandate cannot be cancelled; executed changes are never silently undone.")
+            if row["status"] not in BUNDLE_LIVE:
+                raise ValidationError(f"This mandate is already {row['status']}.")
             db.execute("UPDATE mandates SET status='cancelled' WHERE id=?", (mandate_id,))
             if row["plan_id"]:
                 db.execute("UPDATE plans SET status='cancelled' WHERE id=? AND status IN ('pending','approved')", (row["plan_id"],))
