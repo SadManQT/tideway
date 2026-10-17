@@ -1,0 +1,36 @@
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  78.64MB
+Step 1/8 : FROM python:3.11-slim-bookworm@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903ca5fd283f501e3a805f5f89
+ ---> 141fe9b385f3
+Step 2/8 : ENV PYTHONDONTWRITEBYTECODE=1     PYTHONUNBUFFERED=1
+ ---> Running in 97a638a928a9
+ ---> Removed intermediate container 97a638a928a9
+ ---> 1d69a8a37822
+Step 3/8 : WORKDIR /app
+ ---> Running in e442e5b2ef17
+ ---> Removed intermediate container e442e5b2ef17
+ ---> d79fa83c6fbb
+Step 4/8 : COPY . .
+ ---> b4d7340ec8c2
+Step 5/8 : RUN python -S -m compileall -q run.py tideway scripts tests     && python -S scripts/verify_submission.py     && useradd --create-home --uid 10001 tideway     && mkdir -p /app/data     && chown -R tideway:tideway /app
+ ---> Running in fc91066d8dc7
+319 tests: 0 failures, 0 errors, 4 skipped.
+ ---> Removed intermediate container fc91066d8dc7
+ ---> 227a546a8545
+Step 6/8 : USER tideway
+ ---> Running in 0cfd7f2c1d45
+ ---> Removed intermediate container 0cfd7f2c1d45
+ ---> 29bae0331c35
+Step 7/8 : EXPOSE 8787
+ ---> Running in aa8c5b3038ca
+ ---> Removed intermediate container aa8c5b3038ca
+ ---> 9b8eaa0bc271
+Step 8/8 : CMD ["python", "run.py", "--host", "0.0.0.0", "--port", "8787", "--db", "/app/data/tideway.sqlite3"]
+ ---> Running in d7448c386c27
+ ---> Removed intermediate container d7448c386c27
+ ---> 3f349473f603
+Successfully built 3f349473f603
+Successfully tagged tideway-verification:a40a2b30c47b

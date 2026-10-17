@@ -1,4 +1,4 @@
-# Current technical readiness — evidence v3
+# Current technical readiness — evidence v6 / Docker v5
 
 This is the current review index. Tideway remains a synthetic SME finance copilot:
 cash forecasts, recovery proposals, human approval, simulated negotiation and
@@ -34,19 +34,26 @@ Historical upgrade and Windows reports describe earlier source versions.
 - Profiles, empirical fallback and illustrative backtests use only paid history
   available at the simulation date. Mock advances exclude already committed and
   not-yet-issued receivables. A Windows SQLite test handle leak is corrected.
+- The persisted Docker smoke client now consumes the API's `{found, receipt}`
+  envelope, and the container verifier uses Docker's current `--timeout` stop
+  flag. Above-target plans now show an explicit owner-decision escalation in the
+  rescue UI.
 
 ## Measured evidence
 
 | Check | Recorded result | Meaning and limit |
 |---|---|---|
-| Current unit run | 261 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
+| Current unit run | 319 run; 0 failures; 0 errors; 5 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
 | Additional standard-library run | 252 run; 0 failures; 0 errors; 4 skipped | Python 3.11.16; optional photo tests require Pillow; report records its own source hash |
 | Financial scenarios | 24/24 expected workflows; 9 rescues | 7/9 executed rescues meet the 10% simulated risk target |
+| Planner rescue follow-up | D06 0.00% mean risk; H11 11.78% mean risk over 30,000 fresh draws | D06 keeps the accepted 7-day counter-offer and adds recovery; H11 shortlists risk-diverse candidates but remains above target and requires owner decision/acknowledgement |
+| Docker v5 verification | Build and HTTP workflow passed; persisted receipt/replay/audit passed; 319 tests, 0 failures, 0 errors | Linux amd64 WSL2, Python 3.11.17, non-root uid 10001; synthetic sandbox only |
 | Shipped TidePay | 7,427 unseen synthetic invoices; MAE 8.5585 days | Heuristic 10.2296; training-only prior 11.7453; no weight changes |
 | First actual Qwen3 challenge | 28/32 correct; 32/32 contained | Four retained misses; no mandate, execution or financial-ledger mutation |
 | Post-fix Qwen3 regression | 32/32 known cases handled; 8/8 safe stops | One real-model pass after disclosed guard fixes; not a new blind score |
 | Independent-audit Windows Qwen3 rerun | 32/32 known requests handled; 32/32 contained | Actual compatible inference on disclosed cases; retains every output; not blind |
-| First unseen instruction screening | 2/24 attacks detected; 2/24 benign flagged | Severe generalization gap; detection cannot be the authorization boundary |
+| Historical unseen instruction screening | 2/24 attacks detected; 2/24 benign flagged | Retained v3/v5 observation; detection cannot be the authorization boundary |
+| Current v6 instruction screening first pass | 96 independently authored synthetic cases; combined warning 55 TP, 11 TN, 29 FP, 1 FN | Recall 98.2% but false-positive rate 72.5%; local-compatible Qwen3 is unbenchmarked and this is not external or population accuracy |
 | SME user study | 0 participants; pending | Kit and analysis available; no real-user claim |
 
 The prediction cohort contains 80 new synthetic SMEs, four seeds and 7,427
@@ -96,6 +103,12 @@ Use a completed LF checkout: source edits during the run invalidate verification
   raw invoices, shared test IDs, predictions, intervals and calibration bins.
 - [Independent screening/model evaluation](BLIND_EVALUATION.md), source seals,
   native runtime provenance and every first-observation output.
+- [Current v6 screening first pass](../evidence/screening-v6/first-pass/first-pass-results.json)
+  with the sealed fixture, model attempts and raw outputs.
+- [Planner risk remediation](../evidence/readiness-v5/planner/report.json), including
+  D06 counter-offer repair and H11 fresh-seed validation.
+- [Docker v5 report](../evidence/infrastructure-v5/docker/report.json), including
+  build tests, non-root HTTP flow and persisted receipt replay.
 - [Separate post-fix model regression](../evidence/readiness-v3/blind/model-post-fix-regression.json)
   and [Python 3.11 standard-library run](../evidence/readiness-v3/python311/test-summary.json).
 - [Release stages and PDF hashes](../evidence/readiness-v3/release-checks.json).
@@ -107,20 +120,22 @@ Use a completed LF checkout: source edits during the run invalidate verification
 - [User study protocol](USER_STUDY_KIT.md) and
   [pending participation status](../evidence/readiness-v3/user-study-status.json).
 
-Current test source digest: `b2ca44a67180c34a0948ffce13c31a39bc20b91208d5a29f1e25a0381ae4f207`.
+Current test source digest: `83b8ada2d90e6a3e8484880952df07fb8ba0463c227d5f0602116cae3025d32a`.
 Reports contain their own timestamps and hashes; older Windows/upgrade evidence
 is historical and does not attest to the current checkout.
 
 ## Remaining gaps that code alone cannot close
 
-Unfamiliar instruction detection remains weak. A new, separately sealed evaluation
-is needed after future detector work; repeating known examples is regression only.
-Real consented SME feedback, native MLX/TideLM and receipt-model evaluation,
-external security testing and real-data calibration remain outstanding.
+Unfamiliar instruction screening now has a fresh v6 first pass, but the high false
+positive rate and unbenchmarked compatible-model status require further detector
+work and another separately sealed evaluation; repeating known examples is
+regression only. Real consented SME feedback, native MLX/TideLM and receipt-model
+evaluation, external security testing and real-data calibration remain outstanding.
 Partial settlements, reversals and real lender eligibility require separate
-financial design before live integration. GitHub-hosted CI has not run: the
-workflow is configured, but this work has not pushed anything. Docker's daemon
-was unavailable, so no Docker build is claimed.
+financial design before live integration. GitHub-hosted CI is configured and will
+be triggered by the requested push; its result must be recorded separately from
+this local evidence. Docker v5 has passed locally on Linux/WSL2, but that is not
+hosted CI or production deployment.
 
 The supplied five-person BUET roster is retained. Leader, contribution roles,
 eligibility, registration, submission route, reviewer access and the deferred

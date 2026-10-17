@@ -109,9 +109,13 @@ A [sealed native macOS model challenge](docs/BLIND_EVALUATION.md) initially hand
 failures prompted separate guard regressions; the original failures remain.
 The subsequent [disclosed regression](evidence/readiness-v3/blind/model-post-fix-regression.json) handled 32/32; this is not a new blind score.
 A separate [real-model browser run](evidence/readiness-v3/browser-real/browser-verification.json) verifies risk answers, payment refusal and unchanged financial state on the current source.
-Instruction screening detected only 2/24 unfamiliar attacks and flagged 2/24
-benign messages. Structural permissions remain essential. No real-user feedback
-has been fabricated: use the [consented SME study kit](docs/USER_STUDY_KIT.md).
+The historical v3/v5 instruction screening detected only 2/24 unfamiliar attacks
+and flagged 2/24 benign messages. The current sealed v6 first pass covers 96
+independently authored synthetic cases (55 TP, 11 TN, 29 FP, 1 FN for combined
+warning); the high false-positive rate and unbenchmarked compatible-model status
+are disclosed in [current readiness](docs/READINESS_CURRENT.md). Structural
+permissions remain essential. No real-user feedback has been fabricated: use the
+[consented SME study kit](docs/USER_STUDY_KIT.md).
 
 ## Contest upgrade and reproducible evidence
 
