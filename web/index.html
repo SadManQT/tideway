@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0f2a3a">
+  <meta name="theme-color" content="#0e1348">
   <meta name="description" content="Tideway: an approval-gated AI cash-flow rescue agent for small businesses (synthetic sandbox).">
   <title>Tideway: approval-gated cash-flow rescue</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -41,30 +41,42 @@
     <header class="land-top">
       <a class="land-brand" href="#top" aria-label="Tideway home"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-wave"/></svg></span><span>Tideway</span></a>
       <nav class="land-nav" aria-label="Landing page">
-        <a href="#how">How it works</a><a href="#plans">Plans</a><a href="/guide.html">Project guide</a><a href="#signin">Sign in</a>
-        <a class="button teal small" href="#signup">Start free</a>
+        <a href="#how">How it works</a><a href="#plans">Plans</a><a href="/guide.html">Project guide</a><a href="#join">Join your team</a><a href="#signin">Sign in</a>
+        <a class="button primary small" href="#signup">Start free</a>
       </nav>
     </header>
     <main class="land-main" id="top">
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-copy">
           <span class="eyebrow light">Cash-flow copilot for small businesses</span>
-          <h1 id="hero-title">Plan ahead for payroll.</h1>
-          <p class="hero-sub">On-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, and only acts with your approval.</p>
+          <h1 id="hero-title">Plan ahead for <span class="sticker">payroll.</span></h1>
+          <p class="hero-sub">On-device AI predicts late payers, plans a cash rescue before the gap hits, and acts only with your approval.</p>
           <div class="hero-ctas">
-            <a class="button teal" href="#signup">Start free</a>
+            <a class="button primary" href="#signup">Start free</a>
             <a class="button light" href="#demo">Try the live demo</a>
-            <a class="button outline" href="#join">Join your team</a>
-            <a class="button outline" href="#signin">Sign in</a>
           </div>
-          <p class="hero-note">No card needed. Everything runs in a local sandbox: no real money, bank or counterparty.</p>
         </div>
-        <section class="demo-card" id="demo" tabindex="-1" aria-labelledby="demo-title">
-          <h2 id="demo-title">Try the live demo</h2>
-          <p class="small muted">One click signs you in to three fictional businesses. Each account sees the same data with a different role.</p>
-          <div id="demo-accounts" class="demo-accounts"></div>
-          <div id="demo-error" class="form-error" role="alert"></div>
-          <p class="tag-note"><span class="pill mock">Synthetic demo data</span> Made-up businesses, customers and suppliers.</p>
+        <figure class="hero-art" aria-hidden="true"><img src="/img/hero.webp" alt="" width="980" height="720" decoding="async"></figure>
+      </section>
+
+      <div class="marquee" aria-label="What Tideway guarantees">
+        <div class="marquee-track">
+          <span>Approval-gated by design</span><span>AI runs on your computer</span><span>Ask in 8 languages</span><span>Two people approve big amounts</span><span>Signed, single-use mandates</span><span>No real money moves</span>
+          <span aria-hidden="true">Approval-gated by design</span><span aria-hidden="true">AI runs on your computer</span><span aria-hidden="true">Ask in 8 languages</span><span aria-hidden="true">Two people approve big amounts</span><span aria-hidden="true">Signed, single-use mandates</span><span aria-hidden="true">No real money moves</span>
+        </div>
+      </div>
+
+      <section class="land-section demo-band" aria-labelledby="demo-title">
+        <section class="demo-card" id="demo" tabindex="-1">
+          <div class="demo-intro">
+            <h2 id="demo-title">Try the live demo</h2>
+            <p>One click signs you in to three fictional businesses. Each account sees the same data with a different role.</p>
+            <p class="tag-note"><span class="pill mock">Synthetic demo data</span> No card needed. Everything runs in a local sandbox: no real money, bank or counterparty.</p>
+          </div>
+          <div class="demo-pick">
+            <div id="demo-accounts" class="demo-accounts"></div>
+            <div id="demo-error" class="form-error" role="alert"></div>
+          </div>
         </section>
       </section>
 

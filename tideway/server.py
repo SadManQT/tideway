@@ -26,11 +26,15 @@ STATIC = {"/": "index.html", "/index.html": "index.html", "/styles.css": "styles
           "/quick-start.js": "quick-start.js",
           "/favicon.svg": "favicon.svg", "/guide": "guide.html", "/guide.html": "guide.html",
           "/guide.css": "guide.css", "/guide.js": "guide.js",
+          "/fonts/space-grotesk.woff2": "fonts/space-grotesk.woff2", "/fonts/unbounded.woff2": "fonts/unbounded.woff2",
+          "/fonts/jetbrains-mono.woff2": "fonts/jetbrains-mono.woff2", "/img/hero.webp": "img/hero.webp",
           "/benchmarks/tidepay.json": "../evidence/upgrade-v1/tidepay/report.json",
           "/benchmarks/tidepay-reliability.svg": "../evidence/upgrade-v1/tidepay/reliability.svg",
           "/benchmarks/tidepay-deployed.json": "../evidence/readiness-v3/tidepay/report.json",
           "/benchmarks/tidepay-deployed-reliability.svg": "../evidence/readiness-v3/tidepay/reliability.svg"}
-CONTENT_TYPES = {"html": "text/html", "css": "text/css", "js": "text/javascript", "svg": "image/svg+xml", "json": "application/json"}
+CONTENT_TYPES = {"html": "text/html", "css": "text/css", "js": "text/javascript", "svg": "image/svg+xml", "json": "application/json",
+                 "woff2": "font/woff2", "webp": "image/webp"}
+BINARY = {"woff2", "webp"}
 COOKIE = "tideway_session"
 
 
@@ -374,7 +378,8 @@ def make_handler(app):
                     content = (ROOT / "web" / name).read_bytes()
                 except FileNotFoundError:
                     return self.reply(404, {"error": "Not found."})
-                return self.reply(200, content, CONTENT_TYPES[name.rsplit(".", 1)[1]] + "; charset=utf-8")
+                ext = name.rsplit(".", 1)[1]
+                return self.reply(200, content, CONTENT_TYPES[ext] + ("" if ext in BINARY else "; charset=utf-8"))
             _token, operator = self.session()
             query = parse_qs(parsed.query)
             try:

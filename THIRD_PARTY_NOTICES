@@ -80,3 +80,21 @@ Contest-upgrade evaluation and visual QA:
   These packages are installed separately, retain their upstream license terms,
   and are not bundled in the source archive. No video was recorded or encoded
   during the contest-upgrade workflow.
+
+Fonts (bundled in web/fonts/, Latin subset WOFF2 from Google Fonts):
+
+* Space Grotesk, Copyright 2020 The Space Grotesk Project Authors. SIL Open
+  Font License 1.1. https://github.com/floriankarsten/space-grotesk
+  License copy: licenses/SpaceGrotesk-OFL.txt
+* Unbounded, Copyright 2022 The Unbounded Project Authors. SIL Open Font
+  License 1.1. https://github.com/googlefonts/unbounded
+  License copy: licenses/Unbounded-OFL.txt
+* JetBrains Mono, Copyright 2020 The JetBrains Mono Project Authors. SIL Open
+  Font License 1.1. https://github.com/JetBrains/JetBrainsMono
+  License copy: licenses/JetBrainsMono-OFL.txt
+
+Illustration:
+
+* web/img/hero.webp was generated for Tideway with an AI image model
+  (gpt-image-2.5 via ElevenLabs) from an original prompt; no third-party
+  artwork, logos or text are included.
