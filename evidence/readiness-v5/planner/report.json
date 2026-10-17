@@ -1,7 +1,7 @@
 {
   "version": "planner-risk-remediation-v5",
-  "run_at_utc": "2026-10-17T07:10:52+00:00",
-  "source_tree_sha256": "4d640007a6be2ecd247d14f31609aa229940216a5e54c4b382ca2d32d7659905",
+  "run_at_utc": "2026-10-17T07:25:10+00:00",
+  "source_tree_sha256": "77ae338a4849cd0dcd4133ad0d994ee9fae5bbebd7a02673b784bf46b88eedcf",
   "source_unchanged_during_run": true,
   "evaluation_script_sha256": "6f4439618cb62689a647be0c54602b710ac05f9993a3dd9a64de580857b20ec2",
   "fixture_sha256": "0fd9b482d1a13bb91d5126ab751db2b4eb019c3fcefee8d1063c47f0460d4a46",
@@ -338,19 +338,19 @@
             "seed": 20261017,
             "runs": 10000,
             "probability_breach": 0.0,
-            "milliseconds": 62.69539999993867
+            "milliseconds": 70.31169999936537
           },
           {
             "seed": 50737,
             "runs": 10000,
             "probability_breach": 0.0,
-            "milliseconds": 70.53009999981441
+            "milliseconds": 65.88649999866902
           },
           {
             "seed": 91729,
             "runs": 10000,
             "probability_breach": 0.0,
-            "milliseconds": 62.474899999870104
+            "milliseconds": 60.3038999997807
           }
         ],
         "total_runs": 30000,
@@ -366,11 +366,11 @@
         "warmups_discarded": 1,
         "repetitions": 3,
         "durations_ms": [
-          85.84979999977804,
-          83.7640999998257,
-          89.09889999995357
+          84.08149999922898,
+          74.32579999840527,
+          78.89760000034585
         ],
-        "median_ms": 85.84979999977804,
+        "median_ms": 78.89760000034585,
         "search": {
           "records_considered": 2,
           "combinations_evaluated": 19,
@@ -836,19 +836,19 @@
             "seed": 20261017,
             "runs": 10000,
             "probability_breach": 0.1194,
-            "milliseconds": 239.22889999994368
+            "milliseconds": 226.0175999999774
           },
           {
             "seed": 50737,
             "runs": 10000,
             "probability_breach": 0.1171,
-            "milliseconds": 259.0111000008619
+            "milliseconds": 250.4815000011149
           },
           {
             "seed": 91729,
             "runs": 10000,
             "probability_breach": 0.1168,
-            "milliseconds": 255.4392000001826
+            "milliseconds": 243.53180000071006
           }
         ],
         "total_runs": 30000,
@@ -864,11 +864,11 @@
         "warmups_discarded": 1,
         "repetitions": 3,
         "durations_ms": [
-          841.8990000009217,
-          888.6393000011594,
-          841.1003000001074
+          824.9438000002556,
+          862.1880999999121,
+          815.2546000001166
         ],
-        "median_ms": 841.8990000009217,
+        "median_ms": 824.9438000002556,
         "search": {
           "records_considered": 6,
           "combinations_evaluated": 15624,
@@ -1103,19 +1103,19 @@
               "seed": 20261017,
               "runs": 10000,
               "probability_breach": 0.1194,
-              "milliseconds": 255.04689999979746
+              "milliseconds": 240.4822000007698
             },
             {
               "seed": 50737,
               "runs": 10000,
               "probability_breach": 0.1171,
-              "milliseconds": 251.00860000020475
+              "milliseconds": 231.9757999994181
             },
             {
               "seed": 91729,
               "runs": 10000,
               "probability_breach": 0.1168,
-              "milliseconds": 254.22470000012254
+              "milliseconds": 237.2378000000026
             }
           ],
           "total_runs": 30000,

@@ -6,31 +6,31 @@ Sending build context to Docker daemon  78.64MB
 Step 1/8 : FROM python:3.11-slim-bookworm@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903ca5fd283f501e3a805f5f89
  ---> 141fe9b385f3
 Step 2/8 : ENV PYTHONDONTWRITEBYTECODE=1     PYTHONUNBUFFERED=1
- ---> Running in a04ae7277891
- ---> Removed intermediate container a04ae7277891
- ---> 84843617d084
+ ---> Running in f2565c813e9e
+ ---> Removed intermediate container f2565c813e9e
+ ---> 9a1ca9c57fd4
 Step 3/8 : WORKDIR /app
- ---> Running in 1bb6f49fbdc8
- ---> Removed intermediate container 1bb6f49fbdc8
- ---> cd062c70909b
+ ---> Running in 6153ee10c718
+ ---> Removed intermediate container 6153ee10c718
+ ---> a413f74a5213
 Step 4/8 : COPY . .
- ---> 94a13537df1f
+ ---> 46c244b91cfd
 Step 5/8 : RUN python -S -m compileall -q run.py tideway scripts tests     && python -S scripts/verify_submission.py     && useradd --create-home --uid 10001 tideway     && mkdir -p /app/data     && chown -R tideway:tideway /app
- ---> Running in a01162c3ef6b
-319 tests: 0 failures, 0 errors, 4 skipped.
- ---> Removed intermediate container a01162c3ef6b
- ---> 48f1c6d70c17
+ ---> Running in c74d2a92a61d
+322 tests: 0 failures, 0 errors, 4 skipped.
+ ---> Removed intermediate container c74d2a92a61d
+ ---> 73d62166ba06
 Step 6/8 : USER tideway
- ---> Running in 65dba253fa2f
- ---> Removed intermediate container 65dba253fa2f
- ---> e346a50de5d7
+ ---> Running in 7cffc9bb7a9c
+ ---> Removed intermediate container 7cffc9bb7a9c
+ ---> 7104c171c53e
 Step 7/8 : EXPOSE 8787
- ---> Running in 55cc7e580333
- ---> Removed intermediate container 55cc7e580333
- ---> 247f6c0f46ad
+ ---> Running in a97a83e93fdc
+ ---> Removed intermediate container a97a83e93fdc
+ ---> 76263889f972
 Step 8/8 : CMD ["python", "run.py", "--host", "0.0.0.0", "--port", "8787", "--db", "/app/data/tideway.sqlite3"]
- ---> Running in f4fb72708c72
- ---> Removed intermediate container f4fb72708c72
- ---> 5a1193957228
-Successfully built 5a1193957228
-Successfully tagged tideway-verification:170138f6f99e
+ ---> Running in a65ad813bbb7
+ ---> Removed intermediate container a65ad813bbb7
+ ---> 22abcea5fe3e
+Successfully built 22abcea5fe3e
+Successfully tagged tideway-verification:aad356269461

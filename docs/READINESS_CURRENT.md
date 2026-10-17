@@ -43,11 +43,11 @@ Historical upgrade and Windows reports describe earlier source versions.
 
 | Check | Recorded result | Meaning and limit |
 |---|---|---|
-| Current unit run | 319 run; 0 failures; 0 errors; 5 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
+| Current unit run | 322 run; 0 failures; 0 errors; 5 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
 | Additional standard-library run | 252 run; 0 failures; 0 errors; 4 skipped | Python 3.11.16; optional photo tests require Pillow; report records its own source hash |
 | Financial scenarios | 24/24 expected workflows; 9 rescues | 7/9 executed rescues meet the 10% simulated risk target |
 | Planner rescue follow-up | D06 0.00% mean risk; H11 11.78% mean risk over 30,000 fresh draws | D06 keeps the accepted 7-day counter-offer and adds recovery; H11 shortlists risk-diverse candidates but remains above target and requires owner decision/acknowledgement |
-| Docker v5 verification | Build and HTTP workflow passed; persisted receipt/replay/audit passed; 319 tests, 0 failures, 0 errors | Linux amd64 WSL2, Python 3.11.17, non-root uid 10001; synthetic sandbox only |
+| Docker v5 verification | Build and HTTP workflow passed; persisted receipt/replay/audit passed; 322 tests, 0 failures, 0 errors | Linux amd64 WSL2, Python 3.11.17, non-root uid 10001; synthetic sandbox only |
 | Hosted GitHub Actions run 6 | 9/9 jobs passed | Ubuntu, Windows and macOS stdlib lanes; Pillow; browser/package; and Docker; receipt at `evidence/infrastructure-v5/hosted-ci-status.json` |
 | Shipped TidePay | 7,427 unseen synthetic invoices; MAE 8.5585 days | Heuristic 10.2296; training-only prior 11.7453; no weight changes |
 | First actual Qwen3 challenge | 28/32 correct; 32/32 contained | Four retained misses; no mandate, execution or financial-ledger mutation |
@@ -123,7 +123,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
 - [User study protocol](USER_STUDY_KIT.md) and
   [pending participation status](../evidence/readiness-v3/user-study-status.json).
 
-Current test source digest: `4d640007a6be2ecd247d14f31609aa229940216a5e54c4b382ca2d32d7659905`.
+Current test source digest: `77ae338a4849cd0dcd4133ad0d994ee9fae5bbebd7a02673b784bf46b88eedcf`.
 Reports contain their own timestamps and hashes; older Windows/upgrade evidence
 is historical and does not attest to the current checkout.
 

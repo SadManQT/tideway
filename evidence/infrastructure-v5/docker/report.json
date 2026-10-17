@@ -1,9 +1,9 @@
 {
   "version": "docker-local-verification-v5",
-  "started_at_utc": "2026-10-17T07:08:43+00:00",
+  "started_at_utc": "2026-10-17T07:23:05+00:00",
   "host_python": "3.12.3",
   "host_platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
-  "source_tree_sha256_before": "4d640007a6be2ecd247d14f31609aa229940216a5e54c4b382ca2d32d7659905",
+  "source_tree_sha256_before": "77ae338a4849cd0dcd4133ad0d994ee9fae5bbebd7a02673b784bf46b88eedcf",
   "source_files_before": {
     ".dockerignore": "dec967d938fb42f3e47530c65273d80780d9181df4777d84b3865653811fc817",
     ".github/workflows/ci.yml": "d02d20ed75b25b788aa7035c161ae8c131ec442cbb7a9b1bb41598e44665d7da",
@@ -14,7 +14,7 @@
     "scripts/build_submission_package.py": "f37ef2afe0e820554ba62e2ba09c7f95d0e1196f23d9f8b86947c5637921ae7e",
     "scripts/build_submission_pdfs.py": "2cd08cb95755dfa560f01803820215973251cb2a77f040da107bbc83765de34c",
     "scripts/build_upgrade_summary.py": "f78248de48c93a80a2d9c4b2f8a4f1a2279f0a03b24bb6154874c5d38616a9f1",
-    "scripts/capture_screens.mjs": "ac621538f4f35fd0a7463022f8c59ee85bdc26bd663ebc94abe7616a6d63e419",
+    "scripts/capture_screens.mjs": "6f2a1b6205f72ec3e5996254bab76b9aed51ce1e4be3ee2fce3d165e5d0b4359",
     "scripts/check_javascript.mjs": "93f0ca6021385d414733a385040ea2145fc424b862ed52bbd06d4e64995d27c6",
     "scripts/check_setup.py": "005035bfbd081525dd0d24aff20be7d7ea1e0e7f185c4d263f513f147fde401e",
     "scripts/container_http_smoke.py": "3a793f9ec1639b36cd8c78a700fc1876713f6e0df2cb4c2f9beb1f69d5304365",
@@ -66,7 +66,7 @@
     "tests/test_plan_schema.py": "9acf7886fa4bce8c109602f571886345363d7bb9a3d9100b097738d0ec3f633c",
     "tests/test_planner_v5.py": "1450c3f90bd250cd60013399ce4094997869199f11294386a6b023b21f481948",
     "tests/test_reasoning_guards.py": "ac1917f9c29bc32ce7e6a0621cb058f03b7bd69cc484471625175784274ef7df",
-    "tests/test_regressions.py": "2c01925f59a004df0db70eb949238360aad140ff0845315349c11b34e5d286ff",
+    "tests/test_regressions.py": "1106383122cdf02392b393db8ce73a86825634fb717165d2c250031829dc7a58",
     "tests/test_release.py": "6fa78ba1c84ed497a0f9d461dce1e45dc73ff0c9a2bfafce9e18f9e5e6601c2d",
     "tests/test_risk_acknowledgement.py": "331656101152d492b1c257bc6471290bf195c3a558ebb799dae242b8a250d38a",
     "tests/test_saas.py": "ac2675dea51f249f2acf82ded7123d27e89c168684de0223805a8c04d9cb7a82",
@@ -108,12 +108,12 @@
     "tideway/planner.py": "d069ecec8680e44bc51008410f1c1ef09f1433c980891da7a9c89edb803f77b6",
     "tideway/projection.py": "444ee30b96be7bec1b43a064820d85164a956d352e94b4f740bcf19b62c4c5a0",
     "tideway/screening.py": "af274f33d0138f6e56c2943c7d4099ee750ad0ab5c41939211d9c082708c8dfc",
-    "tideway/security.py": "8404583267d9b1b7d37c0155c4c31b2763e7fc09b926741dbc7fb9a3db48e302",
+    "tideway/security.py": "26008e32263dc8fc7bccdad28a8c54e6bfe78703a718acbab264599cd4c3cb35",
     "tideway/selftest.py": "f6268c019b43908377cd38b0c26805bd7bbdd975a05e988ee64aed713f7e1139",
     "tideway/semantic_screening.py": "eb75bb8b3a5df672a6ef929dc39f389d5cd7d66d21af0097b6f13d7ef3efa9a8",
-    "tideway/server.py": "f8bd4a6f63b04a9fc0e3ef4835f8aeb6aa45a03bf4b10cccf85173c744dce0d5",
+    "tideway/server.py": "aa1fd70d5c91bac8e5ed2ba924adcf1cf20ef7f336145d4a20ac3cda49a39029",
     "tideway/service.py": "357fd1e05956bf7deab3c804091ae3bfd426a96661751312484605b85f28b7bc",
-    "tideway/store.py": "26e4817533dff2a56ff83b3728494b3c8d1e7915c1cd59db62f938df70819d79",
+    "tideway/store.py": "112f2aa7c0cb2f8f47887a59331ec2446dddfc59da1b2af8ecf038ccaae01a9e",
     "tideway/tidelm.py": "3ba1c78dfec9f8c09f96680104c00c5725a51a7b2a028fcaef6c08fae86bde93",
     "tideway/vision.py": "a92915616fbde5edc16d8b89bbbf226b6f4daed72e088745c4c4bd2a12d3c7cb",
     "web/app.js": "13e0742f72f45b4ab76e63c0d0bf4059428213c8bff697f77a898feb3fbe100b",
@@ -126,7 +126,7 @@
     "web/styles.css": "3e1ebe760a11d613ed50c6127927514c4c223dd83987ca77471ad3e72a6156d4"
   },
   "legacy_builder": false,
-  "image_tag": "tideway-verification:170138f6f99e",
+  "image_tag": "tideway-verification:aad356269461",
   "passed": true,
   "checks": {
     "http_workflow": {
@@ -151,7 +151,7 @@
         "audit_chain_valid": true,
         "private_signing_key_permissions": true
       },
-      "receipt_id": "ceba82487f2f4fe382ff0af14997eea0",
+      "receipt_id": "e83f118e637f405cb2442e961a919319",
       "approval_trace": [
         {
           "attempt": 1,
@@ -302,7 +302,7 @@
         "persistent_audit_chain_valid": true,
         "private_signing_key_permissions": true
       },
-      "receipt_id": "ceba82487f2f4fe382ff0af14997eea0",
+      "receipt_id": "e83f118e637f405cb2442e961a919319",
       "requests": [
         {
           "method": "GET",
@@ -361,7 +361,7 @@
         "{{json .}}"
       ],
       "exit_code": 0,
-      "seconds": 0.121,
+      "seconds": 0.249,
       "log": "engine-version.log"
     },
     {
@@ -371,7 +371,7 @@
         "python:3.11-slim-bookworm@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903ca5fd283f501e3a805f5f89"
       ],
       "exit_code": 0,
-      "seconds": 0.937,
+      "seconds": 0.977,
       "log": "base-pull.log"
     },
     {
@@ -382,7 +382,7 @@
         "python:3.11-slim-bookworm@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903ca5fd283f501e3a805f5f89"
       ],
       "exit_code": 0,
-      "seconds": 0.104,
+      "seconds": 0.117,
       "log": "base-inspect.log"
     },
     {
@@ -393,11 +393,11 @@
         "none",
         "--no-cache",
         "--tag",
-        "tideway-verification:170138f6f99e",
+        "tideway-verification:aad356269461",
         "."
       ],
       "exit_code": 0,
-      "seconds": 65.946,
+      "seconds": 66.356,
       "log": "build.log"
     },
     {
@@ -405,10 +405,10 @@
       "arguments": [
         "image",
         "inspect",
-        "tideway-verification:170138f6f99e"
+        "tideway-verification:aad356269461"
       ],
       "exit_code": 0,
-      "seconds": 0.113,
+      "seconds": 0.114,
       "log": "image-inspect.log"
     },
     {
@@ -416,10 +416,10 @@
       "arguments": [
         "volume",
         "create",
-        "tideway-verification-data-170138f6f99e"
+        "tideway-verification-data-aad356269461"
       ],
       "exit_code": 0,
-      "seconds": 0.116,
+      "seconds": 0.106,
       "log": "volume-create.log"
     },
     {
@@ -428,7 +428,7 @@
         "run",
         "--detach",
         "--name",
-        "tideway-verification-170138f6f99e-initial",
+        "tideway-verification-aad356269461-initial",
         "--network",
         "none",
         "--cap-drop",
@@ -436,18 +436,18 @@
         "--security-opt",
         "no-new-privileges=true",
         "--mount",
-        "type=volume,source=tideway-verification-data-170138f6f99e,target=/app/data",
-        "tideway-verification:170138f6f99e"
+        "type=volume,source=tideway-verification-data-aad356269461,target=/app/data",
+        "tideway-verification:aad356269461"
       ],
       "exit_code": 0,
-      "seconds": 0.391,
+      "seconds": 0.378,
       "log": "run-workflow.log"
     },
     {
       "stage": "http-workflow",
       "arguments": [
         "exec",
-        "tideway-verification-170138f6f99e-initial",
+        "tideway-verification-aad356269461-initial",
         "python",
         "-S",
         "scripts/container_http_smoke.py",
@@ -455,41 +455,41 @@
         "workflow"
       ],
       "exit_code": 0,
-      "seconds": 1.484,
+      "seconds": 2.494,
       "log": "http-workflow.log"
     },
     {
       "stage": "build-test-summary",
       "arguments": [
         "exec",
-        "tideway-verification-170138f6f99e-initial",
+        "tideway-verification-aad356269461-initial",
         "cat",
         "/app/evidence/test-summary.json"
       ],
       "exit_code": 0,
-      "seconds": 0.18,
+      "seconds": 0.156,
       "log": "build-test-summary.log"
     },
     {
       "stage": "build-test-log",
       "arguments": [
         "exec",
-        "tideway-verification-170138f6f99e-initial",
+        "tideway-verification-aad356269461-initial",
         "cat",
         "/app/evidence/test-run.log"
       ],
       "exit_code": 0,
-      "seconds": 0.166,
+      "seconds": 0.178,
       "log": "build-test-log.log"
     },
     {
       "stage": "server-log-workflow",
       "arguments": [
         "logs",
-        "tideway-verification-170138f6f99e-initial"
+        "tideway-verification-aad356269461-initial"
       ],
       "exit_code": 0,
-      "seconds": 0.106,
+      "seconds": 0.109,
       "log": "server-log-workflow.log"
     },
     {
@@ -498,17 +498,17 @@
         "stop",
         "--timeout",
         "10",
-        "tideway-verification-170138f6f99e-initial"
+        "tideway-verification-aad356269461-initial"
       ],
       "exit_code": 0,
-      "seconds": 10.419,
+      "seconds": 10.413,
       "log": "stop-workflow.log"
     },
     {
       "stage": "remove-workflow",
       "arguments": [
         "rm",
-        "tideway-verification-170138f6f99e-initial"
+        "tideway-verification-aad356269461-initial"
       ],
       "exit_code": 0,
       "seconds": 0.114,
@@ -520,7 +520,7 @@
         "run",
         "--detach",
         "--name",
-        "tideway-verification-170138f6f99e-recreated",
+        "tideway-verification-aad356269461-recreated",
         "--network",
         "none",
         "--cap-drop",
@@ -528,18 +528,18 @@
         "--security-opt",
         "no-new-privileges=true",
         "--mount",
-        "type=volume,source=tideway-verification-data-170138f6f99e,target=/app/data",
-        "tideway-verification:170138f6f99e"
+        "type=volume,source=tideway-verification-data-aad356269461,target=/app/data",
+        "tideway-verification:aad356269461"
       ],
       "exit_code": 0,
-      "seconds": 0.366,
+      "seconds": 0.404,
       "log": "run-persisted.log"
     },
     {
       "stage": "http-persisted",
       "arguments": [
         "exec",
-        "tideway-verification-170138f6f99e-recreated",
+        "tideway-verification-aad356269461-recreated",
         "python",
         "-S",
         "scripts/container_http_smoke.py",
@@ -547,17 +547,17 @@
         "persisted"
       ],
       "exit_code": 0,
-      "seconds": 0.426,
+      "seconds": 0.432,
       "log": "http-persisted.log"
     },
     {
       "stage": "server-log-persisted",
       "arguments": [
         "logs",
-        "tideway-verification-170138f6f99e-recreated"
+        "tideway-verification-aad356269461-recreated"
       ],
       "exit_code": 0,
-      "seconds": 0.106,
+      "seconds": 0.109,
       "log": "server-log-persisted.log"
     },
     {
@@ -566,17 +566,17 @@
         "stop",
         "--timeout",
         "10",
-        "tideway-verification-170138f6f99e-recreated"
+        "tideway-verification-aad356269461-recreated"
       ],
       "exit_code": 0,
-      "seconds": 10.435,
+      "seconds": 10.485,
       "log": "stop-persisted.log"
     },
     {
       "stage": "remove-persisted",
       "arguments": [
         "rm",
-        "tideway-verification-170138f6f99e-recreated"
+        "tideway-verification-aad356269461-recreated"
       ],
       "exit_code": 0,
       "seconds": 0.119,
@@ -587,10 +587,10 @@
       "arguments": [
         "volume",
         "rm",
-        "tideway-verification-data-170138f6f99e"
+        "tideway-verification-data-aad356269461"
       ],
       "exit_code": 0,
-      "seconds": 0.108,
+      "seconds": 0.109,
       "log": "cleanup-volume.log"
     }
   ],
@@ -612,11 +612,11 @@
     "Os": "linux"
   },
   "image": {
-    "Id": "sha256:5a1193957228918f7fb543210aea2ca63d5c1b51bf53c636007053638b8d8ec3",
-    "Created": "2026-10-17T07:09:48.939611441Z",
+    "Id": "sha256:22abcea5fe3e0b9f8d19402b14b7e65f8ecd78203cffbbff4197d898e96ab40e",
+    "Created": "2026-10-17T07:24:12.147254533Z",
     "Architecture": "amd64",
     "Os": "linux",
-    "Size": 295022408,
+    "Size": 295033511,
     "user": "tideway",
     "cmd": [
       "python",
@@ -630,18 +630,18 @@
     ]
   },
   "build_tests": {
-    "run_at": "2026-10-17T07:09:45+00:00",
+    "run_at": "2026-10-17T07:24:07+00:00",
     "python": "3.11.17",
     "platform": "Linux",
-    "tests_run": 319,
+    "tests_run": 322,
     "failures": 0,
     "errors": 0,
     "skipped": 4,
     "passed": true,
     "source_unchanged_during_tests": true,
-    "seconds": 53.92,
+    "seconds": 52.01,
     "base_commit": null,
-    "source_tree_sha256": "4d640007a6be2ecd247d14f31609aa229940216a5e54c4b382ca2d32d7659905",
+    "source_tree_sha256": "77ae338a4849cd0dcd4133ad0d994ee9fae5bbebd7a02673b784bf46b88eedcf",
     "source_files": {
       ".dockerignore": "dec967d938fb42f3e47530c65273d80780d9181df4777d84b3865653811fc817",
       ".github/workflows/ci.yml": "d02d20ed75b25b788aa7035c161ae8c131ec442cbb7a9b1bb41598e44665d7da",
@@ -652,7 +652,7 @@
       "scripts/build_submission_package.py": "f37ef2afe0e820554ba62e2ba09c7f95d0e1196f23d9f8b86947c5637921ae7e",
       "scripts/build_submission_pdfs.py": "2cd08cb95755dfa560f01803820215973251cb2a77f040da107bbc83765de34c",
       "scripts/build_upgrade_summary.py": "f78248de48c93a80a2d9c4b2f8a4f1a2279f0a03b24bb6154874c5d38616a9f1",
-      "scripts/capture_screens.mjs": "ac621538f4f35fd0a7463022f8c59ee85bdc26bd663ebc94abe7616a6d63e419",
+      "scripts/capture_screens.mjs": "6f2a1b6205f72ec3e5996254bab76b9aed51ce1e4be3ee2fce3d165e5d0b4359",
       "scripts/check_javascript.mjs": "93f0ca6021385d414733a385040ea2145fc424b862ed52bbd06d4e64995d27c6",
       "scripts/check_setup.py": "005035bfbd081525dd0d24aff20be7d7ea1e0e7f185c4d263f513f147fde401e",
       "scripts/container_http_smoke.py": "3a793f9ec1639b36cd8c78a700fc1876713f6e0df2cb4c2f9beb1f69d5304365",
@@ -704,7 +704,7 @@
       "tests/test_plan_schema.py": "9acf7886fa4bce8c109602f571886345363d7bb9a3d9100b097738d0ec3f633c",
       "tests/test_planner_v5.py": "1450c3f90bd250cd60013399ce4094997869199f11294386a6b023b21f481948",
       "tests/test_reasoning_guards.py": "ac1917f9c29bc32ce7e6a0621cb058f03b7bd69cc484471625175784274ef7df",
-      "tests/test_regressions.py": "2c01925f59a004df0db70eb949238360aad140ff0845315349c11b34e5d286ff",
+      "tests/test_regressions.py": "1106383122cdf02392b393db8ce73a86825634fb717165d2c250031829dc7a58",
       "tests/test_release.py": "6fa78ba1c84ed497a0f9d461dce1e45dc73ff0c9a2bfafce9e18f9e5e6601c2d",
       "tests/test_risk_acknowledgement.py": "331656101152d492b1c257bc6471290bf195c3a558ebb799dae242b8a250d38a",
       "tests/test_saas.py": "ac2675dea51f249f2acf82ded7123d27e89c168684de0223805a8c04d9cb7a82",
@@ -746,12 +746,12 @@
       "tideway/planner.py": "d069ecec8680e44bc51008410f1c1ef09f1433c980891da7a9c89edb803f77b6",
       "tideway/projection.py": "444ee30b96be7bec1b43a064820d85164a956d352e94b4f740bcf19b62c4c5a0",
       "tideway/screening.py": "af274f33d0138f6e56c2943c7d4099ee750ad0ab5c41939211d9c082708c8dfc",
-      "tideway/security.py": "8404583267d9b1b7d37c0155c4c31b2763e7fc09b926741dbc7fb9a3db48e302",
+      "tideway/security.py": "26008e32263dc8fc7bccdad28a8c54e6bfe78703a718acbab264599cd4c3cb35",
       "tideway/selftest.py": "f6268c019b43908377cd38b0c26805bd7bbdd975a05e988ee64aed713f7e1139",
       "tideway/semantic_screening.py": "eb75bb8b3a5df672a6ef929dc39f389d5cd7d66d21af0097b6f13d7ef3efa9a8",
-      "tideway/server.py": "f8bd4a6f63b04a9fc0e3ef4835f8aeb6aa45a03bf4b10cccf85173c744dce0d5",
+      "tideway/server.py": "aa1fd70d5c91bac8e5ed2ba924adcf1cf20ef7f336145d4a20ac3cda49a39029",
       "tideway/service.py": "357fd1e05956bf7deab3c804091ae3bfd426a96661751312484605b85f28b7bc",
-      "tideway/store.py": "26e4817533dff2a56ff83b3728494b3c8d1e7915c1cd59db62f938df70819d79",
+      "tideway/store.py": "112f2aa7c0cb2f8f47887a59331ec2446dddfc59da1b2af8ecf038ccaae01a9e",
       "tideway/tidelm.py": "3ba1c78dfec9f8c09f96680104c00c5725a51a7b2a028fcaef6c08fae86bde93",
       "tideway/vision.py": "a92915616fbde5edc16d8b89bbbf226b6f4daed72e088745c4c4bd2a12d3c7cb",
       "web/app.js": "13e0742f72f45b4ab76e63c0d0bf4059428213c8bff697f77a898feb3fbe100b",
@@ -767,9 +767,9 @@
     "note": "Counts include offline tests with injected model outputs; this is not a real-model benchmark."
   },
   "cleanup_failures": [],
-  "source_tree_sha256_after": "4d640007a6be2ecd247d14f31609aa229940216a5e54c4b382ca2d32d7659905",
+  "source_tree_sha256_after": "77ae338a4849cd0dcd4133ad0d994ee9fae5bbebd7a02673b784bf46b88eedcf",
   "source_unchanged": true,
-  "finished_at_utc": "2026-10-17T07:10:14+00:00",
+  "finished_at_utc": "2026-10-17T07:24:38+00:00",
   "source_files_after": {
     ".dockerignore": "dec967d938fb42f3e47530c65273d80780d9181df4777d84b3865653811fc817",
     ".github/workflows/ci.yml": "d02d20ed75b25b788aa7035c161ae8c131ec442cbb7a9b1bb41598e44665d7da",
@@ -780,7 +780,7 @@
     "scripts/build_submission_package.py": "f37ef2afe0e820554ba62e2ba09c7f95d0e1196f23d9f8b86947c5637921ae7e",
     "scripts/build_submission_pdfs.py": "2cd08cb95755dfa560f01803820215973251cb2a77f040da107bbc83765de34c",
     "scripts/build_upgrade_summary.py": "f78248de48c93a80a2d9c4b2f8a4f1a2279f0a03b24bb6154874c5d38616a9f1",
-    "scripts/capture_screens.mjs": "ac621538f4f35fd0a7463022f8c59ee85bdc26bd663ebc94abe7616a6d63e419",
+    "scripts/capture_screens.mjs": "6f2a1b6205f72ec3e5996254bab76b9aed51ce1e4be3ee2fce3d165e5d0b4359",
     "scripts/check_javascript.mjs": "93f0ca6021385d414733a385040ea2145fc424b862ed52bbd06d4e64995d27c6",
     "scripts/check_setup.py": "005035bfbd081525dd0d24aff20be7d7ea1e0e7f185c4d263f513f147fde401e",
     "scripts/container_http_smoke.py": "3a793f9ec1639b36cd8c78a700fc1876713f6e0df2cb4c2f9beb1f69d5304365",
@@ -832,7 +832,7 @@
     "tests/test_plan_schema.py": "9acf7886fa4bce8c109602f571886345363d7bb9a3d9100b097738d0ec3f633c",
     "tests/test_planner_v5.py": "1450c3f90bd250cd60013399ce4094997869199f11294386a6b023b21f481948",
     "tests/test_reasoning_guards.py": "ac1917f9c29bc32ce7e6a0621cb058f03b7bd69cc484471625175784274ef7df",
-    "tests/test_regressions.py": "2c01925f59a004df0db70eb949238360aad140ff0845315349c11b34e5d286ff",
+    "tests/test_regressions.py": "1106383122cdf02392b393db8ce73a86825634fb717165d2c250031829dc7a58",
     "tests/test_release.py": "6fa78ba1c84ed497a0f9d461dce1e45dc73ff0c9a2bfafce9e18f9e5e6601c2d",
     "tests/test_risk_acknowledgement.py": "331656101152d492b1c257bc6471290bf195c3a558ebb799dae242b8a250d38a",
     "tests/test_saas.py": "ac2675dea51f249f2acf82ded7123d27e89c168684de0223805a8c04d9cb7a82",
@@ -874,12 +874,12 @@
     "tideway/planner.py": "d069ecec8680e44bc51008410f1c1ef09f1433c980891da7a9c89edb803f77b6",
     "tideway/projection.py": "444ee30b96be7bec1b43a064820d85164a956d352e94b4f740bcf19b62c4c5a0",
     "tideway/screening.py": "af274f33d0138f6e56c2943c7d4099ee750ad0ab5c41939211d9c082708c8dfc",
-    "tideway/security.py": "8404583267d9b1b7d37c0155c4c31b2763e7fc09b926741dbc7fb9a3db48e302",
+    "tideway/security.py": "26008e32263dc8fc7bccdad28a8c54e6bfe78703a718acbab264599cd4c3cb35",
     "tideway/selftest.py": "f6268c019b43908377cd38b0c26805bd7bbdd975a05e988ee64aed713f7e1139",
     "tideway/semantic_screening.py": "eb75bb8b3a5df672a6ef929dc39f389d5cd7d66d21af0097b6f13d7ef3efa9a8",
-    "tideway/server.py": "f8bd4a6f63b04a9fc0e3ef4835f8aeb6aa45a03bf4b10cccf85173c744dce0d5",
+    "tideway/server.py": "aa1fd70d5c91bac8e5ed2ba924adcf1cf20ef7f336145d4a20ac3cda49a39029",
     "tideway/service.py": "357fd1e05956bf7deab3c804091ae3bfd426a96661751312484605b85f28b7bc",
-    "tideway/store.py": "26e4817533dff2a56ff83b3728494b3c8d1e7915c1cd59db62f938df70819d79",
+    "tideway/store.py": "112f2aa7c0cb2f8f47887a59331ec2446dddfc59da1b2af8ecf038ccaae01a9e",
     "tideway/tidelm.py": "3ba1c78dfec9f8c09f96680104c00c5725a51a7b2a028fcaef6c08fae86bde93",
     "tideway/vision.py": "a92915616fbde5edc16d8b89bbbf226b6f4daed72e088745c4c4bd2a12d3c7cb",
     "web/app.js": "13e0742f72f45b4ab76e63c0d0bf4059428213c8bff697f77a898feb3fbe100b",

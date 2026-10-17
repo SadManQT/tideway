@@ -20,7 +20,7 @@
     "audit_chain_valid": true,
     "private_signing_key_permissions": true
   },
-  "receipt_id": "ceba82487f2f4fe382ff0af14997eea0",
+  "receipt_id": "e83f118e637f405cb2442e961a919319",
   "approval_trace": [
     {
       "attempt": 1,
