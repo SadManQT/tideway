@@ -169,6 +169,20 @@ class SemanticRuntimeIntegration(unittest.TestCase):
         self.assertIs(application.vision._semantic_model, application.tidelm)
         self.assertIsNone(application.tidelm._model)  # constructor does not load MLX/model weights
 
+    def test_native_classification_uses_base_model_not_a_planning_lora(self):
+        lm = TideLM()
+        lm._local = None
+        native = Mock()
+        native.status.return_value = {"available": True, "backend": "mlx-base", "model": "cached-base"}
+        native._generate.return_value = answer()
+        with patch("tideway.tidelm.TideLM", return_value=native) as constructor:
+            result = lm.screen("Service receipt total 210.", enabled=True)
+        constructor.assert_called_once_with(adapter=None)
+        native._generate.assert_called_once()
+        self.assertEqual(result["label"], "benign")
+        self.assertEqual(result["model_identity"]["backend"], "mlx-base")
+        self.assertIsNone(lm._model)  # No second planning-model load for classification.
+
     def test_disabled_adapter_never_calls_model_or_claims_semantic_pass(self):
         generate = Mock(side_effect=AssertionError("must not generate"))
         lm = TideLM(generator=generate)
