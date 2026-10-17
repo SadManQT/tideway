@@ -162,6 +162,23 @@ class OwnerConstraints(unittest.TestCase):
 
 
 class RiskDisplayBoundaries(unittest.TestCase):
+    def test_browser_notice_does_not_round_an_above_target_probability_down_to_target(self):
+        import json
+        import shutil
+        import subprocess
+        from pathlib import Path
+        if not shutil.which("node"):
+            self.skipTest("Node is required for the optional browser rendering check")
+        source = (Path(__file__).resolve().parents[1] / "web/app.js").read_text()
+        function = source[source.index("function residualRiskHtml("):source.index("function mandateCard(")]
+        script = ('const isNum=Number.isFinite, esc=String, icon=()=>"";\n' + function +
+                  '\nconsole.log(JSON.stringify([.1178,.10000001,.10].map(probability_breach_after => '
+                  'residualRiskHtml({risk_target:.10},{feasible:true,probability_breach_after}))));')
+        rendered = json.loads(subprocess.check_output(["node", "-e", script], text=True))
+        self.assertIn("11.78%", rendered[0])
+        self.assertIn("10.000001%", rendered[1])
+        self.assertEqual(rendered[2], "")
+
     def test_exact_risk_target_and_rounding_do_not_supply_implicit_consent(self):
         from tideway.store import Store
         plan = {"plan_id": "p", "plan_hash": "h", "risk_target": .10}
