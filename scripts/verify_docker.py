@@ -67,7 +67,9 @@ def main():
             exit_code = -1
             if isinstance(exc, subprocess.TimeoutExpired) and exc.stdout:
                 raw += exc.stdout if isinstance(exc.stdout, bytes) else exc.stdout.encode("utf-8")
-        (out / f"{stage}.log").write_bytes(raw)
+        # Docker's progress UI may emit carriage returns; evidence is tracked
+        # under the repository's LF policy so hashes remain portable.
+        (out / f"{stage}.log").write_bytes(raw.replace(b"\r", b""))
         commands.append({"stage": stage, "arguments": arguments, "exit_code": exit_code,
                          "seconds": round(time.perf_counter() - start, 3), "log": f"{stage}.log"})
         if required and exit_code:
