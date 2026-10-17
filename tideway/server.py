@@ -370,7 +370,11 @@ def make_handler(app):
             parsed = urlsplit(self.path)
             if parsed.path in STATIC:
                 name = STATIC[parsed.path]
-                return self.reply(200, (ROOT / "web" / name).read_bytes(), CONTENT_TYPES[name.rsplit(".", 1)[1]] + "; charset=utf-8")
+                try:
+                    content = (ROOT / "web" / name).read_bytes()
+                except FileNotFoundError:
+                    return self.reply(404, {"error": "Not found."})
+                return self.reply(200, content, CONTENT_TYPES[name.rsplit(".", 1)[1]] + "; charset=utf-8")
             _token, operator = self.session()
             query = parse_qs(parsed.query)
             try:
