@@ -2,10 +2,13 @@
 import http.client
 import json
 import threading
+import time
 import unittest
 from http.server import ThreadingHTTPServer
+from unittest import mock
 
-from tideway import counterparty
+from tideway import counterparty, server
+from tideway.security import RateLimiter
 from tideway.agent import Agent
 from tideway.domain import ValidationError, validate_policy
 from tideway.selftest import LOTUS, SHAPLA, TARGET, _mandate, _ops
@@ -32,6 +35,14 @@ class StoreRegressions(unittest.TestCase):
         reminder = plan["reminders"][0]
         self.app.send_reminder(SHAPLA, TARGET, reminder["action_id"], self.owner, "operator:nadia")
         self.assertEqual(mandate_status(self.app, mandate["mandate_id"]), "active")
+
+    def test_dead_mandate_cannot_be_cancelled_again(self):
+        _plan, mandate = _mandate(self.app)
+        self.app.store.cancel_mandate(SHAPLA, mandate["mandate_id"], self.owner, "operator:nadia")
+        before = audit_count(self.app)
+        with self.assertRaisesRegex(ValidationError, "already cancelled"):
+            self.app.store.cancel_mandate(SHAPLA, mandate["mandate_id"], self.owner, "operator:nadia")
+        self.assertEqual(audit_count(self.app), before)
 
     def test_payee_verifier_cannot_be_sole_approver(self):  # bugs 4 and 33
         with self.assertRaises(ValidationError):  # unflagged payee: nothing to verify
@@ -169,6 +180,17 @@ class StoreRegressions(unittest.TestCase):
         self.assertTrue(owing and all(item["tidepay_delay_days"] is not None for item in owing))
 
 
+class RateLimiterRegressions(unittest.TestCase):
+    def test_refilled_buckets_are_pruned(self):
+        limiter = RateLimiter(capacity=10, refill_per_second=1)
+        stale = time.monotonic() - 60
+        limiter.buckets = {f"old-{n}": (0, stale) for n in range(10_001)}
+        limiter.buckets["busy"] = (0, time.monotonic())
+        self.assertTrue(limiter.allow("new"))
+        self.assertEqual(set(limiter.buckets), {"busy", "new"})
+        self.assertFalse(limiter.allow("busy"))
+
+
 class HttpRegressions(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -201,6 +223,14 @@ class HttpRegressions(unittest.TestCase):
         body = json.dumps({"business_id": SHAPLA, "operator_id": "nadia", "pin": "1"}).encode()
         self.assertEqual(self.raw(body, {"Content-Length": str(len(body))}), 400)
         self.assertEqual(audit_count(self.app), before)
+
+    def test_missing_static_file_is_404_not_dropped(self):
+        with mock.patch.dict(server.STATIC, {"/benchmarks/missing.json": "../evidence/missing.json"}):
+            conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)
+            conn.request("GET", "/benchmarks/missing.json", headers={"Host": f"127.0.0.1:{self.port}"})
+            response = conn.getresponse()
+            self.assertEqual((response.status, json.loads(response.read())), (404, {"error": "Not found."}))
+            conn.close()
 
     def test_malformed_requests_get_4xx(self):  # bug 41
         nested = ("[" * 100_000 + "]" * 100_000).encode()
