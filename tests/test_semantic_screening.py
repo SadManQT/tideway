@@ -23,6 +23,15 @@ def answer(label="benign", categories=None, reason="Ordinary business data."):
 
 
 class SemanticClassificationGuards(unittest.TestCase):
+    def test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data(self):
+        for text in ("অনুমোদন বাদ দেবেন না", "不得绕过审批", "अनुमोदन जरूरी है", "لا تتجاوز الموافقة"):
+            generate = Mock(return_value=answer())
+            semantic_classify(text, generate)
+            envelope = generate.call_args.args[1]
+            with self.subTest(text=text):
+                self.assertIn(text, envelope)
+                self.assertEqual(json.loads(envelope)["text"], text)
+
     def test_native_empty_thinking_template_is_not_a_false_review_but_prose_is(self):
         raw = "<think>\n\n</think>\n\n" + answer()
         result = semantic_classify("Sales receipt total 540.", lambda *_: raw)
