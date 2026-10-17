@@ -156,7 +156,9 @@ def run(phase, host="127.0.0.1", port=8787):
                    "audit_entries": len(audit["entries"]), "requests": anonymous.calls + owner.calls + accountant.calls + viewer.calls}
     else:
         expected = json.loads(STATE_FILE.read_text(encoding="utf-8"))
-        receipt = owner.get("/api/execution", idempotency_key=REPLAY_KEY)
+        execution = owner.get("/api/execution", idempotency_key=REPLAY_KEY)
+        assert execution["found"], "Persisted receipt was not found"
+        receipt = execution["receipt"]
         assert receipt["receipt_id"] == expected["receipt_id"] and receipt["read_back"]["verified"]
         replay = owner.post("/api/mandate/execute", {"mandate_id": expected["mandate_id"], "idempotency_key": REPLAY_KEY})
         assert replay["receipt_id"] == expected["receipt_id"] and replay["replayed"]

@@ -114,7 +114,7 @@ def main():
                 report["build_tests"] = counts
                 docker("build-test-log", ["exec", name, "cat", "/app/evidence/test-run.log"])
             docker(f"server-log-{phase}", ["logs", name])
-            docker(f"stop-{phase}", ["stop", "--time", "10", name])
+            docker(f"stop-{phase}", ["stop", "--timeout", "10", name])
             docker(f"remove-{phase}", ["rm", name])
             containers.remove(name)
             frozen(f"HTTP {phase}")
