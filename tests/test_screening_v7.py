@@ -47,3 +47,15 @@ class ScreeningEvidence(unittest.TestCase):
             seal.write_text('{"fixture_sha256":"wrong"}', encoding="utf-8")
             with self.assertRaises(ValueError):
                 verify_author_seal(p, seal)
+
+    def test_author_seal_sha256_field_is_verified_without_changing_the_seal(self):
+        import hashlib
+        with tempfile.TemporaryDirectory() as folder:
+            p = Path(folder) / "fixture.json"
+            p.write_bytes(b'{"cases":[]}\n')
+            seal = Path(folder) / "seal.json"
+            value = {"sha256": hashlib.sha256(p.read_bytes()).hexdigest()}
+            seal.write_text(json.dumps(value))
+            before = seal.read_bytes()
+            self.assertEqual(verify_author_seal(p, seal), value)
+            self.assertEqual(seal.read_bytes(), before)
