@@ -144,6 +144,9 @@ def parse_json(text):
     if not isinstance(text, str) or len(text.encode()) > MAX_OUTPUT_BYTES:
         return None
     text = text.strip()
+    # Qwen3 opens a non-thinking reply with an empty reasoning block. It carries no content;
+    # a block with any reasoning inside stays rejected.
+    text = re.sub(r"\A<think>\s*</think>\s*", "", text)
     if text.startswith("```json\n") and text.endswith("```"):
         text = text[8:-3].strip()
     elif text.startswith("```\n") and text.endswith("```"):

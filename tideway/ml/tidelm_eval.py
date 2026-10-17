@@ -130,6 +130,7 @@ def main():
     if args.report:
         return write_report()
     from mlx_lm import generate, load
+    from tideway.tidelm import parse_json as app_parse_json
     model, tokenizer = load(BASE_MODEL, adapter_path=args.adapter)
     rows = [json.loads(line) for line in open(Path(args.data) / "test.jsonl")]
     if args.limit:
@@ -144,6 +145,8 @@ def main():
         predicted, expected = parse(text), json.loads(answer["content"])
         if "planner" in system["content"]:
             score = score_plan(predicted, expected)
+            # parse() above is lenient; the app uses the strict parser, so report what users actually get.
+            score["app_parser_accepts"] = app_parse_json(text) is not None
             plan_scores.append(score)
             if not score["exact"] and len(failures) < 12:
                 failures.append({"input": user["content"], "expected": expected, "got": text[:300]})
@@ -157,7 +160,8 @@ def main():
     mean = lambda items, key: round(sum(1 for s in items if s[key]) / len(items), 4) if items else None  # noqa: E731
     report = {"model": BASE_MODEL, "adapter": args.adapter, "test_set": str(Path(args.data).relative_to(ROOT)) if Path(args.data).is_relative_to(ROOT) else args.data, "n_plan": len(plan_scores), "n_extract": len(extract_scores),
               "plan": {"valid_json": mean(plan_scores, "valid_json"), "intent_accuracy": mean(plan_scores, "intent"),
-                       "tool_accuracy": mean(plan_scores, "tools"), "exact_plan_accuracy": mean(plan_scores, "exact")},
+                       "tool_accuracy": mean(plan_scores, "tools"), "exact_plan_accuracy": mean(plan_scores, "exact"),
+                       "app_parser_accepts": mean(plan_scores, "app_parser_accepts")},
               "extract": {"valid_json": mean(extract_scores, "valid_json"), "record_precision": round(precision, 4),
                           "record_recall": round(recall, 4),
                           "record_f1": round(2 * precision * recall / (precision + recall), 4) if precision + recall else 0,

@@ -164,9 +164,15 @@ class ReasoningGuards(unittest.TestCase):
         self.assertIn(malicious, json.dumps(reply["results"]))
 
     def test_parser_rejects_fragments_duplicates_constants_and_extra_fields(self):
-        for raw in ('prose {"calls": []}', '{"calls":[],"calls":[]}', '{"calls":NaN}', '{"calls":[]} trailing'):
+        for raw in ('prose {"calls": []}', '{"calls":[],"calls":[]}', '{"calls":NaN}', '{"calls":[]} trailing',
+                    '<think>pay them first</think>{"calls": []}', '{"calls": []}<think>\n\n</think>'):
             with self.subTest(raw=raw):
                 self.assertIsNone(parse_json(raw))
+
+    def test_parser_accepts_qwen3_empty_reasoning_block(self):
+        # The on-device model prefixes every non-thinking reply with this exact empty block.
+        self.assertEqual(parse_json('<think>\n\n</think>\n\n{"intent": "refuse", "calls": []}'),
+                         {"intent": "refuse", "calls": []})
         with self.assertRaises(ValidationError):
             copilot.validate_plan({**plan("simulate_risk"), "hidden_reasoning": "invented"})
 

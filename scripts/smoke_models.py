@@ -96,7 +96,7 @@ def main():
     out.write_text(json.dumps(report, indent=1, ensure_ascii=False), encoding="utf-8")
     print(json.dumps({"tidelm_median_s": (report["tidelm"] or {}).get("median_seconds"),
                       "vision_s": (report["vision"] or {}).get("seconds_including_load")}))
-    print(f"wrote {out.relative_to(ROOT)}")
+    print(f"wrote {out.relative_to(ROOT) if out.is_relative_to(ROOT) else out}")
     app.store.close()
     if not report['complete']:
         sys.exit('Optional model run incomplete. See status fields; no model result has been fabricated.')
