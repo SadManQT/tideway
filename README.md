@@ -42,7 +42,7 @@ The default runtime is offline and uses only the Python standard library. The
 repository pins the supported interpreter in `.python-version` and keeps the
 dependency lock marker in `requirements.lock`.
 
-[Tracked CI](.github/workflows/ci.yml) defines Windows/macOS/Linux Python checks, a Pillow lane, browser flows, package extraction checks and Docker. [CI.md](docs/CI.md) explains coverage and local reproduction. Hosted Offline validation run 6 passed all nine jobs; its receipt is in [current readiness](docs/READINESS_CURRENT.md). See that index for current measured results and remaining team-controlled items.
+[Tracked CI](.github/workflows/ci.yml) defines Windows/macOS/Linux Python checks, a Pillow lane, browser flows, package extraction checks and Docker. [CI.md](docs/CI.md) explains coverage and local reproduction. Hosted Offline validation run 8 passed all nine jobs; its receipt is in [current readiness](docs/READINESS_CURRENT.md). See that index for current measured results and remaining team-controlled items.
 
 ```bash
 # Native setup (Python 3.11.11)

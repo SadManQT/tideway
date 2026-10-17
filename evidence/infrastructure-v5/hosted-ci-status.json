@@ -1,10 +1,10 @@
 {
-  "checked_at_utc": "2026-10-17T07:18:08+00:00",
+  "checked_at_utc": "2026-10-17T07:30:38+00:00",
   "remote_repository": "https://github.com/SadManQT/tideway",
-  "remote_commit": "ab3a497fcda15c3ef569ebe3cbcd4319588996b1",
-  "run_number": 6,
-  "run_id": 39012756910,
-  "run_url": "https://github.com/SadManQT/tideway/actions/runs/39012756910",
+  "remote_commit": "f60a6752e26723ae6b696a40e52335d15f1e3339",
+  "run_number": 8,
+  "run_id": 39013601970,
+  "run_url": "https://github.com/SadManQT/tideway/actions/runs/39013601970",
   "conclusion": "success",
   "jobs": [
     {"name": "Isolated Docker build and persisted HTTP workflow", "conclusion": "success", "failed_steps": []},
@@ -21,7 +21,7 @@
   "current_local_changes_uploaded": true,
   "push_performed": true,
   "current_source_hosted_ci_verified": true,
-  "superseded_run": {"run_number": 5, "run_id": 39012566246, "conclusion": "cancelled", "reason": "Concurrency cancellation after the current-source run started."},
-  "reason": "The current implementation source was pushed to the remote repository and GitHub-hosted Offline validation run 6 passed all 9 jobs: Linux, Windows, macOS, Pillow, browser/package, and Docker.",
+  "superseded_run": {"run_number": 6, "run_id": 39012756910, "conclusion": "success", "reason": "A later current-source run superseded this earlier receipt after robustness fixes were merged."},
+  "reason": "Commit f60a6752e26723ae6b696a40e52335d15f1e3339 was pushed to the remote repository and GitHub-hosted Offline validation run 8 passed all 9 jobs: Linux, Windows, macOS, Pillow, browser/package, and Docker.",
   "scope": "Hosted CI receipts only; no claim of native MLX inference, real users, real money, or production deployment."
 }

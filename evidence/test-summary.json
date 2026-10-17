@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-10-17T07:22:31+00:00",
+  "run_at": "2026-10-17T07:34:54+00:00",
   "python": "3.13.7",
   "platform": "Windows",
   "tests_run": 322,
@@ -8,8 +8,8 @@
   "skipped": 5,
   "passed": true,
   "source_unchanged_during_tests": true,
-  "seconds": 87.31,
-  "base_commit": "9180824fc4d75e8fe61961f8bcc8132c1830e554",
+  "seconds": 88.62,
+  "base_commit": "f60a6752e26723ae6b696a40e52335d15f1e3339",
   "source_tree_sha256": "77ae338a4849cd0dcd4133ad0d994ee9fae5bbebd7a02673b784bf46b88eedcf",
   "source_files": {
     ".dockerignore": "dec967d938fb42f3e47530c65273d80780d9181df4777d84b3865653811fc817",
