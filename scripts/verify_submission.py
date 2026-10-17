@@ -20,9 +20,10 @@ def source_paths(source_root=None):
     """The exact source set shared by tests, browser stamps and package checks."""
     root = Path(source_root) if source_root is not None else ROOT
     paths = [root / "run.py"]
-    workflow = root / ".github/workflows/ci.yml"
-    if workflow.is_file():
-        paths.append(workflow)
+    for name in (".github/workflows/ci.yml", "Dockerfile", ".dockerignore"):
+        config = root / name
+        if config.is_file():
+            paths.append(config)
     for folder in ("tideway", "tests", "web", "scripts"):
         paths.extend(p for p in (root / folder).rglob("*") if p.suffix in (".py", ".js", ".mjs", ".css", ".html", ".json", ".svg")
                      and "__pycache__" not in p.parts)

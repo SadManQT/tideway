@@ -36,11 +36,12 @@ class UpgradeScenarioWorkflows(unittest.TestCase):
                     self.assertEqual(row["after"]["remaining_shortfall_minor"], 0)
                     self.assertTrue(row["after"]["payroll_funded"])
 
-    def test_supplier_counter_requires_two_fresh_approval_rounds(self):
+    def test_supplier_counter_and_added_customer_request_require_fresh_approval_rounds(self):
         row = self.rows["D06"]
-        self.assertEqual([event["status"] for event in row["trace"] if event["step"] == "simulated_negotiation"], ["countered", "ready"])
+        self.assertEqual([event["status"] for event in row["trace"] if event["step"] == "simulated_negotiation"],
+                         ["countered", "countered", "ready"])
         approvals = [event for event in row["trace"] if event["step"] == "human_approval"]
-        self.assertEqual(len(approvals), 2)
+        self.assertEqual(len(approvals), 3)
         self.assertTrue(all(event["approvers"] == ["eval-accountant", "eval-owner"] for event in approvals))
 
     def test_refusal_and_out_of_policy_discount_never_execute(self):

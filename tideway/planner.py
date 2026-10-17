@@ -12,8 +12,10 @@ Search: every combination of at most one option per record (bounded to the
 most relevant records) is checked with a fast daily ledger.  A bundle is
 feasible when it holds the reserve floor on every day of the planning horizon
 (the target date plus a look-ahead, so a deferral cannot just push the
-problem out of view) and payroll stays funded.  The cheapest feasible
-bundles are then re-checked with the seeded Monte Carlo; the recommendation
+problem out of view) and payroll stays funded. Cost, stress resilience and
+cash headroom select a bounded subset for seeded Monte Carlo. Finalists get
+a larger independent simulation before the recommendation is chosen;
+the recommendation
 is the cheapest bundle whose simulated breach probability is within the risk
 target, otherwise the safest one.
 """
@@ -22,7 +24,7 @@ from __future__ import annotations
 import itertools
 
 from . import analytics
-from .domain import OPEN_INVOICE_STATUSES, add_days, days_between, human_date, money_text
+from .domain import OPEN_INVOICE_STATUSES, ValidationError, add_days, days_between, human_date, money_text
 from .projection import build_events, horizon_end, project, summary
 from .financing import CATALOGUE as FINANCING_CATALOGUE, compare as compare_financing
 
@@ -33,6 +35,7 @@ DEFERRAL_SHARES = (50, 100)
 DISCOUNT_STEPS_BPS = (100, 200, 300)
 MAX_GROUPS = 6
 ROBUST_CANDIDATES = 40
+VALIDATION_FINALISTS = 4
 RISK_TARGET = 0.10                  # recommended plans should breach in at most 2 of 20 simulated futures
 
 
@@ -166,14 +169,17 @@ class FastLedger:
         for index, effect in changes:
             net[index] += effect
         balance = minimum = self.opening
+        shortfall_area = max(0, self.reserve - balance)
         payroll_ok = True
         for index, change in enumerate(net):
             balance += change
             if balance < minimum:
                 minimum = balance
+            shortfall_area += max(0, self.reserve - balance)
             if index in self.payroll and balance < 0:
                 payroll_ok = False
-        return {"minimum_cash_minor": minimum, "shortfall_minor": max(0, self.reserve - minimum), "payroll_ok": payroll_ok}
+        return {"minimum_cash_minor": minimum, "shortfall_minor": max(0, self.reserve - minimum),
+                "shortfall_area_minor_days": shortfall_area, "payroll_ok": payroll_ok}
 
 
 def message_for(option, business_name):
@@ -208,22 +214,85 @@ def reminder_for(invoice, profile, business_name, late_share=None):
             "cost_note": "A reminder is a message. It is never counted as collected cash."}
 
 
+def _robust_candidates(feasible, business, policy, records, end, accepted, promises, as_of):
+    """Bound expensive simulations without considering only cheap plans.
+
+    Equal-quantile stress paths are deterministic screening heuristics, not
+    probability estimates: different customers need not all be late together.
+    Monte Carlo, followed by fresh finalist draws, supplies the reported risk.
+    """
+    metadata = {"method": "cost, stressed-cash resilience and likely-cash headroom",
+                "feasible_candidates": len(feasible), "limit": ROBUST_CANDIDATES,
+                "stress_quantiles": [0.8, 0.95]}
+    if len(feasible) <= ROBUST_CANDIDATES:
+        return feasible, {**metadata, "all_feasible_checked": True}
+    predictions = analytics.tidepay_predictions(records["invoices"], as_of)
+    stress_ledgers = []
+    for quantile in metadata["stress_quantiles"]:
+        dates = {}
+        for invoice in records["invoices"]:
+            if invoice["status"] not in OPEN_INVOICE_STATUSES:
+                continue
+            prediction = predictions.get(invoice["id"])
+            if prediction:
+                days = analytics.delay_quantile(prediction["probabilities"], quantile)
+                dates[invoice["id"]] = max(invoice["expected_collection_date"],
+                                           add_days(invoice["due_date"], days), as_of)
+        stress_ledgers.append(FastLedger(business, policy, records, end, accepted, dates, promises))
+    stressed = []
+    for item in feasible:
+        outcomes = [ledger.evaluate([delta for option in item["chosen"] for delta in ledger.deltas(option)])
+                    for ledger in stress_ledgers]
+        key = (max(result["shortfall_minor"] for result in outcomes),
+               sum(result["shortfall_minor"] for result in outcomes),
+               sum(result["shortfall_area_minor_days"] for result in outcomes),
+               -min(result["minimum_cash_minor"] for result in outcomes),
+               item["cost"], item["counterparties"])
+        stressed.append((key, item))
+    stress_order = [item for _, item in sorted(stressed, key=lambda pair: pair[0])]
+    headroom = sorted(feasible, key=lambda item: (-item["minimum_cash_minor"], item["cost"], item["counterparties"]))
+    # Reserve slots for each objective; filling duplicates from its own ordered
+    # stream avoids cheap candidates crowding stress resilience out again.
+    selected, seen = [], set()
+    for ordered, quota in ((feasible, 12), (stress_order, 20), (headroom, 8)):
+        added = 0
+        for item in ordered:
+            identity = tuple(sorted(option["action_id"] for option in item["chosen"]))
+            if identity in seen:
+                continue
+            selected.append(item)
+            seen.add(identity)
+            added += 1
+            if added == quota:
+                break
+    return selected, {**metadata, "all_feasible_checked": False,
+                      "slots": {"cost": 12, "stress": 20, "headroom": 8}}
+
+
 def plan_recovery(business, policy, records, target_date, *, accepted=(), promises=None, profiles=None,
                   basis_dates=None, basis="likely", blocked=None, excluded_counterparties=(),
-                  mc_seed=0, mc_runs=400, late_share=None, as_of=None, prefer="lowest_cost"):
+                  mc_seed=0, mc_runs=400, late_share=None, as_of=None, prefer="lowest_cost", required_actions=()):
     """Compare recovery bundles for one business and target date."""
     blocked = dict(blocked or {})
     excluded = set(excluded_counterparties)
     end = horizon_end(business, target_date, policy["lookahead_days"])
     accepted = list(accepted)
+    # Exact counter-offer terms remain proposed actions, never ledger mutations.
+    required = [dict(action) for action in required_actions]
+    if len(required) > MAX_GROUPS:
+        raise ValidationError("Counter-offer repair exceeds the bounded record-group limit.")
+    if any(action["record_id"] in blocked for action in required):
+        raise ValidationError("Counter-offer repair contains a security-blocked record.")
     dates = basis_dates if basis != "base" else None
     common = {"adjustments": accepted, "promises": promises, "lookahead_days": policy["lookahead_days"]}
     baseline = project(business, policy, records, target_date, scenario="base", **common)
     basis_projection = project(business, policy, records, target_date, scenario=basis, invoice_dates=dates, **common)
     breach = basis_projection["first_breach_date"]
     ledger = FastLedger(business, policy, records, end, accepted, dates, promises)
-    adjusted_bills = {item["bill_id"] for item in accepted if item["kind"] == "bill_deferral"}
-    adjusted_invoices = {item["invoice_id"] for item in accepted if item["kind"] == "invoice_early_payment"}
+    adjusted = accepted + [action["adjustment"] for action in required]
+    build_events(business, records, end, adjusted, dates, promises)
+    adjusted_bills = {item["bill_id"] for item in adjusted if item["kind"] == "bill_deferral"}
+    adjusted_invoices = {item["invoice_id"] for item in adjusted if item["kind"] == "invoice_early_payment"}
     groups, rejected = [], []
     for bill in records["bills"]:
         if bill["id"] in adjusted_bills:
@@ -254,7 +323,9 @@ def plan_recovery(business, policy, records, target_date, *, accepted=(), promis
         if options:
             groups.append(options)
     groups.sort(key=lambda options: -max(option.get("face_minor", option["amount_minor"]) for option in options))
-    groups = groups[:MAX_GROUPS]
+    groups = groups[:max(0, MAX_GROUPS - len(required))]
+    for option in required:
+        option["deltas"] = ledger.deltas(option)
     for options in groups:
         for option in options:
             option["deltas"] = ledger.deltas(option)
@@ -262,7 +333,7 @@ def plan_recovery(business, policy, records, target_date, *, accepted=(), promis
     action_needed = none_result["shortfall_minor"] > 0 or not none_result["payroll_ok"]
     evaluated = []
     for choice in itertools.product(*[[None] + options for options in groups]):
-        chosen = [option for option in choice if option is not None]
+        chosen = required + [option for option in choice if option is not None]
         if not chosen:
             continue
         exposure = sum(option.get("face_minor", option["amount_minor"]) for option in chosen)
@@ -273,9 +344,10 @@ def plan_recovery(business, policy, records, target_date, *, accepted=(), promis
         evaluated.append({"feasible": feasible, "shortfall": result["shortfall_minor"],
                           "cost": sum(option["economic_cost_minor"] for option in chosen),
                           "counterparties": len({option["counterparty"] for option in chosen}),
-                          "exposure": exposure, "chosen": chosen})
+                          "exposure": exposure, "chosen": chosen,
+                          "minimum_cash_minor": result["minimum_cash_minor"]})
     evaluated.sort(key=lambda item: (not item["feasible"], item["shortfall"], item["cost"], item["counterparties"], item["exposure"]))
-    feasible = [item for item in evaluated if item["feasible"]] if action_needed else []
+    feasible = [item for item in evaluated if item["feasible"]] if action_needed or required else []
 
     def robust(item):
         adjustments = accepted + [option["adjustment"] for option in item["chosen"]]
@@ -285,21 +357,51 @@ def plan_recovery(business, policy, records, target_date, *, accepted=(), promis
         item["futures_short_of_20"] = simulation["futures_short_of_20"]
         return item
 
-    shortlist = [robust(item) for item in feasible[:ROBUST_CANDIDATES]]
-    # Monte Carlo has sampling noise (about +/-2 points at 400 runs), so risks
-    # are compared in 5-point buckets (one simulated future in twenty).
-    bucket = lambda item: round(item["probability_breach"] / 0.05)  # noqa: E731
+    candidates, screening = _robust_candidates(feasible, business, policy, records, end, accepted,
+                                               promises, as_of or business["opening_date"])
+    shortlist = [robust(item) for item in candidates]
+    # The display rounds to futures-in-twenty, but ranking uses the full
+    # estimate: rounding must not promote a materially riskier cheap plan.
+    risk = lambda item: item["probability_breach"]  # noqa: E731
     within = [item for item in shortlist if item["probability_breach"] <= RISK_TARGET]
     if prefer == "lowest_risk":
-        ranked = sorted(shortlist, key=lambda item: (bucket(item), item["cost"], item["counterparties"]))
+        ranked = sorted(shortlist, key=lambda item: (risk(item), item["cost"], item["counterparties"]))
     elif prefer == "fewest_asks":
         ranked = sorted(within, key=lambda item: (item["counterparties"], item["cost"])) + sorted(
-            (item for item in shortlist if item not in within), key=lambda item: (bucket(item), item["counterparties"], item["cost"]))
+            (item for item in shortlist if item not in within), key=lambda item: (risk(item), item["counterparties"], item["cost"]))
     else:
         ranked = within + sorted((item for item in shortlist if item not in within),
-                                 key=lambda item: (bucket(item), item["cost"], item["counterparties"]))
+                                 key=lambda item: (risk(item), item["cost"], item["counterparties"]))
+    # A disjoint seed prevents selection on the same noise later displayed as
+    # the final estimate. All finalists still share customer draws fairly.
+    finalists = []
+    for item in ranked[:2] + sorted(shortlist, key=lambda item: (item["probability_breach"], item["cost"]))[:1] + shortlist[:1] + ranked:
+        if item not in finalists:
+            finalists.append(item)
+        if len(finalists) == VALIDATION_FINALISTS:
+            break
+    validation_runs = max(mc_runs, min(2000, mc_runs * 3))
+    validation_seed = analytics.stable_seed(mc_seed, "planner-final-validation-v5")
+    for item in finalists:
+        item["search_probability_breach"] = item["probability_breach"]
+        simulation = analytics.monte_carlo(business, policy, records, target_date,
+                                           accepted + [option["adjustment"] for option in item["chosen"]], promises,
+                                           runs=validation_runs, seed=validation_seed,
+                                           lookahead_days=policy["lookahead_days"], as_of=as_of)
+        item["probability_breach"] = simulation["probability_breach"]
+        item["futures_short_of_20"] = simulation["futures_short_of_20"]
+    within = [item for item in finalists if item["probability_breach"] <= RISK_TARGET]
+    outside = [item for item in finalists if item not in within]
+    if prefer == "lowest_risk":
+        ranked = sorted(finalists, key=lambda item: (risk(item), item["cost"], item["counterparties"]))
+    elif prefer == "fewest_asks":
+        ranked = sorted(within, key=lambda item: (item["counterparties"], item["cost"])) + sorted(
+            outside, key=lambda item: (risk(item), item["counterparties"], item["cost"]))
+    else:
+        ranked = sorted(within, key=lambda item: (item["cost"], item["counterparties"])) + sorted(
+            outside, key=lambda item: (risk(item), item["cost"], item["counterparties"]))
     selected = []
-    by_cost = sorted(shortlist, key=lambda item: (item["cost"], item["counterparties"]))
+    by_cost = sorted(finalists, key=lambda item: (item["cost"], item["counterparties"]))
     names = lambda item: frozenset(option["counterparty"] for option in item["chosen"])  # noqa: E731
     ordered = ranked[:1] + by_cost[:1] + [item for item in ranked[1:] if names(item) not in {names(i) for i in ranked[:1] + by_cost[:1]}] + ranked[1:]
     for item in ordered:
@@ -337,11 +439,16 @@ def plan_recovery(business, policy, records, target_date, *, accepted=(), promis
             "dual_approval_required": item["exposure"] > policy["dual_approval_threshold_minor"],
             "after": summary(after), "after_base": summary(after_base),
             "remaining_shortfall_minor": after["reserve_shortfall_minor"],
+            "risk_evaluation": {"search_probability_breach": item.get("search_probability_breach", item.get("probability_breach")),
+                                "search_runs": mc_runs,
+                                "validation_runs": validation_runs if "search_probability_breach" in item else 0,
+                                "validation_seed": validation_seed if "search_probability_breach" in item else None,
+                                "independent_of_search": "search_probability_breach" in item},
         })
     recommended = bundles[0] if bundles else None
     for bundle in bundles[1:]:
         if bundle["probability_breach_after"] is not None and recommended["probability_breach_after"] is not None \
-                and round(bundle["probability_breach_after"] / 0.05) > round(recommended["probability_breach_after"] / 0.05):
+                and bundle["probability_breach_after"] > recommended["probability_breach_after"]:
             bundle["why_not"] = (f"RISKIER: {round(bundle['probability_breach_after'] * 100)}% of simulated futures still breach "
                                  f"(about {bundle['futures_short_of_20_after']} in 20) versus "
                                  f"{round(recommended['probability_breach_after'] * 100)}% for the recommendation.")
@@ -396,8 +503,11 @@ def plan_recovery(business, policy, records, target_date, *, accepted=(), promis
             "bundles": bundles, "single_option_checks": singles, "why_not": why_not, "levers": levers,
             "financing": financing, "reminders": reminders, "rejected": rejected,
             "explanation": explain(business, basis, basis_projection, bundles, financing, levers, action_needed),
-            "search": {"records_considered": len(groups), "combinations_evaluated": len(evaluated),
+            "search": {"records_considered": len(groups) + len(required), "combinations_evaluated": len(evaluated),
                        "robustness_checked": len(shortlist), "monte_carlo_runs_each": mc_runs,
+                       "candidate_selection": screening,
+                       "independent_finalists_checked": len(finalists), "validation_runs_each": validation_runs,
+                       "validation_seed": validation_seed, "required_actions": len(required),
                        "objective": "Hold the reserve floor every day through the planning horizon with payroll funded; "
                                     f"prefer bundles that breach in at most {round(RISK_TARGET * 20)} of 20 simulated futures; "
                                     "then minimise economic cost and the number of counterparties asked."},

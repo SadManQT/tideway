@@ -153,3 +153,27 @@ trust decision. Mock financing is read-only and checks cash through repayment,
 while lender eligibility and receivable assignment remain unverified.
 
 Current authoritative scope and reproducible commands: `docs/READINESS_CURRENT.md`.
+
+## 10. Independent follow-up: signing integrity and snapshot dates
+
+Malformed or truncated local signing-key files now stop loading without changing
+their bytes. Preserve the file and restore its original backup; deleting it to
+silence the error would invalidate existing signatures. New keys are written to
+a private same-directory temporary file, synced, then atomically published with
+create-if-absent semantics. Concurrent first starts use the same winning key.
+This requires filesystem hard-link support (such as NTFS or APFS); unsupported
+filesystems fail closed. This is not hardware-backed key management.
+
+Mandate signatures must be exactly 64 lowercase hexadecimal characters before
+constant-time comparison. Non-ASCII and malformed values are invalid signatures,
+not uncaught exceptions. Regression tests retain successful authentic validation
+and rejection after document tampering.
+
+Profiles, empirical fallback and illustrative backtests now exclude payments
+after the simulation date, matching the model's existing information cutoff.
+Mock collateral excludes already committed and not-yet-issued receivables.
+Neither repair verifies a real lender, real account or loan approval.
+
+See `docs/INDEPENDENT_AUDIT.md` for the reproduced defects and measured limits.
+Actual compatible Qwen inference and browser checks remain separate from
+injected tests, weak unfamiliar-message screening and pending native models.

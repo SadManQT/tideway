@@ -1,6 +1,6 @@
 {
-  "run_at_utc": "2026-10-16T06:11:33+00:00",
-  "source_tree_sha256": "c341c86f3299e17e622ce4a2a10e78762b6a76f30e9f85772dd36006ba6b460f",
+  "run_at_utc": "2026-10-17T05:58:49+00:00",
+  "source_tree_sha256": "b2ca44a67180c34a0948ffce13c31a39bc20b91208d5a29f1e25a0381ae4f207",
   "stages_passed": [
     "Python compile",
     "JavaScript syntax",
@@ -16,15 +16,13 @@
   "pdfs_rebuilt": true,
   "visual_review_automated": false,
   "pdf_sha256": {
-    "slides/pitch.pdf": "695dcdd2708ca4f6696f2076ed72bff674ae6c644bb3cf02fc8833f97e5dc8bc",
-    "docs/architecture.pdf": "84b53859133995f6afa5a47552d817b79046cc501edd9cda30c4050d5930e390",
-    "docs/security-assessment.pdf": "9555703e47c3e469b0ee7e83be74f27e0a15ff0d30109a97bd9ca5195b6e8543",
-    "docs/submission-notes.pdf": "202460253cfc383bb9a0ed4bc84abb195e714138fd8bbd6a813dd5025eded0d2",
-    "docs/Tideway_FinTechathon_2026_Roadmap.pdf": "928170e1fc7cda7633e0e3fb169472a565712ff2dddda536c6036d7e27fe92d2"
+    "slides/pitch.pdf": "08a99192bbc959dbcce3bf2aa75a00c00ff80344d468dd10331b75667628a532",
+    "docs/architecture.pdf": "92f4fbd95253e848ea9cc2ff407f164cc42043d675bc1ed044969af5fce15605",
+    "docs/security-assessment.pdf": "96468a298ab6b9eb7842e4c4e4fa1271aada0198db229a576e0a4a319f1e92c2",
+    "docs/submission-notes.pdf": "554f89a94ddc0725eb08b7b4d65c7c937300962e9c533d9005560d9fce51b660",
+    "docs/Tideway_FinTechathon_2026_Roadmap.pdf": "72bc086a593d8dc1382409db5f1a245fd96623cb1bed14115c98f532de3ddf04"
   },
   "scope": "Local synthetic checks; no hosted CI, model-quality rerun, SME participation or submission implied.",
-  "finalized_at_utc": "2026-10-16T06:17:36+00:00",
-  "pdf_visual_review": "evidence/readiness-v3/pdf-visual-review.json",
-  "final_pdf_refresh_note": "Technical documentation expanded and roadmap pagination polished after the complete pipeline; current hashes describe visually reviewed outputs.",
-  "actual_model_browser": "evidence/readiness-v3/browser-real/browser-verification.json"
+  "pdf_follow_up": "Document text condensed after full release checks; PDFs rebuilt and visually reviewed. Application/test/browser source digest unchanged. ZIP and extraction repeated after final PDF bytes.",
+  "pdf_visual_review": "evidence/independent-audit/pdf-review.json"
 }

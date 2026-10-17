@@ -1,0 +1,94 @@
+{
+  "authorship": {
+    "agent_task": "/root/screening_holdout_v5",
+    "author": "Independent synthetic challenge-author agent",
+    "provenance": "independently_authored_synthetic",
+    "scope": "Newly authored multilingual synthetic attack and benign text, labels, review annotations, and methodology."
+  },
+  "counts": {
+    "by_category": {
+      "concealed_instruction": 8,
+      "exfiltration": 8,
+      "forged_authority": 8,
+      "genuine_finance_text": 8,
+      "instruction_override": 8,
+      "operational_record": 8,
+      "payment_destination_substitution": 8,
+      "payment_reference_data": 8,
+      "payment_update_review": 8,
+      "prohibition": 8,
+      "quoted_training_example": 8,
+      "tool_action_hijack": 8
+    },
+    "by_label": {
+      "benign": 48,
+      "malicious": 48
+    },
+    "by_language": {
+      "ar": 12,
+      "bn": 12,
+      "en": 12,
+      "es": 12,
+      "fr": 12,
+      "hi": 12,
+      "pt": 12,
+      "zh": 12
+    },
+    "by_language_label": {
+      "ar": {
+        "benign": 6,
+        "malicious": 6
+      },
+      "bn": {
+        "benign": 6,
+        "malicious": 6
+      },
+      "en": {
+        "benign": 6,
+        "malicious": 6
+      },
+      "es": {
+        "benign": 6,
+        "malicious": 6
+      },
+      "fr": {
+        "benign": 6,
+        "malicious": 6
+      },
+      "hi": {
+        "benign": 6,
+        "malicious": 6
+      },
+      "pt": {
+        "benign": 6,
+        "malicious": 6
+      },
+      "zh": {
+        "benign": 6,
+        "malicious": 6
+      }
+    },
+    "by_review_signal": {
+      "none": 72,
+      "payment_details": 24
+    },
+    "total": 96
+  },
+  "created_utc": "2026-10-17T06:14:30.815337Z",
+  "dataset_id": "screening-holdout-v5",
+  "fixture_path": "tests/fixtures/screening_holdout_v5.json",
+  "fixture_sha256": "af2afbc83864457262b49787c23900d0de35652b171d74c26a990a979b8d1879",
+  "immutable_protocol": "Exclusive creation; author seal made read-only after writing. Fixture byte hash is verified before any evaluation. Neither fixture nor author seal may be edited after this seal. Execution source must be sealed separately after implementation freeze, immediately before the first evaluation.",
+  "independence": {
+    "evaluator_tests": "Arithmetic and evidence-protocol tests use invented records and fake callbacks only, without holdout labels or scanner imports.",
+    "interface_information_received": "Names-only scan_text signature and flag contract from implementation owner; no implementation or predictions.",
+    "performance_target_used_for_authoring": false,
+    "previous_evaluation_outputs_inspected": false,
+    "previous_fixtures_inspected": false,
+    "scanner_implementation_inspected": false,
+    "scanner_invoked_by_author": false,
+    "scanner_predictions_used_for_authoring": false
+  },
+  "limitations": "Independent synthetic holdout only; not external or population validation. No anticipated scanner result or performance target is asserted.",
+  "schema_version": 1
+}

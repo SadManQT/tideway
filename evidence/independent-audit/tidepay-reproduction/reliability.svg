@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="850" viewBox="0 0 1000 850">
+<rect width="1000" height="850" fill="white"/>
+<g font-family="Arial,sans-serif" fill="#172033">
+<text x="45" y="30" font-size="22">Fresh-cohort reliability: invoice more than seven days late</text>
+<text x="45" y="53" font-size="13">Ten fixed probability bins; labels show N. Bars are descriptive 95% Wilson intervals.</text>
+<text x="90" y="100" font-size="17">deployed</text>
+<path d="M90,370.0 H340" stroke="#e2e8f0"/>
+<text x="62" y="374.0" font-size="11">0.0</text>
+<text x="82.0" y="388" font-size="11">0.0</text>
+<path d="M90,320.0 H340" stroke="#e2e8f0"/>
+<text x="62" y="324.0" font-size="11">0.2</text>
+<text x="132.0" y="388" font-size="11">0.2</text>
+<path d="M90,270.0 H340" stroke="#e2e8f0"/>
+<text x="62" y="274.0" font-size="11">0.4</text>
+<text x="182.0" y="388" font-size="11">0.4</text>
+<path d="M90,220.0 H340" stroke="#e2e8f0"/>
+<text x="62" y="224.0" font-size="11">0.6</text>
+<text x="232.0" y="388" font-size="11">0.6</text>
+<path d="M90,170.0 H340" stroke="#e2e8f0"/>
+<text x="62" y="174.0" font-size="11">0.8</text>
+<text x="282.0" y="388" font-size="11">0.8</text>
+<path d="M90,120.0 H340" stroke="#e2e8f0"/>
+<text x="62" y="124.0" font-size="11">1.0</text>
+<text x="332.0" y="388" font-size="11">1.0</text>
+<path d="M90,120 V370 H340" fill="none" stroke="#475569"/>
+<path d="M90,370 L340,120" stroke="#94a3b8" stroke-dasharray="5,5"/>
+<text x="128" y="410" font-size="12">Mean predicted probability</text>
+<text transform="translate(45,330) rotate(-90)" font-size="12">Observed event rate</text>
+<path d="M101.33,343.17 V352.28" stroke="#007c78"/>
+<circle cx="101.33" cy="348.16" r="4" fill="#007c78"/>
+<text x="106.33" y="341.16" font-size="10">927</text>
+<path d="M125.71,315.41 V336.16" stroke="#007c78"/>
+<circle cx="125.71" cy="326.76" r="4" fill="#007c78"/>
+<text x="130.71" y="319.76" font-size="10">318</text>
+<path d="M153.23,257.85 V280.04" stroke="#007c78"/>
+<circle cx="153.23" cy="269.14" r="4" fill="#007c78"/>
+<text x="158.23" y="262.14" font-size="10">466</text>
+<path d="M176.97,252.08 V267.94" stroke="#007c78"/>
+<circle cx="176.97" cy="260.07" r="4" fill="#007c78"/>
+<text x="181.97" y="253.07" font-size="10">937</text>
+<path d="M203.98,228.34 V247.49" stroke="#007c78"/>
+<circle cx="203.98" cy="237.87" r="4" fill="#007c78"/>
+<text x="208.98" y="230.87" font-size="10">649</text>
+<path d="M228.57,206.77 V233.20" stroke="#007c78"/>
+<circle cx="228.57" cy="219.69" r="4" fill="#007c78"/>
+<text x="233.57" y="212.69" font-size="10">326</text>
+<path d="M254.06,180.51 V200.18" stroke="#007c78"/>
+<circle cx="254.06" cy="189.92" r="4" fill="#007c78"/>
+<text x="259.06" y="182.92" font-size="10">497</text>
+<path d="M278.37,162.84 V176.52" stroke="#007c78"/>
+<circle cx="278.37" cy="169.32" r="4" fill="#007c78"/>
+<text x="283.37" y="162.32" font-size="10">811</text>
+<path d="M302.36,153.23 V164.10" stroke="#007c78"/>
+<circle cx="302.36" cy="158.35" r="4" fill="#007c78"/>
+<text x="307.36" y="151.35" font-size="10">1056</text>
+<path d="M331.03,126.76 V131.57" stroke="#007c78"/>
+<circle cx="331.03" cy="128.85" r="4" fill="#007c78"/>
+<text x="336.03" y="121.85" font-size="10">1440</text>
+<text x="560" y="100" font-size="17">audited_v2</text>
+<path d="M560,370.0 H810" stroke="#e2e8f0"/>
+<text x="532" y="374.0" font-size="11">0.0</text>
+<text x="552.0" y="388" font-size="11">0.0</text>
+<path d="M560,320.0 H810" stroke="#e2e8f0"/>
+<text x="532" y="324.0" font-size="11">0.2</text>
+<text x="602.0" y="388" font-size="11">0.2</text>
+<path d="M560,270.0 H810" stroke="#e2e8f0"/>
+<text x="532" y="274.0" font-size="11">0.4</text>
+<text x="652.0" y="388" font-size="11">0.4</text>
+<path d="M560,220.0 H810" stroke="#e2e8f0"/>
+<text x="532" y="224.0" font-size="11">0.6</text>
+<text x="702.0" y="388" font-size="11">0.6</text>
+<path d="M560,170.0 H810" stroke="#e2e8f0"/>
+<text x="532" y="174.0" font-size="11">0.8</text>
+<text x="752.0" y="388" font-size="11">0.8</text>
+<path d="M560,120.0 H810" stroke="#e2e8f0"/>
+<text x="532" y="124.0" font-size="11">1.0</text>
+<text x="802.0" y="388" font-size="11">1.0</text>
+<path d="M560,120 V370 H810" fill="none" stroke="#475569"/>
+<path d="M560,370 L810,120" stroke="#94a3b8" stroke-dasharray="5,5"/>
+<text x="598" y="410" font-size="12">Mean predicted probability</text>
+<text transform="translate(515,330) rotate(-90)" font-size="12">Observed event rate</text>
+<path d="M570.89,342.92 V351.85" stroke="#2563eb"/>
+<circle cx="570.89" cy="347.78" r="4" fill="#2563eb"/>
+<text x="575.89" y="340.78" font-size="10">979</text>
+<path d="M595.46,316.66 V337.43" stroke="#2563eb"/>
+<circle cx="595.46" cy="328.06" r="4" fill="#2563eb"/>
+<text x="600.46" y="321.06" font-size="10">310</text>
+<path d="M623.94,257.48 V281.77" stroke="#2563eb"/>
+<circle cx="623.94" cy="269.87" r="4" fill="#2563eb"/>
+<text x="628.94" y="262.87" font-size="10">387</text>
+<path d="M646.72,255.67 V276.31" stroke="#2563eb"/>
+<circle cx="646.72" cy="266.14" r="4" fill="#2563eb"/>
+<text x="651.72" y="259.14" font-size="10">544</text>
+<path d="M667.99,234.78 V251.46" stroke="#2563eb"/>
+<circle cx="667.99" cy="243.11" r="4" fill="#2563eb"/>
+<text x="672.99" y="236.11" font-size="10">859</text>
+<path d="M696.74,210.73 V232.54" stroke="#2563eb"/>
+<circle cx="696.74" cy="221.45" r="4" fill="#2563eb"/>
+<text x="701.74" y="214.45" font-size="10">483</text>
+<path d="M722.65,184.83 V204.03" stroke="#2563eb"/>
+<circle cx="722.65" cy="194.07" r="4" fill="#2563eb"/>
+<text x="727.65" y="187.07" font-size="10">540</text>
+<path d="M747.62,163.14 V176.27" stroke="#2563eb"/>
+<circle cx="747.62" cy="169.38" r="4" fill="#2563eb"/>
+<text x="752.62" y="162.38" font-size="10">881</text>
+<path d="M772.32,153.20 V164.14" stroke="#2563eb"/>
+<circle cx="772.32" cy="158.35" r="4" fill="#2563eb"/>
+<text x="777.32" y="151.35" font-size="10">1043</text>
+<path d="M800.81,126.33 V131.08" stroke="#2563eb"/>
+<circle cx="800.81" cy="128.39" r="4" fill="#2563eb"/>
+<text x="805.81" y="121.39" font-size="10">1401</text>
+<text x="90" y="450" font-size="17">historical_training_prior</text>
+<path d="M90,720.0 H340" stroke="#e2e8f0"/>
+<text x="62" y="724.0" font-size="11">0.0</text>
+<text x="82.0" y="738" font-size="11">0.0</text>
+<path d="M90,670.0 H340" stroke="#e2e8f0"/>
+<text x="62" y="674.0" font-size="11">0.2</text>
+<text x="132.0" y="738" font-size="11">0.2</text>
+<path d="M90,620.0 H340" stroke="#e2e8f0"/>
+<text x="62" y="624.0" font-size="11">0.4</text>
+<text x="182.0" y="738" font-size="11">0.4</text>
+<path d="M90,570.0 H340" stroke="#e2e8f0"/>
+<text x="62" y="574.0" font-size="11">0.6</text>
+<text x="232.0" y="738" font-size="11">0.6</text>
+<path d="M90,520.0 H340" stroke="#e2e8f0"/>
+<text x="62" y="524.0" font-size="11">0.8</text>
+<text x="282.0" y="738" font-size="11">0.8</text>
+<path d="M90,470.0 H340" stroke="#e2e8f0"/>
+<text x="62" y="474.0" font-size="11">1.0</text>
+<text x="332.0" y="738" font-size="11">1.0</text>
+<path d="M90,470 V720 H340" fill="none" stroke="#475569"/>
+<path d="M90,720 L340,470" stroke="#94a3b8" stroke-dasharray="5,5"/>
+<text x="128" y="760" font-size="12">Mean predicted probability</text>
+<text transform="translate(45,680) rotate(-90)" font-size="12">Observed event rate</text>
+<path d="M243.59,563.52 V569.05" stroke="#64748b"/>
+<circle cx="243.59" cy="566.27" r="4" fill="#64748b"/>
+<text x="248.59" y="559.27" font-size="10">7427</text>
+<text x="560" y="450" font-size="17">customer_history_heuristic</text>
+<path d="M560,720.0 H810" stroke="#e2e8f0"/>
+<text x="532" y="724.0" font-size="11">0.0</text>
+<text x="552.0" y="738" font-size="11">0.0</text>
+<path d="M560,670.0 H810" stroke="#e2e8f0"/>
+<text x="532" y="674.0" font-size="11">0.2</text>
+<text x="602.0" y="738" font-size="11">0.2</text>
+<path d="M560,620.0 H810" stroke="#e2e8f0"/>
+<text x="532" y="624.0" font-size="11">0.4</text>
+<text x="652.0" y="738" font-size="11">0.4</text>
+<path d="M560,570.0 H810" stroke="#e2e8f0"/>
+<text x="532" y="574.0" font-size="11">0.6</text>
+<text x="702.0" y="738" font-size="11">0.6</text>
+<path d="M560,520.0 H810" stroke="#e2e8f0"/>
+<text x="532" y="524.0" font-size="11">0.8</text>
+<text x="752.0" y="738" font-size="11">0.8</text>
+<path d="M560,470.0 H810" stroke="#e2e8f0"/>
+<text x="532" y="474.0" font-size="11">1.0</text>
+<text x="802.0" y="738" font-size="11">1.0</text>
+<path d="M560,470 V720 H810" fill="none" stroke="#475569"/>
+<path d="M560,720 L810,470" stroke="#94a3b8" stroke-dasharray="5,5"/>
+<text x="598" y="760" font-size="12">Mean predicted probability</text>
+<text transform="translate(515,680) rotate(-90)" font-size="12">Observed event rate</text>
+<path d="M635.00,598.25 V605.48" stroke="#b45309"/>
+<circle cx="635.00" cy="601.87" r="4" fill="#b45309"/>
+<text x="640.00" y="594.87" font-size="10">4567</text>
+<path d="M760.00,506.20 V512.88" stroke="#b45309"/>
+<circle cx="760.00" cy="509.42" r="4" fill="#b45309"/>
+<text x="765.00" y="502.42" font-size="10">2860</text>
+<text x="45" y="800" font-size="13">Synthetic new SMEs; correlated invoices. Wilson bars do not account for customer/business clustering.</text>
+<text x="45" y="822" font-size="13">All empty and nonempty bin counts: reliability.csv. Paired SME-cluster metric intervals: report.json.</text>
+</g></svg>

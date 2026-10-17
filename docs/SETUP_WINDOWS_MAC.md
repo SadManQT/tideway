@@ -178,3 +178,9 @@ The optional compatible model remains distinct from historical MLX adapter score
 
 Open `/guide.html` through the running app, for example
 `http://127.0.0.1:8787/guide.html`; opening the file in Finder does not start Python.
+
+## Optional local semantic screening
+
+With the configured local text backend running, set `TIDEWAY_SEMANTIC_SCREENING=1` in the shell or `.env`. Windows PowerShell: `$env:TIDEWAY_SEMANTIC_SCREENING = '1'`; macOS: `export TIDEWAY_SEMANTIC_SCREENING=1`. Restart the app after changing the setting. Inbox extraction and photo-transcript review then make one additional bounded local classification. This can add latency and requires the optional text model. It never uses the optional cloud-provider path.
+
+The UI distinguishes attack warnings, payment-detail verification, disabled screening and inconclusive results. Missing/malformed/late model answers require human review; a benign label cannot remove rule warnings or authorize imports/payments. Photo screening sees the model transcript, which can omit visible instructions, and does not establish receipt extraction accuracy. With the option off, the existing deterministic warning rules remain available and every draft still needs confirmation. Fresh v6 results and raw outputs are in `evidence/screening-v6/`; these do not inherit historical TideLM benchmark scores.

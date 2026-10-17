@@ -23,6 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--checks-only', action='store_true', help='Core tests, syntax and sandbox checks; no browser/PDF/package')
     parser.add_argument('--reuse-pdfs', action='store_true', help='Use existing visually reviewed PDFs; still repeat all other checks')
+    parser.add_argument('--evidence-dir', default='evidence/readiness-v5', help='Current release evidence; historical v3 observations are retained')
     args = parser.parse_args()
     issues = line_ending_issues()
     if issues:
@@ -30,8 +31,8 @@ def main():
     digest, _ = source_digest()
     env = os.environ.copy()
     env.update(OPENAI_API_KEY='', TIDEWAY_LOCAL_MODEL_URL='', TIDEWAY_LOCAL_TEXT_MODEL='',
-               TIDEWAY_LOCAL_VISION_MODEL='', TIDEWAY_LOCAL_STRUCTURED_PLANS='', PYTHON=sys.executable)
-    out = ROOT / 'evidence/readiness-v3'
+               TIDEWAY_LOCAL_VISION_MODEL='', TIDEWAY_LOCAL_STRUCTURED_PLANS='', TIDEWAY_SEMANTIC_SCREENING='', PYTHON=sys.executable)
+    out = ROOT / args.evidence_dir
     out.mkdir(parents=True, exist_ok=True)
     stages = []
 

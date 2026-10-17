@@ -28,17 +28,24 @@ Historical upgrade and Windows reports describe earlier source versions.
   and the distributed ZIP to the same exact source digest.
 - An anonymous, consent-aware study kit supports real SME validation. Its current
   participation count is zero; no feedback or usability score was invented.
+- Independent follow-up audit: invalid signing keys are preserved and rejected;
+  concurrent first starts publish one complete key. Malformed signatures fail
+  validation, and `.env` now loads the documented structured-plan flag.
+- Profiles, empirical fallback and illustrative backtests use only paid history
+  available at the simulation date. Mock advances exclude already committed and
+  not-yet-issued receivables. A Windows SQLite test handle leak is corrected.
 
 ## Measured evidence
 
 | Check | Recorded result | Meaning and limit |
 |---|---|---|
-| Current unit run | 252 run; 0 failures; 0 errors; 0 skipped | Python 3.14.7, Darwin; injected outputs are not model quality |
+| Current unit run | 261 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
 | Additional standard-library run | 252 run; 0 failures; 0 errors; 4 skipped | Python 3.11.16; optional photo tests require Pillow; report records its own source hash |
 | Financial scenarios | 24/24 expected workflows; 9 rescues | 7/9 executed rescues meet the 10% simulated risk target |
 | Shipped TidePay | 7,427 unseen synthetic invoices; MAE 8.5585 days | Heuristic 10.2296; training-only prior 11.7453; no weight changes |
 | First actual Qwen3 challenge | 28/32 correct; 32/32 contained | Four retained misses; no mandate, execution or financial-ledger mutation |
 | Post-fix Qwen3 regression | 32/32 known cases handled; 8/8 safe stops | One real-model pass after disclosed guard fixes; not a new blind score |
+| Independent-audit Windows Qwen3 rerun | 32/32 known requests handled; 32/32 contained | Actual compatible inference on disclosed cases; retains every output; not blind |
 | First unseen instruction screening | 2/24 attacks detected; 2/24 benign flagged | Severe generalization gap; detection cannot be the authorization boundary |
 | SME user study | 0 participants; pending | Kit and analysis available; no real-user claim |
 
@@ -94,10 +101,13 @@ Use a completed LF checkout: source edits during the run invalidate verification
 - [Release stages and PDF hashes](../evidence/readiness-v3/release-checks.json).
   `dist/extraction-verification.json` and `dist/SHA256SUMS.txt` prove the actual
   distributed bytes, rather than referring to an earlier ZIP.
+- [Independent judge/auditor report](INDEPENDENT_AUDIT.md), with reproduced
+  defects, the contest requirement map, fixes and remaining validation gaps.
+- [Current Windows actual-model regression](../evidence/independent-audit/model-regression/report.json).
 - [User study protocol](USER_STUDY_KIT.md) and
   [pending participation status](../evidence/readiness-v3/user-study-status.json).
 
-Current test source digest: `c341c86f3299e17e622ce4a2a10e78762b6a76f30e9f85772dd36006ba6b460f`.
+Current test source digest: `b2ca44a67180c34a0948ffce13c31a39bc20b91208d5a29f1e25a0381ae4f207`.
 Reports contain their own timestamps and hashes; older Windows/upgrade evidence
 is historical and does not attest to the current checkout.
 

@@ -133,7 +133,7 @@ The exact deployed weights are separately evaluated in `evidence/readiness-v3/ti
 
 `GET /api/dashboard` includes `tidepay.card.deployed_evaluation`: `available`, `status`, exact `artifact_sha256`, cohort counts, `results`, `cold_start` metrics, caveats and public evidence links. The service verifies the report's integrity manifest and its weight hash on each card access. Missing, malformed, mismatched-cohort or different-weight evidence produces `available: false` with a reason and no scores. `status: verified` describes local artifact/report agreement, not external certification. The older `audit_benchmark` remains explicitly `benchmark_only`. Only two new fixed public routes are allowed: `/benchmarks/tidepay-deployed.json` and `/benchmarks/tidepay-deployed-reliability.svg`; private financial APIs retain their existing access checks.
 
-`docs/MODEL_REASONING_V2.md` describes bounded, result-aware local model tool selection. The observable trace separates deterministic preflight from model-selected calls and ties outputs to hashes. Whole-plan contextual validation runs before any proposing tool, with explicit entity clarification, roles, native currency/units, dates and call/output budgets. A safe proposal may require a second model selection after computed cash/risk facts. This is a new runtime protocol, not a rerun of historical TideLM v2 quality scores. The model and weights are absent on the current machine; actual device inference remains outstanding.
+`docs/MODEL_REASONING_V2.md` describes bounded, result-aware local model tool selection. The observable trace separates deterministic preflight from model-selected calls and ties outputs to hashes. Whole-plan contextual validation runs before any proposing tool, with explicit entity clarification, roles, native currency/units, dates and call/output budgets. A safe proposal may require a second model selection after computed cash/risk facts. Compatible Qwen3 inference has been recorded on macOS and Windows; first observations and subsequent known-case regressions are separated. These results do not validate the historical TideLM MLX adapter, receipt model or live cloud provider. See `docs/READINESS_CURRENT.md` for each run's provenance.
 
 `docs/SCENARIO_EVALUATION_V2.md` and `evidence/upgrade-v1/scenarios/` report independently authored ledgers split into development and held-out conditions, labelled benign/attack screening, planner latency and injected-model failure containment. Outcome handling, feasible execution and no-safe-plan escalation have distinct denominators. Screening misses and false positives are retained. No general spreadsheet or generic-LLM comparison is inferred.
 
@@ -176,3 +176,9 @@ PDF rebuilding, archive integrity and a new extracted server. Source changes
 during tests, browser runs or release stages invalidate verification. The
 current evidence index is `docs/READINESS_CURRENT.md`; historical source hashes
 describe their own earlier runs.
+
+## Independent audit follow-up - 17 October 2026
+
+The simulation date gates paid history in profiles, empirical sampling and the illustrative backtest, matching TidePay's existing cutoff. Mock collateral excludes committed and future-issued invoices. These checks do not reconstruct arbitrary historical ledger states or verify real lenders.
+
+Corrupted signing keys are preserved and rejected. Atomic create-if-absent publication prevents concurrent initial keys; storage must support hard links (NTFS/APFS/ext4). Back up keys, database and witness together. Malformed signatures are rejected, and `.env` now loads structured-plan settings. See `docs/INDEPENDENT_AUDIT.md` for reproduction and limits.

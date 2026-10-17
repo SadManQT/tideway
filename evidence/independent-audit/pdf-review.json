@@ -1,0 +1,40 @@
+{
+  "reviewed_at_utc": "2026-10-17T06:01:28+00:00",
+  "reviewer": "Coding assistant, rendered page inspection; not external certification",
+  "source_tree_sha256": "b2ca44a67180c34a0948ffce13c31a39bc20b91208d5a29f1e25a0381ae4f207",
+  "documents": [
+    {
+      "path": "slides/pitch.pdf",
+      "pages": 16,
+      "sha256": "08a99192bbc959dbcce3bf2aa75a00c00ff80344d468dd10331b75667628a532"
+    },
+    {
+      "path": "docs/architecture.pdf",
+      "pages": 8,
+      "sha256": "92f4fbd95253e848ea9cc2ff407f164cc42043d675bc1ed044969af5fce15605"
+    },
+    {
+      "path": "docs/security-assessment.pdf",
+      "pages": 7,
+      "sha256": "96468a298ab6b9eb7842e4c4e4fa1271aada0198db229a576e0a4a319f1e92c2"
+    },
+    {
+      "path": "docs/submission-notes.pdf",
+      "pages": 3,
+      "sha256": "554f89a94ddc0725eb08b7b4d65c7c937300962e9c533d9005560d9fce51b660"
+    },
+    {
+      "path": "docs/Tideway_FinTechathon_2026_Roadmap.pdf",
+      "pages": 19,
+      "sha256": "72bc086a593d8dc1382409db5f1a245fd96623cb1bed14115c98f532de3ddf04"
+    }
+  ],
+  "all_pages_visually_reviewed": true,
+  "automated_page_bounds_issues": [],
+  "pitch_expected_text_present": true,
+  "pitch_pages": 16,
+  "sparse_final_pages_removed": [
+    "docs/architecture.pdf",
+    "docs/submission-notes.pdf"
+  ]
+}

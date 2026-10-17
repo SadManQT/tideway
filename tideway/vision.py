@@ -18,7 +18,7 @@ import time
 from pathlib import Path
 
 from .domain import ValidationError, scan_text
-from .tidelm import _draft, parse_json
+from .tidelm import TideLM, _draft, parse_json
 
 MODEL = "mlx-community/Qwen2.5-VL-3B-Instruct-4bit"
 MAX_BYTES = 6 * 1024 * 1024
@@ -71,13 +71,14 @@ def decode_image(data_url):
 
 
 class TideVision:
-    def __init__(self, generator=None):
+    def __init__(self, generator=None, semantic_model=None):
         """``generator(image_path) -> str`` may be injected for tests; otherwise MLX is loaded lazily."""
         self._generator = generator
         from .local_model import LocalModel
         self._local = LocalModel.configured("vision") if generator is None else None
         self._model = self._processor = None
         self._lock = threading.Lock()
+        self._semantic_model = semantic_model if semantic_model is not None else TideLM()
 
     def status(self):
         if self._generator is not None:
@@ -138,14 +139,23 @@ class TideVision:
             output = parse_json(self._generate(str(path), business["name"]))
         if output is None or not isinstance(output.get("records"), list):
             raise ValidationError("No invoice, bill or receipt could be read from that photo. Try a sharper, flatter photo.")
-        transcript = str(output.get("transcript") or "")[:2000]
-        flags = scan_text(transcript)
+        raw_transcript = output.get("transcript") or ""
+        transcript = str(raw_transcript)[:2000]
+        # Do not silently classify a truncated transcript as benign. Overlong
+        # or mistyped model transcripts fail semantic screening to review.
+        screening = self._semantic_model.screen(raw_transcript)
+        flags = list(dict.fromkeys(scan_text(transcript) + screening["combined_flags"]))
         drafts = [_draft(row, index, transcript or image.hex()[:64], business)
                   for index, row in enumerate(output["records"][:20]) if isinstance(row, dict)]
         result = {"drafts": drafts, "suspicious": bool(output.get("suspicious")) or bool(flags), "risk_flags": flags,
                   "transcript": transcript, "elapsed_ms": int((time.monotonic() - started) * 1000),
-                  "note": "Drafts only. Check each one against the photo; nothing is saved until you confirm."}
+                  "review_required": True, "semantic_screening": screening,
+                  "note": "Drafts only. Check each one against the photo; nothing is saved until you confirm. "
+                          + ("Semantic screening is disabled; only rule warnings are available."
+                             if not screening["enabled"] else
+                             "Semantic screening covers the model transcript, which may omit visible text.")}
         app.store.audit(business_id, "inbox.photo", actor, "agent_read",
                         {"image_sha256": hashlib.sha256(image).hexdigest(), "drafts": len(drafts),
-                         "suspicious": result["suspicious"], "risk_flags": flags})
+                         "suspicious": result["suspicious"], "risk_flags": flags,
+                         "semantic_screening": screening})
         return result

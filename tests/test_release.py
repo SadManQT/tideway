@@ -36,3 +36,16 @@ class ReleaseSourcePolicy(unittest.TestCase):
             icon.write_text('<svg><path/></svg>',encoding='utf-8')
             self.assertNotEqual(before,source_digest(root)[0])
             self.assertIn('web/favicon.svg',source_digest(root)[1])
+
+    def test_container_build_and_exclusion_changes_invalidate_source_stamp(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.fixture(directory, b'\n')
+            for name, first, second in (('Dockerfile', 'FROM python:3.11\n', 'FROM python:3.14\n'),
+                                        ('.dockerignore', 'data\n', 'data\nmodels\n')):
+                with self.subTest(name=name):
+                    path = root / name
+                    path.write_bytes(first.encode())
+                    before = source_digest(root)[0]
+                    path.write_bytes(second.encode())
+                    self.assertNotEqual(before, source_digest(root)[0])
+                    self.assertIn(name, source_digest(root)[1])

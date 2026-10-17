@@ -1,6 +1,6 @@
-# Contest instructions checked on 15 October 2026
+# Contest instructions rechecked on 17 October 2026
 
-Primary sources were opened again before implementation. No newer instruction changing the 20 October deadline was found in these sources. The dynamic main website returned a JavaScript shell, so its full current notices and privacy policy remain unverified.
+The competition-branded Appendix and IEEE guidance were reopened during the independent audit on 17 October 2026; the CMU announcement below was checked on 15 October. No newer instruction changing the 20 October deadline was found in these sources. The dynamic main website returned a JavaScript shell, so its full current notices and privacy policy remain unverified.
 
 | Source | Verified information | Unresolved issue |
 |---|---|---|

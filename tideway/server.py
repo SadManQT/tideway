@@ -50,7 +50,7 @@ class Application:
         self.login_limiter = RateLimiter(capacity=10, refill_per_second=0.2)
         self.selftest_cache = None
         self.tidelm = TideLM()
-        self.vision = TideVision()
+        self.vision = TideVision(semantic_model=self.tidelm)
 
     # ---- helpers ---------------------------------------------------------------
 

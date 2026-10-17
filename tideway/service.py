@@ -218,7 +218,7 @@ class Tideway:
         return {"snapshot": snapshot, "derived": derived, "target_date": target, "seed": seed,
                 "projections": {"base": base, "likely": likely, "stress": stress},
                 "simulation": simulation, "kpis": kpis, "warnings": alerts, "weather": weather,
-                "backtest": analytics.backtest(records["invoices"]),
+                "backtest": analytics.backtest(records["invoices"], as_of=state["current_date"]),
                 "brief": self._brief(business, base, likely, simulation, weather)}
 
     @staticmethod
@@ -395,9 +395,12 @@ class Tideway:
                         lookahead_days=policy["lookahead_days"])
         after_base = project(business, policy, snapshot["records"], document["target_date"], scenario="base",
                              adjustments=adjustments, promises=state["promises"], lookahead_days=policy["lookahead_days"])
+        repair_seed = analytics.stable_seed(business_id, snapshot["snapshot_hash"], document["target_date"], "counter-repair-v5")
+        validation_seed = analytics.stable_seed(repair_seed, "planner-final-validation-v5")
+        validation_runs = max(PLAN_MC_RUNS, min(2000, PLAN_MC_RUNS * 3))
         simulation = analytics.monte_carlo(business, policy, snapshot["records"], document["target_date"],
                                            adjustments, state["promises"],
-                                           runs=PLAN_MC_RUNS, seed=analytics.stable_seed(business_id, snapshot["snapshot_hash"]),
+                                           runs=validation_runs, seed=validation_seed,
                                            lookahead_days=policy["lookahead_days"], as_of=state["current_date"])
         payload = {**{key: plan[key] for key in ("business_id", "target_date", "currency", "basis", "planning_horizon_end",
                                                  "risk_target", "baseline", "basis_projection", "gap_minor", "action_needed",
@@ -412,12 +415,43 @@ class Tideway:
                                 "risk_target_met": simulation["probability_breach"] <= planner.RISK_TARGET,
                                 "dual_approval_required": exposure > policy["dual_approval_threshold_minor"],
                                 "after": summary(after), "after_base": summary(after_base),
-                                "remaining_shortfall_minor": check["shortfall_minor"]}],
+                                "remaining_shortfall_minor": check["shortfall_minor"],
+                                "risk_evaluation": {"validation_runs": validation_runs, "validation_seed": validation_seed,
+                                                    "independent_of_search": True, "search_runs": 0}}],
                    "single_option_checks": [], "why_not": [],
-                   "explanation": ("Counter-offer terms restore the reserve floor and need fresh approval: a signed mandate "
+                   "explanation": ("Counter-offer terms restore the likely-path reserve floor and need fresh approval: a signed mandate "
                                    "is never edited in place." if check["feasible"] else
                                    "The counter-offer terms do not restore the reserve floor; re-plan instead."),
-                   "search": {"source": "counter-offer", "from_mandate": mandate_id, "monte_carlo_runs_each": PLAN_MC_RUNS}}
+                   "search": {"source": "counter-offer", "from_mandate": mandate_id,
+                              "monte_carlo_runs_each": PLAN_MC_RUNS, "validation_runs_each": validation_runs}}
+        # Changed terms can re-open timing risk even when the likely path is
+        # funded. Keep those exact counter-offers fixed and search for extra
+        # bounded requests. Nothing is agreed or executed here; every request
+        # in a replacement plan needs fresh approval and exact consent again.
+        if not check["feasible"] or simulation["probability_breach"] > planner.RISK_TARGET:
+            constraints = plan.get("owner_constraints", {})
+            repair_policy = {**policy, "max_discount_bps": min(policy["max_discount_bps"],
+                                                               constraints.get("max_discount_bps", policy["max_discount_bps"]))}
+            repair = planner.plan_recovery(business, repair_policy, snapshot["records"], document["target_date"],
+                                            accepted=state["adjustments"], promises=state["promises"],
+                                            profiles=derived["profiles"], basis_dates=derived["likely_dates"],
+                                            blocked=derived["blocked"], excluded_counterparties=plan.get("excluded_counterparties", ()),
+                                            mc_seed=repair_seed, mc_runs=PLAN_MC_RUNS, as_of=state["current_date"],
+                                            prefer=constraints.get("prefer", "lowest_cost"), required_actions=revised)
+            best = repair["bundles"][0] if repair["bundles"] else None
+            if best and best["feasible"] and (not check["feasible"] or
+                                              best["probability_breach_after"] < simulation["probability_breach"]):
+                best["bundle_id"] = "counter-offer"
+                repair["search"].update(source="counter-offer repair", from_mandate=mandate_id,
+                                         original_counter_probability_breach=simulation["probability_breach"])
+                repair["explanation"] = ("Exact counter-offer terms are retained with additional recovery requests. "
+                                           "All actions need fresh approval and counterparty consent. " + repair["explanation"])
+                for key in ("probability_breach_before", "futures_short_of_20_before", "excluded_counterparties", "owner_constraints"):
+                    if key in plan:
+                        repair[key] = plan[key]
+                payload = repair
+            elif simulation["probability_breach"] > planner.RISK_TARGET:
+                payload["explanation"] += " The simulated risk target remains unmet; explicit residual-risk acknowledgement is required."
         return self.store.create_plan(business_id, payload, snapshot["snapshot_hash"], "agent:counter-offer", actor,
                                       replaces_mandate=mandate_id)
 

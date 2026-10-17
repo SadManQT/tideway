@@ -26,6 +26,8 @@ from .domain import (CURRENCIES, SecurityError, ValidationError, canonical_json,
 from .ml.tidelm_data import EXTRACT_SYSTEM, PLAN_SYSTEM
 from .local_model import LocalModel, LocalModelUnavailable
 from .projection import horizon_end
+from .semantic_screening import (MAX_GENERATION_TOKENS, classification_schema,
+                                 semantic_classify)
 
 ROOT = Path(__file__).resolve().parent.parent
 BASE_MODEL = "mlx-community/Qwen3-4B-Instruct-2507-4bit"
@@ -493,6 +495,38 @@ class TideLM:
 
     # ---- skill 2: zero-entry inbox --------------------------------------------------
 
+    def screen(self, text, *, enabled=None):
+        """One optional local classification; never an approval or trust signal.
+
+        Uses the same local backend as Inbox extraction, independently from the
+        extraction answer. A disabled/missing model remains explicitly uncertain.
+        Compatible models receive a strict JSON schema; native MLX outputs are
+        checked by the same Python validator. No cloud transport is available.
+        """
+        enabled = os.getenv("TIDEWAY_SEMANTIC_SCREENING", "").strip() == "1" if enabled is None else enabled
+        if enabled is not True:
+            result = semantic_classify(text, model_identity={"backend": "disabled", "model": None,
+                                                            "evaluated_tidelm_adapter": False})
+            result["errors"] = ["not_enabled" if code == "model_unavailable" else code for code in result["errors"]]
+            result["enabled"] = False
+            return result
+        try:
+            identity = self.status()
+        except Exception:
+            identity = {"backend": "unavailable", "model": None, "available": False}
+        identity = dict(identity, purpose="semantic_warning_only", semantic_quality_verified=False)
+
+        def generate(system, user):
+            if self._local is not None:
+                return self._local.generate(system, user, max_tokens=MAX_GENERATION_TOKENS,
+                                            response_schema=classification_schema())
+            return self._generate(system, user, max_tokens=MAX_GENERATION_TOKENS)
+
+        result = semantic_classify(text, generate if identity.get("available") else None,
+                                   model_identity=identity)
+        result["enabled"] = True
+        return result
+
     def extract(self, app, business_id, text, actor="agent:tidelm"):
         """Draft records from pasted text.  Nothing is saved; a person confirms with ``confirm``."""
         if not isinstance(text, str) or not text.strip() or len(text) > MAX_INPUT:
@@ -501,16 +535,23 @@ class TideLM:
         output = parse_json(self._generate(EXTRACT_SYSTEM, text.strip(), max_tokens=600))
         if output is None or not isinstance(output.get("records"), list):
             raise ValidationError("TideLM could not read records from that text.")
-        flags = scan_text(text)  # deterministic check alongside the model's own judgement
+        screening = self.screen(text)
+        # A semantic "benign" answer cannot remove a deterministic warning.
+        flags = screening["combined_flags"]
         drafts = []
         for index, row in enumerate(output["records"][:20]):
             if isinstance(row, dict):
                 drafts.append(_draft(row, index, text, business))
         result = {"drafts": drafts, "suspicious": bool(output.get("suspicious")) or bool(flags), "risk_flags": flags,
-                  "note": "Drafts only. Check each one; nothing is saved until you confirm."}
+                  "review_required": True, "semantic_screening": screening,
+                  "note": "Drafts only. Check each one; nothing is saved until you confirm. "
+                          + ("Semantic screening is disabled; only rule warnings are available."
+                             if not screening["enabled"] else
+                             "Semantic screening is a fallible local warning, never approval.")}
         app.store.audit(business_id, "inbox.extract", actor, "agent_read",
                         {"input_sha256": hashlib.sha256(text.encode()).hexdigest(), "drafts": len(drafts),
-                         "suspicious": result["suspicious"], "risk_flags": flags})
+                         "suspicious": result["suspicious"], "risk_flags": flags,
+                         "semantic_screening": screening})
         return result
 
 

@@ -1,0 +1,58 @@
+{
+  "checked_at_utc": "2026-10-17T06:22:44+00:00",
+  "remote_repository": "https://github.com/SadManQT/tideway",
+  "remote_commit": "bd8c061a20e23c3955ae7535946f629e6ff1c4e9",
+  "run_url": "https://github.com/SadManQT/tideway/actions/runs/38860765405",
+  "remote_baseline_conclusion": "failure",
+  "jobs": [
+    {
+      "name": "Optional photo validation / Pillow",
+      "conclusion": "success",
+      "failed_steps": []
+    },
+    {
+      "name": "stdlib / macos-14 / Python 3.14",
+      "conclusion": "success",
+      "failed_steps": []
+    },
+    {
+      "name": "stdlib / macos-14 / Python 3.11",
+      "conclusion": "success",
+      "failed_steps": []
+    },
+    {
+      "name": "stdlib / ubuntu-24.04 / Python 3.14",
+      "conclusion": "success",
+      "failed_steps": []
+    },
+    {
+      "name": "stdlib / windows-2022 / Python 3.14",
+      "conclusion": "failure",
+      "failed_steps": [
+        "Run complete stdlib test suite and record actual counts"
+      ]
+    },
+    {
+      "name": "Browser workflows and extracted package",
+      "conclusion": "success",
+      "failed_steps": []
+    },
+    {
+      "name": "stdlib / windows-2022 / Python 3.11",
+      "conclusion": "failure",
+      "failed_steps": [
+        "Run complete stdlib test suite and record actual counts"
+      ]
+    },
+    {
+      "name": "stdlib / ubuntu-24.04 / Python 3.11",
+      "conclusion": "success",
+      "failed_steps": []
+    }
+  ],
+  "authenticated_job_log_access": "HTTP401; no usable Actions log access established",
+  "current_local_changes_uploaded": false,
+  "push_performed": false,
+  "current_source_hosted_ci_verified": false,
+  "reason": "Final fixes are local and existing instruction forbids pushing; remote baseline cannot attest to current source. Local Windows and isolated Linux/Docker verification are separate evidence."
+}

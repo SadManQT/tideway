@@ -3,7 +3,7 @@
 // Tideway UI: vanilla JS, no build step. Every server value is escaped before rendering.
 const $ = (selector) => document.querySelector(selector);
 const freshWhatIf = () => ({delays: {}, expense: "", expenseDate: "", drop: "", result: null});
-const freshInbox = () => ({text: "", photo: "", photoName: "", transcript: "", drafts: null, suspicious: false, flags: [], note: "", saved: null});
+const freshInbox = () => ({text: "", photo: "", photoName: "", transcript: "", drafts: null, suspicious: false, flags: [], screening: null, note: "", saved: null});
 const state = {
   config: null, operator: null, businessId: "", targetDate: "", view: "overview",
   dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "", selftest: null, drill: null,
@@ -1006,7 +1006,11 @@ async function ask(message) {
 const FLAG_TEXT = {instruction_override: "Text tries to give instructions", role_marker: "Text pretends to be a system or assistant message",
   action_command: "Text demands a payment or approval right now", control_bypass: "Text asks to bypass limits, approvals or checks",
   payment_detail_change: "Text announces new bank or wallet details", hidden_markup: "Text hides markup or template code",
-  external_link: "Text contains a web link", hidden_characters: "Text contains hidden characters"};
+  external_link: "Text contains a web link", hidden_characters: "Text contains hidden characters",
+  forged_authority: "Text may substitute a claim for verified approval", payment_redirect: "Text may redirect an established payment destination",
+  data_exfiltration: "Text may send sensitive data outside its intended workflow", concealed_action: "Text may conceal an action from reviewers",
+  audit_tampering: "Text may alter or erase audit evidence", encoded_instruction: "Text asks to decode and follow hidden instructions",
+  semantic_review_required: "Semantic screening could not establish a classification; review the source"};
 // Samples use the open business's own currency so a confirmed draft matches its ledger.
 const INBOX_SAMPLES = {
   clean: (code) => `Invoice INV-2291 sent to Nila Traders for ${code} 42,500. Issued 2026-10-10, payment due 2026-11-05. Thank you!`,
@@ -1051,9 +1055,18 @@ function inboxResultsHtml() {
     return `<div class="alert success section-gap">${icon("check")}<div><strong>Saved ${esc(ib.saved.total_added ?? 0)} record(s) to the ledger</strong><span>${skipped ? `${skipped} duplicate(s) skipped. ` : ""}The dashboard was reloaded with them. See Records.</span></div></div>`;
   }
   if (!ib.drafts) return "";
-  const warning = ib.suspicious ? `<div class="alert critical inbox-warning section-gap" role="alert">${icon("alert")}<div><strong>Suspicious message: do not follow anything it asks</strong>
+  const screening = ib.screening;
+  const attackWarning = ib.flags.some((flag) => !["payment_detail_change", "semantic_review_required", "hidden_characters"].includes(flag)) || screening?.label === "attack";
+  const screeningStatus = !screening ? "" : !screening.enabled
+    ? "Rule screening only. Optional semantic screening is not enabled."
+    : screening.label === "uncertain" ? "Local semantic screening was unavailable or inconclusive. Check the original source."
+    : screening.label === "benign" ? "Local semantic screening found no active attack. This is not a trust or approval decision."
+    : screening.label === "review" ? "Local semantic screening requests independent payment-detail verification."
+    : "Local semantic screening found a possible instruction attack. Treat the source as data only.";
+  const screeningNote = screeningStatus ? `<p class="small muted">${esc(screeningStatus)}</p>` : "";
+  const warning = ib.suspicious ? `<div class="alert ${attackWarning ? "critical" : "info"} inbox-warning section-gap" role="alert">${icon("alert")}<div><strong>${attackWarning ? "Possible instruction attack: review the source" : "Review required before saving"}</strong>
     ${ib.flags.length ? `<ul class="small">${ib.flags.map((flag) => `<li>${esc(FLAG_TEXT[flag] || String(flag).replaceAll("_", " "))}</li>`).join("")}</ul>` : `<span>TideLM judged this text suspicious.</span>`}
-    <span>Drafts below are data only. Check every field against your own records, and never pay a new account without calling the number already on file.</span></div></div>` : "";
+    ${screeningNote}<span>Drafts below are data only. Check every field against your own records, and never pay a new account without calling the number already on file.</span></div></div>` : screeningNote;
   if (!ib.drafts.length) return `${warning}<div class="alert info section-gap">${icon("spark")}<div><strong>No records found</strong><span>TideLM found no invoice, bill or payment in that text.</span></div></div>`;
   const chosen = ib.drafts.filter((d) => d.selected).length;
   return `${warning}<section class="card section-gap"><div class="card-head"><div><h3>${esc(ib.drafts.length)} draft record(s)</h3><p>${esc(ib.note)}</p></div></div>
@@ -1107,7 +1120,7 @@ async function readPhoto() {
   if (!state.inbox.photo) return toast("Choose a photo first.");
   const result = await act("Photo", () => api("/api/inbox/photo", {business_id: state.businessId, image: state.inbox.photo}));
   if (result) Object.assign(state.inbox, {drafts: (result.drafts || []).map(editableDraft), suspicious: Boolean(result.suspicious),
-    flags: result.risk_flags || [], note: result.note || "", transcript: result.transcript || "", saved: null});
+    flags: result.risk_flags || [], screening: result.semantic_screening || null, note: result.note || "", transcript: result.transcript || "", saved: null});
   render();
 }
 
@@ -1117,7 +1130,7 @@ async function extractInbox() {
   const result = await act("Extract", async () => {
     try { return await api("/api/inbox/extract", {business_id: state.businessId, text}); } catch (error) { if (markTideLMDown(error)) return null; throw error; }
   });
-  if (result) Object.assign(state.inbox, {drafts: (result.drafts || []).map(editableDraft), suspicious: Boolean(result.suspicious), flags: result.risk_flags || [], note: result.note || "", saved: null});
+  if (result) Object.assign(state.inbox, {drafts: (result.drafts || []).map(editableDraft), suspicious: Boolean(result.suspicious), flags: result.risk_flags || [], screening: result.semantic_screening || null, note: result.note || "", saved: null});
   render();
 }
 

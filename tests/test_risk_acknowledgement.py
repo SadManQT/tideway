@@ -177,7 +177,8 @@ class RiskSchemaMigration(unittest.TestCase):
     def test_existing_workspace_approval_rows_are_preserved_without_invented_consent(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "old.sqlite3"
-            with sqlite3.connect(path) as db:
+            from contextlib import closing
+            with closing(sqlite3.connect(path)) as db, db:
                 db.execute("CREATE TABLE approvals (id TEXT PRIMARY KEY,business_id TEXT,plan_id TEXT,bundle_id TEXT,"
                            "operator_id TEXT,role TEXT,review_ms INTEGER,created_at TEXT,UNIQUE(plan_id,bundle_id,operator_id))")
                 db.execute("INSERT INTO approvals(id,operator_id) VALUES ('old','person')")

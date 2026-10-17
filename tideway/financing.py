@@ -22,21 +22,24 @@ def compare(business, policy, records, target_date, gap, breach_date, *, as_of=N
     as_of = as_of or business["opening_date"]
     principal = ((gap + 99_999) // 100_000) * 100_000 if gap > 0 else 0
     original_end = horizon_end(business, target_date, policy["lookahead_days"])
+    adjustments = tuple(adjustments)
+    committed = {item["invoice_id"] for item in adjustments if item["kind"] == "invoice_early_payment"}
+    invoice_cover = sum(row["amount_minor"] for row in records["invoices"]
+                        if row["status"] in ("confirmed", "overdue") and not row.get("risk_flags")
+                        and row["id"] not in committed and row.get("issue_date", as_of) <= as_of)
     candidates = []
     for product in CATALOGUE:
         fee = principal * product["fee_bps"] // 10_000
         arrival = add_days(as_of, product["days_to_cash"])
         repayment_date = add_days(arrival, product["term_days"])
         reasons, unknown = [], ["No lender eligibility, creditworthiness or product availability has been verified."]
-        invoice_cover = sum(row["amount_minor"] for row in records["invoices"]
-                            if row["status"] in ("confirmed", "overdue") and not row.get("risk_flags"))
         ledger_match = product["variant"] != "invoice_advance" or invoice_cover >= principal
         if not principal:
             reasons.append("The likely path has no reserve shortfall; borrowing is not needed for this projection.")
         if product["variant"] == "invoice_advance":
             unknown += ["Assumes a lender accepts the eligible receivable; concentration, disputes and assignment checks are not assessed."]
             if not ledger_match:
-                reasons.append("Confirmed, non-quarantined invoice face value is below the illustrated principal.")
+                reasons.append("Issued, uncommitted, non-quarantined invoice face value is below the illustrated principal.")
         elif product["variant"] == "working_capital":
             unknown += ["Credit assessment, security and an actual credit limit are unknown."]
         else:

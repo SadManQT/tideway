@@ -1076,7 +1076,7 @@ class Store:
         verified = {item["name"]: item["verified_account"] for item in snapshot["counterparties"].values()
                     if item["kind"] == "supplier" and item["verified_account"]}
         payees = analytics.payee_checks(records["bills"], verified)
-        profiles = analytics.customer_profiles(records["invoices"])
+        profiles = analytics.customer_profiles(records["invoices"], snapshot["state"]["current_date"])
         predictions = analytics.tidepay_predictions(records["invoices"], snapshot["state"]["current_date"])
         for item in profiles["customers"].values():  # TidePay's view of each customer's open invoices
             own = [p for p in predictions.values() if p["customer"] == item["customer"]]

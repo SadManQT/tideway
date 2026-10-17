@@ -37,10 +37,11 @@ def _pick(rng, items):
     return items[int(rng.random() * len(items))]
 
 
-def _histories(invoices):
+def _histories(invoices, as_of=None):
     history = defaultdict(list)
     for row in invoices:
-        if row["status"] in SETTLED_INVOICE_STATUSES and row.get("paid_date"):
+        if (row["status"] in SETTLED_INVOICE_STATUSES and row.get("paid_date")
+                and (as_of is None or row["paid_date"] <= as_of)):
             history[row["customer"]].append(days_between(row["due_date"], row["paid_date"]))
     return history
 
@@ -52,7 +53,7 @@ def customer_profiles(invoices, as_of=None):
     n/(n+k) (Buhlmann credibility); the rest comes from the business-wide
     history, so one lucky payment never makes a customer look perfectly reliable.
     """
-    history = _histories(invoices)
+    history = _histories(invoices, as_of)
     pool = [value for values in history.values() for value in values]
     prior_mean = statistics.fmean(pool) if pool else statistics.fmean(DEFAULT_DELAYS)
     open_exposure, open_count = defaultdict(int), Counter()
@@ -174,7 +175,7 @@ def scenario_dates(invoices, profiles, mode, predictions=None):
 
 def _delay_sampler(invoices, as_of):
     """Sample a customer's lateness; overdue invoices are conditioned on still being unpaid."""
-    history = {customer: [max(0, value) for value in values] for customer, values in _histories(invoices).items()}
+    history = {customer: [max(0, value) for value in values] for customer, values in _histories(invoices, as_of).items()}
     pool = sorted(value for values in history.values() for value in values) or list(DEFAULT_DELAYS)
 
     def sample(rng, customer, minimum_late):
@@ -231,7 +232,13 @@ def monte_carlo(business, policy, records, target_date, adjustments=(), promises
         return max(minimum_late, delay_quantile(probs, floor + u * (1 - floor)))
     rng = random.Random(seed)
     reserve = policy["reserve_floor_minor"]
-    customers = sorted({item[4] for item in uncertain})
+    # Keep the random stream aligned when comparing bundles. An early-payment
+    # agreement removes an uncertain event, but must not give every remaining
+    # customer a different draw merely by changing this event set. Include all
+    # open-record customers even when an agreement fixes their receipt date or
+    # their expected receipt falls outside the current horizon.
+    customers = sorted({row["customer"] for row in records["invoices"]
+                        if row["status"] in OPEN_INVOICE_STATUSES})
     columns = [[] for _ in range(length)]
     breaches = negatives = payroll_failures = 0
     shortfalls, minimums, first_breaches = [], [], Counter()
@@ -403,9 +410,10 @@ def financial_kpis(business, records, profiles):
                      "customer shares of open receivables (concentration analogy only)."}
 
 
-def backtest(invoices):
+def backtest(invoices, as_of=None):
     """Leave-one-out check of the pooled delay estimate on settled invoices (illustrative)."""
-    settled = [row for row in invoices if row["status"] in SETTLED_INVOICE_STATUSES and row.get("paid_date")]
+    settled = [row for row in invoices if row["status"] in SETTLED_INVOICE_STATUSES and row.get("paid_date")
+               and (as_of is None or row["paid_date"] <= as_of)]
     if len(settled) < 8:
         return {"available": False, "reason": "At least 8 settled invoices are needed for a backtest.", "n": len(settled)}
     errors, inside = [], 0

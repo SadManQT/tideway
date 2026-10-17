@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0",
+  "artifact": "tests/fixtures/screening_holdout_v6.json",
+  "fixture_sha256": "1a73000b0bc6b4666bd1e7db1a4b85cb719e83a9f85bf6126ca9c2ee09ae787b",
+  "fixture_byte_length": 65309,
+  "sealed_utc": "2026-10-17T06:27:11.792Z",
+  "authoring": {
+    "author_task": "/root/screening_holdout_v5/sealed_v6_author",
+    "parent_task": "/root/screening_holdout_v5",
+    "classification": "Independently authored synthetic holdout with disclosed authoring context",
+    "independent_scope": "Author started with fork_turns=none and the authoring specification only, then received only the provenance-disclosure instruction and a content-isolation status reminder. Author did not inspect classifier/scanner implementation, source patterns, earlier fixtures, outputs, evaluations, or agent inventories, and did not invoke a scanner or detector model.",
+    "parent_context_disclosure": "Before delegation, parent task /root/screening_holdout_v5 incidentally received an agent-status implementation summary and aggregate verification/timing metadata from an inventory call. None of that content was passed to this author. The parent will not inspect case text.",
+    "claims_boundary": "This is independent synthetic authorship within the disclosed task context, not an external or blind-human assessment.",
+    "scope_restriction": "Only this new fixture and this new seal were created; no other files were edited, and no commits or pushes were performed."
+  },
+  "counts": {
+    "total": 96,
+    "by_label": {
+      "benign": 48,
+      "malicious": 48
+    },
+    "by_language": {
+      "en": 12,
+      "bn": 12,
+      "zh": 12,
+      "es": 12,
+      "hi": 12,
+      "ar": 12,
+      "fr": 12,
+      "pt": 12
+    },
+    "by_category": {
+      "active_instruction_override": 8,
+      "concealed_instruction": 8,
+      "exfiltration": 8,
+      "finance_data_task": 8,
+      "forged_authority": 8,
+      "genuine_payment_update": 8,
+      "historic_payment_reference": 8,
+      "ordinary_operational_record": 8,
+      "payment_destination_substitution": 8,
+      "prohibition": 8,
+      "quoted_inactive_training": 8,
+      "tool_action_hijack": 8
+    },
+    "by_review_signal": {
+      "none": 80,
+      "payment_details": 16
+    },
+    "by_language_label": {
+      "en": {
+        "malicious": 6,
+        "benign": 6
+      },
+      "bn": {
+        "malicious": 6,
+        "benign": 6
+      },
+      "zh": {
+        "malicious": 6,
+        "benign": 6
+      },
+      "es": {
+        "malicious": 6,
+        "benign": 6
+      },
+      "hi": {
+        "malicious": 6,
+        "benign": 6
+      },
+      "ar": {
+        "malicious": 6,
+        "benign": 6
+      },
+      "fr": {
+        "malicious": 6,
+        "benign": 6
+      },
+      "pt": {
+        "malicious": 6,
+        "benign": 6
+      }
+    }
+  },
+  "immutable_protocol": {
+    "creation": "Both artifacts are written exactly once with exclusive binary create (Node fs.open flag wx); existing targets cause a stop. Each file handle is synced before closing.",
+    "byte_binding": "SHA-256 is calculated over the exact UTF-8 fixture bytes, including the final newline, before exclusive creation. The created fixture bytes are reread solely to confirm their SHA-256.",
+    "protection": "After creation, the fixture and seal are set read-only with fs.chmod(0o444), which applies the Windows read-only file attribute. The seal is not rewritten after sealing.",
+    "change_policy": "Corrections require a newly versioned fixture and newly exclusive-created seal; do not unseal, overwrite, or amend either artifact.",
+    "limits": "Read-only is a filesystem write guard, not cryptographic or administrator-proof immutability. The exact-byte fixture hash makes changes detectable; no seal self-hash is embedded."
+  }
+}

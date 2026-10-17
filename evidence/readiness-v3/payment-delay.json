@@ -1,8 +1,8 @@
 {
   "version": "linked-delay-v1",
   "passed": true,
-  "python": "3.14.7",
-  "machine": "macOS-26.6.2-arm64-arm-64bit-Mach-O",
+  "python": "3.13.7",
+  "machine": "Windows-11-10.0.26200-SP0",
   "source": "Application.post with normal PIN/dual approval; no model inference",
   "change": {
     "request_id": "linked-delay-v1",
@@ -15,15 +15,15 @@
     "after_snapshot": "f4ed197752de7348e77cd9f6df4956827541d75c37b98a73a7cc3a0f685665a0",
     "state_version": 2,
     "invalidated_plans": [
-      "2db4f2a1683448a991e99371850ac723"
+      "52622486a055465782e711c52adbf7f2"
     ],
     "invalidated_mandates": [
-      "a99a1896d9ba476d9be09f0ccb0a3bc0"
+      "80f2d39372bc44618d1ec24ea83d5347"
     ],
     "superseded_promise": null,
     "replayed": false,
     "audit_id": 10,
-    "audit_hash": "0f83e79853318f27d746ec60e7b22f37c7f5294ee520f6d029bff3dfae90469d",
+    "audit_hash": "702de2c09cebc186c2feb32ef172331ae7e7e60629bf6492f37478a1844b77bd",
     "currency": "BDT",
     "target_date": "2026-10-31",
     "before": {
@@ -176,13 +176,13 @@
   "execution_retry_same_receipt": true,
   "read_back_verified": true,
   "receipt": {
-    "receipt_id": "c8da00a24a56461da0aab1b5a2e1263c",
+    "receipt_id": "aa7b2f23347e4d9a82a294063041e947",
     "status": "executed",
     "business_id": "shapla-services",
     "currency": "BDT",
-    "mandate_id": "e9f2578b2ac148a6b0643646775a6bef",
-    "mandate_signature": "91aee64c79555a82b37bc92c094adad7598dd7cbdc895c702c4d0cdff444576c",
-    "plan_id": "311e084195194c62a6b000b8558af4f7",
+    "mandate_id": "5e8b865a180f455d8d800c95ea44a2b9",
+    "mandate_signature": "9b820243e7cee0246d608aab310034d85cb2d6dae72c3fa32e532ab0f39c3f58",
+    "plan_id": "3bfe4a35829743fb94f9b1a6a2a7a750",
     "bundle_id": "counter-offer",
     "idempotency_key": "fresh-delay-v1",
     "executed_by": "nadia",
@@ -190,14 +190,14 @@
     "human_present": true,
     "approvals": [
       {
-        "created_at": "2026-10-16T06:10:09+00:00",
+        "created_at": "2026-10-17T05:56:55+00:00",
         "operator_id": "imran",
         "review_ms": 9000,
         "risk_acknowledgement": null,
         "role": "accountant"
       },
       {
-        "created_at": "2026-10-16T06:10:09+00:00",
+        "created_at": "2026-10-17T05:56:55+00:00",
         "operator_id": "nadia",
         "review_ms": 9000,
         "risk_acknowledgement": null,
@@ -262,7 +262,7 @@
     },
     "state_after": {
       "version": 3,
-      "state_hash": "60ccba152fa4747d28a1c437e061264ae71125b2db67b3201bbdec3bc667b154"
+      "state_hash": "2f2a2f012efb0850eda058e32bec701ed2c0b5711e0d98ef9d2604a302b50024"
     },
     "projection_before": {
       "scenario": "likely",
@@ -310,14 +310,14 @@
     },
     "note": "Schedule changes in the synthetic sandbox only. No money moved and no real counterparty was contacted.",
     "audit_id": 22,
-    "audit_hash": "8f50d17acb286a006591f46b519cc14731d1569729ed384a35c7be58db816837",
+    "audit_hash": "56f197b49eb9aed716d06a3e6b6a5edf6d8ef591f8ccbd52b926bad689e0045e",
     "witness": {
       "cosigned": true,
       "business_id": "shapla-services",
       "size": 18,
-      "head_hash": "8f50d17acb286a006591f46b519cc14731d1569729ed384a35c7be58db816837",
-      "cosigned_at": "2026-10-16T06:10:09+00:00",
-      "signature": "44f1e1ae3c23e4f815ee12eb0c887adea52836f0a6d4ff3acfec84b4a5eb3edb"
+      "head_hash": "56f197b49eb9aed716d06a3e6b6a5edf6d8ef591f8ccbd52b926bad689e0045e",
+      "cosigned_at": "2026-10-17T05:56:55+00:00",
+      "signature": "f237ba4ca86e4348e6b17abfc05629dbf8444b3aa9d8fd61cf47d922d14d8e10"
     }
   },
   "audit_valid": true,

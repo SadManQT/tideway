@@ -13,6 +13,7 @@ import hashlib
 import hmac
 import os
 import secrets
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -40,21 +41,38 @@ def check_pin(pin, salt_hex, digest_hex) -> bool:
 
 
 def load_key(path) -> bytes:
-    """Load or create the local signing key (kept outside the database)."""
+    """Load a valid key or atomically publish one; never rotate an existing key."""
     if path is None:
         return secrets.token_bytes(32)
     path = Path(path)
-    if path.is_file():
+    def read_existing():
         data = path.read_bytes()
-        if len(data) == 64:
-            return bytes.fromhex(data.decode())
+        if len(data) != 64 or any(value not in b"0123456789abcdefABCDEF" for value in data):
+            raise ValidationError("Invalid local signing key. Preserve the file and restore the original key from backup; "
+                                  "automatic key replacement would invalidate existing signatures.")
+        return bytes.fromhex(data.decode("ascii"))
+
+    try:
+        return read_existing()
+    except FileNotFoundError:
+        pass
     path.parent.mkdir(parents=True, exist_ok=True)
     key = secrets.token_bytes(32)
-    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-    descriptor = os.open(path, flags, 0o600)
-    with os.fdopen(descriptor, "w") as handle:
-        handle.write(key.hex())
-    return key
+    # Readers must never observe a half-written key. A same-directory hard link
+    # publishes the complete file without replacing a concurrent creator's key.
+    descriptor, temporary = tempfile.mkstemp(prefix=".tideway-key-", dir=path.parent)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(key.hex().encode("ascii"))
+            handle.flush()
+            os.fsync(handle.fileno())
+        try:
+            os.link(temporary, path)
+        except FileExistsError:
+            return read_existing()
+        return key
+    finally:
+        os.unlink(temporary)
 
 
 def sign(key: bytes, document: dict) -> str:
@@ -64,7 +82,8 @@ def sign(key: bytes, document: dict) -> str:
 
 def verify(key: bytes, document: dict) -> bool:
     signature = document.get("signature") if isinstance(document, dict) else None
-    if not isinstance(signature, str) or len(signature) != 64:
+    if (not isinstance(signature, str) or len(signature) != 64
+            or any(character not in "0123456789abcdef" for character in signature)):
         return False
     return hmac.compare_digest(sign(key, document), signature)
 

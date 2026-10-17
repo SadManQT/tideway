@@ -60,7 +60,7 @@ The supplied roster is included. Confirm the team leader and actual roles, eligi
 registration acknowledgement, submission route and reviewer access. Keep the supplied public names/institution in tracked `submission-team.public.json`; roles and leader stay blank until confirmed. Private administrative facts belong in ignored `submission-team.json` and are never copied into the source archive. Follow any organiser requirement for truthful AI-assistance disclosure.
 No roles, nationality, registration or consent have been invented.
 
-## Published instructions checked on 15 October 2026
+## Published instructions rechecked on 17 October 2026
 
 Registration and submission deadline: 20 October 2026, 23:59 Beijing time,
 which is 21:59 Bangladesh time. English is the submission language. The published
@@ -86,23 +86,6 @@ completed SME user study, live cloud-provider benchmark or external penetration
 test. Docker instructions are supplied, but a successful Docker build must only
 be claimed on a machine where it was actually run.
 
-## Contest upgrade evidence
-
-Use `docs/PAYMENT_DELAY_RUNBOOK.md` for the live linked approval/invalidation/reapproval sequence. `evidence/upgrade-v1/` contains the corrected chronological prediction benchmark, distinct scenario workflows and screening/performance measurements, real-model availability report and delay receipt. Historical observations are retained under `evidence/history/pre-upgrade-v1/` and `evidence/ml/`. See `docs/CONTEST_UPGRADE_REPORT.md` for measured results and remaining verification limits.
-
-The package source is tested and browser-checked at the same source digest; `python3 scripts/verify_package.py` checks archive hashes, extracted tests and a new loopback server with Python `-S`, no Git or developer configuration. This local preparation does not establish registration or submission readiness. The main site is dynamic and its full latest notices remain unverified.
-
-## Readiness follow-up
-
-Historical `docs/READINESS_UPDATE.md` describes the four-step first-use guide and residual-risk
-warnings, contextual screening regressions, tracked cross-platform CI and Windows
-real-model smoke. The compatible Qwen3 backend matched 6/6 original and 12/12 additional
-authored smoke requests; raw failures and generations are preserved separately from
-historical TideLM adapter results. No model/runtime binaries are bundled. Follow
-`docs/SETUP_WINDOWS_MAC.md` to provision and start the optional model; the core needs
-neither weights nor an API key. CI is configured and locally checked; hosted CI has
-not run. Team-controlled administrative facts and video remain deferred.
-
 ## Current evidence v3
 
 Start with `docs/READINESS_CURRENT.md`. The exact shipped TidePay model is
@@ -124,3 +107,7 @@ fresh extraction. `--checks-only` runs core checks; Node 22+ and Chrome/Edge are
 required for the full command. No weight download, cloud provider, push or
 submission occurs. Real-user study status is pending with zero participants;
 the consent-aware kit does not invent feedback.
+
+## Independent audit follow-up
+
+See `docs/INDEPENDENT_AUDIT.md` for the contest requirement map, reproduced signing/configuration/financial defects, fixes and unresolved quality gaps. The current release reports supply exact test, browser and extraction results for one source digest. This review is performed by the coding assistant and is not an external security certification.

@@ -80,21 +80,34 @@ def ut_counter_offer(app):
     negotiation = app.negotiate(LOTUS, mandate["mandate_id"], "agent:test")
     if negotiation["status"] != "countered":
         return False, f"expected a counter-offer, got {negotiation['status']}"
-    revised = app.accept_counter(LOTUS, mandate["mandate_id"], "agent:test")
-    bundle = revised["bundles"][0]
     accountant = app.store.verify_pin("imran", "1357")
-    terms = app.store.risk_acknowledgement_terms(revised, bundle)
-    # The test's synthetic humans separately acknowledge the actual revised risk.
-    acknowledgement = {"acknowledged": True, **terms} if terms else None
-    approval = app.store.approve(LOTUS, revised["plan_id"], "counter-offer", accountant, "1357", "operator:imran", 9000,
-                                 risk_acknowledgement=acknowledgement)
-    if approval["status"] != "mandate_issued":
-        approval = app.store.approve(LOTUS, revised["plan_id"], "counter-offer", owner, "2468", "operator:nadia", 9000,
+    for revision in range(3):
+        previous = mandate["mandate_id"]
+        revised = app.accept_counter(LOTUS, previous, "agent:test")
+        if app.store.mandate(LOTUS, previous)["status"] != "cancelled" or revised["approvals"]:
+            return False, "replacement did not cancel the old mandate and clear approvals"
+        blocked, _ = _blocked(app.store.execute, LOTUS, previous, "ut-2-obsolete", owner, "operator:nadia")
+        if not blocked:
+            return False, "a superseded mandate executed"
+        bundle = revised["bundles"][0]
+        terms = app.store.risk_acknowledgement_terms(revised, bundle)
+        # The drill's synthetic people independently acknowledge this exact risk.
+        acknowledgement = {"acknowledged": True, **terms} if terms else None
+        approval = app.store.approve(LOTUS, revised["plan_id"], bundle["bundle_id"], accountant, "1357", "operator:imran", 9000,
                                      risk_acknowledgement=acknowledgement)
-    app.negotiate(LOTUS, approval["mandate"]["mandate_id"], "agent:test")
-    receipt = app.store.execute(LOTUS, approval["mandate"]["mandate_id"], "ut-2", owner, "operator:nadia")
-    return receipt["status"] == "executed", (f"counter terms re-approved and executed; risk after counter "
-                                             f"{bundle['futures_short_of_20_after']} of 20 futures")
+        if approval["status"] != "mandate_issued":
+            approval = app.store.approve(LOTUS, revised["plan_id"], bundle["bundle_id"], owner, "2468", "operator:nadia", 9000,
+                                         risk_acknowledgement=acknowledgement)
+        mandate = approval["mandate"]
+        negotiation = app.negotiate(LOTUS, mandate["mandate_id"], "agent:test")
+        if negotiation["status"] == "ready":
+            receipt = app.store.execute(LOTUS, mandate["mandate_id"], "ut-2", owner, "operator:nadia")
+            return receipt["status"] == "executed", (f"{revision + 1} fresh counter-offer approval rounds; exact consent before execution; "
+                                                      f"risk after counter {bundle['futures_short_of_20_after']} of 20 futures")
+        blocked, _ = _blocked(app.store.execute, LOTUS, mandate["mandate_id"], "ut-2-no-consent", owner, "operator:nadia")
+        if not blocked or negotiation["status"] != "countered":
+            return False, "unresolved or rejected requests must not execute"
+    return False, "counter-offer drill exceeded its bounded revision count without exact consent"
 
 
 def ut_replan_after_refusal(app):

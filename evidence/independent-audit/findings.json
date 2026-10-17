@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-17",
+  "base_commit": "bd8c061",
+  "review_type": "Coding-assistant independent review, not external certification",
+  "baseline": {
+    "tests": 252,
+    "failures": 1,
+    "errors": 1,
+    "skipped": 1,
+    "source_tree_sha256": "166052e62963bd0b4d90c41f932ec1c86e87e1581ca9b7903c4b0b909772ff5f"
+  },
+  "fixed": [
+    {
+      "id": "A01",
+      "finding": "Signing-key corruption and initial-creation race",
+      "status": "reproduced and fixed"
+    },
+    {
+      "id": "A02",
+      "finding": "Non-ASCII signature exception",
+      "status": "reproduced and fixed"
+    },
+    {
+      "id": "A03",
+      "finding": "Structured-plan dotenv flag ignored",
+      "status": "reproduced and fixed"
+    },
+    {
+      "id": "A04",
+      "finding": "Future payment history in snapshot analytics",
+      "status": "reproduced and fixed"
+    },
+    {
+      "id": "A05",
+      "finding": "Already-committed/future receivables counted as mock collateral",
+      "status": "reproduced and fixed"
+    },
+    {
+      "id": "A06",
+      "finding": "CRLF bytes invalidate frozen model hash",
+      "status": "reproduced and fixed"
+    },
+    {
+      "id": "A07",
+      "finding": "Windows SQLite migration-test connection leak",
+      "status": "reproduced and fixed"
+    },
+    {
+      "id": "A08",
+      "finding": "Stale inference and shipped-weight presentation claims",
+      "status": "reproduced and fixed"
+    }
+  ],
+  "regression_tests_added": 9,
+  "weights_retrained": false,
+  "historical_observations_replaced": false,
+  "push_performed": false,
+  "submitted": false,
+  "final_verification": "See evidence/test-summary.json, evidence/readiness-v3/release-checks.json and dist/extraction-verification.json for exact final source hashes and results."
+}

@@ -1,0 +1,11 @@
+{
+  "kind": "Same disclosed fixed-cohort reproduction, not new held-out evaluation",
+  "original_report_sha256": "7d93e0b1f986b7c76b90436c23ebd78e4a21f908603a91483a8ed20b9767f49f",
+  "reproduced_report_sha256": "15ce4f1a122e0adc339d830d661a8852aefbcd859ddd7f75a3c5dbcaffc1a995",
+  "exact_comparison": {
+    "results": true,
+    "balance": true,
+    "subgroups": true
+  },
+  "weights_changed": false
+}

@@ -14,13 +14,21 @@ def main():
     model = read('evidence/readiness-v3/blind/model-first-observation.json')
     screening = read('evidence/readiness-v3/blind/screening-first-observation.json')
     pay = read('evidence/readiness-v3/tidepay/report.json')
-    scenarios = read('evidence/readiness-v3/scenarios/report.json')
+    current = 'evidence/readiness-v5' if (ROOT / 'evidence/readiness-v5/scenarios/report.json').is_file() else 'evidence/readiness-v3'
+    scenarios = read(current + '/scenarios/report.json')
     inj = screening['injection']['confusion']
     results = pay['results']
     cases = scenarios['summary']
     regression = read('evidence/readiness-v3/blind/model-post-fix-regression.json')
     python311 = read('evidence/readiness-v3/python311/test-summary.json')
     risk_met = sum(bool(row.get('risk_target_met')) for row in scenarios['rows'] if row['executed'])
+    audit_path = ROOT / 'evidence/readiness-v5/model-regression/report.json'
+    if not audit_path.is_file():
+        audit_path = ROOT / 'evidence/independent-audit/model-regression/report.json'
+    audit = json.loads(audit_path.read_text(encoding='utf-8')) if audit_path.is_file() else {}
+    audit_result = (f"{audit['matched']['numerator']}/{audit['requests']} known requests handled; "
+                    f"{audit['containment']['numerator']}/{audit['requests']} contained"
+                    if audit.get('real_model_inference') else 'Not recorded')
     doc = f'''# Current technical readiness — evidence v3
 
 This is the current review index. Tideway remains a synthetic SME finance copilot:
@@ -51,6 +59,12 @@ Historical upgrade and Windows reports describe earlier source versions.
   and the distributed ZIP to the same exact source digest.
 - An anonymous, consent-aware study kit supports real SME validation. Its current
   participation count is zero; no feedback or usability score was invented.
+- Independent follow-up audit: invalid signing keys are preserved and rejected;
+  concurrent first starts publish one complete key. Malformed signatures fail
+  validation, and `.env` now loads the documented structured-plan flag.
+- Profiles, empirical fallback and illustrative backtests use only paid history
+  available at the simulation date. Mock advances exclude already committed and
+  not-yet-issued receivables. A Windows SQLite test handle leak is corrected.
 
 ## Measured evidence
 
@@ -62,6 +76,7 @@ Historical upgrade and Windows reports describe earlier source versions.
 | Shipped TidePay | {results['deployed']['n']:,} unseen synthetic invoices; MAE {results['deployed']['mae_days']:.4f} days | Heuristic {results['customer_history_heuristic']['mae_days']:.4f}; training-only prior {results['historical_training_prior']['mae_days']:.4f}; no weight changes |
 | First actual Qwen3 challenge | {model['matched']['numerator']}/{model['requests']} correct; {model['containment']['numerator']}/{model['containment']['denominator']} contained | Four retained misses; no mandate, execution or financial-ledger mutation |
 | Post-fix Qwen3 regression | {regression['matched']['numerator']}/{regression['requests']} known cases handled; {regression['safe_stop_handled']['numerator']}/{regression['safe_stop_handled']['denominator']} safe stops | One real-model pass after disclosed guard fixes; not a new blind score |
+| Independent-audit Windows Qwen3 rerun | {audit_result} | Actual compatible inference on disclosed cases; retains every output; not blind |
 | First unseen instruction screening | {inj['true_positive']}/24 attacks detected; {inj['false_positive']}/24 benign flagged | Severe generalization gap; detection cannot be the authorization boundary |
 | SME user study | 0 participants; pending | Kit and analysis available; no real-user claim |
 
@@ -117,6 +132,9 @@ Use a completed LF checkout: source edits during the run invalidate verification
 - [Release stages and PDF hashes](../evidence/readiness-v3/release-checks.json).
   `dist/extraction-verification.json` and `dist/SHA256SUMS.txt` prove the actual
   distributed bytes, rather than referring to an earlier ZIP.
+- [Independent judge/auditor report](INDEPENDENT_AUDIT.md), with reproduced
+  defects, the contest requirement map, fixes and remaining validation gaps.
+- [Current Windows actual-model regression](../evidence/independent-audit/model-regression/report.json).
 - [User study protocol](USER_STUDY_KIT.md) and
   [pending participation status](../evidence/readiness-v3/user-study-status.json).
 
@@ -126,14 +144,16 @@ is historical and does not attest to the current checkout.
 
 ## Remaining gaps that code alone cannot close
 
-Unfamiliar instruction detection remains weak. A new, separately sealed evaluation
-is needed after future detector work; repeating known examples is regression only.
+Instruction screening has finite coverage. The v5 and v6 first observations below
+are separate authored sets; they cannot be compared as an uncontrolled percentage
+improvement. Optional semantic checks remain advisory and require a local model.
 Real consented SME feedback, native MLX/TideLM and receipt-model evaluation,
 external security testing and real-data calibration remain outstanding.
 Partial settlements, reversals and real lender eligibility require separate
-financial design before live integration. GitHub-hosted CI has not run: the
-workflow is configured, but this work has not pushed anything. Docker's daemon
-was unavailable, so no Docker build is claimed.
+financial design before live integration. Hosted CI failed for remote commit bd8c061 on Windows; its Linux/macOS jobs
+passed. Current fixes remain local and have not been verified by hosted CI.
+See the explicit infrastructure status below for the separately tested Docker
+build; no ordinary bridge or host port exposure is inferred from isolated tests.
 
 The supplied five-person BUET roster is retained. Leader, contribution roles,
 eligibility, registration, submission route, reviewer access and the deferred
@@ -141,7 +161,43 @@ video still need the team's actual information. This local package has not been
 published, deployed, emailed or submitted. A numerical 9+ rating cannot honestly
 be guaranteed from synthetic checks while these validation gaps remain.
 '''
-    (ROOT / 'docs/READINESS_CURRENT.md').write_text(doc, encoding='utf-8')
+    for suffix in ('scenarios/report.json', 'payment-delay.json', 'release-checks.json'):
+        doc = doc.replace('evidence/readiness-v3/' + suffix, current + '/' + suffix)
+    docker_path = ROOT / 'evidence/infrastructure-v5/docker/report.json'
+    docker = json.loads(docker_path.read_text(encoding='utf-8')) if docker_path.is_file() else {}
+    infrastructure = ('PASS: frozen-source Linux image, isolated HTTP and persisted-state checks.'
+                      if docker.get('passed') and docker.get('source_tree_sha256_after') == tests['source_tree_sha256']
+                      else 'Not yet a passing current-source Docker run; inspect raw status.')
+    doc += f"""
+
+## Screening, planner and infrastructure follow-up
+
+- Rules v5 first pass: 13/48 attacks detected, 7/48 benign flagged on a new,
+  separately authored 96-message set. No misses were hidden. Its source snapshot,
+  labels and first observation remain in `evidence/screening-v5/`.
+- Optional local semantic screening adds a strict typed classification with one
+  bounded generation, preserved errors and raw output, and explicit uncertainty.
+  `TIDEWAY_SEMANTIC_SCREENING=1` enables it for Inbox messages and photo transcripts.
+  It never authorizes a record or financial action; model-free rules remain available.
+- [V6 independently authored first pass](../evidence/screening-v6/first-pass/first-pass-results.json)
+  records actual local inference, rules/semantic/combined denominators, uncertainty,
+  language/category results and runtime/source seals. It is not external validation.
+- Planner candidates now mix cost, stressed cash and headroom, with stable customer
+  draws and independent finalist validation. Counteroffer repair locks changed terms
+  and requires fresh human approval and exact counterparty consent for every request.
+- [Known D06/H11 risk follow-up](../evidence/readiness-v5/planner/report.json)
+  separates risk estimates, sampling uncertainty and the allowed-action limit.
+  An above-target business is escalated, not made successful by raising the target.
+- Docker status: {infrastructure}
+  [Raw Docker proof](../evidence/infrastructure-v5/docker/report.json).
+  No native MLX, host-network reachability or external penetration test is implied.
+- [Hosted CI status](../evidence/infrastructure-v5/hosted-ci-status.json): the existing
+  remote baseline has Windows failures. Node-24 action pins and a Docker job are
+  prepared locally; [actionlint](../evidence/infrastructure-v5/actionlint.json) checks
+  workflow syntax. No push or current-source hosted success is claimed.
+- [Implementation and verification report](REMEDIATION_V5.md).
+"""
+    (ROOT / 'docs/READINESS_CURRENT.md').write_bytes(doc.encode('utf-8'))
     print('Updated docs/READINESS_CURRENT.md from recorded evidence.')
 
 

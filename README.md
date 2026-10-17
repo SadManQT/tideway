@@ -2,6 +2,8 @@
 
 **Plan ahead for payroll.** On-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, and acts only with your approval.
 
+Judge/auditor review (17 October): [fixed defects and remaining contest gaps](docs/INDEPENDENT_AUDIT.md). Exact current verification counts and provenance: [readiness index](docs/READINESS_CURRENT.md).
+
 ![Tideway landing page](evidence/screens/00-landing.png)
 
 ## Two-minute tour for judges

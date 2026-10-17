@@ -1,0 +1,23 @@
+# TideLM LoRA fine-tune of Qwen3-4B-Instruct-2507 (4-bit) with MLX on Apple Silicon.
+# Run: python3 -m mlx_lm lora --config tideway/ml/tidelm_lora.yaml
+model: "mlx-community/Qwen3-4B-Instruct-2507-4bit"
+train: true
+data: "data/tidelm"
+adapter_path: "models/tidelm-adapter"
+fine_tune_type: lora
+num_layers: 16
+batch_size: 4
+iters: 450
+learning_rate: 1.0e-4
+steps_per_report: 25
+steps_per_eval: 150
+val_batches: 25
+save_every: 150
+max_seq_length: 1024
+grad_checkpoint: true
+mask_prompt: true
+seed: 11
+lora_parameters:
+  rank: 16
+  scale: 20.0
+  dropout: 0.05
