@@ -1,0 +1,15 @@
+======================================================================
+ERROR: test_author_seal_sha256_field_is_verified_without_changing_the_seal (tests.test_screening_v7.ScreeningEvidence.test_author_seal_sha256_field_is_verified_without_changing_the_seal)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_screening_v7.py", line 60, in test_author_seal_sha256_field_is_verified_without_changing_the_seal
+    self.assertEqual(verify_author_seal(p, seal), value)
+                     ~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ashraf/Desktop/tideway/scripts/evaluate_screening_v7.py", line 44, in verify_author_seal
+    raise ValueError("Fresh fixture does not match the independent author seal.")
+ValueError: Fresh fixture does not match the independent author seal.
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.003s
+
+FAILED (errors=1)

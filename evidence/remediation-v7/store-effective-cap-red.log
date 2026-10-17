@@ -1,0 +1,13 @@
+======================================================================
+FAIL: test_store_records_effective_ceiling_not_a_wider_raw_producer_value (tests.test_owner_constraints.OwnerConstraints.test_store_records_effective_ceiling_not_a_wider_raw_producer_value)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 109, in test_store_records_effective_ceiling_not_a_wider_raw_producer_value
+    self.assertEqual(fresh["owner_constraints"]["max_discount_bps"], 300)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1000 != 300
+
+----------------------------------------------------------------------
+Ran 14 tests in 2.770s
+
+FAILED (failures=1)

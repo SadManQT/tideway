@@ -1,0 +1,11 @@
+test_document_addressed_to_us_is_a_bill (test_vision.Dates.test_document_addressed_to_us_is_a_bill) ... ok
+test_written_dates_become_iso_and_ambiguous_ones_are_flagged (test_vision.Dates.test_written_dates_become_iso_and_ambiguous_ones_are_flagged) ... ok
+test_drafts_and_injection_written_on_the_photo (test_vision.Vision.test_drafts_and_injection_written_on_the_photo) ... ok
+test_hostile_or_invalid_files_never_reach_the_model (test_vision.Vision.test_hostile_or_invalid_files_never_reach_the_model) ... ok
+test_photo_is_downscaled_and_metadata_removed (test_vision.Vision.test_photo_is_downscaled_and_metadata_removed) ... ok
+test_unreadable_output_is_a_clear_error (test_vision.Vision.test_unreadable_output_is_a_clear_error) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.565s
+
+OK

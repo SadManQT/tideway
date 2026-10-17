@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/scripts/evaluate_screening_v7.py", line 143, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/Users/ashraf/Desktop/tideway/scripts/evaluate_screening_v7.py", line 86, in main
+    author = verify_author_seal(fixture, ROOT / "evidence/screening-v7/holdout-author-seal.json") if args.phase == "fresh" else None
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashraf/Desktop/tideway/scripts/evaluate_screening_v7.py", line 44, in verify_author_seal
+    raise ValueError("Fresh fixture does not match the independent author seal.")
+ValueError: Fresh fixture does not match the independent author seal.

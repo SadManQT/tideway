@@ -1,0 +1,1148 @@
+{
+  "version": "planner-risk-remediation-v5",
+  "run_at_utc": "2026-10-17T14:20:42+00:00",
+  "source_tree_sha256": "94cff924563a1f44eb9a6567f705d6e2587bd36262d219476b25ac356c969297",
+  "source_unchanged_during_run": true,
+  "evaluation_script_sha256": "6f4439618cb62689a647be0c54602b710ac05f9993a3dd9a64de580857b20ec2",
+  "fixture_sha256": "0fd9b482d1a13bb91d5126ab751db2b4eb019c3fcefee8d1063c47f0460d4a46",
+  "historical_baseline": {
+    "path": "baseline-scenarios.json",
+    "sha256": "f8dab1814eae6afab2fed702a87b0b5ef77bbe1994121dcb965c38df4e09d6f2",
+    "original_run_at_utc": "2026-10-17T05:56:43+00:00",
+    "comparison_note": "Immutable recorded outcomes, not a rerun of old source. Changes in model draw alignment and final-estimate sampling are included; do not attribute the entire difference solely to candidate selection. Timings across those runs are not a controlled speed comparison."
+  },
+  "machine": {
+    "python": "3.14.6",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "rows": [
+    {
+      "id": "D06",
+      "historical_observation": {
+        "risk_after_400_runs": 0.185,
+        "executed_cost_minor": 2761,
+        "trace": [
+          {
+            "step": "unauthorised_execution",
+            "blocked": true
+          },
+          {
+            "step": "human_approval",
+            "attempt": 1,
+            "approvers": [
+              "eval-accountant",
+              "eval-owner"
+            ],
+            "dual_required": true,
+            "risk": {
+              "probability_breach_after": 0.075,
+              "risk_target": 0.1,
+              "acknowledgement_required": false
+            },
+            "scripted_risk_acknowledged_by": []
+          },
+          {
+            "step": "simulated_negotiation",
+            "status": "countered",
+            "replies": [
+              "countered"
+            ]
+          },
+          {
+            "step": "human_approval",
+            "attempt": 2,
+            "approvers": [
+              "eval-accountant",
+              "eval-owner"
+            ],
+            "dual_required": true,
+            "risk": {
+              "probability_breach_after": 0.16,
+              "risk_target": 0.1,
+              "acknowledgement_required": true
+            },
+            "scripted_risk_acknowledged_by": [
+              "eval-accountant",
+              "eval-owner"
+            ]
+          },
+          {
+            "step": "simulated_negotiation",
+            "status": "ready",
+            "replies": [
+              "accepted"
+            ]
+          }
+        ]
+      },
+      "current_workflow": {
+        "id": "D06",
+        "split": "development",
+        "condition": "A supplier counters fourteen days to seven days, which still bridges cash",
+        "features": [
+          "supplier_counter",
+          "fresh_approval"
+        ],
+        "currency": "SGD",
+        "expected_class": "feasible_rescue",
+        "seed": 214847492322439,
+        "trace": [
+          {
+            "step": "unauthorised_execution",
+            "blocked": true
+          },
+          {
+            "step": "human_approval",
+            "attempt": 1,
+            "approvers": [
+              "eval-accountant",
+              "eval-owner"
+            ],
+            "dual_required": true,
+            "risk": {
+              "probability_breach_after": 0.0767,
+              "risk_target": 0.1,
+              "acknowledgement_required": false
+            },
+            "scripted_risk_acknowledged_by": []
+          },
+          {
+            "step": "simulated_negotiation",
+            "status": "countered",
+            "replies": [
+              "countered"
+            ]
+          },
+          {
+            "step": "human_approval",
+            "attempt": 2,
+            "approvers": [
+              "eval-accountant",
+              "eval-owner"
+            ],
+            "dual_required": true,
+            "risk": {
+              "probability_breach_after": 0.0,
+              "risk_target": 0.1,
+              "acknowledgement_required": false
+            },
+            "scripted_risk_acknowledged_by": []
+          },
+          {
+            "step": "simulated_negotiation",
+            "status": "countered",
+            "replies": [
+              "accepted",
+              "countered"
+            ]
+          },
+          {
+            "step": "human_approval",
+            "attempt": 3,
+            "approvers": [
+              "eval-accountant",
+              "eval-owner"
+            ],
+            "dual_required": true,
+            "risk": {
+              "probability_breach_after": 0.0,
+              "risk_target": 0.1,
+              "acknowledgement_required": false
+            },
+            "scripted_risk_acknowledged_by": []
+          },
+          {
+            "step": "simulated_negotiation",
+            "status": "ready",
+            "replies": [
+              "accepted",
+              "accepted"
+            ]
+          }
+        ],
+        "executed": true,
+        "read_back_verified": true,
+        "idempotent_replay_verified": true,
+        "unauthorised_state_changes": 0,
+        "proposed_cost_minor": 34761,
+        "executed_cost_minor": 34761,
+        "before": {
+          "remaining_shortfall_minor": 900000,
+          "payroll_funded": true,
+          "minimum_cash_minor": -700000,
+          "probability_reserve_breach": 1.0,
+          "probability_payroll_unfunded": 0.0,
+          "simulation_runs": 400
+        },
+        "input_sizes": {
+          "transactions": 0,
+          "invoices": 1,
+          "bills": 1
+        },
+        "horizon_days": 34,
+        "search": {
+          "records_considered": 2,
+          "combinations_evaluated": 19,
+          "robustness_checked": 17,
+          "monte_carlo_runs_each": 400,
+          "candidate_selection": {
+            "method": "cost, stressed-cash resilience and likely-cash headroom",
+            "feasible_candidates": 17,
+            "limit": 40,
+            "stress_quantiles": [
+              0.8,
+              0.95
+            ],
+            "all_feasible_checked": true
+          },
+          "independent_finalists_checked": 4,
+          "validation_runs_each": 1200,
+          "validation_seed": 21008390177230,
+          "required_actions": 0,
+          "objective": "Hold the reserve floor every day through the planning horizon with payroll funded; prefer bundles that breach in at most 2 of 20 simulated futures; then minimise economic cost and the number of counterparties asked."
+        },
+        "initial_selected_actions": [
+          {
+            "action_id": "defer-B1-14d-1200000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B1",
+            "counterparty": "Seven Day Supply",
+            "counterparty_kind": "supplier",
+            "amount_minor": 1200000,
+            "bill_amount_minor": 1200000,
+            "currency": "SGD",
+            "from_date": "2026-10-05",
+            "to_date": "2026-10-19",
+            "days": 14,
+            "economic_cost_minor": 5523,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B1.payee",
+              "amount_minor": "ledger:bills/B1.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B1.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B1",
+              "amount_minor": 1200000,
+              "from_date": "2026-10-05",
+              "to_date": "2026-10-19"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing.",
+            "message": "Hello Seven Day Supply, this is A supplier counters fourteen days to seven days, which still bridges cash. Could we move SGD 12,000 of bill B1 from 5 Oct 2026 to 19 Oct 2026? The rest of the bill stays on schedule. Please reply to accept or propose different terms.",
+            "shortfall_without_minor": 900000
+          }
+        ],
+        "initial_plan_feasible": true,
+        "blocked_bills": {},
+        "proposed_remaining_shortfall_minor": 0,
+        "proposed_probability_reserve_breach": 0.0,
+        "risk_target_met": true,
+        "observed_class": "feasible_rescue",
+        "reason": "Approved, consented, executed schedule changes and verified read-back.",
+        "executed_actions": [
+          {
+            "action_id": "defer-B1-14d-1200000-counter",
+            "adjustment": {
+              "amount_minor": 1200000,
+              "bill_id": "B1",
+              "from_date": "2026-10-05",
+              "kind": "bill_deferral",
+              "to_date": "2026-10-12"
+            },
+            "amount_minor": 1200000,
+            "apr_equivalent_bps": 1200,
+            "bill_amount_minor": 1200000,
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing.",
+            "counter_offer_from": "Seven Day Supply",
+            "counterparty": "Seven Day Supply",
+            "counterparty_kind": "supplier",
+            "currency": "SGD",
+            "days": 7,
+            "economic_cost_minor": 2761,
+            "executable": true,
+            "fee_minor": 0,
+            "from_date": "2026-10-05",
+            "message": "Hello Seven Day Supply, this is A supplier counters fourteen days to seven days, which still bridges cash. Could we move SGD 12,000 of bill B1 from 5 Oct 2026 to 12 Oct 2026? The rest of the bill stays on schedule. Please reply to accept or propose different terms.",
+            "provenance": {
+              "amount_minor": "ledger:bills/B1.amount_minor x 100% (capped by policy)",
+              "counterparty": "ledger:bills/B1.payee",
+              "from_date": "ledger:bills/B1.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "record_id": "B1",
+            "record_kind": "bill",
+            "requires_consent": true,
+            "to_date": "2026-10-12",
+            "type": "supplier_deferral"
+          },
+          {
+            "action_id": "offer-I1-100bps-counter",
+            "adjustment": {
+              "amount_minor": 1568000,
+              "face_minor": 1600000,
+              "invoice_id": "I1",
+              "kind": "invoice_early_payment",
+              "to_date": "2026-10-04"
+            },
+            "amount_minor": 1568000,
+            "apr_equivalent_bps": 10641,
+            "cost_note": "A 1% discount for paying 7 days earlier costs about 53% a year.",
+            "counterparty": "Local Market",
+            "counterparty_kind": "customer",
+            "currency": "SGD",
+            "days": 7,
+            "discount_bps": 200,
+            "discount_minor": 32000,
+            "economic_cost_minor": 32000,
+            "executable": true,
+            "face_minor": 1600000,
+            "fee_minor": 0,
+            "from_date": "2026-10-11",
+            "message": "Hello Local Market, this is A supplier counters fourteen days to seven days, which still bridges cash. If invoice I1 (SGD 16,000) is paid by 4 Oct 2026, we will accept SGD 15,680 as full settlement (2% early-payment discount).",
+            "provenance": {
+              "counterparty": "ledger:invoices/I1.customer",
+              "discount_bps": "policy:max_discount_bps=300",
+              "face_minor": "ledger:invoices/I1.amount_minor",
+              "to_date": "computed: one day before the first breach"
+            },
+            "record_id": "I1",
+            "record_kind": "invoice",
+            "requires_consent": true,
+            "to_date": "2026-10-04",
+            "type": "early_payment_offer",
+            "counter_offer_from": "Local Market"
+          }
+        ],
+        "after": {
+          "remaining_shortfall_minor": 0,
+          "payroll_funded": true,
+          "minimum_cash_minor": 500000,
+          "probability_reserve_breach": 0.0,
+          "probability_payroll_unfunded": 0.0,
+          "simulation_runs": 400
+        },
+        "audit_hash_chain_valid": true,
+        "safety_pass": true,
+        "expectation_met": true,
+        "workflow_success": true
+      },
+      "selected_executed_plan_fresh_draws": {
+        "per_seed": [
+          {
+            "seed": 20261017,
+            "runs": 10000,
+            "probability_breach": 0.0,
+            "milliseconds": 60.75040000723675
+          },
+          {
+            "seed": 50737,
+            "runs": 10000,
+            "probability_breach": 0.0,
+            "milliseconds": 69.68990000314079
+          },
+          {
+            "seed": 91729,
+            "runs": 10000,
+            "probability_breach": 0.0,
+            "milliseconds": 62.500600004568696
+          }
+        ],
+        "total_runs": 30000,
+        "mean_probability_breach": 0.0,
+        "approximate_95_percent_sampling_interval": [
+          1.3552527156068805e-20,
+          0.00012803693777666122
+        ],
+        "interval_note": "Approximate Wilson binomial sampling interval from rounded simulation fractions; excludes model error, parameter uncertainty and real-world agreement reliability."
+      },
+      "planner_timing": {
+        "scope": "planner only, including candidate screening, search Monte Carlo and independent finalist validation; excludes workflow approvals, database and baseline simulation",
+        "warmups_discarded": 1,
+        "repetitions": 3,
+        "durations_ms": [
+          80.93419999931939,
+          82.76259998092428,
+          83.9230999990832
+        ],
+        "median_ms": 82.76259998092428,
+        "search": {
+          "records_considered": 2,
+          "combinations_evaluated": 19,
+          "robustness_checked": 17,
+          "monte_carlo_runs_each": 400,
+          "candidate_selection": {
+            "method": "cost, stressed-cash resilience and likely-cash headroom",
+            "feasible_candidates": 17,
+            "limit": 40,
+            "stress_quantiles": [
+              0.8,
+              0.95
+            ],
+            "all_feasible_checked": true
+          },
+          "independent_finalists_checked": 4,
+          "validation_runs_each": 1200,
+          "validation_seed": 21008390177230,
+          "required_actions": 0,
+          "objective": "Hold the reserve floor every day through the planning horizon with payroll funded; prefer bundles that breach in at most 2 of 20 simulated futures; then minimise economic cost and the number of counterparties asked."
+        }
+      }
+    },
+    {
+      "id": "H11",
+      "historical_observation": {
+        "risk_after_400_runs": 0.19,
+        "executed_cost_minor": 3680,
+        "trace": [
+          {
+            "step": "unauthorised_execution",
+            "blocked": true
+          },
+          {
+            "step": "human_approval",
+            "attempt": 1,
+            "approvers": [
+              "eval-accountant",
+              "eval-owner"
+            ],
+            "dual_required": true,
+            "risk": {
+              "probability_breach_after": 0.1725,
+              "risk_target": 0.1,
+              "acknowledgement_required": true
+            },
+            "scripted_risk_acknowledged_by": [
+              "eval-accountant",
+              "eval-owner"
+            ]
+          },
+          {
+            "step": "simulated_negotiation",
+            "status": "ready",
+            "replies": [
+              "accepted",
+              "accepted",
+              "accepted",
+              "accepted"
+            ]
+          }
+        ]
+      },
+      "current_workflow": {
+        "id": "H11",
+        "split": "held_out",
+        "condition": "Several small suppliers and staggered receipts require a combined search",
+        "features": [
+          "multiple_suppliers",
+          "search_limit",
+          "combined_actions"
+        ],
+        "currency": "MYR",
+        "expected_class": "feasible_rescue",
+        "seed": 165507348390842,
+        "trace": [
+          {
+            "step": "unauthorised_execution",
+            "blocked": true
+          },
+          {
+            "step": "human_approval",
+            "attempt": 1,
+            "approvers": [
+              "eval-accountant",
+              "eval-owner"
+            ],
+            "dual_required": true,
+            "risk": {
+              "probability_breach_after": 0.1283,
+              "risk_target": 0.1,
+              "acknowledgement_required": true
+            },
+            "scripted_risk_acknowledged_by": [
+              "eval-accountant",
+              "eval-owner"
+            ]
+          },
+          {
+            "step": "simulated_negotiation",
+            "status": "ready",
+            "replies": [
+              "accepted",
+              "accepted",
+              "accepted",
+              "accepted"
+            ]
+          }
+        ],
+        "executed": true,
+        "read_back_verified": true,
+        "idempotent_replay_verified": true,
+        "unauthorised_state_changes": 0,
+        "proposed_cost_minor": 7364,
+        "executed_cost_minor": 7364,
+        "before": {
+          "remaining_shortfall_minor": 1500000,
+          "payroll_funded": true,
+          "minimum_cash_minor": -1400000,
+          "probability_reserve_breach": 1.0,
+          "probability_payroll_unfunded": 0.0,
+          "simulation_runs": 400
+        },
+        "input_sizes": {
+          "transactions": 0,
+          "invoices": 2,
+          "bills": 6
+        },
+        "horizon_days": 34,
+        "search": {
+          "records_considered": 6,
+          "combinations_evaluated": 15624,
+          "robustness_checked": 40,
+          "monte_carlo_runs_each": 400,
+          "candidate_selection": {
+            "method": "cost, stressed-cash resilience and likely-cash headroom",
+            "feasible_candidates": 6960,
+            "limit": 40,
+            "stress_quantiles": [
+              0.8,
+              0.95
+            ],
+            "all_feasible_checked": false,
+            "slots": {
+              "cost": 12,
+              "stress": 20,
+              "headroom": 8
+            }
+          },
+          "independent_finalists_checked": 4,
+          "validation_runs_each": 1200,
+          "validation_seed": 157146619968876,
+          "required_actions": 0,
+          "objective": "Hold the reserve floor every day through the planning horizon with payroll funded; prefer bundles that breach in at most 2 of 20 simulated futures; then minimise economic cost and the number of counterparties asked."
+        },
+        "initial_selected_actions": [
+          {
+            "action_id": "defer-B3-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B3",
+            "counterparty": "Plastic Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-07",
+            "to_date": "2026-10-21",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B3.payee",
+              "amount_minor": "ledger:bills/B3.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B3.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B3",
+              "amount_minor": 400000,
+              "from_date": "2026-10-07",
+              "to_date": "2026-10-21"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing.",
+            "message": "Hello Plastic Components, this is Several small suppliers and staggered receipts require a combined search. Could we move MYR 4,000 of bill B3 from 7 Oct 2026 to 21 Oct 2026? The rest of the bill stays on schedule. Please reply to accept or propose different terms.",
+            "shortfall_without_minor": 300000
+          },
+          {
+            "action_id": "defer-B4-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B4",
+            "counterparty": "Rubber Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-08",
+            "to_date": "2026-10-22",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B4.payee",
+              "amount_minor": "ledger:bills/B4.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B4.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B4",
+              "amount_minor": 400000,
+              "from_date": "2026-10-08",
+              "to_date": "2026-10-22"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing.",
+            "message": "Hello Rubber Components, this is Several small suppliers and staggered receipts require a combined search. Could we move MYR 4,000 of bill B4 from 8 Oct 2026 to 22 Oct 2026? The rest of the bill stays on schedule. Please reply to accept or propose different terms.",
+            "shortfall_without_minor": 300000
+          },
+          {
+            "action_id": "defer-B5-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B5",
+            "counterparty": "Wood Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-09",
+            "to_date": "2026-10-23",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B5.payee",
+              "amount_minor": "ledger:bills/B5.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B5.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B5",
+              "amount_minor": 400000,
+              "from_date": "2026-10-09",
+              "to_date": "2026-10-23"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing.",
+            "message": "Hello Wood Components, this is Several small suppliers and staggered receipts require a combined search. Could we move MYR 4,000 of bill B5 from 9 Oct 2026 to 23 Oct 2026? The rest of the bill stays on schedule. Please reply to accept or propose different terms.",
+            "shortfall_without_minor": 300000
+          },
+          {
+            "action_id": "defer-B6-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B6",
+            "counterparty": "Textile Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-10",
+            "to_date": "2026-10-24",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B6.payee",
+              "amount_minor": "ledger:bills/B6.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B6.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B6",
+              "amount_minor": 400000,
+              "from_date": "2026-10-10",
+              "to_date": "2026-10-24"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing.",
+            "message": "Hello Textile Components, this is Several small suppliers and staggered receipts require a combined search. Could we move MYR 4,000 of bill B6 from 10 Oct 2026 to 24 Oct 2026? The rest of the bill stays on schedule. Please reply to accept or propose different terms.",
+            "shortfall_without_minor": 300000
+          }
+        ],
+        "initial_plan_feasible": true,
+        "blocked_bills": {},
+        "proposed_remaining_shortfall_minor": 0,
+        "proposed_probability_reserve_breach": 0.1283,
+        "risk_target_met": false,
+        "observed_class": "feasible_rescue",
+        "reason": "Approved, consented, executed schedule changes and verified read-back.",
+        "executed_actions": [
+          {
+            "action_id": "defer-B3-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B3",
+            "counterparty": "Plastic Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-07",
+            "to_date": "2026-10-21",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B3.payee",
+              "amount_minor": "ledger:bills/B3.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B3.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B3",
+              "amount_minor": 400000,
+              "from_date": "2026-10-07",
+              "to_date": "2026-10-21"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing.",
+            "message": "Hello Plastic Components, this is Several small suppliers and staggered receipts require a combined search. Could we move MYR 4,000 of bill B3 from 7 Oct 2026 to 21 Oct 2026? The rest of the bill stays on schedule. Please reply to accept or propose different terms.",
+            "shortfall_without_minor": 300000
+          },
+          {
+            "action_id": "defer-B4-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B4",
+            "counterparty": "Rubber Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-08",
+            "to_date": "2026-10-22",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B4.payee",
+              "amount_minor": "ledger:bills/B4.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B4.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B4",
+              "amount_minor": 400000,
+              "from_date": "2026-10-08",
+              "to_date": "2026-10-22"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing.",
+            "message": "Hello Rubber Components, this is Several small suppliers and staggered receipts require a combined search. Could we move MYR 4,000 of bill B4 from 8 Oct 2026 to 22 Oct 2026? The rest of the bill stays on schedule. Please reply to accept or propose different terms.",
+            "shortfall_without_minor": 300000
+          },
+          {
+            "action_id": "defer-B5-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B5",
+            "counterparty": "Wood Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-09",
+            "to_date": "2026-10-23",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B5.payee",
+              "amount_minor": "ledger:bills/B5.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B5.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B5",
+              "amount_minor": 400000,
+              "from_date": "2026-10-09",
+              "to_date": "2026-10-23"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing.",
+            "message": "Hello Wood Components, this is Several small suppliers and staggered receipts require a combined search. Could we move MYR 4,000 of bill B5 from 9 Oct 2026 to 23 Oct 2026? The rest of the bill stays on schedule. Please reply to accept or propose different terms.",
+            "shortfall_without_minor": 300000
+          },
+          {
+            "action_id": "defer-B6-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B6",
+            "counterparty": "Textile Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-10",
+            "to_date": "2026-10-24",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B6.payee",
+              "amount_minor": "ledger:bills/B6.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B6.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B6",
+              "amount_minor": 400000,
+              "from_date": "2026-10-10",
+              "to_date": "2026-10-24"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing.",
+            "message": "Hello Textile Components, this is Several small suppliers and staggered receipts require a combined search. Could we move MYR 4,000 of bill B6 from 10 Oct 2026 to 24 Oct 2026? The rest of the bill stays on schedule. Please reply to accept or propose different terms.",
+            "shortfall_without_minor": 300000
+          }
+        ],
+        "after": {
+          "remaining_shortfall_minor": 0,
+          "payroll_funded": true,
+          "minimum_cash_minor": 200000,
+          "probability_reserve_breach": 0.1275,
+          "probability_payroll_unfunded": 0.0,
+          "simulation_runs": 400
+        },
+        "audit_hash_chain_valid": true,
+        "safety_pass": true,
+        "expectation_met": true,
+        "workflow_success": true
+      },
+      "selected_executed_plan_fresh_draws": {
+        "per_seed": [
+          {
+            "seed": 20261017,
+            "runs": 10000,
+            "probability_breach": 0.1194,
+            "milliseconds": 360.4359999881126
+          },
+          {
+            "seed": 50737,
+            "runs": 10000,
+            "probability_breach": 0.1171,
+            "milliseconds": 299.8366999963764
+          },
+          {
+            "seed": 91729,
+            "runs": 10000,
+            "probability_breach": 0.1168,
+            "milliseconds": 353.13949998817407
+          }
+        ],
+        "total_runs": 30000,
+        "mean_probability_breach": 0.11776666666666667,
+        "approximate_95_percent_sampling_interval": [
+          0.11416798608951206,
+          0.12146322721485359
+        ],
+        "interval_note": "Approximate Wilson binomial sampling interval from rounded simulation fractions; excludes model error, parameter uncertainty and real-world agreement reliability."
+      },
+      "planner_timing": {
+        "scope": "planner only, including candidate screening, search Monte Carlo and independent finalist validation; excludes workflow approvals, database and baseline simulation",
+        "warmups_discarded": 1,
+        "repetitions": 3,
+        "durations_ms": [
+          961.7009999928996,
+          978.3697999955621,
+          947.8991000214592
+        ],
+        "median_ms": 961.7009999928996,
+        "search": {
+          "records_considered": 6,
+          "combinations_evaluated": 15624,
+          "robustness_checked": 40,
+          "monte_carlo_runs_each": 400,
+          "candidate_selection": {
+            "method": "cost, stressed-cash resilience and likely-cash headroom",
+            "feasible_candidates": 6960,
+            "limit": 40,
+            "stress_quantiles": [
+              0.8,
+              0.95
+            ],
+            "all_feasible_checked": false,
+            "slots": {
+              "cost": 12,
+              "stress": 20,
+              "headroom": 8
+            }
+          },
+          "independent_finalists_checked": 4,
+          "validation_runs_each": 1200,
+          "validation_seed": 157146619968876,
+          "required_actions": 0,
+          "objective": "Hold the reserve floor every day through the planning horizon with payroll funded; prefer bundles that breach in at most 2 of 20 simulated futures; then minimise economic cost and the number of counterparties asked."
+        }
+      },
+      "maximal_permitted_deferral_check": {
+        "actions": [
+          {
+            "action_id": "defer-B1-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B1",
+            "counterparty": "Glass Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-05",
+            "to_date": "2026-10-19",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B1.payee",
+              "amount_minor": "ledger:bills/B1.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B1.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B1",
+              "amount_minor": 400000,
+              "from_date": "2026-10-05",
+              "to_date": "2026-10-19"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing."
+          },
+          {
+            "action_id": "defer-B2-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B2",
+            "counterparty": "Metal Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-06",
+            "to_date": "2026-10-20",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B2.payee",
+              "amount_minor": "ledger:bills/B2.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B2.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B2",
+              "amount_minor": 400000,
+              "from_date": "2026-10-06",
+              "to_date": "2026-10-20"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing."
+          },
+          {
+            "action_id": "defer-B3-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B3",
+            "counterparty": "Plastic Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-07",
+            "to_date": "2026-10-21",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B3.payee",
+              "amount_minor": "ledger:bills/B3.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B3.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B3",
+              "amount_minor": 400000,
+              "from_date": "2026-10-07",
+              "to_date": "2026-10-21"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing."
+          },
+          {
+            "action_id": "defer-B4-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B4",
+            "counterparty": "Rubber Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-08",
+            "to_date": "2026-10-22",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B4.payee",
+              "amount_minor": "ledger:bills/B4.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B4.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B4",
+              "amount_minor": 400000,
+              "from_date": "2026-10-08",
+              "to_date": "2026-10-22"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing."
+          },
+          {
+            "action_id": "defer-B5-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B5",
+            "counterparty": "Wood Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-09",
+            "to_date": "2026-10-23",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B5.payee",
+              "amount_minor": "ledger:bills/B5.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B5.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B5",
+              "amount_minor": 400000,
+              "from_date": "2026-10-09",
+              "to_date": "2026-10-23"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing."
+          },
+          {
+            "action_id": "defer-B6-14d-400000",
+            "type": "supplier_deferral",
+            "record_kind": "bill",
+            "record_id": "B6",
+            "counterparty": "Textile Components",
+            "counterparty_kind": "supplier",
+            "amount_minor": 400000,
+            "bill_amount_minor": 400000,
+            "currency": "MYR",
+            "from_date": "2026-10-10",
+            "to_date": "2026-10-24",
+            "days": 14,
+            "economic_cost_minor": 1841,
+            "fee_minor": 0,
+            "apr_equivalent_bps": 1200,
+            "requires_consent": true,
+            "executable": true,
+            "provenance": {
+              "counterparty": "ledger:bills/B6.payee",
+              "amount_minor": "ledger:bills/B6.amount_minor x 100% (capped by policy)",
+              "from_date": "ledger:bills/B6.due_date",
+              "to_date": "policy:max_deferral_days=14"
+            },
+            "adjustment": {
+              "kind": "bill_deferral",
+              "bill_id": "B6",
+              "amount_minor": 400000,
+              "from_date": "2026-10-10",
+              "to_date": "2026-10-24"
+            },
+            "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing."
+          }
+        ],
+        "risk": {
+          "per_seed": [
+            {
+              "seed": 20261017,
+              "runs": 10000,
+              "probability_breach": 0.1194,
+              "milliseconds": 329.2803000076674
+            },
+            {
+              "seed": 50737,
+              "runs": 10000,
+              "probability_breach": 0.1171,
+              "milliseconds": 321.841900004074
+            },
+            {
+              "seed": 91729,
+              "runs": 10000,
+              "probability_breach": 0.1168,
+              "milliseconds": 281.28089997335337
+            }
+          ],
+          "total_runs": 30000,
+          "mean_probability_breach": 0.11776666666666667,
+          "approximate_95_percent_sampling_interval": [
+            0.11416798608951206,
+            0.12146322721485359
+          ],
+          "interval_note": "Approximate Wilson binomial sampling interval from rounded simulation fractions; excludes model error, parameter uncertainty and real-world agreement reliability."
+        },
+        "dominance_argument": "For this fixed ledger, every open obligation is an ordinary reschedulable bill, discounts are disabled, there are no other executable cash-generating actions, all six full-amount fourteen-day deferrals fit the daily cap and horizon. Moving each outflow later by its largest permitted amount never lowers any daily balance relative to a shorter/partial deferral. Thus maximal deferral weakly dominates every available timing bundle on every shared receipt-date path. Its residual risk cannot be removed by selecting a different permitted combination.",
+        "scope": "A model-conditional structural argument for this disclosed synthetic ledger and policy. It does not prove model calibration or guaranteed real-world risk."
+      }
+    }
+  ],
+  "limits": {
+    "record_groups": 6,
+    "search_monte_carlo_candidates": 40,
+    "independent_finalists": 4,
+    "search_runs": 400,
+    "finalist_runs": 1200
+  },
+  "limitations": [
+    "Known disclosed synthetic cases reused after inspecting failures; not fresh held-out performance.",
+    "Receipt timing is uncertain; accepted early-payment agreements are fixed in the sandbox simulation. Their real-world reliability is not measured.",
+    "Fresh seeds reduce Monte Carlo sampling noise, not TidePay model error or unmodelled business risks.",
+    "Below-target estimates are not guarantees; above-target approvals still require exact bound residual-risk acknowledgement from each approver.",
+    "No real money, genuine counterparties, model inference or external services tested."
+  ]
+}

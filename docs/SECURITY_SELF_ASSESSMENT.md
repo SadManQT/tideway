@@ -71,6 +71,13 @@ Latest run: **30/30 cases pass (5 task cases, 25 attack cases, 0 attacks not blo
 
 ## 4. Web-layer controls
 
+Owner discount instructions are checked during replacement creation, approval
+and execution, alongside policy caps. Replanning cannot silently reset a 1%
+owner ceiling to a 3% policy ceiling or change the owner's ranking preference.
+Old plans with missing instructions fail closed to a fresh proposal; existing
+records are not destructively migrated. Residual-risk acknowledgement remains
+separate from economic constraints and cannot waive a discount ceiling.
+
 Loopback bind; Host and Origin allow-lists; CSRF token on every write; `HttpOnly; SameSite=Strict` cookie; JSON-only bodies with a 2 MB cap and per-endpoint field allow-lists; role checks; token-bucket rate limits; CSP `default-src 'none'`, `X-Frame-Options: DENY`, `nosniff`, `no-referrer`, `no-store`; internal errors never returned to the client; malformed requests (bad Content-Length, deeply nested JSON, non-ASCII tokens) get 4xx, not 500; anonymous requests never write audit rows or trip the breaker; CSV export neutralises formula cells (and a Tideway export re-imports unchanged).
 
 ## 5. Privacy
@@ -78,6 +85,12 @@ Loopback bind; Host and Origin allow-lists; CSRF token on every write; `HttpOnly
 Optional TideLM inference runs on the owner's machine: no question, record or extracted message leaves it. The deterministic local agent sends nothing anywhere either. The Inbox extractor receives the pasted message or photo locally because it must draft a record; it never receives an approval or execution capability, and nothing is saved until confirmation. In optional LLM mode (per-message consent) counterparty names are replaced with pseudonyms and record free text is never sent. Demo data is fictional. No secrets, passport scans or private customer data are included; the public team roster was supplied by the team; `.env` and `data/` are ignored.
 
 ## 6. Known risks and residual limitations
+
+Successor planning revalidates the parent mandate signature and exact signed
+plan hash before cancellation. Regression tests reproduce and block widened
+parent constraints, changed preferences and an invalid parent signature, with
+no partial cancellation or authorization consumption. A database writer who also
+controls the signing key remains outside this protection's threat boundary.
 
 1. **Demo-grade identity.** PINs and a local signing key stand in for real authentication and hardware-backed keys.
 2. **Privileged attacker.** Someone who can rewrite the database and both key files can forge history; the witness raises the bar but is not a ledger anchored outside the host.
@@ -177,3 +190,22 @@ Neither repair verifies a real lender, real account or loan approval.
 See `docs/INDEPENDENT_AUDIT.md` for the reproduced defects and measured limits.
 Actual compatible Qwen inference and browser checks remain separate from
 injected tests, weak unfamiliar-message screening and pending native models.
+
+## V7 local screening follow-up
+
+The fresh, separately AI-authored 48-message set used the already cached native
+MLX Qwen3 base without the planning LoRA. It detected 23/24 attacks; semantic
+precision was 23/26 (88.5%). Combined attack precision was 23/28 (82.1%).
+Broader warnings had 31 TP, 5 FP, 1 FN and 11 TN: 5/16 ordinary benign messages
+were warned (31.25% false positives). All 8/8 legitimate payment updates retained
+verification. There were no uncertain/error responses in this run.
+
+The missed attack was Hindi data exfiltration. Three reported/rejected quotations
+were semantic false positives, and two negated bypass messages retained rule
+warnings even when the model called them benign. These failures remain raw in
+`evidence/screening-v7/fresh/`; no tuning followed fresh observation. Targets
+were met on this small synthetic set, not established for real documents.
+Classifier scores do not validate the planning adapter or receipt model.
+Human review, PINs, exact risk acknowledgement and signed financial authority
+remain separate controls. See `docs/REMEDIATION_V7.md` for all failed development
+runs, scoring definitions, software/artifact hashes and latency.

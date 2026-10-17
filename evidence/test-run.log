@@ -29,22 +29,22 @@ test_currency (test_core.DomainTests.test_currency) ... ok
 test_hidden_unicode_is_stripped_and_flagged (test_core.DomainTests.test_hidden_unicode_is_stripped_and_flagged) ... ok
 test_injection_flags (test_core.DomainTests.test_injection_flags) ... ok
 test_money_is_exact_minor_units (test_core.DomainTests.test_money_is_exact_minor_units) ... ok
-test_cookie_flags (test_core.HttpTests.test_cookie_flags) ... [17/Oct/2026 13:33:48] "POST /api/session/login HTTP/1.1" 200 -
+test_cookie_flags (test_core.HttpTests.test_cookie_flags) ... [17/Oct/2026 20:30:02] "POST /api/session/login HTTP/1.1" 200 -
 ok
-test_csrf_origin_host (test_core.HttpTests.test_csrf_origin_host) ... [17/Oct/2026 13:33:48] "POST /api/session/login HTTP/1.1" 403 -
-[17/Oct/2026 13:33:48] "POST /api/session/login HTTP/1.1" 403 -
-[17/Oct/2026 13:33:48] "POST /api/session/login HTTP/1.1" 403 -
-[17/Oct/2026 13:33:48] "GET /api/config HTTP/1.1" 403 -
+test_csrf_origin_host (test_core.HttpTests.test_csrf_origin_host) ... [17/Oct/2026 20:30:02] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:02] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:02] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:02] "GET /api/config HTTP/1.1" 403 -
 ok
-test_dual_bundle_needs_typed_amount (test_core.HttpTests.test_dual_bundle_needs_typed_amount) ... [17/Oct/2026 13:33:49] "POST /api/session/login HTTP/1.1" 200 -
-[17/Oct/2026 13:33:49] "POST /api/plan/propose HTTP/1.1" 200 -
-[17/Oct/2026 13:33:49] "POST /api/plan/approve HTTP/1.1" 400 -
-[17/Oct/2026 13:33:49] "POST /api/plan/approve HTTP/1.1" 200 -
+test_dual_bundle_needs_typed_amount (test_core.HttpTests.test_dual_bundle_needs_typed_amount) ... [17/Oct/2026 20:30:02] "POST /api/session/login HTTP/1.1" 200 -
+[17/Oct/2026 20:30:02] "POST /api/plan/propose HTTP/1.1" 200 -
+[17/Oct/2026 20:30:02] "POST /api/plan/approve HTTP/1.1" 400 -
+[17/Oct/2026 20:30:02] "POST /api/plan/approve HTTP/1.1" 200 -
 ok
-test_requires_login (test_core.HttpTests.test_requires_login) ... [17/Oct/2026 13:33:49] "GET /api/dashboard?business_id=shapla-services HTTP/1.1" 401 -
+test_requires_login (test_core.HttpTests.test_requires_login) ... [17/Oct/2026 20:30:02] "GET /api/dashboard?business_id=shapla-services HTTP/1.1" 401 -
 ok
-test_viewer_cannot_propose (test_core.HttpTests.test_viewer_cannot_propose) ... [17/Oct/2026 13:33:49] "POST /api/session/login HTTP/1.1" 200 -
-[17/Oct/2026 13:33:49] "POST /api/plan/propose HTTP/1.1" 403 -
+test_viewer_cannot_propose (test_core.HttpTests.test_viewer_cannot_propose) ... [17/Oct/2026 20:30:02] "POST /api/session/login HTTP/1.1" 200 -
+[17/Oct/2026 20:30:02] "POST /api/plan/propose HTTP/1.1" 403 -
 ok
 test_compare_and_swap_concurrent_requests (test_demo_delay.DemoDelay.test_compare_and_swap_concurrent_requests) ... ok
 test_date_change_preserves_quarantine_and_supersedes_old_promise (test_demo_delay.DemoDelay.test_date_change_preserves_quarantine_and_supersedes_old_promise) ... ok
@@ -93,7 +93,7 @@ test_valid_download_replaces_corrupt_cache_only_after_verification (test_local_d
 ok
 test_verified_cache_is_used_without_network (test_local_demo_model.PinnedDownloads.test_verified_cache_is_used_without_network) ... Verified cached artifact.bin
 ok
-test_explicit_cache_and_profile_control_verified_file_and_server_alias (test_local_demo_model.ProfileSelection.test_explicit_cache_and_profile_control_verified_file_and_server_alias) ... Cache: C:\Users\User\AppData\Local\Temp\tmpyggt_141\explicit-cache
+test_explicit_cache_and_profile_control_verified_file_and_server_alias (test_local_demo_model.ProfileSelection.test_explicit_cache_and_profile_control_verified_file_and_server_alias) ... Cache: C:\Users\zxsha\AppData\Local\Temp\tmpuh67avn1\explicit-cache
 Model: larger-test-model; optional compatible backend, not TideLM.
 TIDEWAY_LOCAL_MODEL_URL=http://127.0.0.1:8790/v1
 TIDEWAY_LOCAL_TEXT_MODEL=larger-test-model
@@ -129,6 +129,24 @@ test_malformed_argument_shapes_are_validation_errors (test_model_guards.ModelPla
 test_malformed_plan_cannot_reach_tool_execution (test_model_guards.ModelPlanGuards.test_malformed_plan_cannot_reach_tool_execution) ... ok
 test_shallow_extra_expense_is_a_safe_refusal (test_model_guards.ModelPlanGuards.test_shallow_extra_expense_is_a_safe_refusal) ... ok
 test_valid_nested_arguments_still_execute (test_model_guards.ModelPlanGuards.test_valid_nested_arguments_still_execute) ... ok
+test_above_owner_cap_counter_is_rejected_without_consuming_mandate (test_owner_constraints.OwnerConstraints.test_above_owner_cap_counter_is_rejected_without_consuming_mandate) ... ok
+test_approval_rejects_faulty_producer_discount_above_stored_owner_cap (test_owner_constraints.OwnerConstraints.test_approval_rejects_faulty_producer_discount_above_stored_owner_cap) ... ok
+test_counter_rejects_parent_constraints_changed_after_signing (test_owner_constraints.OwnerConstraints.test_counter_rejects_parent_constraints_changed_after_signing) ... ok
+test_each_preference_survives_counter_then_refusal_replan (test_owner_constraints.OwnerConstraints.test_each_preference_survives_counter_then_refusal_replan) ... ok
+test_exact_owner_ceiling_counter_still_needs_fresh_approval (test_owner_constraints.OwnerConstraints.test_exact_owner_ceiling_counter_still_needs_fresh_approval) ... ok
+test_execution_rechecks_owner_ceiling_on_legacy_signed_terms (test_owner_constraints.OwnerConstraints.test_execution_rechecks_owner_ceiling_on_legacy_signed_terms) ... ok
+test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) ... ok
+test_legacy_plan_without_recorded_constraints_requires_new_owner_proposal (test_owner_constraints.OwnerConstraints.test_legacy_plan_without_recorded_constraints_requires_new_owner_proposal) ... ok
+test_replacement_rechecks_parent_mandate_signature (test_owner_constraints.OwnerConstraints.test_replacement_rechecks_parent_mandate_signature) ... ok
+test_replan_preserves_cap_preference_exclusions_and_provenance (test_owner_constraints.OwnerConstraints.test_replan_preserves_cap_preference_exclusions_and_provenance) ... ok
+test_replan_rejects_parent_preference_changed_after_signing (test_owner_constraints.OwnerConstraints.test_replan_rejects_parent_preference_changed_after_signing) ... ok
+test_store_records_effective_ceiling_not_a_wider_raw_producer_value (test_owner_constraints.OwnerConstraints.test_store_records_effective_ceiling_not_a_wider_raw_producer_value) ... ok
+test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions (test_owner_constraints.OwnerConstraints.test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions) ... ok
+test_store_rejects_a_replacement_that_widens_the_owner_cap (test_owner_constraints.OwnerConstraints.test_store_rejects_a_replacement_that_widens_the_owner_cap) ... ok
+test_zero_ceiling_is_retained_by_real_planning (test_owner_constraints.OwnerConstraints.test_zero_ceiling_is_retained_by_real_planning) ... ok
+test_zero_stricter_and_more_permissive_policy_do_not_widen_owner_ceiling (test_owner_constraints.OwnerConstraints.test_zero_stricter_and_more_permissive_policy_do_not_widen_owner_ceiling) ... ok
+test_browser_notice_does_not_round_an_above_target_probability_down_to_target (test_owner_constraints.RiskDisplayBoundaries.test_browser_notice_does_not_round_an_above_target_probability_down_to_target) ... ok
+test_exact_risk_target_and_rounding_do_not_supply_implicit_consent (test_owner_constraints.RiskDisplayBoundaries.test_exact_risk_target_and_rounding_do_not_supply_implicit_consent) ... ok
 test_only_supported_optional_nulls_are_in_generation_schema (test_plan_schema.PlanSchemaContract.test_only_supported_optional_nulls_are_in_generation_schema) ... ok
 test_risk_tools_require_empty_args_and_delays_are_name_to_integer_map (test_plan_schema.PlanSchemaContract.test_risk_tools_require_empty_args_and_delays_are_name_to_integer_map) ... ok
 test_schema_is_not_permission_even_if_server_ignores_it (test_plan_schema.PlanSchemaContract.test_schema_is_not_permission_even_if_server_ignores_it) ... ok
@@ -158,18 +176,36 @@ test_hypothetical_and_live_proposal_cannot_mix (test_reasoning_guards.ReasoningG
 test_no_gap_does_not_create_a_proposal_or_call_model_twice (test_reasoning_guards.ReasoningGuards.test_no_gap_does_not_create_a_proposal_or_call_model_twice) ... ok
 test_no_safe_plan_is_escalated_without_approval_claim (test_reasoning_guards.ReasoningGuards.test_no_safe_plan_is_escalated_without_approval_claim) ... ok
 test_output_and_call_budgets_prevent_execution (test_reasoning_guards.ReasoningGuards.test_output_and_call_budgets_prevent_execution) ... ok
+test_parser_accepts_qwen3_empty_reasoning_block (test_reasoning_guards.ReasoningGuards.test_parser_accepts_qwen3_empty_reasoning_block) ... ok
 test_parser_rejects_fragments_duplicates_constants_and_extra_fields (test_reasoning_guards.ReasoningGuards.test_parser_rejects_fragments_duplicates_constants_and_extra_fields) ... ok
 test_quarantined_names_and_text_never_enter_scoped_or_observed_model_context (test_reasoning_guards.ReasoningGuards.test_quarantined_names_and_text_never_enter_scoped_or_observed_model_context) ... ok
 test_rescue_followup_consumes_observed_tools_and_records_public_trace (test_reasoning_guards.ReasoningGuards.test_rescue_followup_consumes_observed_tools_and_records_public_trace) ... ok
 test_viewer_and_advise_permissions_block_proposal_before_reads (test_reasoning_guards.ReasoningGuards.test_viewer_and_advise_permissions_block_proposal_before_reads) ... ok
 test_whole_plan_names_are_validated_before_any_proposal (test_reasoning_guards.ReasoningGuards.test_whole_plan_names_are_validated_before_any_proposal) ... ok
-test_anonymous_errors_are_not_audited (test_regressions.HttpRegressions.test_anonymous_errors_are_not_audited) ... [17/Oct/2026 13:34:19] "POST /api/session/login HTTP/1.1" 400 -
+test_anonymous_errors_are_not_audited (test_regressions.HttpRegressions.test_anonymous_errors_are_not_audited) ... [17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 400 -
 ok
-test_malformed_requests_get_4xx (test_regressions.HttpRegressions.test_malformed_requests_get_4xx) ... [17/Oct/2026 13:34:19] "POST /api/session/login HTTP/1.1" 400 -
-[17/Oct/2026 13:34:19] "POST /api/session/login HTTP/1.1" 400 -
-[17/Oct/2026 13:34:19] "POST /api/session/login HTTP/1.1" 403 -
+test_malformed_requests_get_4xx (test_regressions.HttpRegressions.test_malformed_requests_get_4xx) ... [17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 400 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 400 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
 ok
-test_missing_static_file_is_404_not_dropped (test_regressions.HttpRegressions.test_missing_static_file_is_404_not_dropped) ... [17/Oct/2026 13:34:19] "GET /benchmarks/missing.json HTTP/1.1" 404 -
+test_missing_static_file_is_404_not_dropped (test_regressions.HttpRegressions.test_missing_static_file_is_404_not_dropped) ... [17/Oct/2026 20:30:28] "GET /benchmarks/missing.json HTTP/1.1" 404 -
+ok
+test_rejected_posts_deliver_403_without_reset_or_state_changes (test_regressions.HttpRegressions.test_rejected_posts_deliver_403_without_reset_or_state_changes) ... [17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:28] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:29] "POST /api/session/login HTTP/1.1" 403 -
+[17/Oct/2026 20:30:29] "POST /api/session/login HTTP/1.1" 403 -
 ok
 test_refilled_buckets_are_pruned (test_regressions.RateLimiterRegressions.test_refilled_buckets_are_pruned) ... ok
 test_advise_blocks_proposal_and_failed_replan_keeps_mandate (test_regressions.StoreRegressions.test_advise_blocks_proposal_and_failed_replan_keeps_mandate) ... ok
@@ -208,31 +244,31 @@ test_superseded_or_stale_plan_consent_cannot_be_reused (test_risk_acknowledgemen
 test_wrong_boolean_identity_hash_risk_target_and_extra_fields_are_refused (test_risk_acknowledgement.RiskAcknowledgement.test_wrong_boolean_identity_hash_risk_target_and_extra_fields_are_refused) ... ok
 test_existing_workspace_approval_rows_are_preserved_without_invented_consent (test_risk_acknowledgement.RiskSchemaMigration.test_existing_workspace_approval_rows_are_preserved_without_invented_consent) ... ok
 test_feedback_keeps_only_a_hash_of_the_question (test_saas.Feedback.test_feedback_keeps_only_a_hash_of_the_question) ... ok
-test_invite_join_role_and_seat_limit (test_saas.SaaS.test_invite_join_role_and_seat_limit) ... [17/Oct/2026 13:34:38] "POST /api/signup HTTP/1.1" 200 -
-[17/Oct/2026 13:34:38] "POST /api/team/invite HTTP/1.1" 200 -
-[17/Oct/2026 13:34:38] "POST /api/team/join HTTP/1.1" 200 -
-[17/Oct/2026 13:34:38] "POST /api/plan/propose HTTP/1.1" 403 -
-[17/Oct/2026 13:34:38] "POST /api/team/join HTTP/1.1" 400 -
-[17/Oct/2026 13:34:38] "POST /api/team/invite HTTP/1.1" 200 -
-[17/Oct/2026 13:34:38] "POST /api/team/invite HTTP/1.1" 400 -
-[17/Oct/2026 13:34:38] "POST /api/team/invite HTTP/1.1" 400 -
-[17/Oct/2026 13:34:38] "GET /api/team?business_id=kestrel-b-519c51 HTTP/1.1" 200 -
+test_invite_join_role_and_seat_limit (test_saas.SaaS.test_invite_join_role_and_seat_limit) ... [17/Oct/2026 20:30:41] "POST /api/signup HTTP/1.1" 200 -
+[17/Oct/2026 20:30:41] "POST /api/team/invite HTTP/1.1" 200 -
+[17/Oct/2026 20:30:41] "POST /api/team/join HTTP/1.1" 200 -
+[17/Oct/2026 20:30:41] "POST /api/plan/propose HTTP/1.1" 403 -
+[17/Oct/2026 20:30:41] "POST /api/team/join HTTP/1.1" 400 -
+[17/Oct/2026 20:30:41] "POST /api/team/invite HTTP/1.1" 200 -
+[17/Oct/2026 20:30:41] "POST /api/team/invite HTTP/1.1" 400 -
+[17/Oct/2026 20:30:41] "POST /api/team/invite HTTP/1.1" 400 -
+[17/Oct/2026 20:30:41] "GET /api/team?business_id=kestrel-b-6d8ebe HTTP/1.1" 200 -
 ok
-test_last_owner_cannot_be_removed_and_weak_pins_are_refused (test_saas.SaaS.test_last_owner_cannot_be_removed_and_weak_pins_are_refused) ... [17/Oct/2026 13:34:38] "POST /api/signup HTTP/1.1" 200 -
-[17/Oct/2026 13:34:38] "POST /api/team/remove HTTP/1.1" 400 -
-[17/Oct/2026 13:34:38] "POST /api/signup HTTP/1.1" 400 -
-[17/Oct/2026 13:34:38] "POST /api/signup HTTP/1.1" 400 -
-[17/Oct/2026 13:34:38] "POST /api/signup HTTP/1.1" 400 -
-[17/Oct/2026 13:34:38] "POST /api/signup HTTP/1.1" 400 -
-[17/Oct/2026 13:34:38] "POST /api/signup HTTP/1.1" 400 -
+test_last_owner_cannot_be_removed_and_weak_pins_are_refused (test_saas.SaaS.test_last_owner_cannot_be_removed_and_weak_pins_are_refused) ... [17/Oct/2026 20:30:41] "POST /api/signup HTTP/1.1" 200 -
+[17/Oct/2026 20:30:41] "POST /api/team/remove HTTP/1.1" 400 -
+[17/Oct/2026 20:30:41] "POST /api/signup HTTP/1.1" 400 -
+[17/Oct/2026 20:30:41] "POST /api/signup HTTP/1.1" 400 -
+[17/Oct/2026 20:30:41] "POST /api/signup HTTP/1.1" 400 -
+[17/Oct/2026 20:30:41] "POST /api/signup HTTP/1.1" 400 -
+[17/Oct/2026 20:30:41] "POST /api/signup HTTP/1.1" 400 -
 ok
-test_signup_creates_an_isolated_workspace (test_saas.SaaS.test_signup_creates_an_isolated_workspace) ... [17/Oct/2026 13:34:38] "POST /api/signup HTTP/1.1" 200 -
-[17/Oct/2026 13:34:38] "GET /api/config HTTP/1.1" 200 -
-[17/Oct/2026 13:34:38] "GET /api/dashboard?business_id=kestrel-a-c0af37 HTTP/1.1" 200 -
-[17/Oct/2026 13:34:38] "POST /api/session/login HTTP/1.1" 200 -
-[17/Oct/2026 13:34:38] "GET /api/dashboard?business_id=kestrel-a-c0af37 HTTP/1.1" 403 -
-[17/Oct/2026 13:34:38] "GET /api/dashboard?business_id=shapla-services HTTP/1.1" 403 -
-[17/Oct/2026 13:34:38] "POST /api/plan/propose HTTP/1.1" 403 -
+test_signup_creates_an_isolated_workspace (test_saas.SaaS.test_signup_creates_an_isolated_workspace) ... [17/Oct/2026 20:30:41] "POST /api/signup HTTP/1.1" 200 -
+[17/Oct/2026 20:30:41] "GET /api/config HTTP/1.1" 200 -
+[17/Oct/2026 20:30:41] "GET /api/dashboard?business_id=kestrel-a-73f749 HTTP/1.1" 200 -
+[17/Oct/2026 20:30:41] "POST /api/session/login HTTP/1.1" 200 -
+[17/Oct/2026 20:30:41] "GET /api/dashboard?business_id=kestrel-a-73f749 HTTP/1.1" 403 -
+[17/Oct/2026 20:30:41] "GET /api/dashboard?business_id=shapla-services HTTP/1.1" 403 -
+[17/Oct/2026 20:30:41] "POST /api/plan/propose HTTP/1.1" 403 -
 ok
 test_control_removal_and_implicit_substitution_compositions (test_screening_context.ContextualTextScreening.test_control_removal_and_implicit_substitution_compositions) ... ok
 test_control_substitution_and_indirect_exfiltration_categories (test_screening_context.ContextualTextScreening.test_control_substitution_and_indirect_exfiltration_categories) ... ok
@@ -249,6 +285,10 @@ test_callback_override_and_same_account_preserve_normal_flow (test_screening_con
 test_missing_account_cannot_hide_changed_destination (test_screening_context.MissingKnownPayeeAccount.test_missing_account_cannot_hide_changed_destination) ... ok
 test_missing_optional_key_is_also_reviewed (test_screening_context.MissingKnownPayeeAccount.test_missing_optional_key_is_also_reviewed) ... ok
 test_new_vendor_is_not_claimed_to_be_fraud (test_screening_context.MissingKnownPayeeAccount.test_new_vendor_is_not_claimed_to_be_fraud) ... ok
+test_explicit_training_quotes_are_not_live_payment_commands (test_screening_context_v7.ReportedBusinessText.test_explicit_training_quotes_are_not_live_payment_commands) ... ok
+test_ordinary_new_bank_holiday_is_not_payment_detail_verification (test_screening_context_v7.ReportedBusinessText.test_ordinary_new_bank_holiday_is_not_payment_detail_verification) ... ok
+test_request_to_apply_a_quoted_attack_is_still_scanned (test_screening_context_v7.ReportedBusinessText.test_request_to_apply_a_quoted_attack_is_still_scanned) ... ok
+test_training_context_does_not_exempt_an_active_instruction_outside_quote (test_screening_context_v7.ReportedBusinessText.test_training_context_does_not_exempt_an_active_instruction_outside_quote) ... ok
 test_confusion_matrix_and_rates (test_screening_evaluator_v5.ScreeningEvaluatorArithmeticTests.test_confusion_matrix_and_rates) ... ok
 test_exclusive_writes_and_started_marker_refuse_retry (test_screening_evaluator_v5.ScreeningEvaluatorArithmeticTests.test_exclusive_writes_and_started_marker_refuse_retry) ... ok
 test_partial_output_directory_also_blocks_retry (test_screening_evaluator_v5.ScreeningEvaluatorArithmeticTests.test_partial_output_directory_also_blocks_retry) ... ok
@@ -283,11 +323,17 @@ test_reported_and_rejected_quotation_does_not_become_instruction (test_screening
 test_role_markers_only_escalate_with_attack_context (test_screening_v5.BoundedScreeningBehaviour.test_role_markers_only_escalate_with_attack_context) ... ok
 test_targeted_control_removal_and_authority_substitution (test_screening_v5.BoundedScreeningBehaviour.test_targeted_control_removal_and_authority_substitution) ... ok
 test_warning_does_not_claim_legitimate_account_change_is_attack (test_screening_v5.BoundedScreeningBehaviour.test_warning_does_not_claim_legitimate_account_change_is_attack) ... ok
+test_attack_review_and_unavailable_are_scored_on_separate_denominators (test_screening_v7.ScreeningEvidence.test_attack_review_and_unavailable_are_scored_on_separate_denominators) ... ok
+test_author_seal_sha256_field_is_verified_without_changing_the_seal (test_screening_v7.ScreeningEvidence.test_author_seal_sha256_field_is_verified_without_changing_the_seal) ... ok
+test_fresh_evaluation_requires_matching_independent_author_seal (test_screening_v7.ScreeningEvidence.test_fresh_evaluation_requires_matching_independent_author_seal) ... ok
+test_started_or_partial_run_cannot_be_silently_replaced (test_screening_v7.ScreeningEvidence.test_started_or_partial_run_cannot_be_silently_replaced) ... ok
 test_benign_is_only_advisory_even_when_no_rule_warning (test_semantic_screening.SemanticClassificationGuards.test_benign_is_only_advisory_even_when_no_rule_warning) ... ok
 test_generated_benign_never_removes_rule_flags_or_human_review (test_semantic_screening.SemanticClassificationGuards.test_generated_benign_never_removes_rule_flags_or_human_review) ... ok
 test_json_duplicate_nonfinite_fields_and_code_fences_rejected (test_semantic_screening.SemanticClassificationGuards.test_json_duplicate_nonfinite_fields_and_code_fences_rejected) ... ok
 test_labels_categories_reason_are_strictly_typed_and_consistent (test_semantic_screening.SemanticClassificationGuards.test_labels_categories_reason_are_strictly_typed_and_consistent) ... ok
 test_missing_exception_and_invalid_input_fail_to_review_without_retry (test_semantic_screening.SemanticClassificationGuards.test_missing_exception_and_invalid_input_fail_to_review_without_retry) ... ok
+test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data (test_semantic_screening.SemanticClassificationGuards.test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data) ... ok
+test_native_empty_thinking_template_is_not_a_false_review_but_prose_is (test_semantic_screening.SemanticClassificationGuards.test_native_empty_thinking_template_is_not_a_false_review_but_prose_is) ... ok
 test_nontext_output_and_over_time_response_fail_to_review (test_semantic_screening.SemanticClassificationGuards.test_nontext_output_and_over_time_response_fail_to_review) ... ok
 test_one_generation_receives_separate_data_envelope_and_retains_attempt (test_semantic_screening.SemanticClassificationGuards.test_one_generation_receives_separate_data_envelope_and_retains_attempt) ... ok
 test_oversized_output_retains_bounded_raw_full_hash_and_size (test_semantic_screening.SemanticClassificationGuards.test_oversized_output_retains_bounded_raw_full_hash_and_size) ... ok
@@ -296,6 +342,7 @@ test_schema_is_fresh_and_bounded (test_semantic_screening.SemanticClassification
 test_disabled_adapter_never_calls_model_or_claims_semantic_pass (test_semantic_screening.SemanticRuntimeIntegration.test_disabled_adapter_never_calls_model_or_claims_semantic_pass) ... ok
 test_extract_adds_independent_warning_attempt_without_saving_drafts (test_semantic_screening.SemanticRuntimeIntegration.test_extract_adds_independent_warning_attempt_without_saving_drafts) ... ok
 test_local_adapter_uses_strict_schema_once_and_no_cloud_fallback (test_semantic_screening.SemanticRuntimeIntegration.test_local_adapter_uses_strict_schema_once_and_no_cloud_fallback) ... ok
+test_native_classification_uses_base_model_not_a_planning_lora (test_semantic_screening.SemanticRuntimeIntegration.test_native_classification_uses_base_model_not_a_planning_lora) ... ok
 test_photo_screening_uses_transcript_not_image_and_rejects_truncation (test_semantic_screening.SemanticRuntimeIntegration.test_photo_screening_uses_transcript_not_image_and_rejects_truncation) ... ok
 test_server_photo_screening_shares_the_existing_text_backend (test_semantic_screening.SemanticRuntimeIntegration.test_server_photo_screening_shares_the_existing_text_backend) ... ok
 test_duplicates_and_case_collisions_are_refused (test_submission_package.DistributedIntegrity.test_duplicates_and_case_collisions_are_refused) ... ok
@@ -362,12 +409,12 @@ test_partial_sus_and_aggregate_only_export (test_user_study.UserStudy.test_parti
 test_sus_formula_and_invalid_fields (test_user_study.UserStudy.test_sus_formula_and_invalid_fields) ... ok
 test_document_addressed_to_us_is_a_bill (test_vision.Dates.test_document_addressed_to_us_is_a_bill) ... ok
 test_written_dates_become_iso_and_ambiguous_ones_are_flagged (test_vision.Dates.test_written_dates_become_iso_and_ambiguous_ones_are_flagged) ... ok
-test_drafts_and_injection_written_on_the_photo (test_vision.Vision.test_drafts_and_injection_written_on_the_photo) ... skipped 'Pillow is not installed (optional photo feature)'
-test_hostile_or_invalid_files_never_reach_the_model (test_vision.Vision.test_hostile_or_invalid_files_never_reach_the_model) ... skipped 'Pillow is not installed (optional photo feature)'
-test_photo_is_downscaled_and_metadata_removed (test_vision.Vision.test_photo_is_downscaled_and_metadata_removed) ... skipped 'Pillow is not installed (optional photo feature)'
-test_unreadable_output_is_a_clear_error (test_vision.Vision.test_unreadable_output_is_a_clear_error) ... skipped 'Pillow is not installed (optional photo feature)'
+test_drafts_and_injection_written_on_the_photo (test_vision.Vision.test_drafts_and_injection_written_on_the_photo) ... ok
+test_hostile_or_invalid_files_never_reach_the_model (test_vision.Vision.test_hostile_or_invalid_files_never_reach_the_model) ... ok
+test_photo_is_downscaled_and_metadata_removed (test_vision.Vision.test_photo_is_downscaled_and_metadata_removed) ... ok
+test_unreadable_output_is_a_clear_error (test_vision.Vision.test_unreadable_output_is_a_clear_error) ... ok
 
 ----------------------------------------------------------------------
-Ran 322 tests in 88.244s
+Ran 353 tests in 64.286s
 
-OK (skipped=5)
+OK (skipped=1)

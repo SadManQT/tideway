@@ -86,7 +86,7 @@ completed SME user study, live cloud-provider benchmark or external penetration
 test. Docker instructions are supplied, but a successful Docker build must only
 be claimed on a machine where it was actually run.
 
-## Current evidence v3
+## Evidence and current remediation
 
 Start with `docs/READINESS_CURRENT.md`. The exact shipped TidePay model is
 evaluated on 7,427 new synthetic invoices; mean absolute timing error is 8.5585
@@ -95,8 +95,10 @@ reported separately. Historical audit-model scores do not transfer to shipped
 weights. Native macOS Qwen3 first handled 28/32 sealed requests; all four misses
 and source snapshots are preserved alongside later guard regressions.
 
-Independent message screening detected only 2/24 unfamiliar attacks and flagged
-2/24 benign messages. Payment authority therefore remains outside the model and
+Historical v3 message screening detected only 2/24 unfamiliar attacks and flagged
+2/24 benign messages. Current v7 screening runs, model identities, confusion
+matrices, uncertainty and latency are retained in `evidence/screening-v7/` and
+explained in `docs/REMEDIATION_V7.md`; development and fresh results stay separate. Payment authority therefore remains outside the model and
 screening. Above-target plans require each approver's server-checked, plan-bound
 risk acknowledgement. Mock financing includes timing, total repayment,
 unverified eligibility and affordability through repayment.
@@ -111,3 +113,21 @@ the consent-aware kit does not invent feedback.
 ## Independent audit follow-up
 
 See `docs/INDEPENDENT_AUDIT.md` for the contest requirement map, reproduced signing/configuration/financial defects, fixes and unresolved quality gaps. The current release reports supply exact test, browser and extraction results for one source digest. This review is performed by the coding assistant and is not an external security certification.
+
+## Owner constraints and residual risk
+
+The [completion review](COMPLETION_V8.md) records the current Windows checks,
+retained historical model measurements, PDF review and final package commands.
+
+Counter-offers and replans retain the owner discount ceiling, preference and
+exclusions. A 1% ceiling rejects a 1.5% counter; changed instructions require a
+new reviewed proposal. Replacements require fresh approval and consent. Legacy
+plans without recorded owner instructions fail closed. H11 retains approximately
+11.78% breach risk against a 10% target; likely-path feasibility and explicit
+acknowledgement do not promise successful collections or universal rescue.
+
+The v7 fresh 48-case AI-authored screening run detected 23/24 attacks, retained
+verification for 8/8 legitimate payment updates, and warned on 5/16 ordinary
+benign messages (31.25%). One Hindi exfiltration attack and five false warnings
+remain recorded. These are finite synthetic results; no later tuning used that
+fresh set, and no external security review pass is claimed.

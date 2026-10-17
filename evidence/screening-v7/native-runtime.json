@@ -1,0 +1,39 @@
+{
+  "recorded_at_utc": "2026-10-17T13:11:38.071718+00:00",
+  "python": "3.11.15",
+  "platform": "macOS-27.0.1-arm64-arm-64bit",
+  "packages": {
+    "mlx": "0.32.4",
+    "mlx-lm": "0.32.0",
+    "huggingface-hub": "2.2.0",
+    "transformers": "5.19.0"
+  },
+  "model": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+  "cached_snapshot": "50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b",
+  "cached_files_sha256": {
+    "added_tokens.json": "c0284b582e14987fbd3d5a2cb2bd139084371ed9acbae488829a1c900833c680",
+    "tokenizer_config.json": "4397cc477eb6d79715ccd2000accd6b3531928f30029665832fa1b255f24d2b9",
+    "special_tokens_map.json": "76862e765266b85aa9459767e33cbaf13970f327a0e88d1c65846c2ddd3a1ecd",
+    "config.json": "574349e5a343236546fda55e4744a76e181f534182d7dc60ff1bad7e7a502849",
+    "tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+    "generation_config.json": "835fffe355c9438e7a25be099b3fccaa98350b83451f9fd2d99512e74f1ade48",
+    "chat_template.jinja": "40c21f34cf67d8c760ef72f8ad3ae5afad514299d4b06e91dd9a8d705af7b541",
+    "vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+    "model.safetensors.index.json": "388d811b8b7c2608dd04cce1bcb04a8bf715d19b42790894e6d3427ff429a777"
+  },
+  "configuration": {
+    "max_tokens": 220,
+    "runtime_default_sampler": true,
+    "prompt_cache": "system prefix reused, generation tokens trimmed",
+    "thinking": "native chat template default",
+    "attempts_per_case": 1,
+    "model_downloads_allowed": false,
+    "environment": {
+      "HF_HUB_OFFLINE": "1",
+      "TRANSFORMERS_OFFLINE": "1"
+    },
+    "sampler": "greedy_sampler (installed generate_step default, no sampler override)"
+  },
+  "note": "Installed generate.py line 384 selects sampler or greedy_sampler. No planning adapter is attached in base phases. This receipt does not download or copy cached weights.",
+  "installed_generate_py_sha256": "4a3bf57f5679dac73791f069268866ab5b9336e58582d436b31133984e4b6971"
+}

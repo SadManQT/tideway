@@ -1,4 +1,11 @@
-# Current technical readiness — evidence v6 / Docker v5
+# Current technical readiness
+
+Windows completion: [current fixes, exact commands and final verification](COMPLETION_V8.md).
+The signed-parent replacement and bounded rejected-POST delivery regressions are
+included in this run. The final package uses `evidence/completion-v8/`; previous
+model observations retain their original backend/source identity. Current-device
+real-model inference remains unverified. PDF appearance has been reviewed across
+all 56 pages; [rendered contacts and hashes](../evidence/completion-v8/pdf-review/report.json).
 
 This is the current review index. Tideway remains a synthetic SME finance copilot:
 cash forecasts, recovery proposals, human approval, simulated negotiation and
@@ -34,27 +41,19 @@ Historical upgrade and Windows reports describe earlier source versions.
 - Profiles, empirical fallback and illustrative backtests use only paid history
   available at the simulation date. Mock advances exclude already committed and
   not-yet-issued receivables. A Windows SQLite test handle leak is corrected.
-- The persisted Docker smoke client now consumes the API's `{found, receipt}`
-  envelope, and the container verifier uses Docker's current `--timeout` stop
-  flag. Above-target plans now show an explicit owner-decision escalation in the
-  rescue UI.
 
 ## Measured evidence
 
 | Check | Recorded result | Meaning and limit |
 |---|---|---|
-| Current unit run | 322 run; 0 failures; 0 errors; 5 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
+| Current unit run | 353 run; 0 failures; 0 errors; 1 skipped | Python 3.14.6, Windows; injected outputs are not model quality |
 | Additional standard-library run | 252 run; 0 failures; 0 errors; 4 skipped | Python 3.11.16; optional photo tests require Pillow; report records its own source hash |
-| Financial scenarios | 24/24 expected workflows; 9 rescues | 7/9 executed rescues meet the 10% simulated risk target |
-| Planner rescue follow-up | D06 0.00% mean risk; H11 11.78% mean risk over 30,000 fresh draws | D06 keeps the accepted 7-day counter-offer and adds recovery; H11 shortlists risk-diverse candidates but remains above target and requires owner decision/acknowledgement |
-| Docker v5 verification | Build and HTTP workflow passed; persisted receipt/replay/audit passed; 322 tests, 0 failures, 0 errors | Linux amd64 WSL2, Python 3.11.17, non-root uid 10001; synthetic sandbox only |
-| Hosted GitHub Actions run 8 | 9/9 jobs passed | Ubuntu, Windows and macOS stdlib lanes; Pillow; browser/package; and Docker; receipt at `evidence/infrastructure-v5/hosted-ci-status.json` |
+| Financial scenarios | 24/24 expected workflows; 9 rescues | 8/9 executed rescues meet the 10% simulated risk target |
 | Shipped TidePay | 7,427 unseen synthetic invoices; MAE 8.5585 days | Heuristic 10.2296; training-only prior 11.7453; no weight changes |
 | First actual Qwen3 challenge | 28/32 correct; 32/32 contained | Four retained misses; no mandate, execution or financial-ledger mutation |
 | Post-fix Qwen3 regression | 32/32 known cases handled; 8/8 safe stops | One real-model pass after disclosed guard fixes; not a new blind score |
 | Independent-audit Windows Qwen3 rerun | 32/32 known requests handled; 32/32 contained | Actual compatible inference on disclosed cases; retains every output; not blind |
-| Historical unseen instruction screening | 2/24 attacks detected; 2/24 benign flagged | Retained v3/v5 observation; detection cannot be the authorization boundary |
-| Current v6 instruction screening first pass | 96 independently authored synthetic cases; combined warning 55 TP, 11 TN, 29 FP, 1 FN | Recall 98.2% but false-positive rate 72.5%; local-compatible Qwen3 is unbenchmarked and this is not external or population accuracy |
+| First unseen instruction screening | 2/24 attacks detected; 2/24 benign flagged | Severe generalization gap; detection cannot be the authorization boundary |
 | SME user study | 0 participants; pending | Kit and analysis available; no real-user claim |
 
 The prediction cohort contains 80 new synthetic SMEs, four seeds and 7,427
@@ -97,24 +96,16 @@ Use a completed LF checkout: source edits during the run invalidate verification
 
 - [Current test summary](../evidence/test-summary.json) and
   [raw test log](../evidence/test-run.log).
-- [Current scenario report](../evidence/readiness-v3/scenarios/report.json),
-  [linked delay receipt](../evidence/readiness-v3/payment-delay.json) and
+- [Current scenario report](../evidence/completion-v8/scenarios/report.json),
+  [linked delay receipt](../evidence/completion-v8/payment-delay.json) and
   [browser workflow](../evidence/screens/browser-verification.json).
 - [Exact shipped prediction evaluation](DEPLOYED_MODEL_EVALUATION.md), with
   raw invoices, shared test IDs, predictions, intervals and calibration bins.
 - [Independent screening/model evaluation](BLIND_EVALUATION.md), source seals,
   native runtime provenance and every first-observation output.
-- [Current v6 screening first pass](../evidence/screening-v6/first-pass/first-pass-results.json)
-  with the sealed fixture, model attempts and raw outputs.
-- [Planner risk remediation](../evidence/readiness-v5/planner/report.json), including
-  D06 counter-offer repair and H11 fresh-seed validation.
-- [Docker v5 report](../evidence/infrastructure-v5/docker/report.json), including
-  build tests, non-root HTTP flow and persisted receipt replay.
-- [Hosted CI receipt](../evidence/infrastructure-v5/hosted-ci-status.json), linking
-  the current remote commit and all nine successful jobs.
 - [Separate post-fix model regression](../evidence/readiness-v3/blind/model-post-fix-regression.json)
   and [Python 3.11 standard-library run](../evidence/readiness-v3/python311/test-summary.json).
-- [Release stages and PDF hashes](../evidence/readiness-v3/release-checks.json).
+- [Release stages and PDF hashes](../evidence/completion-v8/release-checks.json).
   `dist/extraction-verification.json` and `dist/SHA256SUMS.txt` prove the actual
   distributed bytes, rather than referring to an earlier ZIP.
 - [Independent judge/auditor report](INDEPENDENT_AUDIT.md), with reproduced
@@ -123,25 +114,66 @@ Use a completed LF checkout: source edits during the run invalidate verification
 - [User study protocol](USER_STUDY_KIT.md) and
   [pending participation status](../evidence/readiness-v3/user-study-status.json).
 
-Current test source digest: `77ae338a4849cd0dcd4133ad0d994ee9fae5bbebd7a02673b784bf46b88eedcf`.
+Current test source digest: `cf7530d43517bb2a87f85b2b434f2e00d113b942e4f5cd28ad54f2b53405f5af`.
 Reports contain their own timestamps and hashes; older Windows/upgrade evidence
 is historical and does not attest to the current checkout.
 
 ## Remaining gaps that code alone cannot close
 
-Unfamiliar instruction screening now has a fresh v6 first pass, but the high false
-positive rate and unbenchmarked compatible-model status require further detector
-work and another separately sealed evaluation; repeating known examples is
-regression only. Real consented SME feedback, native MLX/TideLM and receipt-model
-evaluation, external security testing and real-data calibration remain outstanding.
+Instruction screening has finite coverage. The v5 and v6 first observations below
+are separate authored sets; they cannot be compared as an uncontrolled percentage
+improvement. Optional semantic checks remain advisory and require a local model.
+Real consented SME feedback, current MLX/TideLM planning and receipt-model evaluation,
+external security testing and real-data calibration remain outstanding.
 Partial settlements, reversals and real lender eligibility require separate
-financial design before live integration. GitHub-hosted Offline validation run 8
-passed all nine jobs for the pushed implementation; its receipt is recorded
-separately from local evidence. Docker v5 has passed locally on Linux/WSL2, but
-neither check is production deployment.
+financial design before live integration. Stored hosted run 8 concluded success for commit f60a6752e26723ae6b696a40e52335d15f1e3339.
+That historical receipt does not attest to this local remediation; no push or
+hosted run was performed for these changes.
+See the explicit infrastructure status below for the separately tested Docker
+build; no ordinary bridge or host port exposure is inferred from isolated tests.
 
 The supplied five-person BUET roster is retained. Leader, contribution roles,
 eligibility, registration, submission route, reviewer access and the deferred
 video still need the team's actual information. This local package has not been
 published, deployed, emailed or submitted. A numerical 9+ rating cannot honestly
 be guaranteed from synthetic checks while these validation gaps remain.
+
+
+## Screening, planner and infrastructure follow-up
+
+- Rules v5 first pass: 13/48 attacks detected, 7/48 benign flagged on a new,
+  separately authored 96-message set. No misses were hidden. Its source snapshot,
+  labels and first observation remain in `evidence/screening-v5/`.
+- Optional local semantic screening adds a strict typed classification with one
+  bounded generation, preserved errors and raw output, and explicit uncertainty.
+  `TIDEWAY_SEMANTIC_SCREENING=1` enables it for Inbox messages and photo transcripts.
+  It never authorizes a record or financial action; model-free rules remain available.
+- [V6 independently authored first pass](../evidence/screening-v6/first-pass/first-pass-results.json)
+  records actual local inference, rules/semantic/combined denominators, uncertainty,
+  language/category results and runtime/source seals. It is not external validation.
+- Planner candidates now mix cost, stressed cash and headroom, with stable customer
+  draws and independent finalist validation. Counteroffer repair locks changed terms
+  and requires fresh human approval and exact counterparty consent for every request.
+- [Known D06/H11 risk follow-up](../evidence/completion-v8/planner/report.json)
+  separates risk estimates, sampling uncertainty and the allowed-action limit.
+  An above-target business is escalated, not made successful by raising the target.
+- Docker status: Not yet a passing current-source Docker run; inspect raw status.
+  [Raw Docker proof](../evidence/infrastructure-v5/docker/report.json).
+  No native MLX, host-network reachability or external penetration test is implied.
+- [Stored hosted CI status](../evidence/infrastructure-v5/hosted-ci-status.json):
+  Stored hosted run 8 concluded success for commit f60a6752e26723ae6b696a40e52335d15f1e3339. No hosted run for the current remediation is claimed.
+- [Implementation and verification report](REMEDIATION_V7.md).
+
+## Owner constraints and v7 screening follow-up
+
+Owner discount ceilings, preferences and exclusions survive counter-offers and replans. The store rejects above-ceiling actions and widened successor constraints. Legacy plans without recorded instructions need a fresh owner-reviewed proposal. The UI distinguishes likely-path feasibility from simulated risk and preserves above-target precision.
+
+- [baseline-development](../evidence/screening-v7/baseline-development/report.json): 96 cases; semantic attack recall 0.0%; combined attack recall 14.6%; broader warning false-positive rate 100.0%; targets met: False. Backend: mlx; recorded model artifacts apply.
+- [improved-development](../evidence/screening-v7/improved-development/report.json): 96 cases; semantic attack recall 14.6%; combined attack recall 27.1%; broader warning false-positive rate 100.0%; targets met: False. Backend: mlx; recorded model artifacts apply.
+- [baseline-base-development](../evidence/screening-v7/baseline-base-development/report.json): 96 cases; semantic attack recall 83.3%; combined attack recall 87.5%; broader warning false-positive rate 52.5%; targets met: False. Backend: mlx-base; recorded model artifacts apply.
+- [improved-base-development](../evidence/screening-v7/improved-base-development/report.json): 96 cases; semantic attack recall 0.0%; combined attack recall 14.6%; broader warning false-positive rate 45.0%; targets met: False. Backend: mlx-base; recorded model artifacts apply.
+- [improved-base-development-r2](../evidence/screening-v7/improved-base-development-r2/report.json): 96 cases; semantic attack recall 100.0%; combined attack recall 100.0%; broader warning false-positive rate 2.5%; targets met: False. Backend: mlx-base; recorded model artifacts apply.
+- [improved-base-development-r3](../evidence/screening-v7/improved-base-development-r3/report.json): 96 cases; semantic attack recall 100.0%; combined attack recall 100.0%; broader warning false-positive rate 2.5%; targets met: True. Backend: mlx-base; recorded model artifacts apply.
+- [fresh](../evidence/screening-v7/fresh/report.json): 48 cases; semantic attack recall 95.8%; combined attack recall 95.8%; broader warning false-positive rate 31.2%; targets met: True. Backend: mlx-base; recorded model artifacts apply.
+
+Development cases are disclosed v6 regressions. The fresh set is separately AI-authored, not an external or human-blind assessment. Native MLX classification cannot inherit Windows GGUF or historical TideLM planning scores. Every miss and raw output is retained. The native classifier uses the already cached base model without the planning LoRA; the planning backend is unchanged. Independent remediation review agents were unavailable because of an account usage limit; no independent review pass is claimed.

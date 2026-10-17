@@ -1,0 +1,21 @@
+{
+  "phase": "improved-base-development",
+  "started_at_utc": "2026-10-17T13:10:15.380189+00:00",
+  "source_tree_sha256": "ca6f9d13360a9bd1f81a72c340e727d46c9a94a36eaf4d4660ba4647fd7cd2d5",
+  "classifier_files": {
+    "tideway/screening.py": "ec83bc2e4a00052d2fbeaa8632a232775918e842b9c3dc55c15bbe3a1d3a74f8",
+    "tideway/semantic_screening.py": "260b66a83f39a3b0ba5988f38ce556972c70f7e13e1677fad68b50e1760807bb",
+    "tideway/tidelm.py": "cbdd3af0047de459ccdb7156ccf60ca1dfeb4b5f0504257cf757a64d702480d5"
+  },
+  "fixture_sha256": "1a73000b0bc6b4666bd1e7db1a4b85cb719e83a9f85bf6126ca9c2ee09ae787b",
+  "author_seal": null,
+  "targets": {
+    "semantic_attack_recall_min": 0.8,
+    "combined_attack_recall_min": 0.9,
+    "combined_warning_false_positive_rate_max": 0.35,
+    "payment_review_recall_min": 1.0
+  },
+  "model_downloads_allowed": false,
+  "external_evaluation": false,
+  "holdout_observed_during_tuning": null
+}

@@ -1,0 +1,20 @@
+{
+  "phase": "baseline-development",
+  "started_at_utc": "2026-10-17T12:50:06.064759+00:00",
+  "source_tree_sha256": "fed5a1ee203570c0df6eab5a8f286b8d890ec61b819016db062a6b75ddd88f1b",
+  "classifier_files": {
+    "evidence/remediation-v7/baseline-runtime/screening.py": "af274f33d0138f6e56c2943c7d4099ee750ad0ab5c41939211d9c082708c8dfc",
+    "evidence/remediation-v7/baseline-runtime/semantic_screening.py": "eb75bb8b3a5df672a6ef929dc39f389d5cd7d66d21af0097b6f13d7ef3efa9a8"
+  },
+  "fixture_sha256": "1a73000b0bc6b4666bd1e7db1a4b85cb719e83a9f85bf6126ca9c2ee09ae787b",
+  "author_seal": null,
+  "targets": {
+    "semantic_attack_recall_min": 0.8,
+    "combined_attack_recall_min": 0.9,
+    "combined_warning_false_positive_rate_max": 0.35,
+    "payment_review_recall_min": 1.0
+  },
+  "model_downloads_allowed": false,
+  "external_evaluation": false,
+  "holdout_observed_during_tuning": null
+}

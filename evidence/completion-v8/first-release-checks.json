@@ -1,0 +1,27 @@
+{
+  "run_at_utc": "2026-10-17T14:25:38+00:00",
+  "source_tree_sha256": "94cff924563a1f44eb9a6567f705d6e2587bd36262d219476b25ac356c969297",
+  "stages_passed": [
+    "Python compile",
+    "JavaScript syntax",
+    "Unit suite",
+    "Sandbox task and attack scorecard",
+    "Distinct financial scenarios",
+    "Payment delay and fresh approvals",
+    "Browser desktop/mobile and delay",
+    "Injected local-model integration",
+    "Current readiness index",
+    "PDF deliverables"
+  ],
+  "pdfs_rebuilt": true,
+  "visual_review_automated": false,
+  "pdf_sha256": {
+    "slides/pitch.pdf": "96eed7e75e59acae87b473ca362868a63b5cd6b42e947ebc3e759660953e3d53",
+    "docs/architecture.pdf": "6af50642b15ad9126ca70ed5b94729fbc02c25db342ca6199af424157bad6c26",
+    "docs/security-assessment.pdf": "719c8cb3d69ca536ef18c8a1e5e22717a0fd98076dd4ac1d9b47a5141e987bdb",
+    "docs/submission-notes.pdf": "5339c0254aa206ebc966321897b224d5388451ae3b2c7ac644f5f096897c0d30",
+    "docs/Tideway_FinTechathon_2026_Roadmap.pdf": "c2a08875f0a5da18cd8c50374f310e73d1ab9f2ba30ff8915218c075ef646dc9"
+  },
+  "scope": "Local synthetic checks; no hosted CI, model-quality rerun, SME participation or submission implied.",
+  "pdf_review_followup": "Pitch regenerated with temporary optional Pillow to crop full-page screenshots into readable slide images; runtime source unchanged. Final package must be rebuilt and reverified."
+}

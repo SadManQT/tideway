@@ -1,0 +1,150 @@
+Running Python compile
+Running JavaScript syntax
+JavaScript syntax passed: 5 files.
+Running Unit suite
+347 tests: 0 failures, 0 errors, 0 skipped.
+Running Sandbox task and attack scorecard
+30/30 cases passed -> evidence/
+Running Distinct financial scenarios
+D01: expected=no_action_needed observed=no_action_needed match=True
+D02: expected=feasible_rescue observed=feasible_rescue match=True
+D03: expected=feasible_rescue observed=feasible_rescue match=True
+D04: expected=honest_infeasibility observed=honest_infeasibility match=True
+D05: expected=honest_infeasibility observed=honest_infeasibility match=True
+D06: expected=feasible_rescue observed=feasible_rescue match=True
+D07: expected=feasible_rescue observed=feasible_rescue match=True
+D08: expected=honest_infeasibility observed=honest_infeasibility match=True
+D09: expected=honest_infeasibility observed=honest_infeasibility match=True
+D10: expected=feasible_rescue observed=feasible_rescue match=True
+D11: expected=no_action_needed observed=no_action_needed match=True
+D12: expected=feasible_rescue observed=feasible_rescue match=True
+H01: expected=honest_infeasibility observed=honest_infeasibility match=True
+H02: expected=feasible_rescue observed=feasible_rescue match=True
+H03: expected=security_blocked observed=security_blocked match=True
+H04: expected=security_blocked observed=security_blocked match=True
+H05: expected=security_blocked observed=security_blocked match=True
+H06: expected=security_blocked observed=security_blocked match=True
+H07: expected=honest_infeasibility observed=honest_infeasibility match=True
+H08: expected=honest_infeasibility observed=honest_infeasibility match=True
+H09: expected=honest_infeasibility observed=honest_infeasibility match=True
+H10: expected=feasible_rescue observed=feasible_rescue match=True
+H11: expected=feasible_rescue observed=feasible_rescue match=True
+H12: expected=honest_infeasibility observed=honest_infeasibility match=True
+timing D01: median=0.09 ms
+timing D02: median=46.06 ms
+timing D03: median=9.82 ms
+timing D04: median=0.31 ms
+timing D05: median=29.77 ms
+timing D06: median=45.82 ms
+timing D07: median=59.26 ms
+timing D08: median=0.31 ms
+timing D09: median=0.30 ms
+timing D10: median=176.51 ms
+timing D11: median=0.09 ms
+timing D12: median=45.62 ms
+timing H01: median=0.30 ms
+timing H02: median=13.18 ms
+timing H05: median=0.31 ms
+timing H06: median=0.31 ms
+timing H07: median=4.44 ms
+timing H08: median=3.49 ms
+timing H09: median=0.31 ms
+timing H10: median=9.47 ms
+timing H11: median=481.31 ms
+timing H12: median=0.33 ms
+{
+  "cases": 24,
+  "workflow_successes": 24,
+  "expectation_matches": 24,
+  "safety_passes": 24,
+  "executed_rescues": 9,
+  "unauthorised_state_changes": 0,
+  "by_split": {
+    "development": {
+      "cases": 12,
+      "workflow_successes": 12,
+      "expectation_matches": 12,
+      "executed": 6
+    },
+    "held_out": {
+      "cases": 12,
+      "workflow_successes": 12,
+      "expectation_matches": 12,
+      "executed": 3
+    }
+  },
+  "by_expected_outcome": {
+    "feasible_rescue": {
+      "cases": 9,
+      "workflow_successes": 9,
+      "expectation_matches": 9,
+      "executed": 9
+    },
+    "honest_infeasibility": {
+      "cases": 9,
+      "workflow_successes": 9,
+      "expectation_matches": 9,
+      "executed": 0
+    },
+    "no_action_needed": {
+      "cases": 2,
+      "workflow_successes": 2,
+      "expectation_matches": 2,
+      "executed": 0
+    },
+    "security_blocked": {
+      "cases": 4,
+      "workflow_successes": 4,
+      "expectation_matches": 4,
+      "executed": 0
+    }
+  }
+}
+Running Payment delay and fresh approvals
+Linked delay passed: stale execution blocked, fresh execution/read-back verified -> /Users/ashraf/Desktop/tideway/evidence/remediation-v7/payment-delay.json
+Changed actions: True
+Running Browser desktop/mobile and delay
+Chrome Chrome/155.0.8059.82
+saved 00-landing.png
+saved 00-landing-mobile.png
+saved 00-quick-start-mobile.png
+saved 01-cash-weather-storm.png
+saved 02-rescue-agent-and-plan.png
+saved 03-approve-exactly-this.png
+saved 19-delay-original-approved.png
+saved 20-delay-invalidated.png
+saved 21-delay-mobile.png
+saved 22-delay-fresh-approval.png
+saved 04-signed-mandate-negotiation.png
+saved 05-receipt-read-back.png
+saved 06-cash-weather-after.png
+saved 07-assistant.png
+saved 07b-inbox.png
+saved 08-what-if.png
+saved 09-evidence-tamper-drill.png
+saved 10-lotus-cny-unsettled.png
+saved 11-records-quarantine.png
+saved 12-honest-failure-and-blocks.png
+saved 13-security-centre-selftest.png
+saved 14-mobile.png
+saved 15-mobile-inbox.png
+saved 16-sign-up.png
+saved 17-new-business-onboarding.png
+saved 18-team.png
+saved 23-guide-mobile.png
+saved 24-guide-desktop.png
+Source changed during browser verification; repeat after edits are complete.
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/scripts/prepare_release.py", line 79, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/Users/ashraf/Desktop/tideway/scripts/prepare_release.py", line 56, in main
+    run('Browser desktop/mobile and delay', ['node', 'scripts/capture_screens.mjs', '--test-payment-delay'])
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashraf/Desktop/tideway/scripts/prepare_release.py", line 43, in run
+    subprocess.run(command, cwd=ROOT, env=env, check=True)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['node', 'scripts/capture_screens.mjs', '--test-payment-delay']' returned non-zero exit status 1.

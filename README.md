@@ -84,13 +84,23 @@ python3 scripts/build_submission_pdfs.py   # pitch, architecture and security PD
 
 ## Current review improvements and one-command verification
 
+Owner discount ceilings and ranking preferences now survive counter-offers and
+replans; the server rejects above-ceiling terms and requires fresh approval for
+successor plans. See [the remediation report](docs/REMEDIATION_V7.md) for the
+regression evidence, paired screening runs and local package verification.
+The [completion review](docs/COMPLETION_V8.md) records the subsequent Windows
+verification and signed-parent replacement fix, including remaining limitations.
+H11's historical fresh-draw breach estimate is 11.78% against a 10% target.
+Likely-path feasibility and explicit risk acknowledgement do not make every
+rescue meet that target or guarantee customer payment.
+
 [Current readiness](docs/READINESS_CURRENT.md) is the authoritative evidence index;
 older upgrade/Windows reports retain their original scope and failures.
 The additional [Python 3.11 standard-library report](evidence/readiness-v3/python311/test-summary.json) records its exact version, source and optional photo skips.
 
 ```bash
-python3 scripts/prepare_release.py --checks-only  # tests, syntax, scenarios, linked delay
-python3 scripts/prepare_release.py                # also browser, PDFs, ZIP, extraction
+python3 scripts/prepare_release.py --checks-only --evidence-dir evidence/completion-v8
+python3 scripts/prepare_release.py --evidence-dir evidence/completion-v8  # also browser, PDFs, ZIP, extraction
 ```
 
 The complete command needs Node 22+ and Chrome/Edge, checks one frozen LF source
@@ -108,12 +118,13 @@ A [sealed native macOS model challenge](docs/BLIND_EVALUATION.md) initially hand
 28/32 requests correctly with no financial executions. Three amount/entity
 failures prompted separate guard regressions; the original failures remain.
 The subsequent [disclosed regression](evidence/readiness-v3/blind/model-post-fix-regression.json) handled 32/32; this is not a new blind score.
-A separate [real-model browser run](evidence/readiness-v3/browser-real/browser-verification.json) verifies risk answers, payment refusal and unchanged financial state on the current source.
+A separate historical [real-model browser run](evidence/readiness-v3/browser-real/browser-verification.json) verifies risk answers, payment refusal and unchanged financial state on its recorded source.
 The historical v3/v5 instruction screening detected only 2/24 unfamiliar attacks
-and flagged 2/24 benign messages. The current sealed v6 first pass covers 96
+and flagged 2/24 benign messages. The historical sealed v6 first pass covers 96
 independently authored synthetic cases (55 TP, 11 TN, 29 FP, 1 FN for combined
 warning); the high false-positive rate and unbenchmarked compatible-model status
-are disclosed in [current readiness](docs/READINESS_CURRENT.md). Structural
+are disclosed in [current readiness](docs/READINESS_CURRENT.md). V7 cached-base
+classification runs and their retained failures are linked in the remediation report. Structural
 permissions remain essential. No real-user feedback has been fabricated: use the
 [consented SME study kit](docs/USER_STUDY_KIT.md).
 

@@ -1108,11 +1108,16 @@ class Store:
             constraints = check_plan_constraints(payload, snapshot["policy"])
             supersedes = None
             if replaces_mandate is not None:
-                old = db.execute("SELECT * FROM mandates WHERE business_id=? AND id=? AND kind='bundle'",
-                                 (business_id, replaces_mandate)).fetchone()
-                if not old or old["status"] not in BUNDLE_LIVE:
-                    raise ValidationError("The mandate being replaced is no longer live.")
+                old, signed = self._load_bundle_mandate(db, business_id, replaces_mandate)
                 parent_row, parent = self._fresh_plan(db, business_id, old["plan_id"], snapshot)
+                # A recomputed parent hash cannot rewrite instructions that were
+                # already signed. Revalidate the original authority atomically,
+                # before cancelling it or saving any successor proposal.
+                if (parent_row["plan_hash"] != signed["plan_hash"]
+                        or signed["snapshot_hash"] != snapshot_hash
+                        or signed["plan_id"] != old["plan_id"]
+                        or signed["business_id"] != business_id):
+                    raise ValidationError("The parent proposal changed or does not match its signed mandate; create a fresh owner-reviewed proposal.")
                 previous_constraints = check_plan_constraints(parent, snapshot["policy"])
                 if (constraints["max_discount_bps"] > previous_constraints["max_discount_bps"]
                         or constraints["prefer"] != previous_constraints["prefer"]

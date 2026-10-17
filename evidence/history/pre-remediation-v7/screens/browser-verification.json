@@ -1,0 +1,54 @@
+{
+  "run_at": "2026-10-17T05:57:51.738Z",
+  "passed": true,
+  "browser": "Chrome/155.0.8059.82",
+  "source_tree_sha256": "b2ca44a67180c34a0948ffce13c31a39bc20b91208d5a29f1e25a0381ae4f207",
+  "source_unchanged_during_browser": true,
+  "viewport": {
+    "desktop": [
+      1440,
+      900
+    ],
+    "mobile": [
+      375,
+      812
+    ]
+  },
+  "page_errors": [],
+  "tidelm_available": false,
+  "test_only_local_backend": false,
+  "test_real_backend": false,
+  "linked_payment_delay": true,
+  "model_inference_tested": false,
+  "real_model_verification": null,
+  "coverage": [
+    "landing",
+    "cash projection",
+    "dual approval",
+    "negotiation",
+    "execution and read-back",
+    "assistant fallback",
+    "what-if",
+    "audit tamper drill",
+    "international fixtures",
+    "fraud blocks",
+    "security self-test",
+    "mobile overflow",
+    "signup",
+    "invite",
+    "viewer isolation",
+    "public guide routes and assets",
+    "role-aware first-use guidance",
+    "guidance preferences and keyboard focus",
+    "guidance never changes financial state",
+    "residual-risk disclosure",
+    "missing payment-account disclosure and callback controls",
+    "bound risk acknowledgement",
+    "funding repayment and eligibility disclosure",
+    "approved payment delay",
+    "stale execution refusal",
+    "fresh proposal and counter approval",
+    "delay mobile"
+  ],
+  "fixture": "fresh synthetic database; no real money or external provider"
+}

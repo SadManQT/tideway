@@ -62,9 +62,44 @@ Candidate actions per record, all within policy:
 - **Collection reminder**: a zero-cash draft; a promise to pay is tracked as information, never as cash.
 - **Financing**: three labelled MOCK products (invoice advance, working-capital line, guaranteed loan) shown with fee, term and time to cash. Never executable.
 
-Search: every combination of at most one option per record, over the six most relevant records, is evaluated with a fast daily ledger. A bundle is *feasible* if the reserve floor holds on every day of the horizon and payroll is funded; bundles above the daily cap are dropped. Feasible bundles are ranked by shortfall, then cost, then number of counterparties, and the best 40 are re-checked with a seeded 400-run Monte Carlo. The recommendation is the cheapest bundle whose simulated breach probability is within the 10% risk target; otherwise the safest (risk compared in 5-point buckets to absorb sampling noise). Alternatives are chosen to differ in counterparties. If no feasible bundle exists, the explanation says so and escalates. The planner returns structured reasons for every rejected record (for example `SECURITY_BLOCKED`, `DECLINED`).
+Search: every combination of at most one option per record, over at most six
+selected records, is evaluated with a fast daily ledger. A bundle is *feasible*
+when its projected reserve floor and payroll checks pass; bundles above the daily
+cap are dropped. Up to 40 candidates mix low cost, stressed-cash resilience and
+likely-cash headroom, then share seeded 400-run Monte Carlo draws. Up to four
+finalists receive a separate 1,200-run validation seed. Ranking uses the full
+probability estimate and the owner's selected lowest-cost, lowest-risk or
+fewest-asks preference; displayed rounding does not determine selection. The
+default recommendation prefers the cheapest validated bundle within the 10%
+simulated risk target, or the lowest estimated risk if none meets it. Alternatives
+differ in counterparties. Exact search applies to the selected action groups;
+candidate screening and simulation do not prove global risk optimality. If no
+feasible bundle exists, the explanation says so and escalates. The planner
+returns structured reasons for rejected records (for example `SECURITY_BLOCKED`,
+`DECLINED`).
 
 ## 8. Negotiation with simulated counterparties
+
+Owner instructions (`max_discount_bps`, ranking preference and exclusions) remain
+binding through counter-offers and replans. The effective ceiling is the stricter
+of the stored owner ceiling and current policy. A higher counter is rejected,
+never silently clamped or treated as agreed. Replacement creation validates the
+parent constraints atomically, records its plan/mandate provenance, and requires
+fresh approvals. Approval and execution independently recheck the ceiling.
+Legacy plans without recorded instructions require a fresh owner-reviewed
+proposal; no migration invents consent. Signed mandates and receipts retain
+the owner instructions.
+
+Replacement creation also verifies the parent mandate's signature, expiry,
+tenant and snapshot, and compares its signed plan hash with the stored parent
+inside the same transaction. Recomputing a modified parent's hash cannot carry
+changed owner instructions into a successor. Rejection leaves the original
+mandate, approvals and audit state untouched.
+
+Feasibility describes the likely dated cash path, not guaranteed collections or
+meeting the 10% simulated risk target. The disclosed H11 follow-up estimated
+11.78% across 30,000 draws. Above-target proposals retain exact, individually
+bound human acknowledgement and may need escalation or changed business terms.
 
 `counterparty.py` plays suppliers (styles flexible, standard, cautious, strict) and customers with fixed, repeatable rules and replies **accepted**, **countered** (with terms inside the counterparty's own limits) or **rejected**; a reminder gets an acknowledgement with a promise date. Each reply is labelled simulated. A counter is turned into a revised proposal that needs fresh approval. A rejection excludes that counterparty and triggers a re-plan. Execution requires every action in the mandate to have an accepted reply first.
 
@@ -92,6 +127,12 @@ Six tools: `read_ledger`, `profile_customers`, `project_cash`, `simulate_risk`, 
 Every proposal, approval, negotiation, execution and rejection is appended to a per-business hash chain (each entry hashes its predecessor). An independent **witness** file with its own key periodically co-signs the chain head, so an attacker who rewrites the database to hide entries, including deleting the tail, is detected. The Evidence view verifies the chain, shows the first invalid entry and offers a **tamper drill** that edits a copy and shows detection. Exports: evidence JSON, records CSV and receipts CSV (cells beginning `=`, `+`, `-` or `@` are prefixed with `'`), and a draft **ISO 20022 pain.001.001.09** file for deferred supplier payments. The draft is never transmitted.
 
 ## 13. HTTP layer
+
+Early POST denials send their original 403/415/429 response before discarding a
+valid, bounded request body (at most 2 MB, with a hard one-second deadline).
+The body is never parsed or authorized. This prevents unread input from causing
+a Windows connection reset that hides the denial. Existing Host, Origin, CSRF,
+content-type and rate-limit checks retain their enforcement.
 
 Loopback only. Host and Origin allow-lists, a per-run CSRF token on every write, `HttpOnly; SameSite=Strict` session cookie (eight hours), JSON-only bodies up to 2 MB, strict field allow-lists per endpoint, role checks, token-bucket rate limits (login stricter), no-store caching and a strict Content-Security-Policy, `X-Frame-Options: DENY`, `nosniff`. Internal errors are logged to the console and not returned.
 
@@ -182,3 +223,20 @@ describe their own earlier runs.
 The simulation date gates paid history in profiles, empirical sampling and the illustrative backtest, matching TidePay's existing cutoff. Mock collateral excludes committed and future-issued invoices. These checks do not reconstruct arbitrary historical ledger states or verify real lenders.
 
 Corrupted signing keys are preserved and rejected. Atomic create-if-absent publication prevents concurrent initial keys; storage must support hard links (NTFS/APFS/ext4). Back up keys, database and witness together. Malformed signatures are rejected, and `.env` now loads structured-plan settings. See `docs/INDEPENDENT_AUDIT.md` for reproduction and limits.
+
+## V7 owner constraints and native classifier
+
+`constraints.py` resolves integer basis points against the stored owner ceiling
+and current policy. The store saves the effective ceiling and checks replacement
+provenance, preference, exclusions, target and scope before cancelling the old
+mandate atomically. Approval and execution check the bound instructions again.
+No schema migration changed.
+
+Optional native semantic classification uses the already cached base model
+without the planning LoRA. UTF-8 text remains inside a separate untrusted JSON
+data envelope. Strict output parsing, one attempt, bounded raw evidence and
+fail-to-review behavior remain. Conditional/future payment updates require
+verification even when callback and approval safeguards are preserved. The
+fresh AI-authored set detected 23/24 attacks with 5/16 ordinary warning false
+positives and 8/8 legitimate payment updates reviewed. This does not establish
+real-world accuracy or validate native planning/receipt extraction.

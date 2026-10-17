@@ -1,0 +1,162 @@
+{
+  "scope": "Full stdlib suite instrumented before final UTF-8 prompt/input revision. Coverage is statement-only and not a final-source attestation. Final release separately reruns all tests.",
+  "modules": [
+    {
+      "module": "tideway.__init__",
+      "executable_statements": 2,
+      "statement_coverage_percent": 100.0
+    },
+    {
+      "module": "tideway.agent",
+      "executable_statements": 425,
+      "statement_coverage_percent": 82.1
+    },
+    {
+      "module": "tideway.analytics",
+      "executable_statements": 397,
+      "statement_coverage_percent": 93.7
+    },
+    {
+      "module": "tideway.constraints",
+      "executable_statements": 26,
+      "statement_coverage_percent": 92.3
+    },
+    {
+      "module": "tideway.conversation",
+      "executable_statements": 157,
+      "statement_coverage_percent": 96.2
+    },
+    {
+      "module": "tideway.copilot",
+      "executable_statements": 475,
+      "statement_coverage_percent": 87.2
+    },
+    {
+      "module": "tideway.counterparty",
+      "executable_statements": 57,
+      "statement_coverage_percent": 93.0
+    },
+    {
+      "module": "tideway.domain",
+      "executable_statements": 398,
+      "statement_coverage_percent": 84.9
+    },
+    {
+      "module": "tideway.financing",
+      "executable_statements": 75,
+      "statement_coverage_percent": 100.0
+    },
+    {
+      "module": "tideway.fixtures",
+      "executable_statements": 143,
+      "statement_coverage_percent": 100.0
+    },
+    {
+      "module": "tideway.i18n",
+      "executable_statements": 368,
+      "statement_coverage_percent": 99.5
+    },
+    {
+      "module": "tideway.local_model",
+      "executable_statements": 104,
+      "statement_coverage_percent": 93.3
+    },
+    {
+      "module": "tideway.ml.__init__",
+      "executable_statements": 1,
+      "statement_coverage_percent": 100.0
+    },
+    {
+      "module": "tideway.ml.deployed_evaluation",
+      "executable_statements": 258,
+      "statement_coverage_percent": 97.7
+    },
+    {
+      "module": "tideway.ml.evaluation_v2",
+      "executable_statements": 340,
+      "statement_coverage_percent": 97.9
+    },
+    {
+      "module": "tideway.ml.model",
+      "executable_statements": 169,
+      "statement_coverage_percent": 94.1
+    },
+    {
+      "module": "tideway.ml.synth",
+      "executable_statements": 64,
+      "statement_coverage_percent": 98.4
+    },
+    {
+      "module": "tideway.ml.tidelm_data",
+      "executable_statements": 364,
+      "statement_coverage_percent": 46.7
+    },
+    {
+      "module": "tideway.ml.train",
+      "executable_statements": 114,
+      "statement_coverage_percent": 20.2
+    },
+    {
+      "module": "tideway.plan_schema",
+      "executable_statements": 67,
+      "statement_coverage_percent": 98.5
+    },
+    {
+      "module": "tideway.planner",
+      "executable_statements": 480,
+      "statement_coverage_percent": 98.3
+    },
+    {
+      "module": "tideway.projection",
+      "executable_statements": 174,
+      "statement_coverage_percent": 90.2
+    },
+    {
+      "module": "tideway.screening",
+      "executable_statements": 150,
+      "statement_coverage_percent": 100.0
+    },
+    {
+      "module": "tideway.security",
+      "executable_statements": 81,
+      "statement_coverage_percent": 97.5
+    },
+    {
+      "module": "tideway.selftest",
+      "executable_statements": 342,
+      "statement_coverage_percent": 95.0
+    },
+    {
+      "module": "tideway.semantic_screening",
+      "executable_statements": 159,
+      "statement_coverage_percent": 76.1
+    },
+    {
+      "module": "tideway.server",
+      "executable_statements": 442,
+      "statement_coverage_percent": 64.3
+    },
+    {
+      "module": "tideway.service",
+      "executable_statements": 598,
+      "statement_coverage_percent": 87.5
+    },
+    {
+      "module": "tideway.store",
+      "executable_statements": 1355,
+      "statement_coverage_percent": 90.0
+    },
+    {
+      "module": "tideway.tidelm",
+      "executable_statements": 569,
+      "statement_coverage_percent": 83.0
+    },
+    {
+      "module": "tideway.vision",
+      "executable_statements": 129,
+      "statement_coverage_percent": 60.5
+    }
+  ],
+  "raw_log": "full-coverage.log",
+  "weighted_statement_coverage_percent": 86.43
+}

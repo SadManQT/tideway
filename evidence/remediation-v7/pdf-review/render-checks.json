@@ -1,0 +1,59 @@
+{
+  "source_tree_sha256": "0d7470a4c4dbc0873beb8f86a744971bb89dedc1a8fd462f1b8bcb11e7f09b39",
+  "renderer": "PyMuPDF 1.28.2",
+  "visual_review_completed": false,
+  "files": {
+    "slides/pitch.pdf": {
+      "sha256": "739406e2e7d6e4dd1346a3ff6c02f96e37750a4f426c6639ed7d30267b0eee4f",
+      "pages": 16,
+      "contact_sheet": "evidence/remediation-v7/pdf-review/pitch-contact.png",
+      "detailed_pages": [
+        "evidence/remediation-v7/pdf-review/pitch-p12.png",
+        "evidence/remediation-v7/pdf-review/pitch-p13.png"
+      ],
+      "text_blocks_outside_page": [],
+      "missing_slide_content": []
+    },
+    "docs/architecture.pdf": {
+      "sha256": "b81879ebe7eb77c1f3f8012c4feb176c318be2810c61a7ba3f09f5154e0eaf0a",
+      "pages": 9,
+      "contact_sheet": "evidence/remediation-v7/pdf-review/architecture-contact.png",
+      "detailed_pages": [
+        "evidence/remediation-v7/pdf-review/architecture-p3.png",
+        "evidence/remediation-v7/pdf-review/architecture-p9.png"
+      ],
+      "text_blocks_outside_page": [],
+      "missing_slide_content": []
+    },
+    "docs/security-assessment.pdf": {
+      "sha256": "d3e87c50eeea895191032ca14e9f8956251ac503a4a6a712c6f02e76d3b478e4",
+      "pages": 8,
+      "contact_sheet": "evidence/remediation-v7/pdf-review/security-assessment-contact.png",
+      "detailed_pages": [
+        "evidence/remediation-v7/pdf-review/security-assessment-p4.png"
+      ],
+      "text_blocks_outside_page": [],
+      "missing_slide_content": []
+    },
+    "docs/submission-notes.pdf": {
+      "sha256": "594f4734a0a5b680e992630935dfc3df8febb6d2bfac4af465d7288d5f110871",
+      "pages": 3,
+      "contact_sheet": "evidence/remediation-v7/pdf-review/submission-notes-contact.png",
+      "detailed_pages": [
+        "evidence/remediation-v7/pdf-review/submission-notes-p3.png"
+      ],
+      "text_blocks_outside_page": [],
+      "missing_slide_content": []
+    },
+    "docs/Tideway_FinTechathon_2026_Roadmap.pdf": {
+      "sha256": "d8c6e086afe1b7aeb5f6688a21fdb6ab6681ec00bf9b4b294401c84f5344566c",
+      "pages": 20,
+      "contact_sheet": "evidence/remediation-v7/pdf-review/Tideway_FinTechathon_2026_Roadmap-contact.png",
+      "detailed_pages": [
+        "evidence/remediation-v7/pdf-review/Tideway_FinTechathon_2026_Roadmap-p20.png"
+      ],
+      "text_blocks_outside_page": [],
+      "missing_slide_content": []
+    }
+  }
+}

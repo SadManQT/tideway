@@ -1,5 +1,9 @@
 # Tideway presentation script (target 9 minutes, maximum 10)
 
+Distinguish likely-path feasibility from simulated risk. H11's disclosed follow-up
+remained at 11.78% against the 10% target; human acknowledgement does not make it
+a target-met rescue. Owner discount ceilings remain binding during negotiation.
+
 Match the regenerated `slides/pitch.pdf`. Keep the full linked live runbook ready; use a shorter live excerpt inside the pitch and offer the full workflow during questions. No recording is included.
 
 | Time | Slides / message |

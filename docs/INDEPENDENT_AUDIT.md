@@ -1,4 +1,4 @@
-> Historical independent-audit pass before the screening/risk/infrastructure follow-up. See [REMEDIATION_V5.md](REMEDIATION_V5.md) and [READINESS_CURRENT.md](READINESS_CURRENT.md) for later source and evidence.
+> Historical independent-audit pass before the screening/risk/infrastructure follow-up. See [REMEDIATION_V7.md](REMEDIATION_V7.md) and [READINESS_CURRENT.md](READINESS_CURRENT.md) for later source and evidence.
 
 # Independent judge and auditor review - 17 October 2026
 

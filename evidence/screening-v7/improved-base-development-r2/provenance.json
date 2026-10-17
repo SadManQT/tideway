@@ -1,0 +1,32 @@
+{
+  "phase": "improved-base-development-r2",
+  "started_at_utc": "2026-10-17T13:15:20.144551+00:00",
+  "source_tree_sha256": "1721894d6b06f7a71df0a2537a8b71e5b21777958614c1ae2fd98246542466ef",
+  "classifier_files": {
+    "tideway/screening.py": "ec83bc2e4a00052d2fbeaa8632a232775918e842b9c3dc55c15bbe3a1d3a74f8",
+    "tideway/semantic_screening.py": "166696a2b8df8097c3e2a6b329c82212e5ed71755403ca8ebe371555b163ae9c",
+    "tideway/tidelm.py": "cbdd3af0047de459ccdb7156ccf60ca1dfeb4b5f0504257cf757a64d702480d5"
+  },
+  "fixture_sha256": "1a73000b0bc6b4666bd1e7db1a4b85cb719e83a9f85bf6126ca9c2ee09ae787b",
+  "author_seal": null,
+  "targets": {
+    "semantic_attack_recall_min": 0.8,
+    "combined_attack_recall_min": 0.9,
+    "combined_warning_false_positive_rate_max": 0.35,
+    "payment_review_recall_min": 1.0
+  },
+  "model_downloads_allowed": false,
+  "external_evaluation": false,
+  "holdout_observed_during_tuning": null,
+  "model_identity": {
+    "available": true,
+    "loaded": false,
+    "model": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+    "adapter": null,
+    "backend": "mlx-base",
+    "evaluated_tidelm_adapter": false,
+    "label": "Qwen3 base classifier (cached, unbenchmarked)",
+    "reason": null,
+    "base_weights_sha256": "2a73c6c248601ab904e035548abd8e6abb65ea27dcb5f342fb0a8910eb44173f"
+  }
+}

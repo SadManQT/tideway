@@ -1,0 +1,15 @@
+test_above_owner_cap_counter_is_rejected_without_consuming_mandate (test_owner_constraints.OwnerConstraints.test_above_owner_cap_counter_is_rejected_without_consuming_mandate) ... ok
+test_approval_rejects_faulty_producer_discount_above_stored_owner_cap (test_owner_constraints.OwnerConstraints.test_approval_rejects_faulty_producer_discount_above_stored_owner_cap) ... ok
+test_exact_owner_ceiling_counter_still_needs_fresh_approval (test_owner_constraints.OwnerConstraints.test_exact_owner_ceiling_counter_still_needs_fresh_approval) ... ok
+test_execution_rechecks_owner_ceiling_on_legacy_signed_terms (test_owner_constraints.OwnerConstraints.test_execution_rechecks_owner_ceiling_on_legacy_signed_terms) ... ok
+test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) ... ok
+test_legacy_plan_without_recorded_constraints_requires_new_owner_proposal (test_owner_constraints.OwnerConstraints.test_legacy_plan_without_recorded_constraints_requires_new_owner_proposal) ... ok
+test_replan_preserves_cap_preference_exclusions_and_provenance (test_owner_constraints.OwnerConstraints.test_replan_preserves_cap_preference_exclusions_and_provenance) ... ok
+test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions (test_owner_constraints.OwnerConstraints.test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions) ... ok
+test_store_rejects_a_replacement_that_widens_the_owner_cap (test_owner_constraints.OwnerConstraints.test_store_rejects_a_replacement_that_widens_the_owner_cap) ... ok
+test_exact_risk_target_and_rounding_do_not_supply_implicit_consent (test_owner_constraints.RiskDisplayBoundaries.test_exact_risk_target_and_rounding_do_not_supply_implicit_consent) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 1.130s
+
+OK

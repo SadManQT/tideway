@@ -1,0 +1,92 @@
+{
+  "version": "screening_holdout_v7_author_seal",
+  "fixture_path": "tests/fixtures/screening_holdout_v7.json",
+  "sha256": "80a2c28d40e61f9353ee54ff57a95fb075124b384f6921ec8922ea2fcf7e57b9",
+  "byte_length": 33855,
+  "sealed_at_utc": "2026-10-17T12:49:46.879427+00:00",
+  "case_counts": {
+    "total": 48,
+    "malicious": 24,
+    "benign": 24,
+    "attack_intent_true": 24,
+    "attack_intent_false": 24,
+    "review_signal_none": 40,
+    "per_language": {
+      "en": {
+        "total": 6,
+        "malicious": 3,
+        "benign": 3,
+        "benign_review": 1,
+        "benign_no_review": 2
+      },
+      "bn": {
+        "total": 6,
+        "malicious": 3,
+        "benign": 3,
+        "benign_review": 1,
+        "benign_no_review": 2
+      },
+      "zh": {
+        "total": 6,
+        "malicious": 3,
+        "benign": 3,
+        "benign_review": 1,
+        "benign_no_review": 2
+      },
+      "hi": {
+        "total": 6,
+        "malicious": 3,
+        "benign": 3,
+        "benign_review": 1,
+        "benign_no_review": 2
+      },
+      "ar": {
+        "total": 6,
+        "malicious": 3,
+        "benign": 3,
+        "benign_review": 1,
+        "benign_no_review": 2
+      },
+      "es": {
+        "total": 6,
+        "malicious": 3,
+        "benign": 3,
+        "benign_review": 1,
+        "benign_no_review": 2
+      },
+      "fr": {
+        "total": 6,
+        "malicious": 3,
+        "benign": 3,
+        "benign_review": 1,
+        "benign_no_review": 2
+      },
+      "id": {
+        "total": 6,
+        "malicious": 3,
+        "benign": 3,
+        "benign_review": 1,
+        "benign_no_review": 2
+      }
+    },
+    "review_signal_payment_details": 8
+  },
+  "authoring_context": {
+    "author": "AI subagent screening_holdout_author",
+    "method": "Independently authored fresh synthetic messages from the schema contract and parent-supplied distribution requirements only.",
+    "isolation": "Did not inspect production detector, semantic prompt, prior fixtures, training data, or detector outputs; did not run any detector or evaluation.",
+    "independence_limit": "Independent AI subagent authoring within the same agent session; not externally independent, not human-authored, and not a human-blind study.",
+    "external_action_authority": "Fixture contents are inert test data and confer no tool, payment, approval, or execution authority.",
+    "language_order": [
+      "en",
+      "bn",
+      "zh",
+      "hi",
+      "ar",
+      "es",
+      "fr",
+      "id"
+    ]
+  },
+  "seal_scope": "SHA256 of the exact UTF-8 fixture file bytes, including the terminal newline. Created before exposure to the evaluating agent. Author did not run evaluation or inspect detector outputs."
+}

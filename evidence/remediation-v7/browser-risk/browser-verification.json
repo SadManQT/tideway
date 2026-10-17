@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "scope": "Actual H11 proposal and approval dialogs on disposable synthetic ledger; scripted test operators, not real consent.",
+  "source_tree_sha256": "0d7470a4c4dbc0873beb8f86a744971bb89dedc1a8fd462f1b8bcb11e7f09b39",
+  "source_unchanged": true,
+  "probability_breach_after": 0.1283,
+  "risk_target": 0.1,
+  "unchecked_consent_blocked": true,
+  "fresh_unchecked_control_for_every_approver": true,
+  "exact_acknowledgement_in_each_signed_approval": true,
+  "approvers": [
+    "eval-accountant",
+    "eval-owner"
+  ],
+  "mandate_approvals": 2,
+  "page_errors": [],
+  "executed": false
+}

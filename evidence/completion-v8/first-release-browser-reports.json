@@ -1,0 +1,111 @@
+{
+  "source_tree_sha256": "94cff924563a1f44eb9a6567f705d6e2587bd36262d219476b25ac356c969297",
+  "tests_run": 352,
+  "evidence/screens/browser-verification.json": {
+    "run_at": "2026-10-17T14:24:34.901Z",
+    "passed": true,
+    "browser": "Chrome/155.0.8059.82",
+    "source_tree_sha256": "94cff924563a1f44eb9a6567f705d6e2587bd36262d219476b25ac356c969297",
+    "source_unchanged_during_browser": true,
+    "viewport": {
+      "desktop": [
+        1440,
+        900
+      ],
+      "mobile": [
+        375,
+        812
+      ]
+    },
+    "page_errors": [],
+    "tidelm_available": false,
+    "test_only_local_backend": false,
+    "test_real_backend": false,
+    "linked_payment_delay": true,
+    "model_inference_tested": false,
+    "real_model_verification": null,
+    "coverage": [
+      "landing",
+      "cash projection",
+      "dual approval",
+      "negotiation",
+      "execution and read-back",
+      "assistant fallback",
+      "what-if",
+      "audit tamper drill",
+      "international fixtures",
+      "fraud blocks",
+      "security self-test",
+      "mobile overflow",
+      "signup",
+      "invite",
+      "viewer isolation",
+      "public guide routes and assets",
+      "role-aware first-use guidance",
+      "guidance preferences and keyboard focus",
+      "guidance never changes financial state",
+      "residual-risk disclosure",
+      "missing payment-account disclosure and callback controls",
+      "bound risk acknowledgement",
+      "funding repayment and eligibility disclosure",
+      "approved payment delay",
+      "stale execution refusal",
+      "fresh proposal and counter approval",
+      "delay mobile"
+    ],
+    "fixture": "fresh synthetic database; no real money or external provider"
+  },
+  "evidence/completion-v8/browser-integration/browser-verification.json": {
+    "run_at": "2026-10-17T14:25:29.404Z",
+    "passed": true,
+    "browser": "Chrome/155.0.8059.82",
+    "source_tree_sha256": "94cff924563a1f44eb9a6567f705d6e2587bd36262d219476b25ac356c969297",
+    "source_unchanged_during_browser": true,
+    "viewport": {
+      "desktop": [
+        1440,
+        900
+      ],
+      "mobile": [
+        375,
+        812
+      ]
+    },
+    "page_errors": [],
+    "tidelm_available": true,
+    "test_only_local_backend": true,
+    "test_real_backend": false,
+    "linked_payment_delay": false,
+    "model_inference_tested": false,
+    "real_model_verification": null,
+    "coverage": [
+      "landing",
+      "cash projection",
+      "dual approval",
+      "negotiation",
+      "execution and read-back",
+      "test-double local model browser integration",
+      "what-if",
+      "audit tamper drill",
+      "international fixtures",
+      "fraud blocks",
+      "security self-test",
+      "mobile overflow",
+      "signup",
+      "invite",
+      "viewer isolation",
+      "public guide routes and assets",
+      "role-aware first-use guidance",
+      "guidance preferences and keyboard focus",
+      "guidance never changes financial state",
+      "residual-risk disclosure",
+      "owner discount cap counter rejection",
+      "replan cap/preference/exclusion preservation",
+      "successor provenance and fresh approval",
+      "missing payment-account disclosure and callback controls",
+      "bound risk acknowledgement",
+      "funding repayment and eligibility disclosure"
+    ],
+    "fixture": "fresh synthetic database; no real money or external provider"
+  }
+}

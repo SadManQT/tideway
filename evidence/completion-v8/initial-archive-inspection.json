@@ -1,0 +1,10 @@
+{
+  "archive_sha256": "cc03d7ea4762b49f23a4c2e00d80d0c927653cccb59f301e0c994779a6135d3a",
+  "archive_bytes": 73449440,
+  "tests_run": 348,
+  "source_tree_sha256": "0d7470a4c4dbc0873beb8f86a744971bb89dedc1a8fd462f1b8bcb11e7f09b39",
+  "current_source_tree_sha256": "0d7470a4c4dbc0873beb8f86a744971bb89dedc1a8fd462f1b8bcb11e7f09b39",
+  "zip_integrity_error": null,
+  "entries": 704,
+  "observation": "Existing ZIP contains 348-test evidence, not the reported historical 261-test version. It matches runtime source bytes at initial review; extraction evidence is historical Darwin, not a current Windows run."
+}

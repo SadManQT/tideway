@@ -2,7 +2,7 @@
 import copy
 import unittest
 
-from tideway.domain import ValidationError, canonical_json
+from tideway.domain import SecurityError, ValidationError, canonical_json
 from tideway.service import Tideway
 from tideway.store import json_hash
 
@@ -100,6 +100,53 @@ class OwnerConstraints(unittest.TestCase):
             self.app.store.create_plan(BUSINESS, payload, plan["snapshot_hash"], "agent:test", "agent:test",
                                        replaces_mandate=mandate["mandate_id"])
         self.assertEqual(before, self.counts())
+
+    def test_counter_rejects_parent_constraints_changed_after_signing(self):
+        plan, mandate = self.negotiated()
+        self.rewrite(plan, lambda body: body["owner_constraints"].update(max_discount_bps=300))
+        before = self.counts()
+        with self.assertRaisesRegex(ValidationError, "signed|changed|match"):
+            self.app.accept_counter(BUSINESS, mandate["mandate_id"], "agent:test")
+        self.assertEqual(before, self.counts())
+        self.assertEqual(self.app.store.mandate(BUSINESS, mandate["mandate_id"])["status"], "countered")
+
+    def test_replan_rejects_parent_preference_changed_after_signing(self):
+        plan, mandate = self.negotiated()
+        self.rewrite(plan, lambda body: body["owner_constraints"].update(prefer="fewest_asks"))
+        before = self.counts()
+        with self.assertRaisesRegex(ValidationError, "signed|changed|match"):
+            self.app.replan_without(BUSINESS, mandate["mandate_id"], "agent:test")
+        self.assertEqual(before, self.counts())
+        self.assertEqual(self.app.store.mandate(BUSINESS, mandate["mandate_id"])["status"], "countered")
+
+    def test_replacement_rechecks_parent_mandate_signature(self):
+        _, mandate = self.negotiated()
+        with self.app.store.connect() as db:
+            db.execute("UPDATE mandates SET document=? WHERE id=?",
+                       (canonical_json({**mandate, "signature": "0" * 64}), mandate["mandate_id"]))
+        before = self.counts()
+        with self.assertRaises(SecurityError):
+            self.app.replan_without(BUSINESS, mandate["mandate_id"], "agent:test")
+        self.assertEqual(before, self.counts())
+
+    def test_each_preference_survives_counter_then_refusal_replan(self):
+        for prefer in ("lowest_cost", "lowest_risk", "fewest_asks"):
+            with self.subTest(prefer=prefer):
+                original, mandate = self.negotiated(cap=150, prefer=prefer)
+                counter = self.app.accept_counter(BUSINESS, mandate["mandate_id"], "agent:test")
+                fresh_mandate = self.approve(counter)
+                action = counter["bundles"][0]["actions"][0]
+                self.app.simulate_decision(BUSINESS, fresh_mandate["mandate_id"], action["action_id"],
+                                           False, self.owner, "operator:nadia")
+                replanned = self.app.replan_without(BUSINESS, fresh_mandate["mandate_id"], "agent:test")
+                self.assertEqual(replanned["owner_constraints"], original["owner_constraints"])
+                self.assertTrue(set(original["excluded_counterparties"]) <= set(replanned["excluded_counterparties"]))
+                self.assertIn(action["counterparty"], replanned["excluded_counterparties"])
+                self.assertEqual(replanned["target_date"], original["target_date"])
+                self.assertEqual(replanned["supersedes"]["plan_id"], counter["plan_id"])
+                self.assertFalse(replanned["approvals"])
+                self.assertTrue(all(item.get("discount_bps", 0) <= 150
+                                    for bundle in replanned["bundles"] for item in bundle["actions"]))
 
     def test_store_records_effective_ceiling_not_a_wider_raw_producer_value(self):
         plan = self.propose()

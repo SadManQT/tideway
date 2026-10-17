@@ -1,0 +1,392 @@
+{
+  "version": "linked-delay-v1",
+  "passed": true,
+  "python": "3.14.6",
+  "machine": "Windows-11-10.0.26200-SP0",
+  "source": "Application.post with normal PIN/dual approval; no model inference",
+  "change": {
+    "request_id": "linked-delay-v1",
+    "business_id": "shapla-services",
+    "invoice_id": "inv-shapla-bay-oct",
+    "customer": "Bay Logistics",
+    "old_date": "2026-11-03",
+    "new_date": "2026-11-15",
+    "before_snapshot": "a6c9e24884f41569b26506a06fe060ca0b44e965d45417a06be1e7a31aff083f",
+    "after_snapshot": "f4ed197752de7348e77cd9f6df4956827541d75c37b98a73a7cc3a0f685665a0",
+    "state_version": 2,
+    "invalidated_plans": [
+      "27e34a333c6a4480946b20037e37288c"
+    ],
+    "invalidated_mandates": [
+      "3f08f1a317474c8baf750fa5f59fca62"
+    ],
+    "superseded_promise": null,
+    "replayed": false,
+    "audit_id": 10,
+    "audit_hash": "9a8c35db972605e237e8836e569abdda64d11bcc22f82c1d939ddaeec09327d6",
+    "currency": "BDT",
+    "target_date": "2026-10-31",
+    "before": {
+      "scheduled": {
+        "scenario": "base",
+        "currency": "BDT",
+        "opening_date": "2026-10-01",
+        "target_date": "2026-10-31",
+        "end_date": "2026-11-14",
+        "opening_cash_minor": 12000000,
+        "closing_cash_minor": 2300000,
+        "target_closing_cash_minor": -1000000,
+        "minimum_cash_minor": -1000000,
+        "minimum_cash_date": "2026-10-31",
+        "reserve_floor_minor": 2000000,
+        "reserve_shortfall_minor": 3000000,
+        "first_breach_date": "2026-10-31",
+        "first_negative_date": "2026-10-31",
+        "payroll_at_risk": true,
+        "payroll_outflow_minor": 8000000,
+        "total_inflow_minor": 8000000,
+        "total_outflow_minor": 17700000
+      },
+      "likely": {
+        "scenario": "likely",
+        "currency": "BDT",
+        "opening_date": "2026-10-01",
+        "target_date": "2026-10-31",
+        "end_date": "2026-11-14",
+        "opening_cash_minor": 12000000,
+        "closing_cash_minor": 2300000,
+        "target_closing_cash_minor": -3000000,
+        "minimum_cash_minor": -4200000,
+        "minimum_cash_date": "2026-11-03",
+        "reserve_floor_minor": 2000000,
+        "reserve_shortfall_minor": 6200000,
+        "first_breach_date": "2026-10-31",
+        "first_negative_date": "2026-10-31",
+        "payroll_at_risk": true,
+        "payroll_outflow_minor": 8000000,
+        "total_inflow_minor": 8000000,
+        "total_outflow_minor": 17700000
+      },
+      "probability_breach": 1.0,
+      "weather": "Storm"
+    },
+    "after": {
+      "scheduled": {
+        "scenario": "base",
+        "currency": "BDT",
+        "opening_date": "2026-10-01",
+        "target_date": "2026-10-31",
+        "end_date": "2026-11-14",
+        "opening_cash_minor": 12000000,
+        "closing_cash_minor": -3700000,
+        "target_closing_cash_minor": -1000000,
+        "minimum_cash_minor": -3700000,
+        "minimum_cash_date": "2026-11-05",
+        "reserve_floor_minor": 2000000,
+        "reserve_shortfall_minor": 5700000,
+        "first_breach_date": "2026-10-31",
+        "first_negative_date": "2026-10-31",
+        "payroll_at_risk": true,
+        "payroll_outflow_minor": 8000000,
+        "total_inflow_minor": 2000000,
+        "total_outflow_minor": 17700000
+      },
+      "likely": {
+        "scenario": "likely",
+        "currency": "BDT",
+        "opening_date": "2026-10-01",
+        "target_date": "2026-10-31",
+        "end_date": "2026-11-14",
+        "opening_cash_minor": 12000000,
+        "closing_cash_minor": -3700000,
+        "target_closing_cash_minor": -3000000,
+        "minimum_cash_minor": -5700000,
+        "minimum_cash_date": "2026-11-05",
+        "reserve_floor_minor": 2000000,
+        "reserve_shortfall_minor": 7700000,
+        "first_breach_date": "2026-10-31",
+        "first_negative_date": "2026-10-31",
+        "payroll_at_risk": true,
+        "payroll_outflow_minor": 8000000,
+        "total_inflow_minor": 2000000,
+        "total_outflow_minor": 17700000
+      },
+      "probability_breach": 1.0,
+      "weather": "Storm"
+    },
+    "next": "Old approvals are invalid. Create a fresh proposal, review and approve again, then negotiate."
+  },
+  "old_actions": [
+    {
+      "type": "supplier_deferral",
+      "record_id": "bill-shapla-rahman-oct",
+      "counterparty": "Rahman Supplies",
+      "amount_minor": 6000000,
+      "discount_bps": null,
+      "to_date": "2026-11-14"
+    },
+    {
+      "type": "early_payment_offer",
+      "record_id": "inv-shapla-nila-oct",
+      "counterparty": "Nila Traders",
+      "amount_minor": 1980000,
+      "discount_bps": 100,
+      "to_date": "2026-10-30"
+    }
+  ],
+  "fresh_actions": [
+    {
+      "type": "early_payment_offer",
+      "record_id": "inv-shapla-bay-oct",
+      "counterparty": "Bay Logistics",
+      "amount_minor": 5940000,
+      "discount_bps": 100,
+      "to_date": "2026-10-30"
+    },
+    {
+      "type": "early_payment_offer",
+      "record_id": "inv-shapla-nila-oct",
+      "counterparty": "Nila Traders",
+      "amount_minor": 1980000,
+      "discount_bps": 100,
+      "to_date": "2026-10-30"
+    }
+  ],
+  "final_actions": [
+    {
+      "type": "early_payment_offer",
+      "record_id": "inv-shapla-bay-oct",
+      "counterparty": "Bay Logistics",
+      "amount_minor": 5910000,
+      "discount_bps": 150,
+      "to_date": "2026-10-30"
+    },
+    {
+      "type": "early_payment_offer",
+      "record_id": "inv-shapla-nila-oct",
+      "counterparty": "Nila Traders",
+      "amount_minor": 1980000,
+      "discount_bps": 100,
+      "to_date": "2026-10-30"
+    }
+  ],
+  "stale_execution_blocked": true,
+  "stale_error": "This mandate is invalidated.",
+  "delay_retry_replayed": true,
+  "execution_retry_same_receipt": true,
+  "read_back_verified": true,
+  "receipt": {
+    "receipt_id": "97ef629a805d4f01a850701006e84bda",
+    "status": "executed",
+    "business_id": "shapla-services",
+    "currency": "BDT",
+    "mandate_id": "aeb0fdd364d8436bb762f99574669e79",
+    "mandate_signature": "d7adf1d1e7b89726090c5ee193b94c54de6c19e7bd92cec0a6d39318988c7c02",
+    "plan_id": "03ba009d5989461eb8fe404007e436b4",
+    "bundle_id": "counter-offer",
+    "idempotency_key": "fresh-delay-v1",
+    "executed_by": "nadia",
+    "executed_role": "owner",
+    "human_present": true,
+    "approvals": [
+      {
+        "created_at": "2026-10-17T14:31:27+00:00",
+        "operator_id": "imran",
+        "review_ms": 9000,
+        "risk_acknowledgement": null,
+        "role": "accountant"
+      },
+      {
+        "created_at": "2026-10-17T14:31:27+00:00",
+        "operator_id": "nadia",
+        "review_ms": 9000,
+        "risk_acknowledgement": null,
+        "role": "owner"
+      }
+    ],
+    "actions": [
+      {
+        "action_id": "offer-inv-shapla-bay-oct-100bps-counter",
+        "amount_minor": 5910000,
+        "counterparty": "Bay Logistics",
+        "currency": "BDT",
+        "days": 16,
+        "discount_bps": 150,
+        "face_minor": 6000000,
+        "from_date": "2026-11-15",
+        "record_id": "inv-shapla-bay-oct",
+        "to_date": "2026-10-30",
+        "type": "early_payment_offer"
+      },
+      {
+        "action_id": "offer-inv-shapla-nila-oct-100bps",
+        "amount_minor": 1980000,
+        "counterparty": "Nila Traders",
+        "currency": "BDT",
+        "days": 11,
+        "discount_bps": 100,
+        "face_minor": 2000000,
+        "from_date": "2026-11-10",
+        "record_id": "inv-shapla-nila-oct",
+        "to_date": "2026-10-30",
+        "type": "early_payment_offer"
+      }
+    ],
+    "owner_constraints": {
+      "max_discount_bps": 300,
+      "prefer": "lowest_cost"
+    },
+    "excluded_counterparties": [],
+    "risk": {
+      "acknowledgement_required": false,
+      "probability_breach_after": 0.0,
+      "risk_target": 0.1
+    },
+    "adjustments": [
+      {
+        "amount_minor": 5910000,
+        "face_minor": 6000000,
+        "invoice_id": "inv-shapla-bay-oct",
+        "kind": "invoice_early_payment",
+        "to_date": "2026-10-30"
+      },
+      {
+        "amount_minor": 1980000,
+        "face_minor": 2000000,
+        "invoice_id": "inv-shapla-nila-oct",
+        "kind": "invoice_early_payment",
+        "to_date": "2026-10-30"
+      }
+    ],
+    "exposure_minor": 8000000,
+    "cash_moved_minor": 0,
+    "synthetic": true,
+    "state_before": {
+      "version": 2,
+      "state_hash": "e4ccc6a1c7366a4a74d2d167e84f14274003cc191468c4df51f6b75b27b8bad1"
+    },
+    "state_after": {
+      "version": 3,
+      "state_hash": "109591fa2646d024a0e6256941c52bbfdec8d78dc90b0a64eb22c92966b7f02f"
+    },
+    "projection_before": {
+      "scenario": "likely",
+      "currency": "BDT",
+      "opening_date": "2026-10-01",
+      "target_date": "2026-10-31",
+      "end_date": "2026-11-14",
+      "opening_cash_minor": 12000000,
+      "closing_cash_minor": -3700000,
+      "target_closing_cash_minor": -3000000,
+      "minimum_cash_minor": -5700000,
+      "minimum_cash_date": "2026-11-05",
+      "reserve_floor_minor": 2000000,
+      "reserve_shortfall_minor": 7700000,
+      "first_breach_date": "2026-10-31",
+      "first_negative_date": "2026-10-31",
+      "payroll_at_risk": true,
+      "payroll_outflow_minor": 8000000,
+      "total_inflow_minor": 2000000,
+      "total_outflow_minor": 17700000
+    },
+    "projection_after": {
+      "scenario": "likely",
+      "currency": "BDT",
+      "opening_date": "2026-10-01",
+      "target_date": "2026-10-31",
+      "end_date": "2026-11-14",
+      "opening_cash_minor": 12000000,
+      "closing_cash_minor": 2190000,
+      "target_closing_cash_minor": 4890000,
+      "minimum_cash_minor": 2190000,
+      "minimum_cash_date": "2026-11-05",
+      "reserve_floor_minor": 2000000,
+      "reserve_shortfall_minor": 0,
+      "first_breach_date": null,
+      "first_negative_date": null,
+      "payroll_at_risk": false,
+      "payroll_outflow_minor": 8000000,
+      "total_inflow_minor": 7890000,
+      "total_outflow_minor": 17700000
+    },
+    "read_back": {
+      "verified": true,
+      "source": "post-write SELECT inside the same transaction"
+    },
+    "note": "Schedule changes in the synthetic sandbox only. No money moved and no real counterparty was contacted.",
+    "audit_id": 22,
+    "audit_hash": "80ce2347e38260749f8f17b6d44bcc7eeea33aba05d8d08415c1ebacea3832cd",
+    "witness": {
+      "cosigned": true,
+      "business_id": "shapla-services",
+      "size": 18,
+      "head_hash": "80ce2347e38260749f8f17b6d44bcc7eeea33aba05d8d08415c1ebacea3832cd",
+      "cosigned_at": "2026-10-17T14:31:27+00:00",
+      "signature": "f0fb63eee47d51a20d2d752af810abdf56ca3df65e2d985387f916a35978dc52"
+    }
+  },
+  "audit_valid": true,
+  "audit_entries": 18,
+  "workflow": [
+    {
+      "path": "/api/plan/propose",
+      "operator": "nadia"
+    },
+    {
+      "path": "/api/plan/approve",
+      "operator": "imran"
+    },
+    {
+      "path": "/api/plan/approve",
+      "operator": "nadia"
+    },
+    {
+      "path": "/api/demo/payment-delay",
+      "operator": "nadia"
+    },
+    {
+      "path": "/api/demo/payment-delay",
+      "operator": "nadia"
+    },
+    {
+      "path": "/api/plan/propose",
+      "operator": "nadia"
+    },
+    {
+      "path": "/api/plan/approve",
+      "operator": "imran"
+    },
+    {
+      "path": "/api/plan/approve",
+      "operator": "nadia"
+    },
+    {
+      "path": "/api/mandate/negotiate",
+      "operator": "nadia"
+    },
+    {
+      "path": "/api/mandate/counter",
+      "operator": "nadia"
+    },
+    {
+      "path": "/api/plan/approve",
+      "operator": "imran"
+    },
+    {
+      "path": "/api/plan/approve",
+      "operator": "nadia"
+    },
+    {
+      "path": "/api/mandate/negotiate",
+      "operator": "nadia"
+    },
+    {
+      "path": "/api/mandate/execute",
+      "operator": "nadia"
+    },
+    {
+      "path": "/api/mandate/execute",
+      "operator": "nadia"
+    }
+  ]
+}

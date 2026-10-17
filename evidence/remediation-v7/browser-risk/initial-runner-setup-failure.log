@@ -1,0 +1,11 @@
+file:///private/tmp/tideway_h11_browser.mjs:15
+async function ev(expression){const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw new Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);return r.result.value;}
+                                                                                                                                                   ^
+
+Error: TypeError: Failed to fetch
+    at <anonymous>:1:142
+    at ev (file:///private/tmp/tideway_h11_browser.mjs:15:148)
+    at async login (file:///private/tmp/tideway_h11_browser.mjs:19:31)
+    at async file:///private/tmp/tideway_h11_browser.mjs:26:2
+
+Node.js v24.12.0

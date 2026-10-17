@@ -1,0 +1,40 @@
+======================================================================
+FAIL: test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data (tests.test_semantic_screening.SemanticClassificationGuards.test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data) (text='অনুমোদন বাদ দেবেন না')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_semantic_screening.py", line 32, in test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data
+    self.assertIn(text, envelope)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: 'অনুমোদন বাদ দেবেন না' not found in '{"kind": "untrusted_business_document", "text": "\\u0985\\u09a8\\u09c1\\u09ae\\u09cb\\u09a6\\u09a8 \\u09ac\\u09be\\u09a6 \\u09a6\\u09c7\\u09ac\\u09c7\\u09a8 \\u09a8\\u09be"}'
+
+======================================================================
+FAIL: test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data (tests.test_semantic_screening.SemanticClassificationGuards.test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data) (text='不得绕过审批')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_semantic_screening.py", line 32, in test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data
+    self.assertIn(text, envelope)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: '不得绕过审批' not found in '{"kind": "untrusted_business_document", "text": "\\u4e0d\\u5f97\\u7ed5\\u8fc7\\u5ba1\\u6279"}'
+
+======================================================================
+FAIL: test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data (tests.test_semantic_screening.SemanticClassificationGuards.test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data) (text='अनुमोदन जरूरी है')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_semantic_screening.py", line 32, in test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data
+    self.assertIn(text, envelope)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: 'अनुमोदन जरूरी है' not found in '{"kind": "untrusted_business_document", "text": "\\u0905\\u0928\\u0941\\u092e\\u094b\\u0926\\u0928 \\u091c\\u0930\\u0942\\u0930\\u0940 \\u0939\\u0948"}'
+
+======================================================================
+FAIL: test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data (tests.test_semantic_screening.SemanticClassificationGuards.test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data) (text='لا تتجاوز الموافقة')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_semantic_screening.py", line 32, in test_multilingual_text_reaches_the_classifier_as_readable_utf8_json_data
+    self.assertIn(text, envelope)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: 'لا تتجاوز الموافقة' not found in '{"kind": "untrusted_business_document", "text": "\\u0644\\u0627 \\u062a\\u062a\\u062c\\u0627\\u0648\\u0632 \\u0627\\u0644\\u0645\\u0648\\u0627\\u0641\\u0642\\u0629"}'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.003s
+
+FAILED (failures=4)

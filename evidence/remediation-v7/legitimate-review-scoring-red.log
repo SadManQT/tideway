@@ -1,0 +1,13 @@
+======================================================================
+ERROR: test_attack_review_and_unavailable_are_scored_on_separate_denominators (tests.test_screening_v7.ScreeningEvidence.test_attack_review_and_unavailable_are_scored_on_separate_denominators)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_screening_v7.py", line 30, in test_attack_review_and_unavailable_are_scored_on_separate_denominators
+    self.assertEqual(metrics["legitimate_payment_review"]["tp"], 1)
+                     ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'legitimate_payment_review'
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.003s
+
+FAILED (errors=1)

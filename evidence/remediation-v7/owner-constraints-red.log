@@ -1,0 +1,190 @@
+test_above_owner_cap_counter_is_rejected_without_consuming_mandate (test_owner_constraints.OwnerConstraints.test_above_owner_cap_counter_is_rejected_without_consuming_mandate) ... FAIL
+test_approval_rejects_faulty_producer_discount_above_stored_owner_cap (test_owner_constraints.OwnerConstraints.test_approval_rejects_faulty_producer_discount_above_stored_owner_cap) ... FAIL
+test_exact_owner_ceiling_counter_still_needs_fresh_approval (test_owner_constraints.OwnerConstraints.test_exact_owner_ceiling_counter_still_needs_fresh_approval) ... ok
+test_execution_rechecks_owner_ceiling_on_legacy_signed_terms (test_owner_constraints.OwnerConstraints.test_execution_rechecks_owner_ceiling_on_legacy_signed_terms) ... FAIL
+test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) ... 
+  test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) (cap=True) ... FAIL
+  test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) (cap=-1) ... FAIL
+  test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) (cap=1.5) ... FAIL
+  test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) (cap='100') ... ERROR
+  test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) (cap=1001) ... FAIL
+test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) ... FAIL
+test_legacy_plan_without_recorded_constraints_requires_new_owner_proposal (test_owner_constraints.OwnerConstraints.test_legacy_plan_without_recorded_constraints_requires_new_owner_proposal) ... FAIL
+test_replan_preserves_cap_preference_exclusions_and_provenance (test_owner_constraints.OwnerConstraints.test_replan_preserves_cap_preference_exclusions_and_provenance) ... 
+  test_replan_preserves_cap_preference_exclusions_and_provenance (test_owner_constraints.OwnerConstraints.test_replan_preserves_cap_preference_exclusions_and_provenance) (prefer='lowest_cost') ... FAIL
+  test_replan_preserves_cap_preference_exclusions_and_provenance (test_owner_constraints.OwnerConstraints.test_replan_preserves_cap_preference_exclusions_and_provenance) (prefer='lowest_risk') ... FAIL
+  test_replan_preserves_cap_preference_exclusions_and_provenance (test_owner_constraints.OwnerConstraints.test_replan_preserves_cap_preference_exclusions_and_provenance) (prefer='fewest_asks') ... FAIL
+test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions (test_owner_constraints.OwnerConstraints.test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions) ... 
+  test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions (test_owner_constraints.OwnerConstraints.test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions) (key='preference') ... FAIL
+test_store_rejects_a_replacement_that_widens_the_owner_cap (test_owner_constraints.OwnerConstraints.test_store_rejects_a_replacement_that_widens_the_owner_cap) ... FAIL
+test_exact_risk_target_and_rounding_do_not_supply_implicit_consent (test_owner_constraints.RiskDisplayBoundaries.test_exact_risk_target_and_rounding_do_not_supply_implicit_consent) ... ok
+
+======================================================================
+ERROR: test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) (cap='100')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 142, in test_invalid_direct_owner_arguments_are_rejected
+    self.propose(cap=cap)
+    ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 20, in propose
+    return self.app.propose(BUSINESS, None, "agent:test", max_discount_bps=cap,
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            prefer=prefer, excluded=("Rahman Supplies",))
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ashraf/Desktop/tideway/tideway/service.py", line 298, in propose
+    planning_policy["max_discount_bps"] = min(policy["max_discount_bps"], max_discount_bps)
+                                          ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: '<' not supported between instances of 'str' and 'int'
+
+======================================================================
+FAIL: test_above_owner_cap_counter_is_rejected_without_consuming_mandate (test_owner_constraints.OwnerConstraints.test_above_owner_cap_counter_is_rejected_without_consuming_mandate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 60, in test_above_owner_cap_counter_is_rejected_without_consuming_mandate
+    with self.assertRaisesRegex(ValidationError, "discount|ceiling"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_approval_rejects_faulty_producer_discount_above_stored_owner_cap (test_owner_constraints.OwnerConstraints.test_approval_rejects_faulty_producer_discount_above_stored_owner_cap)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 113, in test_approval_rejects_faulty_producer_discount_above_stored_owner_cap
+    with self.assertRaisesRegex(ValidationError, "discount|ceiling"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_execution_rechecks_owner_ceiling_on_legacy_signed_terms (test_owner_constraints.OwnerConstraints.test_execution_rechecks_owner_ceiling_on_legacy_signed_terms)
+----------------------------------------------------------------------
+tideway.domain.ValidationError: Bay Logistics has not accepted the exact terms; execution blocked.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 127, in test_execution_rechecks_owner_ceiling_on_legacy_signed_terms
+    with self.assertRaisesRegex(ValidationError, "discount|ceiling|constraint"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "discount|ceiling|constraint" does not match "Bay Logistics has not accepted the exact terms; execution blocked."
+
+======================================================================
+FAIL: test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) (cap=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 141, in test_invalid_direct_owner_arguments_are_rejected
+    with self.subTest(cap=cap), self.assertRaises(ValidationError):
+                                ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) (cap=-1)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 141, in test_invalid_direct_owner_arguments_are_rejected
+    with self.subTest(cap=cap), self.assertRaises(ValidationError):
+                                ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) (cap=1.5)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 141, in test_invalid_direct_owner_arguments_are_rejected
+    with self.subTest(cap=cap), self.assertRaises(ValidationError):
+                                ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) (cap=1001)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 141, in test_invalid_direct_owner_arguments_are_rejected
+    with self.subTest(cap=cap), self.assertRaises(ValidationError):
+                                ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_invalid_direct_owner_arguments_are_rejected (test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 143, in test_invalid_direct_owner_arguments_are_rejected
+    with self.assertRaises(ValidationError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_legacy_plan_without_recorded_constraints_requires_new_owner_proposal (test_owner_constraints.OwnerConstraints.test_legacy_plan_without_recorded_constraints_requires_new_owner_proposal)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 135, in test_legacy_plan_without_recorded_constraints_requires_new_owner_proposal
+    with self.assertRaisesRegex(ValidationError, "constraint|fresh|owner"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_replan_preserves_cap_preference_exclusions_and_provenance (test_owner_constraints.OwnerConstraints.test_replan_preserves_cap_preference_exclusions_and_provenance) (prefer='lowest_cost')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 70, in test_replan_preserves_cap_preference_exclusions_and_provenance
+    self.assertEqual(fresh["owner_constraints"], {"max_discount_bps": 100, "prefer": prefer})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'max_discount_bps': 300, 'prefer': 'lowest_cost'} != {'max_discount_bps': 100, 'prefer': 'lowest_cost'}
+- {'max_discount_bps': 300, 'prefer': 'lowest_cost'}
+?                      ^
+
++ {'max_discount_bps': 100, 'prefer': 'lowest_cost'}
+?                      ^
+
+
+======================================================================
+FAIL: test_replan_preserves_cap_preference_exclusions_and_provenance (test_owner_constraints.OwnerConstraints.test_replan_preserves_cap_preference_exclusions_and_provenance) (prefer='lowest_risk')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 70, in test_replan_preserves_cap_preference_exclusions_and_provenance
+    self.assertEqual(fresh["owner_constraints"], {"max_discount_bps": 100, "prefer": prefer})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'max_discount_bps': 300, 'prefer': 'lowest_cost'} != {'max_discount_bps': 100, 'prefer': 'lowest_risk'}
+- {'max_discount_bps': 300, 'prefer': 'lowest_cost'}
+?                      ^                      ^^ ^
+
++ {'max_discount_bps': 100, 'prefer': 'lowest_risk'}
+?                      ^                      ^^ ^
+
+
+======================================================================
+FAIL: test_replan_preserves_cap_preference_exclusions_and_provenance (test_owner_constraints.OwnerConstraints.test_replan_preserves_cap_preference_exclusions_and_provenance) (prefer='fewest_asks')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 70, in test_replan_preserves_cap_preference_exclusions_and_provenance
+    self.assertEqual(fresh["owner_constraints"], {"max_discount_bps": 100, "prefer": prefer})
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'max_discount_bps': 300, 'prefer': 'lowest_cost'} != {'max_discount_bps': 100, 'prefer': 'fewest_asks'}
+- {'max_discount_bps': 300, 'prefer': 'lowest_cost'}
+?                      ^               ^^     ^^ ^
+
++ {'max_discount_bps': 100, 'prefer': 'fewest_asks'}
+?                      ^               ^^     ^ ^^
+
+
+======================================================================
+FAIL: test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions (test_owner_constraints.OwnerConstraints.test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions) (key='preference')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 106, in test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions
+    with self.subTest(key=key), self.assertRaises(ValidationError):
+                                ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_store_rejects_a_replacement_that_widens_the_owner_cap (test_owner_constraints.OwnerConstraints.test_store_rejects_a_replacement_that_widens_the_owner_cap)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/ashraf/Desktop/tideway/tests/test_owner_constraints.py", line 93, in test_store_rejects_a_replacement_that_widens_the_owner_cap
+    with self.assertRaisesRegex(ValidationError, "constraint|ceiling|discount"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+----------------------------------------------------------------------
+Ran 10 tests in 1.364s
+
+FAILED (failures=14, errors=1)

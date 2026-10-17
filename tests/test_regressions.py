@@ -224,6 +224,14 @@ class HttpRegressions(unittest.TestCase):
         self.assertEqual(self.raw(body, {"Content-Length": str(len(body))}), 400)
         self.assertEqual(audit_count(self.app), before)
 
+    def test_rejected_posts_deliver_403_without_reset_or_state_changes(self):
+        before = audit_count(self.app)
+        body = b"untrusted body that must never be parsed " * 2048
+        for headers in ({"Origin": "http://evil.example"}, {"X-Tideway-Token": "wrong"}):
+            for _ in range(8):
+                self.assertEqual(self.raw(body, {"Content-Length": str(len(body)), **headers}), 403)
+        self.assertEqual(audit_count(self.app), before)
+
     def test_missing_static_file_is_404_not_dropped(self):
         with mock.patch.dict(server.STATIC, {"/benchmarks/missing.json": "../evidence/missing.json"}):
             conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)

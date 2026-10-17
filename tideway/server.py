@@ -7,6 +7,7 @@ import json
 import re
 import secrets
 import sys
+import time
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -368,6 +369,35 @@ def make_handler(app):
                                  security_relevant=isinstance(exc, SecurityError))
             self.reply(400, {"error": message, "code": code})
 
+        def deny_post(self, status, message):
+            """Deliver an early denial without a Windows reset from unread input.
+
+            Send the denial first, then discard bounded bytes without parsing or
+            authorizing them. A hard one-second deadline also bounds slow input.
+            HTTP/1.0 closes this connection; discarded data is never reused.
+            """
+            self.close_connection = True
+            self.reply(status, {"error": message})
+            raw = self.headers.get("Content-Length", "").strip()
+            if not raw.isascii() or not raw.isdigit() or len(raw) > 7:
+                return
+            remaining = int(raw)
+            if not 0 < remaining <= 2_000_000:
+                return
+            timeout = self.connection.gettimeout()
+            deadline = time.monotonic() + 1.0
+            try:
+                while remaining and time.monotonic() < deadline:
+                    self.connection.settimeout(max(.001, deadline - time.monotonic()))
+                    chunk = self.rfile.read1(min(remaining, 65536))
+                    if not chunk:
+                        break
+                    remaining -= len(chunk)
+            except OSError:
+                pass  # Closed, timed-out or hostile clients cannot prevent denial.
+            finally:
+                self.connection.settimeout(timeout)
+
         def do_GET(self):
             if not self.trusted_host():
                 return self.reply(403, {"error": "Untrusted host. Open the loopback address printed by the server."})
@@ -399,21 +429,21 @@ def make_handler(app):
 
         def do_POST(self):
             if not self.trusted_host():
-                return self.reply(403, {"error": "Untrusted host."})
+                return self.deny_post(403, "Untrusted host.")
             port = self.server.server_port
             origin = self.headers.get("Origin")
             if origin is not None and origin not in (f"http://127.0.0.1:{port}", f"http://localhost:{port}"):
-                return self.reply(403, {"error": "Cross-origin writes are not allowed."})
+                return self.deny_post(403, "Cross-origin writes are not allowed.")
             if not secrets.compare_digest(self.headers.get("X-Tideway-Token", "").encode("utf-8", "surrogateescape"),
                                           app.csrf.encode()):
-                return self.reply(403, {"error": "Missing or invalid CSRF token. Refresh the page."})
+                return self.deny_post(403, "Missing or invalid CSRF token. Refresh the page.")
             if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
-                return self.reply(415, {"error": "Use application/json."})
+                return self.deny_post(415, "Use application/json.")
             path = urlsplit(self.path).path
             token, operator = self.session()
             limiter = app.login_limiter if path in ("/api/session/login", "/api/signup", "/api/team/join") else app.post_limiter
             if not limiter.allow(token or self.client_address[0]):
-                return self.reply(429, {"error": "Too many requests. Slow down and try again shortly."})
+                return self.deny_post(429, "Too many requests. Slow down and try again shortly.")
             business_id = None
             try:
                 raw_length = self.headers.get("Content-Length", "0").strip()
