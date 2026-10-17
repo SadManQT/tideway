@@ -23,6 +23,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from . import analytics, security
+from .constraints import check_plan_constraints
 from .domain import (
     OPEN_INVOICE_STATUSES,
     SecurityError,
@@ -1104,17 +1105,31 @@ class Store:
                 raise ValidationError("Autonomy is set to 'advise': the agent may explain but not create proposals.")
             if snapshot["snapshot_hash"] != snapshot_hash:
                 raise ValidationError("Records changed while planning; compare again.")
+            constraints = check_plan_constraints(payload, snapshot["policy"])
+            supersedes = None
             if replaces_mandate is not None:
                 old = db.execute("SELECT * FROM mandates WHERE business_id=? AND id=? AND kind='bundle'",
                                  (business_id, replaces_mandate)).fetchone()
                 if not old or old["status"] not in BUNDLE_LIVE:
                     raise ValidationError("The mandate being replaced is no longer live.")
+                parent_row, parent = self._fresh_plan(db, business_id, old["plan_id"], snapshot)
+                previous_constraints = check_plan_constraints(parent, snapshot["policy"])
+                if (constraints["max_discount_bps"] > previous_constraints["max_discount_bps"]
+                        or constraints["prefer"] != previous_constraints["prefer"]
+                        or not set(parent.get("excluded_counterparties", ())) <= set(payload.get("excluded_counterparties", ()))
+                        or payload["target_date"] != parent["target_date"]
+                        or payload["business_id"] != business_id or payload["currency"] != parent["currency"]):
+                    raise ValidationError("Replacement violates the original owner constraints; create a fresh owner-reviewed proposal.")
+                supersedes = {"plan_id": old["plan_id"], "plan_hash": parent_row["plan_hash"],
+                              "mandate_id": replaces_mandate}
                 db.execute("UPDATE mandates SET status='cancelled' WHERE id=?", (replaces_mandate,))
                 db.execute("UPDATE plans SET status='cancelled' WHERE id=? AND status IN ('pending','approved')", (old["plan_id"],))
                 self._audit(db, business_id, "mandate.cancel", actor, "agent_propose",
                             {"mandate_id": replaces_mandate, "reason": "replaced by a new proposal"})
             identifier = uuid.uuid4().hex
             body = {**payload, "snapshot_hash": snapshot_hash, "policy_version": snapshot["policy"]["version"]}
+            if supersedes is not None:
+                body["supersedes"] = supersedes
             plan_hash = json_hash(body)
             db.execute("UPDATE plans SET status='superseded' WHERE business_id=? AND target_date=? AND status='pending'",
                        (business_id, payload["target_date"]))
@@ -1253,6 +1268,7 @@ class Store:
             snapshot = self._snapshot(db, business_id)
             derived = self.derived(snapshot)
             row, payload = self._fresh_plan(db, business_id, plan_id, snapshot)
+            check_plan_constraints(payload, snapshot["policy"])
             if row["status"] == "executed":
                 raise ValidationError("This plan was already executed.")
             bundle = next((item for item in payload["bundles"] if item["bundle_id"] == bundle_id), None)
@@ -1321,6 +1337,8 @@ class Store:
                         "plan_id": plan_id, "bundle_id": bundle_id, "plan_hash": row["plan_hash"],
                         "snapshot_hash": snapshot["snapshot_hash"], "policy_version": policy["version"],
                         "target_date": payload["target_date"], "actions": [bound_terms(action) for action in bundle["actions"]],
+                        "owner_constraints": payload["owner_constraints"],
+                        "excluded_counterparties": payload.get("excluded_counterparties", []),
                         "constraints": {"payment.allowed_counterparties": sorted({action["counterparty"] for action in bundle["actions"]}),
                                         "payment.budget_minor": exposure, "execution.not_after": _later(minutes=MANDATE_MINUTES),
                                         "consent.required": [action["action_id"] for action in bundle["actions"]]},
@@ -1477,6 +1495,10 @@ class Store:
             if snapshot["snapshot_hash"] != document["snapshot_hash"]:
                 raise ValidationError("Records, policy or sandbox state changed after approval; execution blocked.")
             plan_row, payload = self._fresh_plan(db, business_id, document["plan_id"], snapshot)
+            check_plan_constraints(payload, snapshot["policy"])
+            if (document.get("owner_constraints", payload["owner_constraints"]) != payload["owner_constraints"]
+                    or document.get("excluded_counterparties", payload.get("excluded_counterparties", [])) != payload.get("excluded_counterparties", [])):
+                raise ValidationError("Signed owner constraints do not match the approved proposal.")
             if plan_row["plan_hash"] != document["plan_hash"]:
                 raise ValidationError("The plan hash does not match the mandate.")
             bundle = next(item for item in payload["bundles"] if item["bundle_id"] == document["bundle_id"])
@@ -1530,6 +1552,8 @@ class Store:
                        "bundle_id": document["bundle_id"], "idempotency_key": idempotency_key,
                        "executed_by": operator["id"], "executed_role": operator["role"], "human_present": True,
                        "approvals": document["approvals"], "actions": document["actions"],
+                       "owner_constraints": payload["owner_constraints"],
+                       "excluded_counterparties": payload.get("excluded_counterparties", []),
                        "risk": document.get("risk", {"probability_breach_after": bundle["probability_breach_after"],
                                                        "risk_target": payload["risk_target"], "acknowledgement_required": False}),
                        "adjustments": adjustments, "exposure_minor": document["exposure_minor"],

@@ -84,6 +84,12 @@ class OwnerConstraints(unittest.TestCase):
         discounts = [a["discount_bps"] for b in fresh["bundles"] for a in b["actions"] if a["type"] == "early_payment_offer"]
         self.assertIn(150, discounts)
         self.assertTrue(all(bps <= 150 for bps in discounts))
+        approved = self.approve(fresh)
+        self.assertEqual(approved["owner_constraints"], plan["owner_constraints"])
+        self.assertEqual(self.app.negotiate(BUSINESS, approved["mandate_id"], "agent:test")["status"], "ready")
+        receipt = self.app.store.execute(BUSINESS, approved["mandate_id"], "fresh-constraints", self.owner, "operator:nadia")
+        self.assertEqual(receipt["owner_constraints"], plan["owner_constraints"])
+        self.assertTrue(receipt["read_back"]["verified"])
 
     def test_store_rejects_a_replacement_that_widens_the_owner_cap(self):
         plan, mandate = self.negotiated()
@@ -98,6 +104,7 @@ class OwnerConstraints(unittest.TestCase):
     def test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions(self):
         plan, mandate = self.negotiated()
         for key in ("preference", "exclusions"):
+            before = self.counts()
             payload = copy.deepcopy(plan)
             if key == "preference":
                 payload["owner_constraints"]["prefer"] = "fewest_asks"
@@ -106,6 +113,8 @@ class OwnerConstraints(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(ValidationError):
                 self.app.store.create_plan(BUSINESS, payload, plan["snapshot_hash"], "agent:test", "agent:test",
                                            replaces_mandate=mandate["mandate_id"])
+            self.assertEqual(self.counts(), before)
+            self.assertEqual(self.app.store.mandate(BUSINESS, mandate["mandate_id"])["status"], "countered")
 
     def test_approval_rejects_faulty_producer_discount_above_stored_owner_cap(self):
         plan = self.propose(cap=300)
@@ -142,6 +151,14 @@ class OwnerConstraints(unittest.TestCase):
                 self.propose(cap=cap)
         with self.assertRaises(ValidationError):
             self.propose(prefer="invented")
+
+    def test_zero_stricter_and_more_permissive_policy_do_not_widen_owner_ceiling(self):
+        from tideway.constraints import owner_constraints
+        for owner_cap, policy_cap, expected in ((0, 300, 0), (100, 50, 50), (100, 300, 100)):
+            with self.subTest(owner=owner_cap, policy=policy_cap):
+                self.assertEqual(owner_constraints({"max_discount_bps": owner_cap, "prefer": "fewest_asks"},
+                                                   {"max_discount_bps": policy_cap}),
+                                 {"max_discount_bps": expected, "prefer": "fewest_asks"})
 
 
 class RiskDisplayBoundaries(unittest.TestCase):

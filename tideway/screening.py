@@ -38,7 +38,7 @@ INJECTION_PATTERNS = (
     ("concealed_action", re.compile(r"\b(?:hide|conceal|suppress)\b.{0,55}\b(?:payments?|transfers?|disbursements?|execution|owner|user|reviewers?)\b|\b(?:do\s+not|don't|never)\s+(?:show|tell|notify|inform|alert)\b.{0,65}\b(?:owner|user|reviewers?|approvers?)\b.{0,100}\b(?:approve|pay|payment|transfer|transmit|disbursement|execute)\b|\b(?:approve|execute|transmit|pay|release)\b.{0,65}\b(?:silently|secretly|quietly|in\s+secret)\b", re.I)),
     ("audit_tampering", re.compile(r"\b(?:delete|erase|clear|remove|purge|disable|rewrite)\b.{0,45}\b(?:audit\s+(?:trail|logs?|records?)|execution\s+logs?|transaction\s+logs?)\b", re.I)),
     ("action_command", re.compile(r"\b(?:wire|transfer|send|pay|release)\b.{0,60}\b(?:my|attacker|unverified)\s+(?:account|wallet)\b|\b(?:wire|transfer|send|pay|release)\b.{0,35}\b(?:all|full|entire)\s+(?:funds|balance|money)\b", re.I)),
-    ("payment_detail_change", re.compile(r"\b(new|updated|changed|different)\b.{0,20}\b(bank|account|iban|swift|bic|sort code|routing|wallet|paypal|wise|payoneer|revolut|alipay|wechat ?pay|upi|paynow|duitnow|promptpay|gcash|m-?pesa|bkash|nagad|pix)\b", re.I)),
+    ("payment_detail_change", re.compile(r"\b(new|updated|changed|different)\b.{0,20}\b(bank\s+(?:details|account|coordinates|beneficiary)|account|iban|swift|bic|sort code|routing|wallet|paypal|wise|payoneer|revolut|alipay|wechat ?pay|upi|paynow|duitnow|promptpay|gcash|m-?pesa|bkash|nagad|pix)\b", re.I)),
     ("payment_detail_change", re.compile(r"\b(?:bank\s+details|account|iban|wallet|beneficiary)\b.{0,20}\b(?:changed|updated|replaced|different)\b", re.I)),
     ("hidden_markup", re.compile(r"<\s*/?\s*(script|system|instructions?|iframe)\b|\{\{\s*(?:tool|system|execute|instructions?)\s*:", re.I)),
     # The same signals in other languages owners and counterparties actually write in.
@@ -107,8 +107,11 @@ _SPELLED_WORD = re.compile(
     r"(?<!\w)(?:" + "|".join(r"[\s._-]*".join(word) for word in _OBFUSCATED_WORDS) + r")(?!\w)", re.I)
 _LEET_WORDS = frozenset(_OBFUSCATED_WORDS) | {"pin", "rules", "policy", "account", "funds", "send"}
 _LEET = str.maketrans({"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t"})
-_QUOTED = re.compile(r'"[^"\n]{1,1000}"|“[^”\n]{1,1000}”|‘[^’\n]{1,1000}’|(?<!\w)\'[^\'\n]{1,1000}\'(?!\w)')
-_APPLY_QUOTED = re.compile(r"\b(?:obey|follow|apply|execute|carry\s+out|act\s+on|comply\s+with)\b.{0,55}\b(?:quote|quoted|above|below|attached|those|these|that|instructions?|directions?|commands?)\b", re.I)
+_QUOTED = re.compile(r'"[^"\n]{1,1000}"|“[^”\n]{1,1000}”|«[^»\n]{1,1000}»|「[^」\n]{1,1000}」|‘[^’\n]{1,1000}’|(?<!\w)\'[^\'\n]{1,1000}\'(?!\w)')
+_APPLY_QUOTED = re.compile(r"\b(?:obey|follow|apply|execute|carry\s+out|act\s+on|comply\s+with)\b.{0,55}\b(?:quote|quoted|above|below|attached|those|these|that|instructions?|directions?|commands?)\b"
+                           r"|(?:执行|遵循|照做).{0,18}(?:引号|引用|上述|指令)|(?:উদ্ধৃত|উপরের|সেই).{0,25}(?:অনুসরণ|পালন|কার্যকর)"
+                           r"|\b(?:sigue|aplica|suivez|appliquez|ikuti)\b.{0,35}\b(?:cita|citation|cit[eé]|kutipan)\b"
+                           r"|(?:نفذ|اتبع).{0,20}(?:اقتباس|المقتبس)", re.I)
 
 
 def _normalise(value):
@@ -147,8 +150,9 @@ def _mask_reported_quotes(value):
         prefix = value[max(0, match.start() - 100):match.start()]
         suffix = value[match.end():match.end() + 100]
         reported = re.search(r"\b(?:example\s+(?:of|text)|training\s+example|quoted\s+(?:example|text)|(?:rejected|blocked|flagged|reported|detected|received)\s+(?:(?:an?|the|this|that|a\s+suspicious)\s+)?(?:message|request|instruction|email|text)?|(?:message|email|report)\s+(?:said|reads?|states?|contained)|supplier\s+wrote)\s*[:,-]?\s*$", prefix, re.I)
+        training = re.search(r"(?:training\s+(?:example|handout)|inactive\s+example|培训.{0,12}(?:示例|例子)|示例坏请求|প্রশিক্ষণ.{0,25}উদাহরণ|অনুশীলন.{0,20}|उदाहरण|प्रशिक्षण|مثال.{0,20}تدريب|تمرين|(?:exemple|ejemplo|exerc[ií]cio).{0,30}(?:formation|formaci[oó]n|capacita|p[eé]dagog)|fiche\s+p[eé]dagogique).{0,25}$", prefix, re.I)
         rejected = re.match(r"\s*(?:is|was|would\s+be|must\s+be|should\s+be)\s+(?:an?\s+)?(?:attack|injection|prohibited|forbidden|unsafe|rejected|blocked|disallowed)\b", suffix, re.I)
-        if reported or rejected:
+        if reported or rejected or training:
             pieces[match.start():match.end()] = " " * (match.end() - match.start())
     return "".join(pieces)
 

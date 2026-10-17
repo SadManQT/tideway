@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 from . import analytics, counterparty, planner
+from .constraints import owner_constraints
 from .domain import CURRENCIES, MAX_AMOUNT_MINOR, OPEN_INVOICE_STATUSES, ValidationError, add_days, human_date, money_text, parse_combined_csv, parse_nonnegative, valid_date
 from .fixtures import FIXTURE_VERSION, OPERATORS, fixtures
 from .projection import horizon_end, project, summary
@@ -289,13 +290,14 @@ class Tideway:
         target = self._target(snapshot, target_date)
         derived = self.store.derived(snapshot)
         state, policy = snapshot["state"], snapshot["policy"]
+        constraints = owner_constraints({"max_discount_bps": policy["max_discount_bps"] if max_discount_bps is None else max_discount_bps,
+                                         "prefer": prefer}, policy)
         seed = analytics.stable_seed(business_id, snapshot["snapshot_hash"], target)
         base_sim = analytics.monte_carlo(snapshot["business"], policy, snapshot["records"], target, state["adjustments"],
                                          state["promises"], runs=PLAN_MC_RUNS, seed=seed,
                                          lookahead_days=policy["lookahead_days"], as_of=state["current_date"])
         planning_policy = dict(policy)
-        if max_discount_bps is not None:
-            planning_policy["max_discount_bps"] = min(policy["max_discount_bps"], max_discount_bps)
+        planning_policy["max_discount_bps"] = constraints["max_discount_bps"]
         payload = planner.plan_recovery(snapshot["business"], planning_policy, snapshot["records"], target,
                                         accepted=state["adjustments"], promises=state["promises"],
                                         profiles=derived["profiles"], basis_dates=derived["likely_dates"],
@@ -306,7 +308,7 @@ class Tideway:
         payload["probability_breach_before"] = base_sim["probability_breach"]
         payload["futures_short_of_20_before"] = base_sim["futures_short_of_20"]
         payload["excluded_counterparties"] = sorted(excluded)
-        payload["owner_constraints"] = {"max_discount_bps": planning_policy["max_discount_bps"], "prefer": prefer}
+        payload["owner_constraints"] = constraints
         return self.store.create_plan(business_id, payload, snapshot["snapshot_hash"], proposed_by, actor,
                                       replaces_mandate=replaces_mandate)
 
@@ -360,6 +362,8 @@ class Tideway:
         snapshot = self.store.snapshot(business_id)
         derived = self.store.derived(snapshot)
         policy, business = snapshot["policy"], snapshot["business"]
+        constraints = owner_constraints(plan.get("owner_constraints"), policy)
+        policy = {**policy, "max_discount_bps": constraints["max_discount_bps"]}
         revised = []
         for action in bundle["actions"]:
             reply = latest.get(action["action_id"], {}).get("response", {})
@@ -371,8 +375,9 @@ class Tideway:
                 item["adjustment"] = {**action["adjustment"], "amount_minor": terms["amount_minor"], "to_date": terms["to_date"]}
             elif terms and action["type"] == "early_payment_offer":
                 bps = terms["discount_bps"]
-                if bps > policy["max_discount_bps"]:
-                    raise ValidationError("The customer's counter-offer is above the policy's maximum discount.")
+                if type(bps) is not int or not 0 <= bps <= policy["max_discount_bps"]:
+                    raise ValidationError("The customer's counter-offer exceeds the owner or policy discount ceiling. "
+                                          "Create a new owner-reviewed proposal to change instructions.")
                 discount = action["face_minor"] * bps // 10_000
                 item.update({"discount_bps": bps, "discount_minor": discount, "amount_minor": action["face_minor"] - discount,
                              "economic_cost_minor": discount,
@@ -429,15 +434,13 @@ class Tideway:
         # bounded requests. Nothing is agreed or executed here; every request
         # in a replacement plan needs fresh approval and exact consent again.
         if not check["feasible"] or simulation["probability_breach"] > planner.RISK_TARGET:
-            constraints = plan.get("owner_constraints", {})
-            repair_policy = {**policy, "max_discount_bps": min(policy["max_discount_bps"],
-                                                               constraints.get("max_discount_bps", policy["max_discount_bps"]))}
+            repair_policy = policy
             repair = planner.plan_recovery(business, repair_policy, snapshot["records"], document["target_date"],
                                             accepted=state["adjustments"], promises=state["promises"],
                                             profiles=derived["profiles"], basis_dates=derived["likely_dates"],
                                             blocked=derived["blocked"], excluded_counterparties=plan.get("excluded_counterparties", ()),
                                             mc_seed=repair_seed, mc_runs=PLAN_MC_RUNS, as_of=state["current_date"],
-                                            prefer=constraints.get("prefer", "lowest_cost"), required_actions=revised)
+                                            prefer=constraints["prefer"], required_actions=revised)
             best = repair["bundles"][0] if repair["bundles"] else None
             if best and best["feasible"] and (not check["feasible"] or
                                               best["probability_breach_after"] < simulation["probability_breach"]):
@@ -452,6 +455,7 @@ class Tideway:
                 payload = repair
             elif simulation["probability_breach"] > planner.RISK_TARGET:
                 payload["explanation"] += " The simulated risk target remains unmet; explicit residual-risk acknowledgement is required."
+        payload["owner_constraints"] = constraints
         return self.store.create_plan(business_id, payload, snapshot["snapshot_hash"], "agent:counter-offer", actor,
                                       replaces_mandate=mandate_id)
 
@@ -464,8 +468,11 @@ class Tideway:
             raise ValidationError("No counterparty refused or countered this mandate.")
         target = view["mandate"]["target_date"]
         previous = self.store.plan(business_id, view["mandate"]["plan_id"])
+        constraints = owner_constraints(previous.get("owner_constraints"), self.store.snapshot(business_id)["policy"])
         excluded = set(refused) | set(previous.get("excluded_counterparties", []))
-        return self.propose(business_id, target, actor, "agent:replan", tuple(sorted(excluded)), replaces_mandate=mandate_id)
+        return self.propose(business_id, target, actor, "agent:replan", tuple(sorted(excluded)),
+                            max_discount_bps=constraints["max_discount_bps"], prefer=constraints["prefer"],
+                            replaces_mandate=mandate_id)
 
     def send_reminder(self, business_id, target_date, action_id, operator, actor, standing=False):
         snapshot = self.store.snapshot(business_id)
