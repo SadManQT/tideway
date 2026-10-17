@@ -70,7 +70,8 @@ def baseline_module():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--phase", choices=("baseline-development", "improved-development", "fresh"), required=True)
+    parser.add_argument("--phase", choices=("baseline-development", "improved-development", "baseline-base-development",
+                                            "improved-base-development", "fresh"), required=True)
     args = parser.parse_args()
     # Must be set before importing inference libraries. Never download weights.
     os.environ.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", TIDEWAY_LOCAL_TEXT_MODEL="",
@@ -83,9 +84,10 @@ def main():
     author = verify_author_seal(fixture, ROOT / "evidence/screening-v7/holdout-author-seal.json") if args.phase == "fresh" else None
     out = ROOT / "evidence/screening-v7" / args.phase
     digest, _ = source_digest()
-    classifier = baseline_module() if args.phase == "baseline-development" else semantic_screening
+    baseline = args.phase.startswith("baseline")
+    classifier = baseline_module() if baseline else semantic_screening
     files = [ROOT / "tideway" / name for name in ("screening.py", "semantic_screening.py", "tidelm.py")]
-    if args.phase == "baseline-development":
+    if baseline:
         files = list((ROOT / "evidence/remediation-v7/baseline-runtime").glob("*.py"))
     before = {str(p.relative_to(ROOT)): sha256(p) for p in files}
     metadata = {"phase": args.phase, "started_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -93,7 +95,7 @@ def main():
                 "author_seal": author, "targets": TARGETS, "model_downloads_allowed": False,
                 "external_evaluation": False, "holdout_observed_during_tuning": False if author else None}
     start_run(out, metadata)
-    lm = TideLM()
+    lm = TideLM(adapter=None) if "base" in args.phase or args.phase == "fresh" else TideLM()
     identity = lm.status()
     cached = try_to_load_from_cache(BASE_MODEL, "model.safetensors")
     if isinstance(cached, str):

@@ -1,5 +1,6 @@
 """Publish a current evidence index without rewriting historical observations."""
 from pathlib import Path
+import argparse
 import json
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -9,12 +10,17 @@ def read(name):
     return json.loads((ROOT / name).read_text(encoding='utf-8'))
 
 
-def main():
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--evidence-dir', help='Current versioned release evidence directory')
+    args = parser.parse_args(argv)
     tests = read('evidence/test-summary.json')
     model = read('evidence/readiness-v3/blind/model-first-observation.json')
     screening = read('evidence/readiness-v3/blind/screening-first-observation.json')
     pay = read('evidence/readiness-v3/tidepay/report.json')
-    current = 'evidence/readiness-v5' if (ROOT / 'evidence/readiness-v5/scenarios/report.json').is_file() else 'evidence/readiness-v3'
+    current = args.evidence_dir or ('evidence/remediation-v7' if (ROOT / 'evidence/remediation-v7/scenarios/report.json').is_file()
+                                  else 'evidence/readiness-v5' if (ROOT / 'evidence/readiness-v5/scenarios/report.json').is_file()
+                                  else 'evidence/readiness-v3')
     scenarios = read(current + '/scenarios/report.json')
     inj = screening['injection']['confusion']
     results = pay['results']
@@ -29,7 +35,9 @@ def main():
     audit_result = (f"{audit['matched']['numerator']}/{audit['requests']} known requests handled; "
                     f"{audit['containment']['numerator']}/{audit['requests']} contained"
                     if audit.get('real_model_inference') else 'Not recorded')
-    doc = f'''# Current technical readiness — evidence v3
+    ci = read('evidence/infrastructure-v5/hosted-ci-status.json')
+    ci_status = f"Stored hosted run {ci.get('run_number', 'unknown')} concluded {ci.get('conclusion', ci.get('remote_baseline_conclusion', 'unknown'))} for commit {ci.get('remote_commit', 'unknown')}."
+    doc = f'''# Current technical readiness
 
 This is the current review index. Tideway remains a synthetic SME finance copilot:
 cash forecasts, recovery proposals, human approval, simulated negotiation and
@@ -147,11 +155,12 @@ is historical and does not attest to the current checkout.
 Instruction screening has finite coverage. The v5 and v6 first observations below
 are separate authored sets; they cannot be compared as an uncontrolled percentage
 improvement. Optional semantic checks remain advisory and require a local model.
-Real consented SME feedback, native MLX/TideLM and receipt-model evaluation,
+Real consented SME feedback, current MLX/TideLM planning and receipt-model evaluation,
 external security testing and real-data calibration remain outstanding.
 Partial settlements, reversals and real lender eligibility require separate
-financial design before live integration. Hosted CI failed for remote commit bd8c061 on Windows; its Linux/macOS jobs
-passed. Current fixes remain local and have not been verified by hosted CI.
+financial design before live integration. {ci_status}
+That historical receipt does not attest to this local remediation; no push or
+hosted run was performed for these changes.
 See the explicit infrastructure status below for the separately tested Docker
 build; no ordinary bridge or host port exposure is inferred from isolated tests.
 
@@ -191,12 +200,35 @@ be guaranteed from synthetic checks while these validation gaps remain.
 - Docker status: {infrastructure}
   [Raw Docker proof](../evidence/infrastructure-v5/docker/report.json).
   No native MLX, host-network reachability or external penetration test is implied.
-- [Hosted CI status](../evidence/infrastructure-v5/hosted-ci-status.json): the existing
-  remote baseline has Windows failures. Node-24 action pins and a Docker job are
-  prepared locally; [actionlint](../evidence/infrastructure-v5/actionlint.json) checks
-  workflow syntax. No push or current-source hosted success is claimed.
-- [Implementation and verification report](REMEDIATION_V5.md).
+- [Stored hosted CI status](../evidence/infrastructure-v5/hosted-ci-status.json):
+  {ci_status} No hosted run for the current remediation is claimed.
+- [Implementation and verification report](REMEDIATION_V7.md).
 """
+    if (ROOT / current / 'planner/report.json').is_file():
+        doc = doc.replace('../evidence/readiness-v5/planner/report.json', f'../{current}/planner/report.json')
+    doc += '\n## Owner constraints and v7 screening follow-up\n\n'
+    doc += ('Owner discount ceilings, preferences and exclusions survive counter-offers and replans. '
+            'The store rejects above-ceiling actions and widened successor constraints. '
+            'Legacy plans without recorded instructions need a fresh owner-reviewed proposal. '
+            'The UI distinguishes likely-path feasibility from simulated risk and preserves above-target precision.\n\n')
+    for phase in ('baseline-development', 'improved-development', 'baseline-base-development', 'improved-base-development', 'fresh'):
+        path = ROOT / 'evidence/screening-v7' / phase / 'report.json'
+        if path.is_file():
+            report = json.loads(path.read_text(encoding='utf-8'))
+            metrics = report['metrics']
+            doc += (f"- [{phase}](../evidence/screening-v7/{phase}/report.json): {report['cases']} cases; "
+                    f"semantic attack recall {metrics['semantic_attack']['recall']:.1%}; "
+                    f"combined attack recall {metrics['combined_attack']['recall']:.1%}; "
+                    f"broader warning false-positive rate {metrics['combined_warning']['false_positive_rate']:.1%}; "
+                    f"targets met: {report['targets_met']}. Backend: {report['model_identity']['backend']}; recorded model artifacts apply.\n")
+        else:
+            doc += f'- {phase}: no completed report; quality verification remains outstanding.\n'
+    doc += ('\nDevelopment cases are disclosed v6 regressions. The fresh set is separately AI-authored, '
+            'not an external or human-blind assessment. Native MLX classification cannot inherit '
+            'Windows GGUF or historical TideLM planning scores. Every miss and raw output is retained. '
+            'The native classifier uses the already cached base model without the planning LoRA; '
+            'the planning backend is unchanged. Independent remediation review agents were unavailable '
+            'because of an account usage limit; no independent review pass is claimed.\n')
     (ROOT / 'docs/READINESS_CURRENT.md').write_bytes(doc.encode('utf-8'))
     print('Updated docs/READINESS_CURRENT.md from recorded evidence.')
 

@@ -810,8 +810,11 @@ function bundleCard(plan, bundle, index) {
 function residualRiskHtml(plan, bundle) {
   if (!bundle.feasible || !isNum(bundle.probability_breach_after) || !isNum(plan.risk_target)
       || bundle.probability_breach_after <= plan.risk_target) return "";
-  const risk = Math.round(bundle.probability_breach_after * 1000) / 10;
-  const target = isNum(plan.risk_target) ? Math.round(plan.risk_target * 1000) / 10 : 10;
+  let risk = (bundle.probability_breach_after * 100).toLocaleString("en-US", {maximumSignificantDigits: 10});
+  const target = (plan.risk_target * 100).toLocaleString("en-US", {maximumSignificantDigits: 10});
+  if (Number(risk.replaceAll(",", "")) <= Number(target.replaceAll(",", ""))) {
+    risk = String(bundle.probability_breach_after * 100); // Keep even a sub-display-precision excess visible.
+  }
   const decision = bundle.dual_approval_required ? "Target not met — owner decision required" : "Target not met — explicit approver decision required";
   return `<div class="alert warning residual-risk" role="note">${icon("alert")}<div><strong>${decision}</strong><span>Residual risk is ${esc(risk)}% of simulated futures falling below reserve, above the ${esc(target)}% target. Each approver must explicitly accept this remaining risk; this is not a guaranteed rescue.</span></div></div>`;
 }
@@ -834,7 +837,7 @@ function mandateCard(view) {
     if (view.status === "active") controls.push(`<button class="button teal" data-action="negotiate" data-mandate="${esc(m.mandate_id)}">${icon("send")}Send requests to counterparties</button>`);
     if (view.status === "ready") controls.push(`<button class="button primary" data-action="execute" data-mandate="${esc(m.mandate_id)}">${icon("play")}Execute once in the sandbox</button>`);
     if (view.status === "countered") controls.push(`<button class="button teal" data-action="counter" data-mandate="${esc(m.mandate_id)}">Turn the counter-offer into a new proposal</button>`);
-    if (view.status === "rejected") controls.push(`<button class="button teal" data-action="replan" data-mandate="${esc(m.mandate_id)}">Re-plan without them</button>`);
+    if (["rejected", "countered"].includes(view.status)) controls.push(`<button class="button teal" data-action="replan" data-mandate="${esc(m.mandate_id)}">Re-plan without them</button>`);
     controls.push(`<button class="button ghost" data-action="cancel-mandate" data-mandate="${esc(m.mandate_id)}">Cancel mandate</button>`);
   }
   return `<section class="card section-gap" id="mandate-${esc(m.mandate_id)}"><div class="card-head"><div><span class="eyebrow">Signed mandate · ${esc(m.version)}</span><h3>${esc(m.actions.length)} bound action(s) · exposure ${money(m.exposure_minor)}</h3><p>Approved by ${m.approvals.map((item) => `${esc(item.operator_id)} (${esc(item.role)})`).join(" + ")} · expires ${esc(new Date(m.expires_at).toLocaleTimeString())} · human present</p></div><span class="pill ${statusPill}">${esc(view.status)}</span></div>
@@ -891,6 +894,8 @@ function renderRescue() {
   const latest = state.receipt || (d.executions || []).slice(-1)[0];
   if (latest && !(d.mandates || []).length) parts.push(receiptCard(latest, !state.receipt));
   if (plan) {
+    const owner = plan.owner_constraints;
+    parts.push(`<div class="card owner-constraints"><strong>Owner instructions</strong><p>${owner && isNum(owner.max_discount_bps) ? `Maximum discount ${esc(owner.max_discount_bps / 100)}%; ranking ${esc(String(owner.prefer).replaceAll("_", " "))}.` : "Instructions are unavailable for this legacy proposal. Create a fresh owner-reviewed proposal."} Existing instructions remain binding when counter-offers or refusals require a new plan.</p></div>`);
     parts.push(`<section class="card section-gap"><div class="card-head"><div><span class="eyebrow">Proposal ${esc(plan.plan_id.slice(0, 8))} · ${esc(plan.status)}</span><h3>${plan.action_needed ? `Gap of ${money(plan.gap_minor)} on the likely path` : "No action needed"}</h3><p>${esc(plan.explanation)}</p></div><div class="row">${plan.action_needed && !plan.bundles.some((bundle) => bundle.feasible) ? `<span class="pill storm">No safe option found</span>` : ""}${isNum(plan.futures_short_of_20_before) ? `<span class="pill ${plan.futures_short_of_20_before > 2 ? "storm" : "ok"}">Before: ${esc(plan.futures_short_of_20_before)} of 20 futures short</span>` : ""}</div></div>
       ${searchSummary(plan.search) ? `<p class="small muted">${esc(searchSummary(plan.search))}</p>` : ""}</section>`);
     parts.push(`<section class="stack section-gap">${plan.bundles.map((bundle, index) => bundleCard(plan, bundle, index)).join("")}</section>`);

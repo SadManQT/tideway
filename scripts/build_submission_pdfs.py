@@ -230,7 +230,9 @@ def slides():
                      "No user study or external penetration test yet",
                      "Next: consented SME pilots, new unseen screening checks and independent security review"]},
     ]
-    scenarios = _json("evidence/readiness-v3/scenarios/report.json") or _json("evidence/upgrade-v1/scenarios/report.json") or {}
+    scenario_dir = next((folder for folder in ("evidence/remediation-v7", "evidence/readiness-v5", "evidence/readiness-v3", "evidence/upgrade-v1")
+                         if (ROOT / folder / "scenarios/report.json").is_file()), "evidence/readiness-v3")
+    scenarios = _json(scenario_dir + "/scenarios/report.json") or {}
     if scenarios:
         counts = scenarios["summary"]
         outcomes = counts["by_expected_outcome"]
@@ -242,7 +244,8 @@ def slides():
                                      f"Only {risk_met}/{counts['executed_rescues']} rescues meet the 10% simulated-risk target",
                                      f"Injection: {attacks['true_positive']}/{attacks['malicious_denominator']} attacks detected; {attacks['false_positive']}/{attacks['benign_denominator']} benign messages flagged",
                                      f"Payee: {payees['true_positive']}/{payees['malicious_denominator']} attacks detected; {payees['false_positive']}/{payees['benign_denominator']} benign cases flagged",
-                                     "Retained outcomes and planner timings: evidence/readiness-v3/scenarios/"]})
+                                     "Retained outcomes and planner timings: " + scenario_dir + "/scenarios/",
+                                     "H11 retains above-target risk; acknowledgement is a decision, not a guarantee"]})
     blind = _json("evidence/readiness-v3/blind/screening-first-observation.json") or {}
     if blind and local_smoke:
         counts = blind['injection']['confusion']
@@ -252,7 +255,13 @@ def slides():
                                      "Amount and customer substitutions exposed; deterministic guard regressions added",
                                      f"Screening: {counts['true_positive']}/24 attacks detected, {counts['false_positive']}/24 benign flagged",
                                      "Screening is not authorization; every extracted draft needs human review"]})
-    delay = _json("evidence/readiness-v3/payment-delay.json") or _json("evidence/upgrade-v1/payment-delay.json") or {}
+        fresh = _json("evidence/screening-v7/fresh/report.json") or {}
+        if fresh:
+            metrics = fresh["metrics"]
+            deck[11]["bullets"][-2] = (f"V7 fresh screening: semantic recall {metrics['semantic_attack']['recall']:.1%}; "
+                                       f"warning false-positive rate {metrics['combined_warning']['false_positive_rate']:.1%}")
+            deck[11]["bullets"][-1] = (f"Cached MLX base; synthetic set; targets met: {fresh['targets_met']}; no payment authority")
+    delay = _json(scenario_dir + "/payment-delay.json") or _json("evidence/readiness-v3/payment-delay.json") or _json("evidence/upgrade-v1/payment-delay.json") or {}
     if delay.get("passed"):
         change = delay["change"]
         before = change["before"]["likely"]; after = change["after"]["likely"]

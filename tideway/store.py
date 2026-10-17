@@ -1127,7 +1127,8 @@ class Store:
                 self._audit(db, business_id, "mandate.cancel", actor, "agent_propose",
                             {"mandate_id": replaces_mandate, "reason": "replaced by a new proposal"})
             identifier = uuid.uuid4().hex
-            body = {**payload, "snapshot_hash": snapshot_hash, "policy_version": snapshot["policy"]["version"]}
+            body = {**payload, "owner_constraints": constraints,
+                    "snapshot_hash": snapshot_hash, "policy_version": snapshot["policy"]["version"]}
             if supersedes is not None:
                 body["supersedes"] = supersedes
             plan_hash = json_hash(body)
@@ -1139,6 +1140,7 @@ class Store:
                         canonical_json(body), "pending", proposed_by, utc_now()))
             receipt = self._audit(db, business_id, "plan.propose", actor, "agent_propose",
                                   {"plan_id": identifier, "plan_hash": plan_hash, "snapshot_hash": snapshot_hash,
+                                   "owner_constraints": body["owner_constraints"], "supersedes": supersedes,
                                    "bundles": [{"bundle_id": item["bundle_id"], "feasible": item["feasible"],
                                                 "actions": [action["action_id"] for action in item["actions"]],
                                                 "economic_cost_minor": item["economic_cost_minor"]} for item in payload["bundles"]],
@@ -1319,6 +1321,7 @@ class Store:
             fast = review is not None and review < FAST_APPROVAL_MS
             db.execute("UPDATE plans SET status='approved' WHERE id=?", (plan_id,))
             details = {"plan_id": plan_id, "bundle_id": bundle_id, "exposure_minor": exposure,
+                       "owner_constraints": payload["owner_constraints"],
                        "dual_approval_required": dual, "approvals": approvals, "step_up": "PIN re-entered",
                        "review_ms": review, "fast_approval_flag": fast, "separation_of_duties": sod,
                        "risk": {"probability_breach_after": bundle["probability_breach_after"],

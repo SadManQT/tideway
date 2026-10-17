@@ -192,7 +192,7 @@ def _model_safe_data(value, quarantined_names=()):
 class TideLM:
     def __init__(self, adapter=ADAPTER, generator=None):
         """``generator(system, user) -> str`` may be injected for tests; otherwise MLX is loaded lazily."""
-        self.adapter = Path(adapter)
+        self.adapter = Path(adapter) if adapter is not None else None
         self._generator = generator
         self._local = LocalModel.configured() if generator is None else None
         self._model = self._tokenizer = None
@@ -200,6 +200,7 @@ class TideLM:
         self._caches = {}
         self._warm_error = None
         self._identity_cache = None
+        self._screening_base = None
 
     # ---- model ---------------------------------------------------------------------
 
@@ -215,6 +216,12 @@ class TideLM:
             mlx = True
         except (ImportError, OSError):
             mlx = False
+        if self.adapter is None:
+            cached = self._cached_base()
+            return {"available": bool(mlx and cached and not self._warm_error), "loaded": self._model is not None,
+                    "model": BASE_MODEL, "adapter": None, "backend": "mlx-base",
+                    "evaluated_tidelm_adapter": False, "label": "Qwen3 base classifier (cached, unbenchmarked)",
+                    "reason": self._warm_error or (None if mlx and cached else "Native classification requires MLX and already cached base weights.")}
         files = [self.adapter / name for name in RELEASED_ADAPTER_HASHES]
         signature = tuple((str(path), path.stat().st_size, path.stat().st_mtime_ns) if path.is_file()
                           else (str(path), None, None) for path in files)
@@ -239,10 +246,25 @@ class TideLM:
                 "reason": None if ready else self._warm_error or ("Install mlx-lm (Apple Silicon)." if not mlx else
                                               "Train the adapter: python3 -m mlx_lm lora --config tideway/ml/tidelm_lora.yaml")}
 
+    @staticmethod
+    def _cached_base():
+        try:
+            from huggingface_hub import try_to_load_from_cache
+            cached = try_to_load_from_cache(BASE_MODEL, "model.safetensors")
+            return str(Path(cached).parent) if isinstance(cached, str) and Path(cached).is_file() else None
+        except (ImportError, OSError):
+            return None
+
     def _load(self):
         if self._model is None:
             from mlx_lm import load
-            self._model, self._tokenizer = load(BASE_MODEL, adapter_path=str(self.adapter))
+            if self.adapter is None:
+                cached = self._cached_base()
+                if not cached:
+                    raise TideLMUnavailable("Base classifier weights are not cached; no automatic download is allowed.")
+                self._model, self._tokenizer = load(cached)
+            else:
+                self._model, self._tokenizer = load(BASE_MODEL, adapter_path=str(self.adapter))
 
     def _prefix_cache(self, system):
         """KV cache of the chat template up to where the user's text begins, computed once per skill.
@@ -513,17 +535,25 @@ class TideLM:
             result["errors"] = ["not_enabled" if code == "model_unavailable" else code for code in result["errors"]]
             result["enabled"] = False
             return result
+        model = self
+        if self._local is None and self._generator is None and self.adapter is not None:
+            # The LoRA was trained for plans/extraction, not classification; it
+            # can corrupt JSON or category selection. Reuse cached base weights
+            # for this distinct optional task, without replacing the planner.
+            if self._screening_base is None:
+                self._screening_base = TideLM(adapter=None)
+            model = self._screening_base
         try:
-            identity = self.status()
+            identity = model.status()
         except Exception:
             identity = {"backend": "unavailable", "model": None, "available": False}
         identity = dict(identity, purpose="semantic_warning_only", semantic_quality_verified=False)
 
         def generate(system, user):
-            if self._local is not None:
-                return self._local.generate(system, user, max_tokens=MAX_GENERATION_TOKENS,
+            if model._local is not None:
+                return model._local.generate(system, user, max_tokens=MAX_GENERATION_TOKENS,
                                             response_schema=classification_schema())
-            return self._generate(system, user, max_tokens=MAX_GENERATION_TOKENS)
+            return model._generate(system, user, max_tokens=MAX_GENERATION_TOKENS)
 
         result = semantic_classify(text, generate if identity.get("available") else None,
                                    model_identity=identity)

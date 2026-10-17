@@ -23,7 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--checks-only', action='store_true', help='Core tests, syntax and sandbox checks; no browser/PDF/package')
     parser.add_argument('--reuse-pdfs', action='store_true', help='Use existing visually reviewed PDFs; still repeat all other checks')
-    parser.add_argument('--evidence-dir', default='evidence/readiness-v5', help='Current release evidence; historical v3 observations are retained')
+    parser.add_argument('--evidence-dir', default='evidence/remediation-v7', help='Current release evidence; historical observations are retained')
     args = parser.parse_args()
     issues = line_ending_issues()
     if issues:
@@ -55,7 +55,7 @@ def main():
     if not args.checks_only:
         run('Browser desktop/mobile and delay', ['node', 'scripts/capture_screens.mjs', '--test-payment-delay'])
         run('Injected local-model integration', ['node', 'scripts/capture_screens.mjs', '--test-local-backend', '--out', str(out / 'browser-integration')])
-        run('Current readiness index', python + ['scripts/build_readiness_summary.py'])
+        run('Current readiness index', python + ['scripts/build_readiness_summary.py', '--evidence-dir', args.evidence_dir])
         if not args.reuse_pdfs:
             run('PDF deliverables', python + ['scripts/build_submission_pdfs.py'])
         pdfs = ['slides/pitch.pdf', 'docs/architecture.pdf', 'docs/security-assessment.pdf',

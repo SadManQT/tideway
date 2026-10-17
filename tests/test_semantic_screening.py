@@ -173,6 +173,7 @@ class SemanticRuntimeIntegration(unittest.TestCase):
         lm = TideLM()
         lm._local = None
         native = Mock()
+        native._local = None
         native.status.return_value = {"available": True, "backend": "mlx-base", "model": "cached-base"}
         native._generate.return_value = answer()
         with patch("tideway.tidelm.TideLM", return_value=native) as constructor:

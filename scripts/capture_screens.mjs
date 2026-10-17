@@ -57,6 +57,8 @@ if (testLocalBackend) {
       const message = JSON.parse(raw).messages?.[1]?.content || "";
       const plan = /pay Rahman/i.test(message)
         ? {intent: "pay", calls: [{tool: "execute", args: {}}]}
+        : /Cap discounts at 1%/.test(message) ? {intent: "rescue_plan", calls: [{tool: "propose_plan", args: {
+          max_discount_pct: 1, prefer: "lowest_risk", exclude_counterparties: ["Rahman Supplies"]}}]}
         : {intent: "cash_check", calls: [{tool: "project_cash", args: {scenario: "likely"}}]};
       response.end(JSON.stringify({choices: [{message: {content: JSON.stringify(plan)}}]}));
     });
@@ -150,7 +152,8 @@ try {
     } else if (message.method === "Runtime.exceptionThrown") {
       errors.push(message.params.exceptionDetails.exception?.description || message.params.exceptionDetails.text);
     } else if (message.method === "Log.entryAdded" && message.params.entry.level === "error" && !/favicon|401/.test(message.params.entry.text + (message.params.entry.url || ""))
-        && !(testPaymentDelay && /\/api\/mandate\/execute$/.test(message.params.entry.url || "") && /400/.test(message.params.entry.text))) {
+        && !(testPaymentDelay && /\/api\/mandate\/execute$/.test(message.params.entry.url || "") && /400/.test(message.params.entry.text))
+        && !(testLocalBackend && /\/api\/mandate\/counter$/.test(message.params.entry.url || "") && /400/.test(message.params.entry.text))) {
       errors.push(message.params.entry.text);
     }
     listeners.forEach((listener) => listener(message));
@@ -198,6 +201,47 @@ try {
   await viewport(1440, 900);
   await evaluate("window.scrollTo(0, 0), true");
   await shot("01-cash-weather-storm");
+  if (testLocalBackend) {
+    // A model test double selects the owner's explicit constraints. Actual
+    // service, approval, negotiation and UI handling remain the production path.
+    await loginAs("nadia", "2468");
+    await reload();
+    await evaluate("api('/api/sandbox/reset',{business_id:'shapla-services'})");
+    await evaluate("state.businessId='shapla-services';state.receipt=null;state.run=null;loadDashboard({resetTarget:true})");
+    await evaluate("api('/api/copilot/ask',{business_id:'shapla-services',message:'Cap discounts at 1%; prefer lowest risk; exclude Rahman Supplies.'})");
+    await evaluate("loadDashboard()");
+    const constrained = await evaluate("state.dashboard.plan");
+    if (constrained.owner_constraints.max_discount_bps !== 100 || constrained.owner_constraints.prefer !== "lowest_risk") throw new Error("Owner constraints missing from initial plan");
+    const bundle = constrained.bundles[0];
+    for (const [who, pin] of [["imran", "1357"], ["nadia", "2468"]]) {
+      await loginAs(who, pin);
+      const acknowledgement = bundle.probability_breach_after > constrained.risk_target
+        ? {acknowledged:true,plan_id:constrained.plan_id,plan_hash:constrained.plan_hash,bundle_id:bundle.bundle_id,
+          probability_breach_after:bundle.probability_breach_after,risk_target:constrained.risk_target} : null;
+      const body = {business_id:"shapla-services",plan_id:constrained.plan_id,bundle_id:bundle.bundle_id,
+        pin,review_ms:9000,confirm_amount_minor:bundle.exposure_minor,risk_acknowledgement:acknowledgement};
+      const result = await evaluate(`(async()=>{const c=await(await fetch('/api/config')).json();const r=await fetch('/api/plan/approve',{method:'POST',headers:{'Content-Type':'application/json','X-Tideway-Token':c.csrf_token},body:JSON.stringify(${JSON.stringify(body)})});const a=await r.json();if(!r.ok)throw new Error(a.error);return a;})()`);
+      if (result.status === "mandate_issued") break;
+    }
+    await loginAs("nadia", "2468");await reload();await view("rescue");
+    await click('[data-action="negotiate"]');
+    await until("!!document.querySelector('[data-action=counter]')", "capped counter-offer");
+    await click('[data-action="counter"]');
+    await until("document.body.textContent.includes('discount ceiling')", "above-cap counter rejected visibly");
+    if (await evaluate("state.dashboard.plan.plan_id") !== constrained.plan_id) throw new Error("Rejected counter replaced the plan");
+    await shot("25-owner-cap-counter-rejected");
+    await click('[data-action="replan"]');
+    await until(`state.dashboard.plan.plan_id !== ${JSON.stringify(constrained.plan_id)} && !state.busy`, "capped replan");
+    const successor = await evaluate("state.dashboard.plan");
+    if (successor.owner_constraints.max_discount_bps !== 100 || successor.owner_constraints.prefer !== "lowest_risk"
+        || !successor.excluded_counterparties.includes("Rahman Supplies") || !successor.excluded_counterparties.includes("Bay Logistics")
+        || successor.approvals.length || successor.supersedes.plan_id !== constrained.plan_id) throw new Error("Replan lost owner constraints or reused approvals");
+    await shot("26-owner-cap-replan");
+    await evaluate("api('/api/sandbox/reset',{business_id:'shapla-services'})");
+    await loginAs("imran", "1357");
+    await reload();await view("rescue");
+  }
+
   await click('[data-action="run-agent"]');
   await until("!!document.querySelector('.timeline') && !!document.querySelector('[data-action=approve]')", "agent run");
   if (!await evaluate("(() => { const plan = state.dashboard.plan; const sample = {...plan.bundles[0], feasible:true, probability_breach_after:0.185, risk_target_met:false}; const warning = residualRiskHtml({...plan, risk_target:0.1}, sample); return warning.includes('18.5%') && warning.includes('Target not met') && warning.includes('above the 10% target') && residualRiskHtml({...plan, risk_target:0.1}, {...sample, risk_target_met:true}).includes('18.5%') && residualRiskHtml({...plan, risk_target:0.1}, {...sample, probability_breach_after:0.1}) === ''; })()")) throw new Error("residual-risk disclosure is missing or misleading");
@@ -461,6 +505,7 @@ try {
       "what-if", "audit tamper drill", "international fixtures", "fraud blocks",
       "security self-test", "mobile overflow", "signup", "invite", "viewer isolation", "public guide routes and assets",
       "role-aware first-use guidance", "guidance preferences and keyboard focus", "guidance never changes financial state", "residual-risk disclosure",
+      ...(testLocalBackend ? ["owner discount cap counter rejection", "replan cap/preference/exclusion preservation", "successor provenance and fresh approval"] : []),
       "missing payment-account disclosure and callback controls", "bound risk acknowledgement", "funding repayment and eligibility disclosure",
       ...(testPaymentDelay ? ["approved payment delay", "stale execution refusal", "fresh proposal and counter approval", "delay mobile"] : [])],
     fixture: "fresh synthetic database; no real money or external provider",
