@@ -73,7 +73,7 @@ def baseline_module():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--phase", choices=("baseline-development", "improved-development", "baseline-base-development",
-                                            "improved-base-development", "fresh"), required=True)
+                                            "improved-base-development", "improved-base-development-r2", "fresh"), required=True)
     args = parser.parse_args()
     # Must be set before importing inference libraries. Never download weights.
     os.environ.update(HF_HUB_OFFLINE="1", TRANSFORMERS_OFFLINE="1", TIDEWAY_LOCAL_TEXT_MODEL="",

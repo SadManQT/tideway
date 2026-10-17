@@ -211,7 +211,8 @@ be guaranteed from synthetic checks while these validation gaps remain.
             'The store rejects above-ceiling actions and widened successor constraints. '
             'Legacy plans without recorded instructions need a fresh owner-reviewed proposal. '
             'The UI distinguishes likely-path feasibility from simulated risk and preserves above-target precision.\n\n')
-    for phase in ('baseline-development', 'improved-development', 'baseline-base-development', 'improved-base-development', 'fresh'):
+    for phase in ('baseline-development', 'improved-development', 'baseline-base-development',
+                  'improved-base-development', 'improved-base-development-r2', 'fresh'):
         path = ROOT / 'evidence/screening-v7' / phase / 'report.json'
         if path.is_file():
             report = json.loads(path.read_text(encoding='utf-8'))
