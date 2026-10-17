@@ -200,7 +200,7 @@ try {
   await shot("01-cash-weather-storm");
   await click('[data-action="run-agent"]');
   await until("!!document.querySelector('.timeline') && !!document.querySelector('[data-action=approve]')", "agent run");
-  if (!await evaluate("(() => { const plan = state.dashboard.plan; const sample = {...plan.bundles[0], feasible:true, probability_breach_after:0.185, risk_target_met:false}; const warning = residualRiskHtml({...plan, risk_target:0.1}, sample); return warning.includes('18.5%') && warning.includes('does not meet the 10% risk target') && residualRiskHtml({...plan, risk_target:0.1}, {...sample, risk_target_met:true}).includes('18.5%') && residualRiskHtml({...plan, risk_target:0.1}, {...sample, probability_breach_after:0.1}) === ''; })()")) throw new Error("residual-risk disclosure is missing or misleading");
+  if (!await evaluate("(() => { const plan = state.dashboard.plan; const sample = {...plan.bundles[0], feasible:true, probability_breach_after:0.185, risk_target_met:false}; const warning = residualRiskHtml({...plan, risk_target:0.1}, sample); return warning.includes('18.5%') && warning.includes('Target not met') && warning.includes('above the 10% target') && residualRiskHtml({...plan, risk_target:0.1}, {...sample, risk_target_met:true}).includes('18.5%') && residualRiskHtml({...plan, risk_target:0.1}, {...sample, probability_breach_after:0.1}) === ''; })()")) throw new Error("residual-risk disclosure is missing or misleading");
   await sleep(1300);
   await shot("02-rescue-agent-and-plan");
   if (!await evaluate("document.querySelector('#view').textContent.includes('Total repayment') && document.querySelector('#view').textContent.includes('unverified')")) throw new Error("Funding comparison omits repayment or unverified eligibility");
