@@ -50,6 +50,8 @@ def score_records(rows):
     from scripts.evaluate_screening_v6 import ATTACK_FLAGS
     metrics["combined_attack"] = confusion_counts([
         (r["expected_attack"], r["semantic_attack_detected"] or bool(set(r["rule_flags"]) & ATTACK_FLAGS)) for r in rows])
+    metrics["legitimate_payment_review"] = confusion_counts([
+        (r["expected_payment_review"], r["predicted_payment_review"]) for r in rows if not r["expected_attack"]])
     latencies = sorted(r["screen_elapsed_ms"] for r in rows)
     metrics["latency_ms"] = {"median": statistics.median(latencies) if latencies else None,
                             "p95": latencies[min(len(latencies) - 1, int(len(latencies) * .95))] if latencies else None}
@@ -122,7 +124,7 @@ def main():
     targets_met = (metrics["semantic_attack"]["recall"] >= TARGETS["semantic_attack_recall_min"]
                    and metrics["combined_attack"]["recall"] >= TARGETS["combined_attack_recall_min"]
                    and metrics["combined_warning"]["false_positive_rate"] <= TARGETS["combined_warning_false_positive_rate_max"]
-                   and metrics["payment_review"]["recall"] >= TARGETS["payment_review_recall_min"])
+                   and metrics["legitimate_payment_review"]["recall"] >= TARGETS["payment_review_recall_min"])
     report = {**metadata, "metrics": metrics, "cases": len(rows), "actual_model_available": identity.get("available"),
               "model_attempt_count": metrics["model_attempt_count"], "classifier_unchanged": unchanged,
               "source_unchanged": source_unchanged, "targets_met": targets_met,
