@@ -109,8 +109,20 @@ class Pseudonyms:
         if isinstance(value, str):
             for account in sorted(self.accounts, key=len, reverse=True):
                 value = value.replace(account, "[account removed]")
-            for name, alias in sorted(self.forward.items(), key=lambda pair: -len(pair[0])):
-                value = value.replace(name, alias)
+            if self.forward:
+                tokens = sorted(set(self.forward) | set(self.backward), key=lambda token: (-len(token), token.casefold()))
+                pattern = re.compile(rf"(?<![A-Za-z0-9_])(?P<token>{'|'.join(re.escape(token) for token in tokens)})"
+                                     r"(?![A-Za-z0-9_])", re.IGNORECASE)
+                aliases = {token.casefold(): token for token in self.backward}
+                names = {name.casefold(): alias for name, alias in self.forward.items()}
+
+                def replace(match):
+                    token = match.group("token").casefold()
+                    if token in aliases:
+                        return aliases[token]
+                    return names.get(token, match.group("token"))
+
+                value = pattern.sub(replace, value)
             value = re.sub(r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}", "[email removed]", value)
             value = re.sub(r"(?<!\w)\+?\d(?:[\s()-]*\d){9,14}(?!\w)", "[possible phone removed]", value)
             return value
@@ -123,6 +135,45 @@ class Pseudonyms:
 
 
 NUMBER_RE = re.compile(r"(?<![\w.])-?\d[\d,]*(?:\.\d+)?%?")
+_MONTHS = r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
+_DATE_RE = re.compile(
+    rf"(?ix)\b(?:"
+    rf"\d{{4}}[-/.]\d{{1,2}}[-/.]\d{{1,2}}|"
+    rf"\d{{1,2}}[-/.]\d{{1,2}}[-/.]\d{{4}}|"
+    rf"{_MONTHS}\s+\d{{1,2}}(?:st|nd|rd|th)?(?:,\s*|\s+)\d{{4}}|"
+    rf"\d{{1,2}}(?:st|nd|rd|th)?\s+{_MONTHS}(?:\s+\d{{4}})?|"
+    rf"{_MONTHS}\s+\d{{1,2}}(?:st|nd|rd|th)?"
+    rf")\b"
+)
+_DAY_AFTER_RE = re.compile(r"(?ix)^\s*[-–—]?\s*(?:(?:calendar|business|working)\s+)?days?\b")
+_DAY_BEFORE_RE = re.compile(r"(?ix)(?:\bdays?\b)\s*(?:of|:)?\s*$")
+_YEAR_BEFORE_RE = re.compile(r"(?ix)(?:\b(?:calendar|fiscal|tax)\s+year|\byear|\bfy)\s*$")
+_YEAR_AFTER_RE = re.compile(r"(?ix)^\s*(?:(?:calendar|fiscal|tax)\s+)?year\b")
+_YEAR_PREPOSITION_RE = re.compile(r"(?ix)\b(?:in|during|for|from|since|until|by|on|as\s+of)\s*$")
+_MONEY_CONTEXT_RE = re.compile(
+    r"(?ix)(?:[$€£¥]|\b(?:bdt|usd|eur|gbp|cny|sgd|dollars?|bucks?|pounds?|euros?|yuan)\b)"
+)
+
+
+def _grounding_exempt_number(text, match, number, date_spans):
+    """Allow only clearly labelled day counts and calendar dates/years."""
+    start, end = match.span()
+    if any(left <= start and end <= right for left, right in date_spans):
+        return True
+
+    before = text[max(0, start - 32):start]
+    after = text[end:min(len(text), end + 32)]
+    if _DAY_AFTER_RE.match(after) or _DAY_BEFORE_RE.search(before):
+        return True
+
+    token = match.group(0)
+    if not (re.fullmatch(r"\d{4}", token) and 2000 <= number <= 2100):
+        return False
+    nearby = before + after
+    if _MONEY_CONTEXT_RE.search(nearby):
+        return False
+    return bool(_YEAR_BEFORE_RE.search(before) or _YEAR_AFTER_RE.match(after) or
+                _YEAR_PREPOSITION_RE.search(before))
 
 
 def grounding_check(text, tool_outputs):
@@ -154,15 +205,17 @@ def grounding_check(text, tool_outputs):
                 walk(item)
     walk(tool_outputs)
     unverified = []
-    for match in NUMBER_RE.findall(text):
+    date_spans = [match.span() for match in _DATE_RE.finditer(text)]
+    for match in NUMBER_RE.finditer(text):
+        token = match.group(0)
         try:
-            number = float(match.replace(",", "").rstrip("%"))
+            number = float(token.replace(",", "").rstrip("%"))
         except ValueError:
             continue
-        if abs(number) <= 31 or 2000 <= number <= 2100:  # day counts, "x of 20", calendar years
+        if _grounding_exempt_number(text, match, number, date_spans):
             continue
         if round(number, 2) not in allowed and float(round(number)) not in allowed:
-            unverified.append(match)
+            unverified.append(token)
     return unverified
 
 
