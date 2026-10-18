@@ -1,6 +1,6 @@
 {
-  "run_at_utc": "2026-10-18T13:37:01.038102+00:00",
-  "source_tree_sha256": "d8ff43013b62f916601afc41fe33d087b463936cda7ba40621a1ced87ae27dbf",
+  "run_at_utc": "2026-10-18T18:42:39.148310+00:00",
+  "source_tree_sha256": "83b777058dfb66b8f2a248bc1ddce9bb44039fcc65e9aa586fa626f6dd4911a6",
   "source_unchanged": true,
   "passed": true,
   "businesses": 3,
@@ -18,8 +18,8 @@
         "ledger_unchanged": true,
         "no_proposal_or_execution": true
       },
-      "report_ms": 25.02,
-      "coach_ms": 717.58,
+      "report_ms": 25.61,
+      "coach_ms": 747.7,
       "report": {
         "version": "owner-view-v1",
         "business_id": "shapla-services",
@@ -497,8 +497,8 @@
         "ledger_unchanged": true,
         "no_proposal_or_execution": true
       },
-      "report_ms": 22.38,
-      "coach_ms": 556.09,
+      "report_ms": 25.74,
+      "coach_ms": 629.72,
       "report": {
         "version": "owner-view-v1",
         "business_id": "lotus-print",
@@ -966,8 +966,8 @@
         "ledger_unchanged": true,
         "no_proposal_or_execution": true
       },
-      "report_ms": 17.0,
-      "coach_ms": 35.91,
+      "report_ms": 15.07,
+      "coach_ms": 29.66,
       "report": {
         "version": "owner-view-v1",
         "business_id": "harbourline-traders",

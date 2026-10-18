@@ -1,7 +1,7 @@
 {
   "passed": true,
-  "run_at": "2026-10-18T13:34:18.367Z",
-  "source_tree_sha256": "d8ff43013b62f916601afc41fe33d087b463936cda7ba40621a1ced87ae27dbf",
+  "run_at": "2026-10-18T18:39:12.896Z",
+  "source_tree_sha256": "83b777058dfb66b8f2a248bc1ddce9bb44039fcc65e9aa586fa626f6dd4911a6",
   "currencies": 29,
   "currency_pairs": 841,
   "canonical_roundtrip_cases": 5046,

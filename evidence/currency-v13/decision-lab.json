@@ -1,7 +1,7 @@
 {
   "version": "decision-lab-evaluation-v1",
-  "run_at_utc": "2026-10-18T13:36:59.191873+00:00",
-  "source_tree_sha256": "d8ff43013b62f916601afc41fe33d087b463936cda7ba40621a1ced87ae27dbf",
+  "run_at_utc": "2026-10-18T18:42:37.137776+00:00",
+  "source_tree_sha256": "83b777058dfb66b8f2a248bc1ddce9bb44039fcc65e9aa586fa626f6dd4911a6",
   "source_unchanged": true,
   "passed": true,
   "synthetic_businesses": 3,
@@ -19,7 +19,7 @@
         "no_saved_proposals": true,
         "fresh_funding_draws": true
       },
-      "elapsed_ms": 1256,
+      "elapsed_ms": 1285,
       "analyses": {
         "reverse": {
           "version": "resilience-v1",
@@ -428,7 +428,7 @@
         "passed": true,
         "engine_compatible": true,
         "authenticated_origin": false,
-        "capsule_sha256": "c9d7feed59c4fa498455539e2857f19783e358ea262a654a337c6cce26bdf307",
+        "capsule_sha256": "b5caeaad00e7b3877110247c2cb2edbac80a97d68bdad158194879405448d186",
         "actual_projection": {
           "scenario": "likely",
           "currency": "BDT",
@@ -472,7 +472,7 @@
         "no_saved_proposals": true,
         "fresh_funding_draws": true
       },
-      "elapsed_ms": 1094,
+      "elapsed_ms": 1171,
       "analyses": {
         "reverse": {
           "version": "resilience-v1",
@@ -857,7 +857,7 @@
         "passed": true,
         "engine_compatible": true,
         "authenticated_origin": false,
-        "capsule_sha256": "c64591e2b3f2c70888e9ea9f437f11cfe0035558ffb415bdedf44544995588e2",
+        "capsule_sha256": "d5375e185f001ded9bcc4d5fe60fd1be969f0c3d16c17656c3f6a22a4cf78e06",
         "actual_projection": {
           "scenario": "likely",
           "currency": "CNY",
@@ -901,7 +901,7 @@
         "no_saved_proposals": true,
         "fresh_funding_draws": true
       },
-      "elapsed_ms": 159,
+      "elapsed_ms": 150,
       "analyses": {
         "reverse": {
           "version": "resilience-v1",
@@ -1129,7 +1129,7 @@
         "passed": true,
         "engine_compatible": true,
         "authenticated_origin": false,
-        "capsule_sha256": "17463f7a87dbd689a0910f90292c58456e579d88bdd297f95bdb7d7b00503dd6",
+        "capsule_sha256": "c94b8b67c6c5fd1d248b8a0329a50cee5dd443259b6704a2cfec28f222e08346",
         "actual_projection": {
           "scenario": "likely",
           "currency": "SGD",

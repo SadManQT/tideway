@@ -15,15 +15,15 @@
     "after_snapshot": "f4ed197752de7348e77cd9f6df4956827541d75c37b98a73a7cc3a0f685665a0",
     "state_version": 2,
     "invalidated_plans": [
-      "9e38061bfaa7416ca8e18f8239e92db4"
+      "8e1e825f05504595a84ef8001c70e740"
     ],
     "invalidated_mandates": [
-      "6e8817d4ff56499a80de00e1844c3b42"
+      "1aeec9e3879b4b52b250fb50f7bb629f"
     ],
     "superseded_promise": null,
     "replayed": false,
     "audit_id": 10,
-    "audit_hash": "a0d1dc35b2dda3f9591ef396cfa526fcd09f6ba2268f9a364e508e12a4373011",
+    "audit_hash": "435c272de059f33510be2f2f5a289b460fd86e7bd189f0d288ce3e69916593d7",
     "currency": "BDT",
     "target_date": "2026-10-31",
     "before": {
@@ -176,13 +176,13 @@
   "execution_retry_same_receipt": true,
   "read_back_verified": true,
   "receipt": {
-    "receipt_id": "e037f0ba945c4e4fb78d3d4cee659a1c",
+    "receipt_id": "65993488353e49f4b6542bd21a3234a0",
     "status": "executed",
     "business_id": "shapla-services",
     "currency": "BDT",
-    "mandate_id": "a363b210517f48fbb87c7da1ad396722",
-    "mandate_signature": "51954feb739fefc5e65a463dc310d7b187c0ba459f39b807af8940f5a9cb3e55",
-    "plan_id": "3566b03343764ef2a2ecef9f8c630366",
+    "mandate_id": "779c6dfe69664f699437be807fc1b986",
+    "mandate_signature": "095ae443e96456940dd6c922fb5445f113d8d843514969cb61b5b144fa09a775",
+    "plan_id": "5a7e3c07bb9b4b8b87268f8acb135a4d",
     "bundle_id": "counter-offer",
     "idempotency_key": "fresh-delay-v1",
     "executed_by": "nadia",
@@ -190,14 +190,14 @@
     "human_present": true,
     "approvals": [
       {
-        "created_at": "2026-10-18T13:36:53+00:00",
+        "created_at": "2026-10-18T18:42:30+00:00",
         "operator_id": "imran",
         "review_ms": 9000,
         "risk_acknowledgement": null,
         "role": "accountant"
       },
       {
-        "created_at": "2026-10-18T13:36:53+00:00",
+        "created_at": "2026-10-18T18:42:30+00:00",
         "operator_id": "nadia",
         "review_ms": 9000,
         "risk_acknowledgement": null,
@@ -267,7 +267,7 @@
     },
     "state_after": {
       "version": 3,
-      "state_hash": "20dfe9c1f20ebbfe57d9312ae6ffd10d6c078b37575f248f7ac70760c96f9cfd"
+      "state_hash": "4096ca67f37b18e06ab972489fc3220ef555d127b8fdcb600bfc8152bf5f3438"
     },
     "projection_before": {
       "scenario": "likely",
@@ -315,14 +315,14 @@
     },
     "note": "Schedule changes in the synthetic sandbox only. No money moved and no real counterparty was contacted.",
     "audit_id": 22,
-    "audit_hash": "6a026c2bd80f7aa1aa28dc19da1bc3e88534b296753f71377c09fd4fb47d28df",
+    "audit_hash": "33b314de2c45ee948e183f30b805fa215c7c8998d13bfad75b640a7e1a7a601f",
     "witness": {
       "cosigned": true,
       "business_id": "shapla-services",
       "size": 18,
-      "head_hash": "6a026c2bd80f7aa1aa28dc19da1bc3e88534b296753f71377c09fd4fb47d28df",
-      "cosigned_at": "2026-10-18T13:36:53+00:00",
-      "signature": "b70fe184f444c386b4c66251a80786e992362e95ba72c9e788c753b6acf61e49"
+      "head_hash": "33b314de2c45ee948e183f30b805fa215c7c8998d13bfad75b640a7e1a7a601f",
+      "cosigned_at": "2026-10-18T18:42:30+00:00",
+      "signature": "8dcc96f623e47194f825a08c96ce72bf23ed289d0a80c4d35f432a0d46315233"
     }
   },
   "audit_valid": true,
