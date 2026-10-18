@@ -1095,11 +1095,26 @@ class Store(EventStoreMixin):
 
     # ---- plans, approvals and mandates -------------------------------------
 
-    def create_plan(self, business_id, payload, snapshot_hash, proposed_by, actor, replaces_mandate=None, event_request_id=None):
+    def create_plan(self, business_id, payload, snapshot_hash, proposed_by, actor, replaces_mandate=None, event_request_id=None, owner_request=None):
         """Store a proposal.  With replaces_mandate, that mandate is cancelled in the same transaction,
         only after every check has passed, so a refused proposal never leaves it cancelled."""
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            request_key = None
+            if owner_request is not None:
+                if (not isinstance(owner_request, dict) or set(owner_request) != {"request_id", "signature"}
+                        or not isinstance(owner_request["request_id"], str) or not re.fullmatch(r"[A-Za-z0-9_-]{8,80}", owner_request["request_id"])
+                        or not isinstance(owner_request["signature"], str) or not re.fullmatch(r"[a-f0-9]{64}", owner_request["signature"])):
+                    raise ValidationError("Invalid owner-coach request identity.")
+                request_key = "owner-coach-request:" + business_id + ":" + owner_request["request_id"]
+                prior = db.execute("SELECT value FROM metadata WHERE key=?", (request_key,)).fetchone()
+                if prior:
+                    cached = json.loads(prior[0])
+                    if cached["signature"] != owner_request["signature"]:
+                        raise ValidationError("Request id already belongs to different proposal terms.")
+                    saved = db.execute("SELECT * FROM plans WHERE id=? AND business_id=?", (cached["plan_id"], business_id)).fetchone()
+                    approvals = [self._approval_dict(item) for item in db.execute("SELECT bundle_id,operator_id,role,review_ms,created_at,risk_acknowledgement FROM approvals WHERE plan_id=? ORDER BY created_at", (saved["id"],))]
+                    return {**json.loads(saved["payload"]), "plan_id": saved["id"], "plan_hash": saved["plan_hash"], "status": saved["status"], "approvals": approvals, "replayed": True}
             event_value = None
             if event_request_id is not None:
                 event_key = f"lab-event:{business_id}:{event_request_id}"
@@ -1128,6 +1143,22 @@ class Store(EventStoreMixin):
                 raise ValidationError("Event replanning must preserve the owner's instructions and exclusions.")
             payload = deepcopy(payload)
             from .bilateral import carry_terms
+            if payload.get("owner_coach"):
+                origin = payload["owner_coach"]
+                current = db.execute("SELECT id,snapshot_hash FROM plans WHERE business_id=? AND target_date=? AND status IN ('pending','approved') ORDER BY rowid DESC LIMIT 1", (business_id, payload["target_date"])).fetchone()
+                if current and current["snapshot_hash"] != snapshot_hash:
+                    current = None
+                if (current["id"] if current else None) != origin["source_plan_id"]:
+                    raise ValidationError("Owner instructions changed during planning; preview priorities again.")
+                if current:
+                    previous_row, previous_payload = self._fresh_plan(db, business_id, current["id"], snapshot)
+                    previous_constraints = check_plan_constraints(previous_payload, snapshot["policy"])
+                    if (previous_row["plan_hash"] != origin["source_plan_hash"]
+                            or constraints["max_discount_bps"] > previous_constraints["max_discount_bps"]
+                            or not set(previous_payload.get("excluded_counterparties", [])) <= set(payload.get("excluded_counterparties", []))):
+                        raise ValidationError("The proposal must preserve current owner limits and protected relationships.")
+                    for previous_bundle in previous_payload["bundles"]:
+                        carry_terms(snapshot, payload["bundles"], previous_bundle.get("bilateral"), payload["target_date"])
             if event_value is not None:
                 carry_terms(snapshot, payload["bundles"], event_value["receipt"].get("bilateral"), payload["target_date"])
             supersedes = None
@@ -1179,6 +1210,8 @@ class Store(EventStoreMixin):
             if event_value is not None:
                 event_value["receipt"]["plan_id"] = identifier
                 db.execute("UPDATE metadata SET value=? WHERE key=?", (canonical_json(event_value), event_key))
+            if request_key:
+                db.execute("INSERT INTO metadata(key,value) VALUES (?,?)", (request_key, canonical_json({"signature": owner_request["signature"], "plan_id": identifier})))
         return {**body, "plan_id": identifier, "plan_hash": plan_hash, "status": "pending", "approvals": [], **receipt}
 
     def plan(self, business_id, plan_id):

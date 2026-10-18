@@ -23,7 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--checks-only', action='store_true', help='Core tests, syntax and sandbox checks; no browser/PDF/package')
     parser.add_argument('--reuse-pdfs', action='store_true', help='Use existing visually reviewed PDFs; still repeat all other checks')
-    parser.add_argument('--evidence-dir', default='evidence/upgrade-v11', help='Current release evidence; historical observations are retained')
+    parser.add_argument('--evidence-dir', default='evidence/owner-view-v12', help='Current release evidence; historical observations are retained')
     args = parser.parse_args()
     issues = line_ending_issues()
     if issues:
@@ -54,8 +54,9 @@ def main():
     run('Payment delay and fresh approvals', python + ['scripts/demo_payment_delay.py', '--out', str(out / 'payment-delay.json')])
     run('Behavior-driven sandbox paths', python + ['scripts/evaluate_behavior_paths.py', '--out', str(out / 'behavior-checks.json')])
     run('Decision lab financial witnesses and replay', python + ['scripts/evaluate_decision_lab.py', '--out', str(out / 'decision-lab.json')])
+    run('Owner view exact cash explanations and priority previews', python + ['scripts/evaluate_owner_view.py', '--out', str(out / 'owner-view.json')])
     if not args.checks_only:
-        run('Browser desktop/mobile, delay and decision lab', ['node', 'scripts/capture_screens.mjs', '--test-payment-delay', '--test-decision-lab'])
+        run('Browser desktop/mobile, delay, decision lab and Owner view', ['node', 'scripts/capture_screens.mjs', '--test-payment-delay', '--test-decision-lab', '--test-owner-view'])
         run('Injected local-model integration', ['node', 'scripts/capture_screens.mjs', '--test-local-backend', '--out', str(out / 'browser-integration')])
         run('Current readiness index', python + ['scripts/build_readiness_summary.py', '--evidence-dir', args.evidence_dir])
         if not args.reuse_pdfs:

@@ -8,7 +8,7 @@ const state = {
   config: null, operator: null, businessId: "", targetDate: "", view: "overview",
   dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "", selftest: null, drill: null,
   whatif: freshWhatIf(), demoDelay: null, demoRequest: null, inbox: freshInbox(), recordFilter: "all", recordQuery: "", aiConsent: false,
-  busy: false, approving: null, displayCurrency: "", team: null, teamError: "", invite: null, speaking: false
+  busy: false, approving: null, displayCurrency: "", team: null, teamError: "", invite: null, speaking: false, ownerDetailed: false
 };
 const VIEWS = {
   overview: ["Cash weather", "Where cash is heading, how likely a shortfall is, and why"],
@@ -201,9 +201,10 @@ const ROLE_PILL = {owner: "teal", accountant: "info", viewer: ""};
 // Everything one operator saw or did in this tab; never shown to the next operator.
 function resetSessionState() {
   stopSpeaking();
+  window.TidewayOwner.reset();
   Object.assign(state, {view: "overview", dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "",
     selftest: null, drill: null, whatif: freshWhatIf(), demoDelay: null, demoRequest: null, inbox: freshInbox(), aiConsent: false, approving: null,
-    team: null, teamError: "", invite: null});
+    team: null, teamError: "", invite: null, ownerDetailed: false});
 }
 
 // Signs in, replacing anything the previous operator left in this tab.
@@ -482,6 +483,7 @@ function metric(label, value, note, cls = "") {
 }
 
 window.TidewayLab.bind(render);
+window.TidewayOwner.bind(render);
 
 function bilateralTermsHtml(bundle) {
   const pact = bundle.bilateral;
@@ -561,6 +563,7 @@ function tidepayEvidenceHtml(card) {
 }
 
 function renderOverview() {
+  if (!state.ownerDetailed) return window.TidewayOwner.render();
   const d = state.dashboard;
   const base = d.projections.base, likely = d.projections.likely, sim = d.simulation;
   const payroll = (base.source_references || []).find((ref) => ref.payroll);
@@ -578,6 +581,7 @@ function renderOverview() {
   const customers = Object.values(d.profiles.customers || {});
   const k = d.kpis;
   return `${onboardingHtml(d)}
+  <div class="owner-toolbar"><span class="pill">Detailed view</span><button class="button small ghost" data-action="owner-simple">Simple view</button></div>
   <section class="brief ${esc(d.weather.level)}">
     <div class="weather-badge">${icon(weatherIcon(d.weather.level))}${esc(d.weather.label)}</div>
     <div><h2>${esc(d.brief.headline)}</h2><p>${esc(d.brief.detail)} ${esc(d.weather.text)}</p></div>
@@ -1603,6 +1607,7 @@ document.addEventListener("click", async (event) => {
   if (!button) return;
   const data = button.dataset;
   try {
+    if (data.action.startsWith("owner-")) { await window.TidewayOwner.action(data.action.slice(6), data); return; }
     if (data.action.startsWith("lab-")) { await window.TidewayLab.action(data.action.slice(4), data); return; }
     switch (data.action) {
       case "logout": await logout(); break;

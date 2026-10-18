@@ -18,7 +18,8 @@ def main(argv=None):
     model = read('evidence/readiness-v3/blind/model-first-observation.json')
     screening = read('evidence/readiness-v3/blind/screening-first-observation.json')
     pay = read('evidence/readiness-v3/tidepay/report.json')
-    current = args.evidence_dir or ('evidence/upgrade-v11' if (ROOT / 'evidence/upgrade-v11/scenarios/report.json').is_file()
+    current = args.evidence_dir or ('evidence/owner-view-v12' if (ROOT / 'evidence/owner-view-v12/scenarios/report.json').is_file()
+                                  else 'evidence/upgrade-v11' if (ROOT / 'evidence/upgrade-v11/scenarios/report.json').is_file()
                                   else 'evidence/upgrade-v10' if (ROOT / 'evidence/upgrade-v10/scenarios/report.json').is_file()
                                   else 'evidence/release-v9' if (ROOT / 'evidence/release-v9/scenarios/report.json').is_file()
                                   else 'evidence/completion-v8' if (ROOT / 'evidence/completion-v8/scenarios/report.json').is_file()
@@ -261,6 +262,9 @@ be guaranteed from synthetic checks while these validation gaps remain.
     if current == 'evidence/upgrade-v11':
         doc = doc.replace('# Current technical readiness\n', '# Current technical readiness\n\nCurrent local release: [decision support, event replanning and bilateral negotiation](RELEASE_V11.md). Previous screening and HTTP evidence: [v10](RELEASE_V10.md).\n', 1)
         doc += ('\n## Decision lab\n\nReverse stress includes one-day-less witnesses; agreement lateness rates are supplied assumptions; recovery comparisons use disjoint conditional funding draws. Owner-authorised synthetic events invalidate old mandates before optional re-proposal. Two-sided supplied synthetic ledgers are checked again at approval/execution and retained counter-offers. Private replay recomputes financial outputs, while privacy preview shares the initial cloud request builder. See [feature guide](DECISION_LAB.md) and [current evaluation](../evidence/upgrade-v11/decision-lab.json). These engineering checks do not replace real SME participation, native Mac verification or external review.\n')
+    if current == 'evidence/owner-view-v12':
+        doc = doc.replace('# Current technical readiness\n', '# Current technical readiness\n\nCurrent local release: [simple Owner view and goal-led recovery](RELEASE_V12.md). Prior model and decision-lab observations: [v11](RELEASE_V11.md).\n',1)
+        doc += ('\n## Owner view and decision lab\n\nThe default Cash weather screen explains spending room under expected receipts and without unpaid customer receipts, tests an isolated one-off expense, links dated cash flows to records, and compares three recovery priorities. English/Bangla Owner labels, factual data checks and a private script-free decision brief reduce the steps needed to understand a proposal. Saved previews remain unapproved; owner limits, protected relationships and retained bilateral assumptions are enforced atomically. See [feature guide](OWNER_VIEW.md), [Owner evaluation](../evidence/owner-view-v12/owner-view.json) and [decision-lab checks](../evidence/owner-view-v12/decision-lab.json). No human usability improvement or new model-quality score is claimed. The earlier PDF deck is retained; this feature guide describes the new interface.\n')
     if current == 'evidence/upgrade-v10':
         doc = doc.replace('# Current technical readiness\n',
                           '# Current technical readiness\n\nCurrent local release: [screening, cash-gap and HTTP fixes](RELEASE_V10.md).\n', 1)

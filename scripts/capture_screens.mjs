@@ -13,6 +13,7 @@ import {existsSync} from "node:fs";
 import {createServer} from "node:http";
 import {fileURLToPath} from "node:url";
 import {checkDecisionLab} from "./decision_lab_browser.mjs";
+import {checkOwnerView} from "./owner_view_browser.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 function sourceDigest() {
@@ -37,6 +38,8 @@ const testRealBackend = process.argv.includes("--test-real-backend");
 const testPaymentDelay = process.argv.includes("--test-payment-delay");
 const labOnly = process.argv.includes("--test-decision-lab-only");
 const testDecisionLab = process.argv.includes("--test-decision-lab") || labOnly;
+const ownerOnly = process.argv.includes("--test-owner-view-only");
+const testOwnerView = process.argv.includes("--test-owner-view") || ownerOnly;
 let tidelmAvailable = false;
 if (testLocalBackend && testRealBackend) throw new Error("Choose either --test-local-backend (test double) or --test-real-backend (actual inference).");
 if (testRealBackend && (!process.env.TIDEWAY_LOCAL_MODEL_URL || !process.env.TIDEWAY_LOCAL_TEXT_MODEL
@@ -127,7 +130,12 @@ const loginAs = (id, pin) => evaluate(`(async () => {
   await fetch('/api/session/logout', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Tideway-Token': config.csrf_token}, body: '{}'});
   const response = await fetch('/api/session/login', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Tideway-Token': config.csrf_token}, body: JSON.stringify({operator_id: '${id}', pin: '${pin}'})});
   return response.status; })()`);
-async function reload() { await send("Page.reload"); await until("document.readyState === 'complete' && !!document.querySelector('#view .metric, #login:not([hidden])')", "page ready"); }
+async function reload() {
+  await send("Page.reload");
+  await until("document.readyState === 'complete' && !!document.querySelector('#view .metric, #login:not([hidden])')", "page ready");
+  // Existing detailed workflows remain covered after the new simple landing view.
+  if (await evaluate("!!document.querySelector('[data-action=owner-detailed]')")) await click('[data-action=owner-detailed]');
+}
 async function view(name) { await click(`[data-view="${name}"]`); await sleep(300); }
 async function confirmRisk() {
   // Exercise the visible human consent control, rather than bypassing it.
@@ -182,12 +190,16 @@ try {
   await shot("00-landing-mobile");
   await viewport(1440, 900);
 
-  if (labOnly) {
+  if (ownerOnly) {
+    await checkOwnerView({evaluate,click,until,view,viewport,shot,phoneCheck,loginAs,reload});
+  } else if (labOnly) {
     await checkDecisionLab({evaluate,click,until,view,viewport,shot,phoneCheck,loginAs,reload});
   } else {
   // Accountant signs in with the one-click demo button, runs the agent and gives the first of two approvals.
   await click('[data-action="demo-login"][data-id="imran"]');
   await until("!!document.querySelector('#view .metric') && document.querySelector('#operator-role').textContent === 'accountant'", "demo sign-in");
+  if (!await evaluate("!!document.querySelector('.owner-view')")) throw new Error("Owner view is not the default cash landing page");
+  await click('[data-action=owner-detailed]');
   if (await evaluate("!!document.querySelector('a[href*=\"guide\"],a[href*=\"personal-prep\"]')")) throw new Error("Personal prep is linked from the signed-in product");
   await until("!document.querySelector('#quick-start').hidden && document.querySelectorAll('#quick-start [data-quick-start-link]').length === 4", "quick start available");
   const guidanceSnapshot = await evaluate("state.dashboard.snapshot_hash");
@@ -448,6 +460,7 @@ try {
   await shot("15-mobile-inbox", false);
 
   if (testDecisionLab) await checkDecisionLab({evaluate,click,until,view,viewport,shot,phoneCheck,loginAs,reload});
+  if (testOwnerView) await checkOwnerView({evaluate,click,until,view,viewport,shot,phoneCheck,loginAs,reload});
 
   // A new owner signs up: inline validation, then an empty workspace with onboarding, then the team.
   await viewport(1440, 900);
@@ -503,15 +516,16 @@ try {
     source_unchanged_during_browser:true,
     viewport: {desktop: [1440, 900], mobile: [375, 812]}, page_errors: errors,
     tidelm_available: tidelmAvailable, test_only_local_backend: testLocalBackend, test_real_backend:testRealBackend,
-    linked_payment_delay: testPaymentDelay, decision_lab_tested:testDecisionLab, model_inference_tested:realModelVerification?.passed === true,
+    linked_payment_delay: testPaymentDelay, decision_lab_tested:testDecisionLab, owner_view_tested:testOwnerView, model_inference_tested:realModelVerification?.passed === true,
     real_model_verification:realModelVerification,
-    coverage: labOnly ? ["decision lab tools and role isolation; complete lab helper exercised"] : ["landing", "cash projection", "dual approval", "negotiation", "execution and read-back",
+    coverage: ownerOnly ? ["Owner view desktop and mobile", "Bengali labels", "exact expense preview with no writes", "source-record navigation", "three priority previews", "private brief download", "fresh proposal and viewer isolation"] : labOnly ? ["decision lab tools and role isolation; complete lab helper exercised"] : ["landing", "cash projection", "dual approval", "negotiation", "execution and read-back",
       ...(testRealBackend ? ["actual local model browser risk answer", "actual local model browser money refusal", "actual model chat preserves financial state"]
         : testLocalBackend ? ["test-double local model browser integration"] : tidelmAvailable ? ["model availability display"] : ["assistant fallback"]),
       "what-if", "audit tamper drill", "international fixtures", "fraud blocks",
       "security self-test", "mobile overflow", "signup", "invite", "viewer isolation", "personal prep unlinked and routes unavailable",
       ...(testDecisionLab ? ["reverse stress witnesses", "assumed agreement stress", "recovery comparison", "privacy preview", "judge challenges", "capsule upload replay", "bilateral proposal", "PIN-gated event replan", "seven lab tabs at mobile width", "lab viewer isolation"] : []),
       "role-aware first-use guidance", "guidance preferences and keyboard focus", "guidance never changes financial state", "residual-risk disclosure",
+      ...(testOwnerView ? ["Owner view desktop and mobile", "Bengali labels", "exact expense preview", "source-record navigation", "three priority previews", "private brief download", "fresh coach proposal", "coach viewer isolation"] : []),
       ...(testLocalBackend ? ["owner discount cap counter rejection", "replan cap/preference/exclusion preservation", "successor provenance and fresh approval"] : []),
       "missing payment-account disclosure and callback controls", "bound risk acknowledgement", "funding repayment and eligibility disclosure",
       ...(testPaymentDelay ? ["approved payment delay", "stale execution refusal", "fresh proposal and counter approval", "delay mobile"] : [])],

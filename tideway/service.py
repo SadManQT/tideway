@@ -237,6 +237,8 @@ class Tideway:
 
     def dashboard(self, business_id, target_date=None):
         result = self.analysis(business_id, target_date)
+        from .owner_view import build_report
+        owner_view = build_report(result["snapshot"], result)
         snapshot, target = result.pop("snapshot"), result["target_date"]
         derived = result.pop("derived")
         records = snapshot["records"]
@@ -244,7 +246,7 @@ class Tideway:
         if latest and latest.get("snapshot_hash") != snapshot["snapshot_hash"]:
             latest = None
         evidence = self.store.evidence(business_id)
-        return {**result, "business": snapshot["business"], "policy": snapshot["policy"],
+        return {**result, "owner_view": owner_view, "business": snapshot["business"], "policy": snapshot["policy"],
                 "state": {key: snapshot["state"][key] for key in ("version", "state_hash", "current_date", "adjustments",
                                                                   "promises", "executed_exposure", "reset_count")},
                 "snapshot_hash": snapshot["snapshot_hash"], "records": records,

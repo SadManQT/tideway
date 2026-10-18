@@ -26,6 +26,7 @@ from .vision import TideVision, TideVisionUnavailable
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = {"/": "index.html", "/index.html": "index.html", "/styles.css": "styles.css", "/app.js": "app.js",
           "/decision-lab.js": "decision-lab.js",
+          "/owner-view.js": "owner-view.js",
           "/quick-start.js": "quick-start.js",
           "/favicon.svg": "favicon.svg",
           "/fonts/space-grotesk.woff2": "fonts/space-grotesk.woff2", "/fonts/unbounded.woff2": "fonts/unbounded.woff2",
@@ -70,6 +71,8 @@ class Application:
         from .decision_lab import DecisionLab
         self.lab = DecisionLab(self.tideway)
         self.lab_enabled = os.environ.get("TIDEWAY_DECISION_LAB", "1").strip() != "0"
+        from .owner_view import OwnerView
+        self.owner_view = OwnerView(self.tideway)
 
     # ---- helpers ---------------------------------------------------------------
 
@@ -221,6 +224,26 @@ class Application:
         business_id = validate_business_id(body.get("business_id", "")) if "business_id" in body else None
         if business_id:
             operator = self.scoped(operator, business_id)
+        if path.startswith("/api/owner/"):
+            if not business_id:
+                raise ValidationError("business_id is required.")
+            if path in ("/api/owner/analyze", "/api/owner/brief"):
+                self.fields(body, ("business_id", "target_date", "expense_minor", "expense_date", "expected_snapshot"), ("business_id",))
+                result = self.owner_view.analyze(business_id, body.get("target_date"), body.get("expense_minor", 0), body.get("expense_date"), body.get("expected_snapshot"))
+                if path.endswith("/brief"):
+                    from .owner_view import brief_html
+                    return {"read_only": True, "executed": False, "snapshot_hash": result["snapshot_hash"], "html": brief_html(result)}
+                return result
+            if path in ("/api/owner/coach", "/api/owner/propose"):
+                shared = ("business_id", "target_date", "max_discount_bps", "protected_counterparties", "expected_snapshot")
+                if path.endswith("/propose"):
+                    self.fields(body, shared + ("priority", "option_id", "request_id"), ("business_id", "priority", "option_id", "expected_snapshot", "request_id"))
+                    self.require(operator, "owner", "accountant")
+                    return self.owner_view.propose(business_id, body.get("target_date"), body.get("max_discount_bps"), body.get("protected_counterparties", []),
+                                                  body["priority"], body["option_id"], body["expected_snapshot"], body["request_id"], actor)
+                self.fields(body, shared, ("business_id",))
+                return self.owner_view.coach(business_id, body.get("target_date"), body.get("max_discount_bps"), body.get("protected_counterparties"), body.get("expected_snapshot"))
+            raise LookupError(path)
         if path.startswith("/api/lab/"):
             if not self.lab_enabled:
                 raise ValidationError("Decision lab is disabled.")

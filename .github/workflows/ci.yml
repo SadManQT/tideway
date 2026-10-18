@@ -101,7 +101,7 @@ jobs:
       - name: Test browser integration with a fixed-output local backend
         run: node scripts/capture_screens.mjs --test-local-backend --out tmp/ci-local-backend
       - name: Test the linked payment-delay workflow
-        run: node scripts/capture_screens.mjs --test-payment-delay --test-decision-lab
+        run: node scripts/capture_screens.mjs --test-payment-delay --test-decision-lab --test-owner-view
       - name: Validate the current source before packaging
         run: python -S scripts/verify_submission.py
       - name: Build integrity-checked review package

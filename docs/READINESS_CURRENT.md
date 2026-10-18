@@ -1,6 +1,6 @@
 # Current technical readiness
 
-Current local release: [decision support, event replanning and bilateral negotiation](RELEASE_V11.md). Previous screening and HTTP evidence: [v10](RELEASE_V10.md).
+Current local release: [simple Owner view and goal-led recovery](RELEASE_V12.md). Prior model and decision-lab observations: [v11](RELEASE_V11.md).
 
 This is the current review index. Tideway remains a synthetic SME finance copilot:
 cash forecasts, recovery proposals, human approval, simulated negotiation and
@@ -41,7 +41,7 @@ Historical upgrade and Windows reports describe earlier source versions.
 
 | Check | Recorded result | Meaning and limit |
 |---|---|---|
-| Current unit run | 429 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
+| Current unit run | 457 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
 | Additional standard-library run | 252 run; 0 failures; 0 errors; 4 skipped | Python 3.11.16; optional photo tests require Pillow; report records its own source hash |
 | Financial scenarios | 24/24 expected workflows; 9 rescues | 8/9 executed rescues meet the 10% simulated risk target |
 | Shipped TidePay | 7,427 unseen synthetic invoices; MAE 8.5585 days | Heuristic 10.2296; training-only prior 11.7453; no weight changes |
@@ -90,8 +90,8 @@ Use a completed LF checkout: source edits during the run invalidate verification
 
 - [Current test summary](../evidence/test-summary.json) and
   [raw test log](../evidence/test-run.log).
-- [Current scenario report](../evidence/upgrade-v11/scenarios/report.json),
-  [linked delay receipt](../evidence/upgrade-v11/payment-delay.json) and
+- [Current scenario report](../evidence/owner-view-v12/scenarios/report.json),
+  [linked delay receipt](../evidence/owner-view-v12/payment-delay.json) and
   [browser workflow](../evidence/screens/browser-verification.json).
 - [Exact shipped prediction evaluation](DEPLOYED_MODEL_EVALUATION.md), with
   raw invoices, shared test IDs, predictions, intervals and calibration bins.
@@ -99,7 +99,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
   native runtime provenance and every first-observation output.
 - [Separate post-fix model regression](../evidence/readiness-v3/blind/model-post-fix-regression.json)
   and [Python 3.11 standard-library run](../evidence/readiness-v3/python311/test-summary.json).
-- [Release stages and PDF hashes](../evidence/upgrade-v11/release-checks.json).
+- [Release stages and PDF hashes](../evidence/owner-view-v12/release-checks.json).
   `dist/extraction-verification.json` and `dist/SHA256SUMS.txt` prove the actual
   distributed bytes, rather than referring to an earlier ZIP.
 - [Independent judge/auditor report](INDEPENDENT_AUDIT.md), with reproduced
@@ -108,7 +108,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
 - [User study protocol](USER_STUDY_KIT.md) and
   [pending participation status](../evidence/readiness-v3/user-study-status.json).
 
-Current test source digest: `e0d58d285f5f2feb55af3678475369546eeb7a7465914cfb48acd2ffe5c08827`.
+Current test source digest: `0ff559b3392aa65271d8fb62c40801dedb6edd7f4133caf0501dcf3958ce6466`.
 Reports contain their own timestamps and hashes; older Windows/upgrade evidence
 is historical and does not attest to the current checkout.
 
@@ -120,7 +120,7 @@ improvement. Optional semantic checks remain advisory and require a local model.
 Real consented SME feedback, current MLX/TideLM planning and receipt-model evaluation,
 external security testing and real-data calibration remain outstanding.
 Partial settlements, reversals and real lender eligibility require separate
-financial design before live integration. Stored hosted run 16 concluded success for commit ddf71c173744c06e28df493cef18b8efddc43d20.
+financial design before live integration. Stored hosted run 8 concluded success for commit f60a6752e26723ae6b696a40e52335d15f1e3339.
 That historical receipt does not attest to this local remediation; no push or
 hosted run was performed for these changes.
 See the explicit infrastructure status below for the separately tested Docker
@@ -152,10 +152,10 @@ be guaranteed from synthetic checks while these validation gaps remain.
   separates risk estimates, sampling uncertainty and the allowed-action limit.
   An above-target business is escalated, not made successful by raising the target.
 - Docker status: Not yet a passing current-source Docker run; inspect raw status.
-  [Raw Docker proof](../evidence/upgrade-v11/docker/report.json).
+  [Raw Docker proof](../evidence/infrastructure-v5/docker/report.json).
   No native MLX, host-network reachability or external penetration test is implied.
-- [Stored hosted CI status](../evidence/upgrade-v11/hosted-ci-status.json):
-  Stored hosted run 16 concluded success for commit ddf71c173744c06e28df493cef18b8efddc43d20. No hosted run for the current remediation is claimed.
+- [Stored hosted CI status](../evidence/infrastructure-v5/hosted-ci-status.json):
+  Stored hosted run 8 concluded success for commit f60a6752e26723ae6b696a40e52335d15f1e3339. No hosted run for the current remediation is claimed.
 - [Implementation and verification report](REMEDIATION_V7.md).
 
 ## Owner constraints and v7 screening follow-up
@@ -176,8 +176,8 @@ Development cases are disclosed v6 regressions. The fresh set is separately AI-a
 
 AI-authored assumed behavior scenarios; real participants: 0. Backend workflow outcomes do not measure human task completion, satisfaction or SUS.
 
-[6/6 checks passed](../evidence/upgrade-v11/behavior-checks.json): decline without changes, incomplete approval, owner discount limits, residual-risk consent, a known hostile supplier message and repeat execution. Human validation remains pending.
+[6/6 checks passed](../evidence/owner-view-v12/behavior-checks.json): decline without changes, incomplete approval, owner discount limits, residual-risk consent, a known hostile supplier message and repeat execution. Human validation remains pending.
 
-## Decision lab
+## Owner view and decision lab
 
-Reverse stress includes one-day-less witnesses; agreement lateness rates are supplied assumptions; recovery comparisons use disjoint conditional funding draws. Owner-authorised synthetic events invalidate old mandates before optional re-proposal. Two-sided supplied synthetic ledgers are checked again at approval/execution and retained counter-offers. Private replay recomputes financial outputs, while privacy preview shares the initial cloud request builder. See [feature guide](DECISION_LAB.md) and [current evaluation](../evidence/upgrade-v11/decision-lab.json). These engineering checks do not replace real SME participation, native Mac verification or external review.
+The default Cash weather screen explains spending room under expected receipts and without unpaid customer receipts, tests an isolated one-off expense, links dated cash flows to records, and compares three recovery priorities. English/Bangla Owner labels, factual data checks and a private script-free decision brief reduce the steps needed to understand a proposal. Saved previews remain unapproved; owner limits, protected relationships and retained bilateral assumptions are enforced atomically. See [feature guide](OWNER_VIEW.md), [Owner evaluation](../evidence/owner-view-v12/owner-view.json) and [decision-lab checks](../evidence/owner-view-v12/decision-lab.json). No human usability improvement or new model-quality score is claimed. The earlier PDF deck is retained; this feature guide describes the new interface.

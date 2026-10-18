@@ -803,3 +803,28 @@ main.view-enter .brief.storm .weather-badge { animation: tw-pop .6s var(--ease-s
   .reveal-up { opacity: 1; translate: 0 0; }
 }
 .title-block .eyebrow { font-family: "Space Grotesk", system-ui, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .8px; }
+
+/* Progressive disclosure keeps the owner's first decision readable on a phone. */
+.owner-controls { min-width:0; margin:0; padding:0; border:0; }
+.owner-toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+.owner-head h2 { margin:12px 0; }
+.owner-fields { display:flex; flex-wrap:wrap; gap:14px; align-items:end; }
+.owner-fields .field { flex:1 1 180px; min-width:0; }
+.owner-results { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin:24px 0; }
+.owner-results>div { background:var(--paper-soft,#f3f5fc); border:1px solid var(--line,#cbd3e5); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:12px; }
+.owner-results strong { font-size:22px; }
+.owner-results small { display:block; margin-top:8px; }
+.owner-dependency { padding:16px 0; border-bottom:1px solid var(--line,#cbd3e5); }
+.owner-dependency p { margin:6px 0; }
+.owner-checks { padding-left:22px; line-height:2; margin:18px 0; }
+.owner-timeline article { border-left:3px solid var(--teal,#22887d); padding:0 0 22px 16px; margin-top:20px; }
+.owner-timeline .button { overflow-wrap:anywhere; white-space:normal; text-align:left; }
+.owner-protected { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-top:18px; }
+.owner-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.owner-option { border:2px solid var(--edge); border-radius:14px; padding:18px; display:flex; flex-direction:column; gap:12px; overflow-wrap:anywhere; }
+.owner-option h4 { font-size:18px; }
+.owner-option dl { margin:0; }.owner-option dt { font-size:13px; }.owner-option dd { margin:4px 0 14px; font-weight:700; }
+.owner-option ul { padding-left:18px; }.owner-option .button { margin-top:auto; white-space:normal; }
+.owner-view p,.owner-view h2,.owner-view h3,.owner-view h4 { overflow-wrap:anywhere; }
+.owner-view[lang=bn] { line-height:1.75; }
+@media(max-width:900px) { .owner-options,.owner-results { grid-template-columns:minmax(0,1fr); } }

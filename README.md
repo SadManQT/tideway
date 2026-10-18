@@ -2,7 +2,9 @@
 
 **Plan ahead for payroll.** On-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, and acts only with your approval.
 
-18 October local upgrade: [decision support, event replanning and two-business negotiation](docs/RELEASE_V11.md).
+18 October local upgrade: [simple Owner view and goal-led recovery](docs/RELEASE_V12.md).
+Start in **Cash weather**: [expense previews, receipt dependencies, three priorities and a private decision brief](docs/OWNER_VIEW.md).
+Previous upgrade: [decision support, event replanning and two-business negotiation](docs/RELEASE_V11.md).
 Open **Decision lab** after sign-in: [features, boundaries and a judge demonstration](docs/DECISION_LAB.md).
 Previous release: [screening, cash-gap diagnostics and HTTP hardening](docs/RELEASE_V10.md).
 The [behavior-driven evaluation](docs/BEHAVIORAL_EVALUATION.md) contains six scripted sandbox paths; real SME participants remain zero.
@@ -14,7 +16,7 @@ Judge/auditor review (17 October): [fixed defects and remaining contest gaps](do
 ## Two-minute tour for judges
 
 1. `python3 run.py` and open <http://127.0.0.1:8787>. Click **Nadia (Owner)** on the landing page.
-2. **Cash weather**: Shapla Services is in a storm; press **Read my brief**.
+2. **Cash weather**: start with Simple view. Test an expense, inspect important receipts and compare three recovery priorities. Switch to **Detailed view** for charts and **Read my brief**.
 3. **Ask Tideway**: say "hi", then ask in another language, e.g. "Nila Traders 晚20天付款会怎样？". Open the plan under the answer to see exactly which tools the model chose.
 4. **Rescue plan**: run the agent, then approve with PIN `2468` (and Imran `1357` for the second approval).
 5. **Inbox**: paste the injection sample and watch it get flagged.

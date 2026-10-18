@@ -1,8 +1,8 @@
 {
-  "run_at": "2026-10-18T09:36:21.522Z",
+  "run_at": "2026-10-18T12:25:15.080Z",
   "passed": true,
   "browser": "Chrome/155.0.8059.82",
-  "source_tree_sha256": "e0d58d285f5f2feb55af3678475369546eeb7a7465914cfb48acd2ffe5c08827",
+  "source_tree_sha256": "0ff559b3392aa65271d8fb62c40801dedb6edd7f4133caf0501dcf3958ce6466",
   "source_unchanged_during_browser": true,
   "viewport": {
     "desktop": [
@@ -20,6 +20,7 @@
   "test_real_backend": false,
   "linked_payment_delay": true,
   "decision_lab_tested": true,
+  "owner_view_tested": true,
   "model_inference_tested": false,
   "real_model_verification": null,
   "coverage": [
@@ -53,6 +54,14 @@
     "guidance preferences and keyboard focus",
     "guidance never changes financial state",
     "residual-risk disclosure",
+    "Owner view desktop and mobile",
+    "Bengali labels",
+    "exact expense preview",
+    "source-record navigation",
+    "three priority previews",
+    "private brief download",
+    "fresh coach proposal",
+    "coach viewer isolation",
     "missing payment-account disclosure and callback controls",
     "bound risk acknowledgement",
     "funding repayment and eligibility disclosure",
