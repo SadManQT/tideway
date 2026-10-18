@@ -2,7 +2,7 @@
 
 **Plan ahead for payroll.** On-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, and acts only with your approval.
 
-18 October local release: [Windows encoding, asset integrity and current package checks](docs/RELEASE_V9.md).
+18 October local release: [screening, cash-gap diagnostics and HTTP hardening](docs/RELEASE_V10.md).
 The [behavior-driven evaluation](docs/BEHAVIORAL_EVALUATION.md) contains six scripted sandbox paths; real SME participants remain zero.
 
 Judge/auditor review (17 October): [fixed defects and remaining contest gaps](docs/INDEPENDENT_AUDIT.md). Exact current verification counts and provenance: [readiness index](docs/READINESS_CURRENT.md).
@@ -45,7 +45,7 @@ The default runtime is offline and uses only the Python standard library. The
 repository pins the supported interpreter in `.python-version` and keeps the
 dependency lock marker in `requirements.lock`.
 
-[Tracked CI](.github/workflows/ci.yml) defines Windows/macOS/Linux Python checks, a Pillow lane, browser flows, package extraction checks and Docker. [CI.md](docs/CI.md) explains coverage and local reproduction. Hosted Offline validation run 8 passed all nine jobs; its receipt is in [current readiness](docs/READINESS_CURRENT.md). See that index for current measured results and remaining team-controlled items.
+[Tracked CI](.github/workflows/ci.yml) defines Windows/macOS/Linux Python checks, a Pillow lane, browser flows, package extraction checks and Docker. [CI.md](docs/CI.md) explains coverage and local reproduction. Hosted run 14 passed all nine jobs for committed v9 source `6dbb315`; that result does not attest to unpushed v10 changes. See [current readiness](docs/READINESS_CURRENT.md) for measured results and remaining team-controlled items.
 
 ```bash
 # Native setup (Python 3.11.11)

@@ -1,0 +1,22 @@
+{
+  "source_tree_sha256": "0822bd79241de4420f2187edcb60506a09b2ad4f83bb3c849a30efa55175f06b",
+  "scope": "Internal local HTTP reproductions before remediation; no external review.",
+  "malformed_cookie": "RemoteDisconnected",
+  "duplicate_json_key": 200,
+  "anonymous_bucket_keys": [
+    "invalid0",
+    "invalid1",
+    "invalid2",
+    "invalid3",
+    "invalid4",
+    "invalid5",
+    "invalid6",
+    "invalid7",
+    "invalid8",
+    "invalid9",
+    "invalid10",
+    "invalid11"
+  ],
+  "stalled_body_response": "No response within 2.5 seconds; handler still waits for body.",
+  "stalled_observation_seconds": 2.4998591000003216
+}

@@ -9,10 +9,12 @@ from __future__ import annotations
 
 import difflib
 import hashlib
+import math
 import random
 import statistics
 from collections import Counter, defaultdict
 from datetime import date, timedelta
+from fractions import Fraction
 from pathlib import Path
 
 from .domain import OPEN_INVOICE_STATUSES, SETTLED_INVOICE_STATUSES, add_days, days_between, human_date
@@ -192,6 +194,32 @@ def stable_seed(*parts):
     return int(hashlib.sha256("|".join(str(part) for part in parts).encode()).hexdigest()[:12], 16)
 
 
+def liquidity_gap(minimums, reserve, risk_target=.1):
+    """Smallest opening-cash top-up reaching a target on these sampled paths.
+
+    A constant cash addition shifts every daily balance by exactly that amount.
+    This is a read-only counterfactual, never evidence that funding is available.
+    A separate set of draws is needed to evaluate a selected amount.
+    """
+    if (not minimums or type(reserve) is not int or reserve < 0
+            or any(type(value) is not int for value in minimums)
+            or isinstance(risk_target, bool) or not isinstance(risk_target, (int, float))
+            or not math.isfinite(risk_target) or not 0 <= risk_target < 1):
+        raise ValueError("Invalid liquidity diagnostic inputs.")
+    needs = sorted(max(0, reserve - minimum) for minimum in minimums)
+    fraction = Fraction(str(risk_target)) * len(needs)
+    allowed = fraction.numerator // fraction.denominator
+    buffer = needs[len(needs) - allowed - 1]
+    breaches = sum(need > buffer for need in needs)
+    return {"additional_cash_minor": buffer, "risk_target": risk_target,
+            "sample_runs": len(needs), "sample_breaches_after": breaches,
+            "sample_probability_breach_after": breaches / len(needs),
+            "breaches_with_one_minor_less": sum(need > buffer - 1 for need in needs) if buffer else None,
+            "funding_confirmed": False, "executable": False,
+            "assumption": "Additional confirmed cash is available at the opening date and remains in the business; all other timing, costs and obligations stay unchanged.",
+            "limitation": "Minimum on these simulated paths only; excludes model error and funding costs. Confirm availability and rerun on fresh draws before relying on the amount."}
+
+
 def monte_carlo(business, policy, records, target_date, adjustments=(), promises=None,
                 runs=1000, seed=0, lookahead_days=0, as_of=None):
     """Probability of breaching the reserve floor under payment-timing uncertainty.
@@ -290,6 +318,7 @@ def monte_carlo(business, policy, records, target_date, adjustments=(), promises
             "p90_shortfall_minor": _percentile(shortfalls, 0.9) or 0,
             "minimum_cash_p10_minor": _percentile(minimums, 0.1),
             "minimum_cash_p50_minor": _percentile(minimums, 0.5),
+            "liquidity_gap": liquidity_gap(minimums, reserve),
             "most_common_breach_date": first_breaches.most_common(1)[0][0] if first_breaches else None,
             "invoice_late_share": {invoice_id: round(count / runs, 3) for invoice_id, count in sorted(late_after.items())},
             "fan": fan,

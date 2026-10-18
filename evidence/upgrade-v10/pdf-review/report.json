@@ -1,0 +1,62 @@
+{
+  "renderer": "pypdfium2",
+  "tool_scope": "Optional temporary PDF review tools; not runtime or ZIP dependencies",
+  "visual_inspection_completed": true,
+  "pdfs": [
+    {
+      "file": "slides/pitch.pdf",
+      "sha256": "3bc2e2743718882f6d7e5997fe5d9d0921406fd9995cdf6384bcfd84d5cd8c31",
+      "pages": 16,
+      "all_pages_have_text": true,
+      "all_pages_rendered": true,
+      "contact_sheets": [
+        "evidence/upgrade-v10/pdf-review/pitch-1.png",
+        "evidence/upgrade-v10/pdf-review/pitch-2.png"
+      ]
+    },
+    {
+      "file": "docs/architecture.pdf",
+      "sha256": "e9c659e5638a9984d906801353dd151dc2ef22a5d9a170a02b8167e56a413805",
+      "pages": 9,
+      "all_pages_have_text": true,
+      "all_pages_rendered": true,
+      "contact_sheets": [
+        "evidence/upgrade-v10/pdf-review/architecture-1.png"
+      ]
+    },
+    {
+      "file": "docs/security-assessment.pdf",
+      "sha256": "a8eb50e528bee60ef2aa2d665d1f51d4305d8b56971bd30541264537fe937011",
+      "pages": 8,
+      "all_pages_have_text": true,
+      "all_pages_rendered": true,
+      "contact_sheets": [
+        "evidence/upgrade-v10/pdf-review/security-assessment-1.png"
+      ]
+    },
+    {
+      "file": "docs/submission-notes.pdf",
+      "sha256": "08b90b2c2123d34e865b0b3d98d86ab6514d693b017a9a0a0ba349d37bbc1bfe",
+      "pages": 3,
+      "all_pages_have_text": true,
+      "all_pages_rendered": true,
+      "contact_sheets": [
+        "evidence/upgrade-v10/pdf-review/submission-notes-1.png"
+      ]
+    },
+    {
+      "file": "docs/Tideway_FinTechathon_2026_Roadmap.pdf",
+      "sha256": "c13845f3781681543287ea35451575f884f7e1b1a8769c688dc2b47fb929c408",
+      "pages": 20,
+      "all_pages_have_text": true,
+      "all_pages_rendered": true,
+      "contact_sheets": [
+        "evidence/upgrade-v10/pdf-review/Tideway_FinTechathon_2026_Roadmap-1.png",
+        "evidence/upgrade-v10/pdf-review/Tideway_FinTechathon_2026_Roadmap-2.png",
+        "evidence/upgrade-v10/pdf-review/Tideway_FinTechathon_2026_Roadmap-3.png"
+      ]
+    }
+  ],
+  "reviewed_at_utc": "2026-10-18T06:37:54.935899+00:00",
+  "review_scope": "All 56 pages inspected on eight contact sheets; current changed pitch, security assessment and submission notes reviewed. No clipping, overlap or out-of-page text found."
+}

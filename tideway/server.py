@@ -8,7 +8,7 @@ import re
 import secrets
 import sys
 import time
-from http.cookies import SimpleCookie
+from http.cookies import CookieError, SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -37,6 +37,16 @@ CONTENT_TYPES = {"html": "text/html", "css": "text/css", "js": "text/javascript"
                  "woff2": "font/woff2", "webp": "image/webp"}
 BINARY = {"woff2", "webp"}
 COOKIE = "tideway_session"
+BODY_TIMEOUT_SECONDS = 2.0
+
+
+def unique_json_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("Duplicate JSON field names are not allowed.")
+        result[key] = value
+    return result
 
 
 def csv_cell(value):
@@ -328,12 +338,40 @@ def make_handler(app):
 
         def trusted_host(self):
             port = self.server.server_port
-            return self.headers.get("Host") in (f"127.0.0.1:{port}", f"localhost:{port}")
+            return (len(self.headers.get_all("Host", [])) == 1
+                    and self.headers.get("Host") in (f"127.0.0.1:{port}", f"localhost:{port}"))
 
         def session(self):
-            cookie = SimpleCookie(self.headers.get("Cookie", ""))
+            if len(self.headers.get_all("Cookie", [])) > 1:
+                return None, None
+            try:
+                cookie = SimpleCookie(self.headers.get("Cookie", ""))
+            except CookieError:
+                return None, None
             token = cookie[COOKIE].value if COOKIE in cookie else None
-            return token, app.store.session_operator(token)
+            operator = app.store.session_operator(token)
+            # Unverified cookie strings must not create fresh rate-limit keys.
+            return (token, operator) if operator else (None, None)
+
+        def read_body(self, length):
+            """Read an exact bounded body with a total, not per-byte, deadline."""
+            deadline = time.monotonic() + BODY_TIMEOUT_SECONDS
+            previous = self.connection.gettimeout()
+            chunks, remaining = [], length
+            try:
+                while remaining:
+                    budget = deadline - time.monotonic()
+                    if budget <= 0:
+                        raise TimeoutError
+                    self.connection.settimeout(budget)
+                    chunk = self.rfile.read1(min(remaining, 65536))
+                    if not chunk:
+                        raise ValueError("Incomplete request body.")
+                    chunks.append(chunk)
+                    remaining -= len(chunk)
+                return b"".join(chunks)
+            finally:
+                self.connection.settimeout(previous)
 
         def reply(self, status, body, content_type="application/json; charset=utf-8", filename=None, cookie=None):
             if isinstance(body, (dict, list)):
@@ -432,9 +470,10 @@ def make_handler(app):
                 return self.deny_post(403, "Untrusted host.")
             port = self.server.server_port
             origin = self.headers.get("Origin")
-            if origin is not None and origin not in (f"http://127.0.0.1:{port}", f"http://localhost:{port}"):
+            if (len(self.headers.get_all("Origin", [])) > 1 or
+                    origin is not None and origin not in (f"http://127.0.0.1:{port}", f"http://localhost:{port}")):
                 return self.deny_post(403, "Cross-origin writes are not allowed.")
-            if not secrets.compare_digest(self.headers.get("X-Tideway-Token", "").encode("utf-8", "surrogateescape"),
+            if len(self.headers.get_all("X-Tideway-Token", [])) != 1 or not secrets.compare_digest(self.headers.get("X-Tideway-Token", "").encode("utf-8", "surrogateescape"),
                                           app.csrf.encode()):
                 return self.deny_post(403, "Missing or invalid CSRF token. Refresh the page.")
             if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
@@ -442,17 +481,28 @@ def make_handler(app):
             path = urlsplit(self.path).path
             token, operator = self.session()
             limiter = app.login_limiter if path in ("/api/session/login", "/api/signup", "/api/team/join") else app.post_limiter
-            if not limiter.allow(token or self.client_address[0]):
+            key = self.client_address[0] if limiter is app.login_limiter else token or self.client_address[0]
+            if not limiter.allow(key):
                 return self.deny_post(429, "Too many requests. Slow down and try again shortly.")
             business_id = None
             try:
                 raw_length = self.headers.get("Content-Length", "0").strip()
-                if not raw_length.isascii() or not raw_length.isdigit():
+                if (self.headers.get_all("Transfer-Encoding", [])
+                        or len(self.headers.get_all("Content-Length", [])) != 1):
+                    return self.deny_post(400, "Use one Content-Length and no Transfer-Encoding.")
+                if not raw_length.isascii() or not raw_length.isdigit() or len(raw_length) > 7:
                     return self.reply(400, {"error": "Invalid Content-Length.", "code": "validation_error"})
                 length = int(raw_length)
                 if not 0 < length <= 2_000_000:
                     return self.reply(413, {"error": "Request body must be 1 byte to 2 MB."})
-                body = json.loads(self.rfile.read(length), parse_constant=lambda _: (_ for _ in ()).throw(ValueError("Invalid number")))
+                body = json.loads(self.read_body(length), object_pairs_hook=unique_json_object,
+                                  parse_constant=lambda _: (_ for _ in ()).throw(ValueError("Invalid number")))
+                try:
+                    # Escaped lone surrogates and exponent overflow can pass
+                    # json.loads, then crash response encoding or reach storage.
+                    json.dumps(body, ensure_ascii=False, allow_nan=False).encode("utf-8")
+                except ValueError as exc:
+                    raise ValidationError("JSON text must be valid Unicode and numbers must be finite.") from exc
                 if not isinstance(body, dict):
                     raise ValidationError("Request must be a JSON object.")
                 candidate = body.get("business_id")
@@ -472,6 +522,9 @@ def make_handler(app):
             except (TideLMUnavailable, TideVisionUnavailable) as exc:
                 self.reply(503, {"error": str(exc), "code": "tidelm_unavailable" if isinstance(exc, TideLMUnavailable)
                                  else "vision_unavailable"})
+            except TimeoutError:
+                self.close_connection = True
+                self.reply(408, {"error": "Request body timed out.", "code": "request_timeout"})
             except RecursionError:
                 self.reply(400, {"error": "JSON is nested too deeply.", "code": "validation_error"})
             except (ValidationError, ValueError, UnicodeDecodeError) as exc:

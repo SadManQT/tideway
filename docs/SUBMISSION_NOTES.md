@@ -4,6 +4,13 @@ FinTechathon 2026 International Track, Topic E: SME Finance Copilot.
 This package is a synthetic research prototype. It connects to no real bank,
 lender, customer or supplier and moves no real money.
 
+Current local follow-up: [v10 changes and retained limitations](RELEASE_V10.md).
+Screening results distinguish disclosed development, a source-aware challenge
+first observation and a post-fix known-case regression. H11's original risk
+remains above target; an extra-cash diagnostic is conditional, unconfirmed and
+cannot execute funding. Native Mac planning/receipt verification is deferred.
+Final package checks and their source hashes are in the current readiness index.
+
 ## Team
 
 **The Last BrainCell**
@@ -86,8 +93,8 @@ human usability, adoption or prediction accuracy.
 
 ## Evidence and current remediation
 
-Start with `docs/READINESS_CURRENT.md` and `docs/RELEASE_V9.md`. Current tests,
-browser proof and source hashes are under `evidence/release-v9/`. The compatible
+Start with `docs/READINESS_CURRENT.md` and `docs/RELEASE_V10.md`. Current tests,
+browser proof and source hashes are under `evidence/upgrade-v10/`. The compatible
 Qwen regression handled 32/32 disclosed requests with 32/32 payment containment;
 the actual-model browser check passed. Raw outputs are in its `model-regression/`
 and `browser-real/` folders. These are known-case/integration results, not unseen
@@ -101,6 +108,13 @@ v7 fresh 48-case screening run detected 23/24 attacks, retained verification
 for 8/8 legitimate payment changes and warned on 5/16 ordinary benign messages
 (31.25%). One Hindi exfiltration miss and five false warnings remain in
 `evidence/screening-v7/`; development results are reported separately.
+
+V10's paired Windows regression improved 23/24 attacks and 3/16 unnecessary
+warnings to 24/24 and 0/16 on the same disclosed cases. Its source-aware challenge
+first observation retained 12/12 attacks, 4/4 payment-change reviews and 1/8 benign
+warnings. After fixing that quotation warning, the final-known 72-case regression
+detected 36/36 attacks and reviewed 12/12 payment changes with 0/24 unnecessary
+warnings. These are finite synthetic checks, not native or independent blind scores.
 
 `python3 scripts/prepare_release.py` checks a frozen LF source tree, including
 web fonts/images, refreshes browser/PDF evidence, builds the ZIP and verifies
@@ -117,5 +131,8 @@ Replacements revalidate signed parent authority and require fresh approval and
 consent. Legacy plans without instructions fail closed. H11 retains 11.78% mean
 breach risk versus a 10% target; every required approver must acknowledge the
 exact residual risk. Likely-path feasibility does not guarantee collections.
+The cash-gap diagnostic selected MYR 3,000 extra opening cash; fresh draws gave
+0.4267% risk conditional on that cash being present without fees or repayment.
+Funding is unconfirmed and unexecuted; the original H11 risk remains unchanged.
 Mock financing discloses timing, total repayment, unverified eligibility and
 affordability through repayment.

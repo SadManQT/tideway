@@ -18,7 +18,8 @@ def main(argv=None):
     model = read('evidence/readiness-v3/blind/model-first-observation.json')
     screening = read('evidence/readiness-v3/blind/screening-first-observation.json')
     pay = read('evidence/readiness-v3/tidepay/report.json')
-    current = args.evidence_dir or ('evidence/release-v9' if (ROOT / 'evidence/release-v9/scenarios/report.json').is_file()
+    current = args.evidence_dir or ('evidence/upgrade-v10' if (ROOT / 'evidence/upgrade-v10/scenarios/report.json').is_file()
+                                  else 'evidence/release-v9' if (ROOT / 'evidence/release-v9/scenarios/report.json').is_file()
                                   else 'evidence/completion-v8' if (ROOT / 'evidence/completion-v8/scenarios/report.json').is_file()
                                   else 'evidence/remediation-v7' if (ROOT / 'evidence/remediation-v7/scenarios/report.json').is_file()
                                   else 'evidence/readiness-v5' if (ROOT / 'evidence/readiness-v5/scenarios/report.json').is_file()
@@ -253,6 +254,34 @@ be guaranteed from synthetic checks while these validation gaps remain.
     if (ROOT / 'docs/RELEASE_V9.md').is_file() and current == 'evidence/release-v9':
         doc = doc.replace('# Current technical readiness\n',
                           '# Current technical readiness\n\nCurrent local release: [fixes and verification scope](RELEASE_V9.md).\n', 1)
+    if current == 'evidence/upgrade-v10':
+        doc = doc.replace('# Current technical readiness\n',
+                          '# Current technical readiness\n\nCurrent local release: [screening, cash-gap and HTTP fixes](RELEASE_V10.md).\n', 1)
+        doc += '\n## Current Windows follow-up\n\n'
+        for phase in ('screening-baseline', 'screening-revised', 'screening-challenge', 'screening-final-known'):
+            path = ROOT / current / phase / 'report.json'
+            if path.is_file():
+                report = json.loads(path.read_text(encoding='utf-8'))
+                m = report['metrics']
+                doc += (f"- [{phase}](../{current}/{phase}/report.json): {report['cases']} cases; "
+                        f"combined attack recall {m['combined_attack']['recall']:.1%}; ordinary-benign warning "
+                        f"false-positive rate {m['combined_warning']['false_positive_rate']:.1%}; "
+                        f"payment review recall {m['legitimate_payment_review']['recall']:.1%}.\n")
+        doc += ('\nSame Windows compatible model for paired disclosed development; source-aware challenge, '
+                'not external or independent blind validation. The challenge first observation is preserved; '
+                'final-known is a post-fix regression over all disclosed cases. Native MLX planning and '
+                'receipt-model verification are deferred until Mac access is available.\n')
+        gap_path = ROOT / current / 'liquidity-gap.json'
+        if gap_path.is_file():
+            gap = json.loads(gap_path.read_text(encoding='utf-8'))
+            doc += (f"\n[H11 cash-gap diagnostic](../{current}/liquidity-gap.json): original risk "
+                    f"{gap['original']['probability']:.2%}; conditional on MYR "
+                    f"{gap['liquidity_gap']['additional_cash_minor']/100:,.2f} extra cash at opening, "
+                    f"fresh-draw risk {gap['conditional_cash_added']['probability']:.2%}. Funding is "
+                    'unconfirmed and unexecuted. Baseline ledger, target and approval requirements are unchanged.\n')
+        doc += ('\nHTTP regressions reject duplicate JSON keys and ambiguous body framing, tolerate malformed '
+                'cookies as unauthenticated, share anonymous rate limits across invalid cookie values, and '
+                'bound body reads by a total deadline. These are internal tests, not an external security audit.\n')
     (ROOT / 'docs/READINESS_CURRENT.md').write_bytes(doc.encode('utf-8'))
     print('Updated docs/READINESS_CURRENT.md from recorded evidence.')
 

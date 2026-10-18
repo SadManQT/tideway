@@ -23,7 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--checks-only', action='store_true', help='Core tests, syntax and sandbox checks; no browser/PDF/package')
     parser.add_argument('--reuse-pdfs', action='store_true', help='Use existing visually reviewed PDFs; still repeat all other checks')
-    parser.add_argument('--evidence-dir', default='evidence/release-v9', help='Current release evidence; historical observations are retained')
+    parser.add_argument('--evidence-dir', default='evidence/upgrade-v10', help='Current release evidence; historical observations are retained')
     args = parser.parse_args()
     issues = line_ending_issues()
     if issues:

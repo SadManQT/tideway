@@ -1,0 +1,7 @@
+{
+  "fixture_sha256": "1d3bd321ccc748c634bfcd7f29a55f7183ebffac692888bd6a33ab6db7fec4b5",
+  "sealed_at_utc": "2026-10-18T06:22:22.686804+00:00",
+  "cases": 24,
+  "author_scope": "AI-authored by the same implementation-aware maintainer before the first inference on this fixture. Source-aware challenge, not independent blind validation. Labels and texts sealed before observation; all first-run outcomes retained.",
+  "pre_observation_note": "Corrected Windows shell input encoding before any classifier invocation on these cases."
+}

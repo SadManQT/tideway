@@ -1,0 +1,56 @@
+[
+    {
+        "Id": "sha256:141fe9b385f3bb6d618c07ace1836c0b3c72bf525566ac3eb13cd1f405069877",
+        "RepoTags": [],
+        "RepoDigests": [
+            "python@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903ca5fd283f501e3a805f5f89"
+        ],
+        "Parent": "",
+        "Comment": "buildkit.dockerfile.v0",
+        "Created": "2026-10-06T02:04:13.792985192Z",
+        "DockerVersion": "",
+        "Author": "",
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Size": 136637626,
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/home/ramim/.cache/tideway-docker-audit/data-v10/overlay2/a3ff613d0a131bd08d602e473dc7b7b538a25a6470f93016c959b4e4d13f9865/diff:/home/ramim/.cache/tideway-docker-audit/data-v10/overlay2/4ad1a1f8c5213f68a1784b7b9c56a8bfe1ad812b414322b8cfb413f36715a5bc/diff:/home/ramim/.cache/tideway-docker-audit/data-v10/overlay2/36ad1cc47b13f9c6707ed718f73b14ab0d7509e32ec0e889be14c49921c69287/diff",
+                "MergedDir": "/home/ramim/.cache/tideway-docker-audit/data-v10/overlay2/524f4273fb7a120f44cf9abaa63f5fd655f2385ab563c4646ee86af933ebb1ec/merged",
+                "UpperDir": "/home/ramim/.cache/tideway-docker-audit/data-v10/overlay2/524f4273fb7a120f44cf9abaa63f5fd655f2385ab563c4646ee86af933ebb1ec/diff",
+                "WorkDir": "/home/ramim/.cache/tideway-docker-audit/data-v10/overlay2/524f4273fb7a120f44cf9abaa63f5fd655f2385ab563c4646ee86af933ebb1ec/work"
+            },
+            "Name": "overlay2"
+        },
+        "RootFS": {
+            "Type": "layers",
+            "Layers": [
+                "sha256:e58989146fcec76699871403b9897b5c014af1ccd85f5a9300a215e7975525d7",
+                "sha256:b0323ff28afe21fb981d00843d08f925ac6c678a3d4e16be06f18fc89357f720",
+                "sha256:0df1f695216dce8e8c88a822f441e7c18e4945a5e7cd24964549a30bc2ee8b6f",
+                "sha256:e9a58519e8e3dc1326f31fbc9788c62ecff75201eb7aafee27c567d41b6fea1e"
+            ]
+        },
+        "Metadata": {
+            "LastTagTime": "0001-01-01T00:00:00Z"
+        },
+        "Config": {
+            "Cmd": [
+                "python3"
+            ],
+            "Entrypoint": null,
+            "Env": [
+                "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "LANG=C.UTF-8",
+                "GPG_KEY=A035C8C19219BA821ECEA86B64E628F8D684696D",
+                "PYTHON_VERSION=3.11.17",
+                "PYTHON_SHA256=bfb74ad39efae27cda510f134ab408e00f9992c56851cfc0b1cdb5646da11599"
+            ],
+            "Labels": null,
+            "OnBuild": null,
+            "User": "",
+            "Volumes": null,
+            "WorkingDir": ""
+        }
+    }
+]

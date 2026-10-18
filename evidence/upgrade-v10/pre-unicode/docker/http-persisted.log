@@ -1,0 +1,61 @@
+{
+  "version": "container-http-smoke-v5",
+  "phase": "persisted",
+  "passed": true,
+  "python": "3.11.17",
+  "uid": 10001,
+  "checks": {
+    "non_root_runtime": true,
+    "private_paths_excluded": true,
+    "public_guide_html": true,
+    "protected_dashboard_requires_login": true,
+    "receipt_survives_recreated_container": true,
+    "persistent_keys_validate_replay": true,
+    "persistent_audit_chain_valid": true,
+    "private_signing_key_permissions": true
+  },
+  "receipt_id": "fcae9a6a47aa490a8f928df1a34465a8",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/config",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/guide",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/api/config",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/session/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/execution",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/mandate/execute",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/audit",
+      "status": 200
+    }
+  ],
+  "scope": "Actual HTTP inside an isolated Linux container; scripted synthetic demo approvals and counterparties; no live model, real user or real money."
+}

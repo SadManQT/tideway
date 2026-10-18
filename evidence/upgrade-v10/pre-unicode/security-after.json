@@ -1,0 +1,13 @@
+{
+  "run_at_utc": "2026-10-18T06:29:26.808552+00:00",
+  "source_tree_sha256": "d74870dea6d49f1ae8cbd312abb2017c28a617c78a3d1db86d6d51c8b634463a",
+  "source_unchanged": true,
+  "tests_run": 9,
+  "failures": 0,
+  "errors": 0,
+  "passed": true,
+  "external_security_review": false,
+  "scope": "Actual loopback HTTP regression tests, internal self-assessment only; not comprehensive denial-of-service protection.",
+  "before_reproduction": "security-before.json",
+  "log": "security-after.log"
+}

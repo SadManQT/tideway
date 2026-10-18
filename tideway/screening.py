@@ -78,6 +78,7 @@ INJECTION_PATTERNS += (
     ("forged_authority", re.compile(r"(?:把|将|视为|当作).{0,20}(?:消息|邮件|聊天|便条).{0,20}(?:授权|批准|签名)|(?:伪造|假装).{0,20}(?:授权|批准|签名|审核)")),
     ("payment_redirect", re.compile(r"(?:替换|更换|改用|改成).{0,15}(?:我的|私人|未验证).{0,10}(?:收款人|账户|账号|钱包)|(?:已验证|登记|原有).{0,15}(?:账户|账号).{0,20}(?:替换|换成|改用|改成|代替)|(?:不要|不用).{0,10}(?:已验证|登记|原有).{0,10}(?:账户|账号)")),
     ("data_exfiltration", re.compile(r"(?:上传|发送|导出|复制|转发).{0,25}(?:客户数据|客户记录|工资记录|密码|密钥|令牌|所有发票).{0,35}(?:https?://|邮箱|外部|服务器)")),
+    ("data_exfiltration", re.compile(rf"(?:ग्राहक\S*|कर्मचार\S*).{{0,65}}(?:नाम|पते|मोबाइल|फोन|वेतन|सूची).{{0,100}}{_EXTERNAL_DESTINATION}.{{0,30}}(?:भेज|निर्यात|अपलोड)|(?:भेज|निर्यात|अपलोड).{{0,50}}(?:ग्राहक\S*|कर्मचार\S*).{{0,100}}{_EXTERNAL_DESTINATION}", re.I)),
     ("control_bypass", re.compile(r"\b(?:sin|sans|tanpa)\s+(?:la\s+|les\s+|aucune\s+)?(?:aprobaci[oó]n|autorizaci[oó]n|approbation|autorisation|persetujuan|izin)\b|\b(?:desactiva|elimina|suprime|d[eé]sactivez|supprimez|nonaktifkan|hapus)\b.{0,35}\b(?:controles?|validaci[oó]n|approbation|v[eé]rification|persetujuan|keamanan)\b", re.I)),
     ("forged_authority", re.compile(r"\b(?:considera|considere|consid[eé]rez|anggap|perlakukan)\b.{0,40}\b(?:mensaje|correo|message|courriel|pesan|email)\b.{0,40}\b(?:firma|autorizaci[oó]n|consentimiento|signature|autorisation|persetujuan|tanda\s+tangan)\b", re.I)),
     ("control_bypass", re.compile(r"(?:تجاوز|تخطى|تخطّي|عطّل|عطل|إلغاء|الغاء).{0,25}(?:الموافقة|موافقة|التفويض|التحقق|الأمان|الامان)|(?:بدون|دون).{0,15}(?:موافقة|تفويض|توقيع)")),
@@ -149,12 +150,29 @@ def _mask_reported_quotes(value):
     for match in _QUOTED.finditer(value):
         prefix = value[max(0, match.start() - 100):match.start()]
         suffix = value[match.end():match.end() + 100]
-        reported = re.search(r"\b(?:example\s+(?:of|text)|training\s+example|quoted\s+(?:example|text)|(?:rejected|blocked|flagged|reported|detected|received)\s+(?:(?:an?|the|this|that|a\s+suspicious)\s+)?(?:message|request|instruction|email|text)?|(?:message|email|report)\s+(?:said|reads?|states?|contained)|supplier\s+wrote)\s*[:,-]?\s*$", prefix, re.I)
+        reported = re.search(r"\b(?:example\s+(?:of|text)|training\s+example|quoted\s+(?:example|text)|(?:rejected|blocked|flagged|reported|detected|received)\s+(?:(?:an?|the|this|that|a\s+suspicious)\s+)?(?:message|request|instruction|email|text)?|(?:message|email|report)\s+(?:said|reads?|states?|contained)|(?:supplier|sender|caller)\s+(?:wrote|said))\s*[:,-]?\s*$", prefix, re.I)
         training = re.search(r"(?:training\s+(?:example|handout)|inactive\s+example|培训.{0,12}(?:示例|例子)|示例坏请求|প্রশিক্ষণ.{0,25}উদাহরণ|অনুশীলন.{0,20}|उदाहरण|प्रशिक्षण|مثال.{0,20}تدريب|تمرين|(?:exemple|ejemplo|exerc[ií]cio).{0,30}(?:formation|formaci[oó]n|capacita|p[eé]dagog)|fiche\s+p[eé]dagogique).{0,25}$", prefix, re.I)
         rejected = re.match(r"\s*(?:is|was|would\s+be|must\s+be|should\s+be)\s+(?:an?\s+)?(?:attack|injection|prohibited|forbidden|unsafe|rejected|blocked|disallowed)\b", suffix, re.I)
         if reported or rejected or training:
             pieces[match.start():match.end()] = " " * (match.end() - match.start())
     return "".join(pieces)
+
+
+def _mask_rejected_questions(value):
+    """An immediately rejected question is not an active bypass request.
+
+    Only mask that question; subsequent instructions remain independently
+    scanned. The rejection must be a complete sentence, not 'No problem'.
+    """
+    pattern = re.compile(r"(?:^|(?<=[.!?\n]))[^.!?\n]{0,300}\?\s*(?:no|it\s+does\s+not|we\s+cannot)[.!](?=\s|$)", re.I)
+    def replace(match):
+        question = match.group().split("?", 1)[0]
+        if re.search(r"\b(?:can|could|may|should)\b|\basking\s+whether\b", question, re.I):
+            return " " * len(match.group())
+        return match.group()
+    value = pattern.sub(replace, value)
+    indirect = re.compile(r"(?:^|(?<=[.!?\n]))[^.!?\n]{0,120}\basking\s+whether\b[^.!?\n]{1,200}[.?]\s*(?:no|it\s+does\s+not|we\s+cannot)[.!](?=\s|$)", re.I)
+    return indirect.sub(lambda match: " " * len(match.group()), value)
 
 
 def _negated_at(value, start, end):
@@ -169,7 +187,7 @@ def _negated_at(value, start, end):
         return True
     if re.search(r"(?:不要|禁止|不得|切勿)\s*$", prefix):
         return True
-    if re.match(r".{0,30}?(?:করবেন না|করো না|করবেননা|मत करो|न करें)(?:\s|$)", suffix):
+    if re.match(r".{0,30}?(?:করবেন না|করো না|করবেননা|ছাড়বেন না|ছাড়বেন না|পাঠাবেন না|দেবেন না|मत करो|न करें)(?:\s|$)", suffix):
         return True
     if re.match(r"(?:sin\b|sans\b|tanpa\b|بدون|دون)", value[start:], re.I):
         if re.search(r"\b(?:no\s+(?:pagues|pagar|transfieras|env[ií]es)|ne\b.{0,25}\b(?:pas|jamais)|jangan\s+(?:bayar|transfer|kirim))\b.{0,20}$|لا\s+(?:ترسل|تدفع|تحول).{0,20}$", prefix, re.I):
@@ -197,7 +215,7 @@ def scan_text(*values) -> list[str]:
         if not isinstance(value, str) or not value:
             continue
         value = _normalise(value)
-        scanned = _mask_reported_quotes(value)
+        scanned = _mask_rejected_questions(_mask_reported_quotes(value))
         local = []
         for clause in _CLAUSE_BOUNDARY.split(scanned):
             for name, pattern in INJECTION_PATTERNS:

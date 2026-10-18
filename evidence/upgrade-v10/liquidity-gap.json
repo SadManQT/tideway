@@ -1,0 +1,271 @@
+{
+  "run_at_utc": "2026-10-18T06:32:35.045331+00:00",
+  "source_tree_sha256": "a803d9ffe64bb22bd29ce7899cd9809e47ec05b5e41d2f17bccd9ce919133f09",
+  "source_unchanged": true,
+  "fixture_sha256": "0fd9b482d1a13bb91d5126ab751db2b4eb019c3fcefee8d1063c47f0460d4a46",
+  "case": "H11",
+  "currency": "MYR",
+  "actions": [
+    {
+      "action_id": "defer-B1-14d-400000",
+      "type": "supplier_deferral",
+      "record_kind": "bill",
+      "record_id": "B1",
+      "counterparty": "Glass Components",
+      "counterparty_kind": "supplier",
+      "amount_minor": 400000,
+      "bill_amount_minor": 400000,
+      "currency": "MYR",
+      "from_date": "2026-10-05",
+      "to_date": "2026-10-19",
+      "days": 14,
+      "economic_cost_minor": 1841,
+      "fee_minor": 0,
+      "apr_equivalent_bps": 1200,
+      "requires_consent": true,
+      "executable": true,
+      "provenance": {
+        "counterparty": "ledger:bills/B1.payee",
+        "amount_minor": "ledger:bills/B1.amount_minor x 100% (capped by policy)",
+        "from_date": "ledger:bills/B1.due_date",
+        "to_date": "policy:max_deferral_days=14"
+      },
+      "adjustment": {
+        "kind": "bill_deferral",
+        "bill_id": "B1",
+        "amount_minor": 400000,
+        "from_date": "2026-10-05",
+        "to_date": "2026-10-19"
+      },
+      "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing."
+    },
+    {
+      "action_id": "defer-B2-14d-400000",
+      "type": "supplier_deferral",
+      "record_kind": "bill",
+      "record_id": "B2",
+      "counterparty": "Metal Components",
+      "counterparty_kind": "supplier",
+      "amount_minor": 400000,
+      "bill_amount_minor": 400000,
+      "currency": "MYR",
+      "from_date": "2026-10-06",
+      "to_date": "2026-10-20",
+      "days": 14,
+      "economic_cost_minor": 1841,
+      "fee_minor": 0,
+      "apr_equivalent_bps": 1200,
+      "requires_consent": true,
+      "executable": true,
+      "provenance": {
+        "counterparty": "ledger:bills/B2.payee",
+        "amount_minor": "ledger:bills/B2.amount_minor x 100% (capped by policy)",
+        "from_date": "ledger:bills/B2.due_date",
+        "to_date": "policy:max_deferral_days=14"
+      },
+      "adjustment": {
+        "kind": "bill_deferral",
+        "bill_id": "B2",
+        "amount_minor": 400000,
+        "from_date": "2026-10-06",
+        "to_date": "2026-10-20"
+      },
+      "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing."
+    },
+    {
+      "action_id": "defer-B3-14d-400000",
+      "type": "supplier_deferral",
+      "record_kind": "bill",
+      "record_id": "B3",
+      "counterparty": "Plastic Components",
+      "counterparty_kind": "supplier",
+      "amount_minor": 400000,
+      "bill_amount_minor": 400000,
+      "currency": "MYR",
+      "from_date": "2026-10-07",
+      "to_date": "2026-10-21",
+      "days": 14,
+      "economic_cost_minor": 1841,
+      "fee_minor": 0,
+      "apr_equivalent_bps": 1200,
+      "requires_consent": true,
+      "executable": true,
+      "provenance": {
+        "counterparty": "ledger:bills/B3.payee",
+        "amount_minor": "ledger:bills/B3.amount_minor x 100% (capped by policy)",
+        "from_date": "ledger:bills/B3.due_date",
+        "to_date": "policy:max_deferral_days=14"
+      },
+      "adjustment": {
+        "kind": "bill_deferral",
+        "bill_id": "B3",
+        "amount_minor": 400000,
+        "from_date": "2026-10-07",
+        "to_date": "2026-10-21"
+      },
+      "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing."
+    },
+    {
+      "action_id": "defer-B4-14d-400000",
+      "type": "supplier_deferral",
+      "record_kind": "bill",
+      "record_id": "B4",
+      "counterparty": "Rubber Components",
+      "counterparty_kind": "supplier",
+      "amount_minor": 400000,
+      "bill_amount_minor": 400000,
+      "currency": "MYR",
+      "from_date": "2026-10-08",
+      "to_date": "2026-10-22",
+      "days": 14,
+      "economic_cost_minor": 1841,
+      "fee_minor": 0,
+      "apr_equivalent_bps": 1200,
+      "requires_consent": true,
+      "executable": true,
+      "provenance": {
+        "counterparty": "ledger:bills/B4.payee",
+        "amount_minor": "ledger:bills/B4.amount_minor x 100% (capped by policy)",
+        "from_date": "ledger:bills/B4.due_date",
+        "to_date": "policy:max_deferral_days=14"
+      },
+      "adjustment": {
+        "kind": "bill_deferral",
+        "bill_id": "B4",
+        "amount_minor": 400000,
+        "from_date": "2026-10-08",
+        "to_date": "2026-10-22"
+      },
+      "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing."
+    },
+    {
+      "action_id": "defer-B5-14d-400000",
+      "type": "supplier_deferral",
+      "record_kind": "bill",
+      "record_id": "B5",
+      "counterparty": "Wood Components",
+      "counterparty_kind": "supplier",
+      "amount_minor": 400000,
+      "bill_amount_minor": 400000,
+      "currency": "MYR",
+      "from_date": "2026-10-09",
+      "to_date": "2026-10-23",
+      "days": 14,
+      "economic_cost_minor": 1841,
+      "fee_minor": 0,
+      "apr_equivalent_bps": 1200,
+      "requires_consent": true,
+      "executable": true,
+      "provenance": {
+        "counterparty": "ledger:bills/B5.payee",
+        "amount_minor": "ledger:bills/B5.amount_minor x 100% (capped by policy)",
+        "from_date": "ledger:bills/B5.due_date",
+        "to_date": "policy:max_deferral_days=14"
+      },
+      "adjustment": {
+        "kind": "bill_deferral",
+        "bill_id": "B5",
+        "amount_minor": 400000,
+        "from_date": "2026-10-09",
+        "to_date": "2026-10-23"
+      },
+      "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing."
+    },
+    {
+      "action_id": "defer-B6-14d-400000",
+      "type": "supplier_deferral",
+      "record_kind": "bill",
+      "record_id": "B6",
+      "counterparty": "Textile Components",
+      "counterparty_kind": "supplier",
+      "amount_minor": 400000,
+      "bill_amount_minor": 400000,
+      "currency": "MYR",
+      "from_date": "2026-10-10",
+      "to_date": "2026-10-24",
+      "days": 14,
+      "economic_cost_minor": 1841,
+      "fee_minor": 0,
+      "apr_equivalent_bps": 1200,
+      "requires_consent": true,
+      "executable": true,
+      "provenance": {
+        "counterparty": "ledger:bills/B6.payee",
+        "amount_minor": "ledger:bills/B6.amount_minor x 100% (capped by policy)",
+        "from_date": "ledger:bills/B6.due_date",
+        "to_date": "policy:max_deferral_days=14"
+      },
+      "adjustment": {
+        "kind": "bill_deferral",
+        "bill_id": "B6",
+        "amount_minor": 400000,
+        "from_date": "2026-10-10",
+        "to_date": "2026-10-24"
+      },
+      "cost_note": "No fee is charged. The implied cost uses a 12% a year supplier-credit assumption so deferrals compare fairly with discounts and financing."
+    }
+  ],
+  "selection_seed": 70279,
+  "selection_runs": 20000,
+  "liquidity_gap": {
+    "additional_cash_minor": 300000,
+    "risk_target": 0.1,
+    "sample_runs": 20000,
+    "sample_breaches_after": 97,
+    "sample_probability_breach_after": 0.00485,
+    "breaches_with_one_minor_less": 2375,
+    "funding_confirmed": false,
+    "executable": false,
+    "assumption": "Additional confirmed cash is available at the opening date and remains in the business; all other timing, costs and obligations stay unchanged.",
+    "limitation": "Minimum on these simulated paths only; excludes model error and funding costs. Confirm availability and rerun on fresh draws before relying on the amount."
+  },
+  "validation_seeds_disjoint_from_selection": true,
+  "fresh_validation": [
+    {
+      "seed": 20261017,
+      "runs": 10000,
+      "original_probability_breach": 0.1194,
+      "conditional_cash_added_probability_breach": 0.0058
+    },
+    {
+      "seed": 50737,
+      "runs": 10000,
+      "original_probability_breach": 0.1171,
+      "conditional_cash_added_probability_breach": 0.0037
+    },
+    {
+      "seed": 91729,
+      "runs": 10000,
+      "original_probability_breach": 0.1168,
+      "conditional_cash_added_probability_breach": 0.0033
+    }
+  ],
+  "original": {
+    "breaches": 3533,
+    "runs": 30000,
+    "probability": 0.11776666666666667,
+    "sampling_interval_95_percent": [
+      0.11416798608951206,
+      0.12146322721485359
+    ]
+  },
+  "conditional_cash_added": {
+    "breaches": 128,
+    "runs": 30000,
+    "probability": 0.004266666666666667,
+    "sampling_interval_95_percent": [
+      0.003589876181393866,
+      0.0050704015078471
+    ]
+  },
+  "ledger_unchanged": true,
+  "funding_confirmed": false,
+  "executed": false,
+  "target": 0.1,
+  "limitations": [
+    "Disclosed synthetic case. The original unfunded risk is retained and still above target.",
+    "No confirmed cash source, investor, loan approval or executable funding action is supplied.",
+    "Additional cash is assumed present at opening, without fees or repayment; later funding needs a different time-path calculation.",
+    "Sampling intervals exclude model miscalibration, unmodelled risks and counterparty reliability."
+  ]
+}

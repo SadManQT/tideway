@@ -1,0 +1,65 @@
+{
+    "checked_at_utc":  "2026-10-18T06:23:13.0486868Z",
+    "run_number":  14,
+    "run_id":  39102943815,
+    "remote_commit":  "6dbb3151562f9c0e8079ad32fbbc71b29f56c87b",
+    "conclusion":  "success",
+    "url":  "https://github.com/SadManQT/tideway/actions/runs/39102943815",
+    "jobs":  [
+                 {
+                     "name":  "Isolated Docker build and persisted HTTP workflow",
+                     "status":  "completed",
+                     "conclusion":  "success",
+                     "html_url":  "https://github.com/SadManQT/tideway/actions/runs/39102943815/job/117602767833"
+                 },
+                 {
+                     "name":  "stdlib / windows-2022 / Python 3.14",
+                     "status":  "completed",
+                     "conclusion":  "success",
+                     "html_url":  "https://github.com/SadManQT/tideway/actions/runs/39102943815/job/117602767920"
+                 },
+                 {
+                     "name":  "stdlib / macos-14 / Python 3.11",
+                     "status":  "completed",
+                     "conclusion":  "success",
+                     "html_url":  "https://github.com/SadManQT/tideway/actions/runs/39102943815/job/117602767934"
+                 },
+                 {
+                     "name":  "stdlib / windows-2022 / Python 3.11",
+                     "status":  "completed",
+                     "conclusion":  "success",
+                     "html_url":  "https://github.com/SadManQT/tideway/actions/runs/39102943815/job/117602767969"
+                 },
+                 {
+                     "name":  "Browser workflows and extracted package",
+                     "status":  "completed",
+                     "conclusion":  "success",
+                     "html_url":  "https://github.com/SadManQT/tideway/actions/runs/39102943815/job/117602767999"
+                 },
+                 {
+                     "name":  "stdlib / ubuntu-24.04 / Python 3.14",
+                     "status":  "completed",
+                     "conclusion":  "success",
+                     "html_url":  "https://github.com/SadManQT/tideway/actions/runs/39102943815/job/117602768003"
+                 },
+                 {
+                     "name":  "Optional photo validation / Pillow",
+                     "status":  "completed",
+                     "conclusion":  "success",
+                     "html_url":  "https://github.com/SadManQT/tideway/actions/runs/39102943815/job/117602768015"
+                 },
+                 {
+                     "name":  "stdlib / ubuntu-24.04 / Python 3.11",
+                     "status":  "completed",
+                     "conclusion":  "success",
+                     "html_url":  "https://github.com/SadManQT/tideway/actions/runs/39102943815/job/117602768025"
+                 },
+                 {
+                     "name":  "stdlib / macos-14 / Python 3.14",
+                     "status":  "completed",
+                     "conclusion":  "success",
+                     "html_url":  "https://github.com/SadManQT/tideway/actions/runs/39102943815/job/117602768051"
+                 }
+             ],
+    "scope":  "Remote committed v9 source only; does not attest to local v10 edits. No push was performed."
+}

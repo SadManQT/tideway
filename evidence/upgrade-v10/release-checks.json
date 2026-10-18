@@ -1,0 +1,27 @@
+{
+  "run_at_utc": "2026-10-18T06:36:30+00:00",
+  "source_tree_sha256": "a803d9ffe64bb22bd29ce7899cd9809e47ec05b5e41d2f17bccd9ce919133f09",
+  "stages_passed": [
+    "Python compile",
+    "JavaScript syntax",
+    "Unit suite",
+    "Sandbox task and attack scorecard",
+    "Distinct financial scenarios",
+    "Payment delay and fresh approvals",
+    "Behavior-driven sandbox paths",
+    "Browser desktop/mobile and delay",
+    "Injected local-model integration",
+    "Current readiness index",
+    "PDF deliverables"
+  ],
+  "pdfs_rebuilt": true,
+  "visual_review_automated": false,
+  "pdf_sha256": {
+    "slides/pitch.pdf": "3bc2e2743718882f6d7e5997fe5d9d0921406fd9995cdf6384bcfd84d5cd8c31",
+    "docs/architecture.pdf": "e9c659e5638a9984d906801353dd151dc2ef22a5d9a170a02b8167e56a413805",
+    "docs/security-assessment.pdf": "a8eb50e528bee60ef2aa2d665d1f51d4305d8b56971bd30541264537fe937011",
+    "docs/submission-notes.pdf": "08b90b2c2123d34e865b0b3d98d86ab6514d693b017a9a0a0ba349d37bbc1bfe",
+    "docs/Tideway_FinTechathon_2026_Roadmap.pdf": "c13845f3781681543287ea35451575f884f7e1b1a8769c688dc2b47fb929c408"
+  },
+  "scope": "Local synthetic checks; no hosted CI, model-quality rerun, SME participation or submission implied."
+}

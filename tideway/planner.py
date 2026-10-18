@@ -355,6 +355,7 @@ def plan_recovery(business, policy, records, target_date, *, accepted=(), promis
                                            runs=mc_runs, seed=mc_seed, lookahead_days=policy["lookahead_days"], as_of=as_of)
         item["probability_breach"] = simulation["probability_breach"]
         item["futures_short_of_20"] = simulation["futures_short_of_20"]
+        item["liquidity_gap"] = simulation.get("liquidity_gap")
         return item
 
     candidates, screening = _robust_candidates(feasible, business, policy, records, end, accepted,
@@ -390,6 +391,7 @@ def plan_recovery(business, policy, records, target_date, *, accepted=(), promis
                                            lookahead_days=policy["lookahead_days"], as_of=as_of)
         item["probability_breach"] = simulation["probability_breach"]
         item["futures_short_of_20"] = simulation["futures_short_of_20"]
+        item["liquidity_gap"] = simulation.get("liquidity_gap")
     within = [item for item in finalists if item["probability_breach"] <= RISK_TARGET]
     outside = [item for item in finalists if item not in within]
     if prefer == "lowest_risk":
@@ -435,6 +437,7 @@ def plan_recovery(business, policy, records, target_date, *, accepted=(), promis
             "economic_cost_minor": item["cost"], "counterparties": item["counterparties"], "exposure_minor": item["exposure"],
             "probability_breach_after": item.get("probability_breach"),
             "futures_short_of_20_after": item.get("futures_short_of_20"),
+            "liquidity_gap": item.get("liquidity_gap"),
             "risk_target_met": item.get("probability_breach") is not None and item["probability_breach"] <= RISK_TARGET,
             "dual_approval_required": item["exposure"] > policy["dual_approval_threshold_minor"],
             "after": summary(after), "after_base": summary(after_base),

@@ -1,0 +1,14 @@
+test_ambiguous_body_framing_is_rejected (test_http_boundaries.HttpBoundaries.test_ambiguous_body_framing_is_rejected) ... ok
+test_duplicate_fields_cannot_choose_a_different_identity (test_http_boundaries.HttpBoundaries.test_duplicate_fields_cannot_choose_a_different_identity) ... ok
+test_malformed_cookie_is_unauthenticated_not_a_connection_crash (test_http_boundaries.HttpBoundaries.test_malformed_cookie_is_unauthenticated_not_a_connection_crash) ... ok
+test_multiple_host_headers_are_rejected (test_http_boundaries.HttpBoundaries.test_multiple_host_headers_are_rejected) ... ok
+test_nested_duplicate_fields_are_rejected_before_dispatch (test_http_boundaries.HttpBoundaries.test_nested_duplicate_fields_are_rejected_before_dispatch) ... ok
+test_normal_login_still_works (test_http_boundaries.HttpBoundaries.test_normal_login_still_works) ... ok
+test_random_invalid_session_cookies_share_anonymous_rate_limit (test_http_boundaries.HttpBoundaries.test_random_invalid_session_cookies_share_anonymous_rate_limit) ... ok
+test_stalled_body_gets_a_bounded_timeout_and_server_stays_available (test_http_boundaries.HttpBoundaries.test_stalled_body_gets_a_bounded_timeout_and_server_stays_available) ... ok
+test_trickled_bytes_do_not_restart_total_body_deadline (test_http_boundaries.HttpBoundaries.test_trickled_bytes_do_not_restart_total_body_deadline) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 1.007s
+
+OK

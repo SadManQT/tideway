@@ -1,0 +1,5 @@
+{
+  "original_fixture_sha256": "1d3bd321ccc748c634bfcd7f29a55f7183ebffac692888bd6a33ab6db7fec4b5",
+  "lf_source_copy_sha256": "885a003f1e93af27ba878dad04ed8e66a1d69e5c0aa7ab27d9de82a4ee9f68e6",
+  "note": "After the preserved first observation, only CRLF was converted to LF for repository source policy; decoded JSON labels/text unchanged."
+}

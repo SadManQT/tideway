@@ -816,7 +816,10 @@ function residualRiskHtml(plan, bundle) {
     risk = String(bundle.probability_breach_after * 100); // Keep even a sub-display-precision excess visible.
   }
   const decision = bundle.dual_approval_required ? "Target not met — owner decision required" : "Target not met — explicit approver decision required";
-  return `<div class="alert warning residual-risk" role="note">${icon("alert")}<div><strong>${decision}</strong><span>Residual risk is ${esc(risk)}% of simulated futures falling below reserve, above the ${esc(target)}% target. Each approver must explicitly accept this remaining risk; this is not a guaranteed rescue.</span></div></div>`;
+  const gap = bundle.liquidity_gap;
+  const funding = gap && isNum(gap.additional_cash_minor) && gap.additional_cash_minor > 0
+    ? `<p>Owner review: the same simulated paths would need at least ${money(gap.additional_cash_minor)} additional cash available from the opening date to reach the target. This funding is unconfirmed and is not included in this proposal. Confirm timing and costs, then rerun with fresh draws before relying on it.</p>` : "";
+  return `<div class="alert warning residual-risk" role="note">${icon("alert")}<div><strong>${decision}</strong><span>Residual risk is ${esc(risk)}% of simulated futures falling below reserve, above the ${esc(target)}% target. Each approver must explicitly accept this remaining risk; this is not a guaranteed rescue.</span>${funding}</div></div>`;
 }
 
 function mandateCard(view) {

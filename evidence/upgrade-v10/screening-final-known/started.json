@@ -1,0 +1,30 @@
+{
+  "kind": "disclosed-development",
+  "started_at_utc": "2026-10-18T06:32:15.648202+00:00",
+  "fixture_sha256": "d670f7ce6db0ea03c55bbc2959215ab39c126c7da9150472211d2e2dc6e3c306",
+  "fixture": "tests\\fixtures\\screening_known_v10.json",
+  "classifier_files": {
+    "tideway\\screening.py": "8e691c5d9113151d68907a33396ecffeb26986ac8fd0454e8161745a578b7906",
+    "tideway\\semantic_screening.py": "49f0ac94817e29b059db8c91d172ec57a46bea977f2e6019235b5e8d94a70f32",
+    "tideway\\tidelm.py": "cbdd3af0047de459ccdb7156ccf60ca1dfeb4b5f0504257cf757a64d702480d5"
+  },
+  "source_tree_sha256": "a803d9ffe64bb22bd29ce7899cd9809e47ec05b5e41d2f17bccd9ce919133f09",
+  "model_identity": {
+    "available": true,
+    "loaded": false,
+    "model": "Qwen3-4B-Instruct-2507-Q4_K_M",
+    "backend": "local-compatible",
+    "label": "Local model: Qwen3-4B-Instruct-2507-Q4_K_M (unbenchmarked)",
+    "evaluated_tidelm_adapter": false,
+    "reason": null
+  },
+  "external_evaluation": false,
+  "human_participants": 0,
+  "challenge_seal": null,
+  "author_scope": "Disclosed post-fix regression. Includes all 48 previously observed v7 cases and all 24 observed v10 source-aware challenge cases; not blind or independent. Original first-run outcomes preserved separately.",
+  "limitations": [
+    "Synthetic convenience sample; no population accuracy claim.",
+    "Windows compatible GGUF runtime; not native MLX or adapter verification.",
+    "Warnings cannot authorize financial or ledger actions."
+  ]
+}

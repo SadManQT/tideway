@@ -1,0 +1,16 @@
+{
+  "run_at_utc": "2026-10-18T06:32:34.477393+00:00",
+  "source_tree_sha256": "a803d9ffe64bb22bd29ce7899cd9809e47ec05b5e41d2f17bccd9ce919133f09",
+  "source_unchanged": true,
+  "tests_run": 11,
+  "failures": 0,
+  "errors": 0,
+  "passed": true,
+  "external_security_review": false,
+  "scope": "Actual loopback HTTP regression tests; internal self-assessment only. No comprehensive connection or header-flood defence.",
+  "before_reproductions": [
+    "security-before.json",
+    "security-unicode-before.json"
+  ],
+  "log": "security-after.log"
+}

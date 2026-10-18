@@ -1,0 +1,157 @@
+{
+  "version": "container-http-smoke-v5",
+  "phase": "workflow",
+  "passed": true,
+  "python": "3.11.17",
+  "uid": 10001,
+  "checks": {
+    "non_root_runtime": true,
+    "private_paths_excluded": true,
+    "public_guide_html": true,
+    "protected_dashboard_requires_login": true,
+    "csrf_required": true,
+    "viewer_cannot_create_proposal": true,
+    "above_target_requires_acknowledgement": true,
+    "ordinary_pin_approvals": true,
+    "exact_consent_before_execution": true,
+    "execution_read_back": true,
+    "same_receipt_on_replay": true,
+    "mandate_signature_valid": true,
+    "audit_chain_valid": true,
+    "private_signing_key_permissions": true
+  },
+  "receipt_id": "476da3f5e15e409fb2f12ec77b7d27f8",
+  "approval_trace": [
+    {
+      "attempt": 1,
+      "operator_id": "imran",
+      "status": "awaiting_second_approval",
+      "risk_acknowledged": false
+    },
+    {
+      "attempt": 1,
+      "operator_id": "nadia",
+      "status": "mandate_issued",
+      "risk_acknowledged": false
+    }
+  ],
+  "negotiation_trace": [
+    {
+      "attempt": 1,
+      "status": "ready",
+      "replies": [
+        "accepted",
+        "accepted"
+      ]
+    }
+  ],
+  "audit_entries": 10,
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/config",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/guide",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/dashboard",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/api/config",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/session/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/session/login",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/api/plan/propose",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/plan/approve",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/mandate/execute",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/mandate/negotiate",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/mandate/execute",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/mandate/execute",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/mandate/verify",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/audit",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/config",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/session/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/plan/approve",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "path": "/api/plan/approve",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/config",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/session/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/api/plan/propose",
+      "status": 403
+    }
+  ],
+  "scope": "Actual HTTP inside an isolated Linux container; scripted synthetic demo approvals and counterparties; no live model, real user or real money."
+}

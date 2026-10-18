@@ -2,6 +2,18 @@
 
 *Synthetic sandbox. This is a self-assessment against our own test suite, not a third-party audit or a compliance certification.*
 
+Current HTTP follow-up: malformed cookies fail to unauthenticated access rather
+than terminating the connection; unknown cookie values cannot create independent
+rate-limit buckets. Sign-in uses the client address even when a session exists.
+Duplicate JSON field names (including Unicode-escaped equivalents), duplicate
+Host headers, multiple Content-Length headers and Transfer-Encoding are rejected.
+Body reads require the exact declared length within a total two-second deadline;
+trickled bytes do not extend it. Escaped lone surrogates and nonfinite numbers
+produced by exponent overflow are rejected before dispatch. Eleven actual
+loopback HTTP regressions include normal sign-in and server availability after rejection. These controls do not
+provide comprehensive connection/header-flood protection. See
+[v10 reproduction and limits](RELEASE_V10.md).
+
 ## 1. Assets and trust boundaries
 
 | Asset | Why it matters | Boundary that protects it |
@@ -203,9 +215,16 @@ verification. There were no uncertain/error responses in this run.
 The missed attack was Hindi data exfiltration. Three reported/rejected quotations
 were semantic false positives, and two negated bypass messages retained rule
 warnings even when the model called them benign. These failures remain raw in
-`evidence/screening-v7/fresh/`; no tuning followed fresh observation. Targets
+`evidence/screening-v7/fresh/`; the v7 release did not tune after this observation. Targets
 were met on this small synthetic set, not established for real documents.
 Classifier scores do not validate the planning adapter or receipt model.
 Human review, PINs, exact risk acknowledgement and signed financial authority
 remain separate controls. See `docs/REMEDIATION_V7.md` for all failed development
 runs, scoring definitions, software/artifact hashes and latency.
+
+V10 uses that disclosed set for a separate Windows same-backend development
+comparison. Its additional source-aware challenge retained one first-run benign
+warning. That caller-quotation warning received a separate fix; all original raw
+outcomes remain unchanged. The final-known run is a regression over observed
+cases. None of these results verifies the deferred native planning/receipt models
+or establishes external security quality. See [current release](RELEASE_V10.md).

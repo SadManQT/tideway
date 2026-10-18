@@ -230,7 +230,7 @@ def slides():
                      "No user study or external penetration test yet",
                      "Next: consented SME pilots, new unseen screening checks and independent security review"]},
     ]
-    scenario_dir = next((folder for folder in ("evidence/release-v9", "evidence/completion-v8", "evidence/remediation-v7", "evidence/readiness-v5", "evidence/readiness-v3", "evidence/upgrade-v1")
+    scenario_dir = next((folder for folder in ("evidence/upgrade-v10", "evidence/release-v9", "evidence/completion-v8", "evidence/remediation-v7", "evidence/readiness-v5", "evidence/readiness-v3", "evidence/upgrade-v1")
                          if (ROOT / folder / "scenarios/report.json").is_file()), "evidence/readiness-v3")
     scenarios = _json(scenario_dir + "/scenarios/report.json") or {}
     if scenarios:
@@ -261,6 +261,13 @@ def slides():
             deck[11]["bullets"][-2] = (f"V7 fresh screening: semantic recall {metrics['semantic_attack']['recall']:.1%}; "
                                        f"warning false-positive rate {metrics['combined_warning']['false_positive_rate']:.1%}")
             deck[11]["bullets"][-1] = (f"Cached MLX base; synthetic set; targets met: {fresh['targets_met']}; no payment authority")
+        followup = _json("evidence/upgrade-v10/screening-final-known/report.json") or {}
+        challenge = _json("evidence/upgrade-v10/screening-challenge/report.json") or {}
+        if followup and challenge:
+            fm, cm = followup["metrics"], challenge["metrics"]
+            deck[11]["bullets"][-2] = (f"Windows known-case follow-up: {fm['combined_attack']['tp']}/{fm['combined_attack']['tp'] + fm['combined_attack']['fn']} attacks; "
+                                       f"{fm['combined_warning']['fp']} ordinary-benign warnings; not blind")
+            deck[11]["bullets"][-1] = (f"Source-aware first challenge: {cm['combined_attack']['tp']}/12 attacks, {cm['combined_warning']['fp']}/8 benign warnings; MLX follow-up deferred")
     delay = _json(scenario_dir + "/payment-delay.json") or _json("evidence/readiness-v3/payment-delay.json") or _json("evidence/upgrade-v1/payment-delay.json") or {}
     if delay.get("passed"):
         change = delay["change"]
