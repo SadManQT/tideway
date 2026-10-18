@@ -1,11 +1,6 @@
 # Current technical readiness
 
-Windows completion: [current fixes, exact commands and final verification](COMPLETION_V8.md).
-The signed-parent replacement and bounded rejected-POST delivery regressions are
-included in this run. The final package uses `evidence/completion-v8/`; previous
-model observations retain their original backend/source identity. Current-device
-real-model inference remains unverified. PDF appearance has been reviewed across
-all 56 pages; [rendered contacts and hashes](../evidence/completion-v8/pdf-review/report.json).
+Current local release: [fixes and verification scope](RELEASE_V9.md).
 
 This is the current review index. Tideway remains a synthetic SME finance copilot:
 cash forecasts, recovery proposals, human approval, simulated negotiation and
@@ -46,14 +41,14 @@ Historical upgrade and Windows reports describe earlier source versions.
 
 | Check | Recorded result | Meaning and limit |
 |---|---|---|
-| Current unit run | 353 run; 0 failures; 0 errors; 1 skipped | Python 3.14.6, Windows; injected outputs are not model quality |
+| Current unit run | 355 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
 | Additional standard-library run | 252 run; 0 failures; 0 errors; 4 skipped | Python 3.11.16; optional photo tests require Pillow; report records its own source hash |
 | Financial scenarios | 24/24 expected workflows; 9 rescues | 8/9 executed rescues meet the 10% simulated risk target |
 | Shipped TidePay | 7,427 unseen synthetic invoices; MAE 8.5585 days | Heuristic 10.2296; training-only prior 11.7453; no weight changes |
 | First actual Qwen3 challenge | 28/32 correct; 32/32 contained | Four retained misses; no mandate, execution or financial-ledger mutation |
 | Post-fix Qwen3 regression | 32/32 known cases handled; 8/8 safe stops | One real-model pass after disclosed guard fixes; not a new blind score |
 | Independent-audit Windows Qwen3 rerun | 32/32 known requests handled; 32/32 contained | Actual compatible inference on disclosed cases; retains every output; not blind |
-| First unseen instruction screening | 2/24 attacks detected; 2/24 benign flagged | Severe generalization gap; detection cannot be the authorization boundary |
+| Historical first unseen instruction screening | 2/24 attacks detected; 2/24 benign flagged | Historical v3 observation; current v7 evidence is listed below; detection is advisory |
 | SME user study | 0 participants; pending | Kit and analysis available; no real-user claim |
 
 The prediction cohort contains 80 new synthetic SMEs, four seeds and 7,427
@@ -96,8 +91,8 @@ Use a completed LF checkout: source edits during the run invalidate verification
 
 - [Current test summary](../evidence/test-summary.json) and
   [raw test log](../evidence/test-run.log).
-- [Current scenario report](../evidence/completion-v8/scenarios/report.json),
-  [linked delay receipt](../evidence/completion-v8/payment-delay.json) and
+- [Current scenario report](../evidence/release-v9/scenarios/report.json),
+  [linked delay receipt](../evidence/release-v9/payment-delay.json) and
   [browser workflow](../evidence/screens/browser-verification.json).
 - [Exact shipped prediction evaluation](DEPLOYED_MODEL_EVALUATION.md), with
   raw invoices, shared test IDs, predictions, intervals and calibration bins.
@@ -105,7 +100,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
   native runtime provenance and every first-observation output.
 - [Separate post-fix model regression](../evidence/readiness-v3/blind/model-post-fix-regression.json)
   and [Python 3.11 standard-library run](../evidence/readiness-v3/python311/test-summary.json).
-- [Release stages and PDF hashes](../evidence/completion-v8/release-checks.json).
+- [Release stages and PDF hashes](../evidence/release-v9/release-checks.json).
   `dist/extraction-verification.json` and `dist/SHA256SUMS.txt` prove the actual
   distributed bytes, rather than referring to an earlier ZIP.
 - [Independent judge/auditor report](INDEPENDENT_AUDIT.md), with reproduced
@@ -114,7 +109,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
 - [User study protocol](USER_STUDY_KIT.md) and
   [pending participation status](../evidence/readiness-v3/user-study-status.json).
 
-Current test source digest: `cf7530d43517bb2a87f85b2b434f2e00d113b942e4f5cd28ad54f2b53405f5af`.
+Current test source digest: `94eaa408cb303c88ecb771c6faa26a2ff26e3552e63f9e00158e16f42fb06e3e`.
 Reports contain their own timestamps and hashes; older Windows/upgrade evidence
 is historical and does not attest to the current checkout.
 
@@ -126,7 +121,7 @@ improvement. Optional semantic checks remain advisory and require a local model.
 Real consented SME feedback, current MLX/TideLM planning and receipt-model evaluation,
 external security testing and real-data calibration remain outstanding.
 Partial settlements, reversals and real lender eligibility require separate
-financial design before live integration. Stored hosted run 8 concluded success for commit f60a6752e26723ae6b696a40e52335d15f1e3339.
+financial design before live integration. Stored hosted run 13 concluded failure for commit 2822a60de9e5ad261cf0cd51e884f6e11aaaae2b.
 That historical receipt does not attest to this local remediation; no push or
 hosted run was performed for these changes.
 See the explicit infrastructure status below for the separately tested Docker
@@ -154,14 +149,14 @@ be guaranteed from synthetic checks while these validation gaps remain.
 - Planner candidates now mix cost, stressed cash and headroom, with stable customer
   draws and independent finalist validation. Counteroffer repair locks changed terms
   and requires fresh human approval and exact counterparty consent for every request.
-- [Known D06/H11 risk follow-up](../evidence/completion-v8/planner/report.json)
+- [Known D06/H11 risk follow-up](../evidence/release-v9/planner/report.json)
   separates risk estimates, sampling uncertainty and the allowed-action limit.
   An above-target business is escalated, not made successful by raising the target.
-- Docker status: Not yet a passing current-source Docker run; inspect raw status.
-  [Raw Docker proof](../evidence/infrastructure-v5/docker/report.json).
+- Docker status: PASS: frozen-source Linux image, isolated HTTP and persisted-state checks.
+  [Raw Docker proof](../evidence/release-v9/docker/report.json).
   No native MLX, host-network reachability or external penetration test is implied.
-- [Stored hosted CI status](../evidence/infrastructure-v5/hosted-ci-status.json):
-  Stored hosted run 8 concluded success for commit f60a6752e26723ae6b696a40e52335d15f1e3339. No hosted run for the current remediation is claimed.
+- [Stored hosted CI status](../evidence/release-v9/hosted-ci-status.json):
+  Stored hosted run 13 concluded failure for commit 2822a60de9e5ad261cf0cd51e884f6e11aaaae2b. No hosted run for the current remediation is claimed.
 - [Implementation and verification report](REMEDIATION_V7.md).
 
 ## Owner constraints and v7 screening follow-up
@@ -177,3 +172,9 @@ Owner discount ceilings, preferences and exclusions survive counter-offers and r
 - [fresh](../evidence/screening-v7/fresh/report.json): 48 cases; semantic attack recall 95.8%; combined attack recall 95.8%; broader warning false-positive rate 31.2%; targets met: True. Backend: mlx-base; recorded model artifacts apply.
 
 Development cases are disclosed v6 regressions. The fresh set is separately AI-authored, not an external or human-blind assessment. Native MLX classification cannot inherit Windows GGUF or historical TideLM planning scores. Every miss and raw output is retained. The native classifier uses the already cached base model without the planning LoRA; the planning backend is unchanged. Independent remediation review agents were unavailable because of an account usage limit; no independent review pass is claimed.
+
+## Behavior-driven sandbox checks
+
+AI-authored assumed behavior scenarios; real participants: 0. Backend workflow outcomes do not measure human task completion, satisfaction or SUS.
+
+[6/6 checks passed](../evidence/release-v9/behavior-checks.json): decline without changes, incomplete approval, owner discount limits, residual-risk consent, a known hostile supplier message and repeat execution. Human validation remains pending.

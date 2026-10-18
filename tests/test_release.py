@@ -49,3 +49,22 @@ class ReleaseSourcePolicy(unittest.TestCase):
                     path.write_bytes(second.encode())
                     self.assertNotEqual(before, source_digest(root)[0])
                     self.assertIn(name, source_digest(root)[1])
+
+    def test_shipped_font_and_image_changes_invalidate_source_stamp(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.fixture(directory, b'\n')
+            for name in ('web/fonts/demo.woff2', 'web/img/demo.webp'):
+                with self.subTest(name=name):
+                    asset = root / name
+                    asset.parent.mkdir(parents=True, exist_ok=True)
+                    asset.write_bytes(b'first\x00asset')
+                    before = source_digest(root)[0]
+                    asset.write_bytes(b'changed\x00asset')
+                    self.assertNotEqual(before, source_digest(root)[0])
+                    self.assertIn(name, source_digest(root)[1])
+
+    def test_binary_asset_carriage_returns_are_not_text_line_ending_errors(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.fixture(directory, b'\n')
+            (root / 'web/demo.webp').write_bytes(b'RIFF\r\n\x00WEBP')
+            self.assertEqual(line_ending_issues(root), [])

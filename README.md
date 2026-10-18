@@ -2,6 +2,9 @@
 
 **Plan ahead for payroll.** On-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, and acts only with your approval.
 
+18 October local release: [Windows encoding, asset integrity and current package checks](docs/RELEASE_V9.md).
+The [behavior-driven evaluation](docs/BEHAVIORAL_EVALUATION.md) contains six scripted sandbox paths; real SME participants remain zero.
+
 Judge/auditor review (17 October): [fixed defects and remaining contest gaps](docs/INDEPENDENT_AUDIT.md). Exact current verification counts and provenance: [readiness index](docs/READINESS_CURRENT.md).
 
 ![Tideway landing page](evidence/screens/00-landing.png)

@@ -103,6 +103,9 @@ def main():
             process = subprocess.Popen([sys.executable, '-S', 'run.py', '--port', str(port), '--db', 'data/fresh.sqlite3'],
                                        cwd=source, env=env, stdout=output, stderr=subprocess.STDOUT)
         checks = {}
+        asset_checks = {}
+        binary_assets = {'/fonts/space-grotesk.woff2': 'font/woff2', '/fonts/unbounded.woff2': 'font/woff2',
+                         '/fonts/jetbrains-mono.woff2': 'font/woff2', '/img/hero.webp': 'image/webp'}
         try:
             for _ in range(80):
                 try:
@@ -121,12 +124,18 @@ def main():
                                     ('/guide.js', 200), ('/benchmarks/tidepay.json', 200),
                                     ('/benchmarks/tidepay-deployed.json', 200),
                                     ('/benchmarks/tidepay-deployed-reliability.svg', 200),
+                                    *[(route, 200) for route in binary_assets],
                                     ('/api/dashboard?business_id=shapla-services', 401)):
                 connection = http.client.HTTPConnection('127.0.0.1', port, timeout=2)
-                connection.request('GET', route); response = connection.getresponse(); response.read(); connection.close()
+                connection.request('GET', route); response = connection.getresponse()
+                body = response.read(); content_type = response.getheader('Content-Type'); connection.close()
                 checks[route] = response.status
                 if response.status != expected:
                     raise RuntimeError(f'Unexpected HTTP status for {route}: {response.status}')
+                if route in binary_assets:
+                    if content_type != binary_assets[route] or not body:
+                        raise RuntimeError(f'Invalid binary asset response for {route}')
+                    asset_checks[route] = {'content_type': content_type, 'bytes': len(body)}
             if data['tidelm']['available'] is not False:
                 raise RuntimeError('Fresh -S extraction unexpectedly enabled optional model inference')
         finally:
@@ -139,6 +148,7 @@ def main():
                   'source_tree_sha256': manifest['source_tree_sha256'], 'files_verified': len(manifest['files']),
                   'python': sys.version, 'git_present': False, 'site_packages_enabled': False,
                   'private_workstation_files_required': False, 'http_checks': checks,
+                  'binary_asset_checks': asset_checks,
                   'test_result': result.stderr.strip().splitlines()[-5:]}
         (ROOT / 'dist').mkdir(exist_ok=True)
         path = ROOT / 'dist/extraction-verification.json'

@@ -18,7 +18,9 @@ def main(argv=None):
     model = read('evidence/readiness-v3/blind/model-first-observation.json')
     screening = read('evidence/readiness-v3/blind/screening-first-observation.json')
     pay = read('evidence/readiness-v3/tidepay/report.json')
-    current = args.evidence_dir or ('evidence/remediation-v7' if (ROOT / 'evidence/remediation-v7/scenarios/report.json').is_file()
+    current = args.evidence_dir or ('evidence/release-v9' if (ROOT / 'evidence/release-v9/scenarios/report.json').is_file()
+                                  else 'evidence/completion-v8' if (ROOT / 'evidence/completion-v8/scenarios/report.json').is_file()
+                                  else 'evidence/remediation-v7' if (ROOT / 'evidence/remediation-v7/scenarios/report.json').is_file()
                                   else 'evidence/readiness-v5' if (ROOT / 'evidence/readiness-v5/scenarios/report.json').is_file()
                                   else 'evidence/readiness-v3')
     scenarios = read(current + '/scenarios/report.json')
@@ -28,14 +30,19 @@ def main(argv=None):
     regression = read('evidence/readiness-v3/blind/model-post-fix-regression.json')
     python311 = read('evidence/readiness-v3/python311/test-summary.json')
     risk_met = sum(bool(row.get('risk_target_met')) for row in scenarios['rows'] if row['executed'])
-    audit_path = ROOT / 'evidence/readiness-v5/model-regression/report.json'
+    audit_path = ROOT / current / 'model-regression/report.json'
+    if not audit_path.is_file():
+        audit_path = ROOT / 'evidence/readiness-v5/model-regression/report.json'
     if not audit_path.is_file():
         audit_path = ROOT / 'evidence/independent-audit/model-regression/report.json'
     audit = json.loads(audit_path.read_text(encoding='utf-8')) if audit_path.is_file() else {}
     audit_result = (f"{audit['matched']['numerator']}/{audit['requests']} known requests handled; "
                     f"{audit['containment']['numerator']}/{audit['requests']} contained"
                     if audit.get('real_model_inference') else 'Not recorded')
-    ci = read('evidence/infrastructure-v5/hosted-ci-status.json')
+    ci_path = current + '/hosted-ci-status.json'
+    if not (ROOT / ci_path).is_file():
+        ci_path = 'evidence/infrastructure-v5/hosted-ci-status.json'
+    ci = read(ci_path)
     ci_status = f"Stored hosted run {ci.get('run_number', 'unknown')} concluded {ci.get('conclusion', ci.get('remote_baseline_conclusion', 'unknown'))} for commit {ci.get('remote_commit', 'unknown')}."
     doc = f'''# Current technical readiness
 
@@ -85,7 +92,7 @@ Historical upgrade and Windows reports describe earlier source versions.
 | First actual Qwen3 challenge | {model['matched']['numerator']}/{model['requests']} correct; {model['containment']['numerator']}/{model['containment']['denominator']} contained | Four retained misses; no mandate, execution or financial-ledger mutation |
 | Post-fix Qwen3 regression | {regression['matched']['numerator']}/{regression['requests']} known cases handled; {regression['safe_stop_handled']['numerator']}/{regression['safe_stop_handled']['denominator']} safe stops | One real-model pass after disclosed guard fixes; not a new blind score |
 | Independent-audit Windows Qwen3 rerun | {audit_result} | Actual compatible inference on disclosed cases; retains every output; not blind |
-| First unseen instruction screening | {inj['true_positive']}/24 attacks detected; {inj['false_positive']}/24 benign flagged | Severe generalization gap; detection cannot be the authorization boundary |
+| Historical first unseen instruction screening | {inj['true_positive']}/24 attacks detected; {inj['false_positive']}/24 benign flagged | Historical v3 observation; current v7 evidence is listed below; detection is advisory |
 | SME user study | 0 participants; pending | Kit and analysis available; no real-user claim |
 
 The prediction cohort contains 80 new synthetic SMEs, four seeds and 7,427
@@ -172,7 +179,10 @@ be guaranteed from synthetic checks while these validation gaps remain.
 '''
     for suffix in ('scenarios/report.json', 'payment-delay.json', 'release-checks.json'):
         doc = doc.replace('evidence/readiness-v3/' + suffix, current + '/' + suffix)
-    docker_path = ROOT / 'evidence/infrastructure-v5/docker/report.json'
+    docker_relative = current + '/docker/report.json'
+    if not (ROOT / docker_relative).is_file():
+        docker_relative = 'evidence/infrastructure-v5/docker/report.json'
+    docker_path = ROOT / docker_relative
     docker = json.loads(docker_path.read_text(encoding='utf-8')) if docker_path.is_file() else {}
     infrastructure = ('PASS: frozen-source Linux image, isolated HTTP and persisted-state checks.'
                       if docker.get('passed') and docker.get('source_tree_sha256_after') == tests['source_tree_sha256']
@@ -198,9 +208,9 @@ be guaranteed from synthetic checks while these validation gaps remain.
   separates risk estimates, sampling uncertainty and the allowed-action limit.
   An above-target business is escalated, not made successful by raising the target.
 - Docker status: {infrastructure}
-  [Raw Docker proof](../evidence/infrastructure-v5/docker/report.json).
+  [Raw Docker proof](../{docker_relative}).
   No native MLX, host-network reachability or external penetration test is implied.
-- [Stored hosted CI status](../evidence/infrastructure-v5/hosted-ci-status.json):
+- [Stored hosted CI status](../{ci_path}):
   {ci_status} No hosted run for the current remediation is claimed.
 - [Implementation and verification report](REMEDIATION_V7.md).
 """
@@ -230,6 +240,19 @@ be guaranteed from synthetic checks while these validation gaps remain.
             'The native classifier uses the already cached base model without the planning LoRA; '
             'the planning backend is unchanged. Independent remediation review agents were unavailable '
             'because of an account usage limit; no independent review pass is claimed.\n')
+    behavior_path = ROOT / current / 'behavior-checks.json'
+    if behavior_path.is_file():
+        behavior = json.loads(behavior_path.read_text(encoding='utf-8'))
+        doc += ('\n## Behavior-driven sandbox checks\n\n'
+                'AI-authored assumed behavior scenarios; real participants: 0. '
+                'Backend workflow outcomes do not measure human task completion, satisfaction or SUS.\n\n'
+                f"[{behavior['checks_passed']}/{behavior['checks_total']} checks passed](../{current}/behavior-checks.json): "
+                'decline without changes, incomplete approval, owner discount limits, residual-risk consent, '
+                'a known hostile supplier message and repeat execution. '
+                'Human validation remains pending.\n')
+    if (ROOT / 'docs/RELEASE_V9.md').is_file() and current == 'evidence/release-v9':
+        doc = doc.replace('# Current technical readiness\n',
+                          '# Current technical readiness\n\nCurrent local release: [fixes and verification scope](RELEASE_V9.md).\n', 1)
     (ROOT / 'docs/READINESS_CURRENT.md').write_bytes(doc.encode('utf-8'))
     print('Updated docs/READINESS_CURRENT.md from recorded evidence.')
 

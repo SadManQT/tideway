@@ -1,0 +1,70 @@
+python : test_above_owner_cap_counter_is_rejected_without_consuming_mandate 
+(test_owner_constraints.OwnerConstraints.test_above_owner_cap_counter_is_rejected_without_consuming_mandate) ... ok
+At line:2 char:1
++ python -X utf8=0 -m unittest discover -s tests -p test_owner_constrai ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (test_above_owne...mandate) ... ok:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+test_approval_rejects_faulty_producer_discount_above_stored_owner_cap 
+(test_owner_constraints.OwnerConstraints.test_approval_rejects_faulty_producer_discount_above_stored_owner_cap) ... ok
+test_counter_rejects_parent_constraints_changed_after_signing 
+(test_owner_constraints.OwnerConstraints.test_counter_rejects_parent_constraints_changed_after_signing) ... ok
+test_each_preference_survives_counter_then_refusal_replan 
+(test_owner_constraints.OwnerConstraints.test_each_preference_survives_counter_then_refusal_replan) ... ok
+test_exact_owner_ceiling_counter_still_needs_fresh_approval 
+(test_owner_constraints.OwnerConstraints.test_exact_owner_ceiling_counter_still_needs_fresh_approval) ... ok
+test_execution_rechecks_owner_ceiling_on_legacy_signed_terms 
+(test_owner_constraints.OwnerConstraints.test_execution_rechecks_owner_ceiling_on_legacy_signed_terms) ... ok
+test_invalid_direct_owner_arguments_are_rejected 
+(test_owner_constraints.OwnerConstraints.test_invalid_direct_owner_arguments_are_rejected) ... ok
+test_legacy_plan_without_recorded_constraints_requires_new_owner_proposal 
+(test_owner_constraints.OwnerConstraints.test_legacy_plan_without_recorded_constraints_requires_new_owner_proposal) 
+... ok
+test_replacement_rechecks_parent_mandate_signature 
+(test_owner_constraints.OwnerConstraints.test_replacement_rechecks_parent_mandate_signature) ... ok
+test_replan_preserves_cap_preference_exclusions_and_provenance 
+(test_owner_constraints.OwnerConstraints.test_replan_preserves_cap_preference_exclusions_and_provenance) ... ok
+test_replan_rejects_parent_preference_changed_after_signing 
+(test_owner_constraints.OwnerConstraints.test_replan_rejects_parent_preference_changed_after_signing) ... ok
+test_store_records_effective_ceiling_not_a_wider_raw_producer_value 
+(test_owner_constraints.OwnerConstraints.test_store_records_effective_ceiling_not_a_wider_raw_producer_value) ... ok
+test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions 
+(test_owner_constraints.OwnerConstraints.test_store_rejects_a_replacement_that_changes_preference_or_drops_exclusions) 
+... ok
+test_store_rejects_a_replacement_that_widens_the_owner_cap 
+(test_owner_constraints.OwnerConstraints.test_store_rejects_a_replacement_that_widens_the_owner_cap) ... ok
+test_zero_ceiling_is_retained_by_real_planning 
+(test_owner_constraints.OwnerConstraints.test_zero_ceiling_is_retained_by_real_planning) ... ok
+test_zero_stricter_and_more_permissive_policy_do_not_widen_owner_ceiling 
+(test_owner_constraints.OwnerConstraints.test_zero_stricter_and_more_permissive_policy_do_not_widen_owner_ceiling) ... 
+ok
+test_browser_notice_does_not_round_an_above_target_probability_down_to_target (test_owner_constraints.RiskDisplayBounda
+ries.test_browser_notice_does_not_round_an_above_target_probability_down_to_target) ... ERROR
+test_exact_risk_target_and_rounding_do_not_supply_implicit_consent 
+(test_owner_constraints.RiskDisplayBoundaries.test_exact_risk_target_and_rounding_do_not_supply_implicit_consent) ... 
+ok
+
+======================================================================
+ERROR: test_browser_notice_does_not_round_an_above_target_probability_down_to_target (test_owner_constraints.RiskDispla
+yBoundaries.test_browser_notice_does_not_round_an_above_target_probability_down_to_target)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\User\OneDrive\Desktop\2-1\CSE 207\TF\FinMate\tests\test_owner_constraints.py", line 232, in 
+test_browser_notice_does_not_round_an_above_target_probability_down_to_target
+    source = (Path(__file__).resolve().parents[1] / "web/app.js").read_text()
+  File "C:\Program Files\Python313\Lib\pathlib\_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\pathlib\_abc.py", line 633, in read_text
+    return f.read()
+           ~~~~~~^^
+  File "C:\Program Files\Python313\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x90 in position 52666: character maps to <undefined>
+
+----------------------------------------------------------------------
+Ran 18 tests in 6.531s
+
+FAILED (errors=1)

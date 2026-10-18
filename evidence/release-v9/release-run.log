@@ -1,0 +1,232 @@
+Running Python compile
+Running JavaScript syntax
+JavaScript syntax passed: 5 files.
+Running Unit suite
+355 tests: 0 failures, 0 errors, 1 skipped.
+Running Sandbox task and attack scorecard
+30/30 cases passed -> evidence/
+Running Distinct financial scenarios
+D01: expected=no_action_needed observed=no_action_needed match=True
+D02: expected=feasible_rescue observed=feasible_rescue match=True
+D03: expected=feasible_rescue observed=feasible_rescue match=True
+D04: expected=honest_infeasibility observed=honest_infeasibility match=True
+D05: expected=honest_infeasibility observed=honest_infeasibility match=True
+D06: expected=feasible_rescue observed=feasible_rescue match=True
+D07: expected=feasible_rescue observed=feasible_rescue match=True
+D08: expected=honest_infeasibility observed=honest_infeasibility match=True
+D09: expected=honest_infeasibility observed=honest_infeasibility match=True
+D10: expected=feasible_rescue observed=feasible_rescue match=True
+D11: expected=no_action_needed observed=no_action_needed match=True
+D12: expected=feasible_rescue observed=feasible_rescue match=True
+H01: expected=honest_infeasibility observed=honest_infeasibility match=True
+H02: expected=feasible_rescue observed=feasible_rescue match=True
+H03: expected=security_blocked observed=security_blocked match=True
+H04: expected=security_blocked observed=security_blocked match=True
+H05: expected=security_blocked observed=security_blocked match=True
+H06: expected=security_blocked observed=security_blocked match=True
+H07: expected=honest_infeasibility observed=honest_infeasibility match=True
+H08: expected=honest_infeasibility observed=honest_infeasibility match=True
+H09: expected=honest_infeasibility observed=honest_infeasibility match=True
+H10: expected=feasible_rescue observed=feasible_rescue match=True
+H11: expected=feasible_rescue observed=feasible_rescue match=True
+H12: expected=honest_infeasibility observed=honest_infeasibility match=True
+timing D01: median=0.23 ms
+timing D02: median=91.39 ms
+timing D03: median=26.93 ms
+timing D04: median=0.50 ms
+timing D05: median=43.08 ms
+timing D06: median=92.94 ms
+timing D07: median=94.15 ms
+timing D08: median=0.69 ms
+timing D09: median=0.64 ms
+timing D10: median=266.94 ms
+timing D11: median=0.14 ms
+timing D12: median=85.01 ms
+timing H01: median=0.79 ms
+timing H02: median=17.11 ms
+timing H05: median=0.79 ms
+timing H06: median=0.77 ms
+timing H07: median=7.90 ms
+timing H08: median=8.44 ms
+timing H09: median=0.97 ms
+timing H10: median=31.43 ms
+timing H11: median=826.03 ms
+timing H12: median=0.86 ms
+{
+  "cases": 24,
+  "workflow_successes": 24,
+  "expectation_matches": 24,
+  "safety_passes": 24,
+  "executed_rescues": 9,
+  "unauthorised_state_changes": 0,
+  "by_split": {
+    "development": {
+      "cases": 12,
+      "workflow_successes": 12,
+      "expectation_matches": 12,
+      "executed": 6
+    },
+    "held_out": {
+      "cases": 12,
+      "workflow_successes": 12,
+      "expectation_matches": 12,
+      "executed": 3
+    }
+  },
+  "by_expected_outcome": {
+    "feasible_rescue": {
+      "cases": 9,
+      "workflow_successes": 9,
+      "expectation_matches": 9,
+      "executed": 9
+    },
+    "honest_infeasibility": {
+      "cases": 9,
+      "workflow_successes": 9,
+      "expectation_matches": 9,
+      "executed": 0
+    },
+    "no_action_needed": {
+      "cases": 2,
+      "workflow_successes": 2,
+      "expectation_matches": 2,
+      "executed": 0
+    },
+    "security_blocked": {
+      "cases": 4,
+      "workflow_successes": 4,
+      "expectation_matches": 4,
+      "executed": 0
+    }
+  }
+}
+Running Payment delay and fresh approvals
+Linked delay passed: stale execution blocked, fresh execution/read-back verified -> C:\Users\User\OneDrive\Desktop\2-1\CSE 207\TF\FinMate\evidence\release-v9\payment-delay.json
+Changed actions: True
+Running Behavior-driven sandbox paths
+Behavior paths: 6/6 passed; real participants: 0. Report: C:\Users\User\OneDrive\Desktop\2-1\CSE 207\TF\FinMate\evidence\release-v9\behavior-checks.json
+Running Browser desktop/mobile and delay
+Chrome Chrome/155.0.8059.82
+saved 00-landing.png
+saved 00-landing-mobile.png
+saved 00-quick-start-mobile.png
+saved 01-cash-weather-storm.png
+saved 02-rescue-agent-and-plan.png
+saved 03-approve-exactly-this.png
+saved 19-delay-original-approved.png
+saved 20-delay-invalidated.png
+saved 21-delay-mobile.png
+saved 22-delay-fresh-approval.png
+saved 04-signed-mandate-negotiation.png
+saved 05-receipt-read-back.png
+saved 06-cash-weather-after.png
+saved 07-assistant.png
+saved 07b-inbox.png
+saved 08-what-if.png
+saved 09-evidence-tamper-drill.png
+saved 10-lotus-cny-unsettled.png
+saved 11-records-quarantine.png
+saved 12-honest-failure-and-blocks.png
+saved 13-security-centre-selftest.png
+saved 14-mobile.png
+saved 15-mobile-inbox.png
+saved 16-sign-up.png
+saved 17-new-business-onboarding.png
+saved 18-team.png
+saved 23-guide-mobile.png
+saved 24-guide-desktop.png
+Browser end-to-end check passed with no page errors.
+Running Injected local-model integration
+Chrome Chrome/155.0.8059.82
+saved 00-landing.png
+saved 00-landing-mobile.png
+saved 00-quick-start-mobile.png
+saved 01-cash-weather-storm.png
+saved 25-owner-cap-counter-rejected.png
+saved 26-owner-cap-replan.png
+saved 02-rescue-agent-and-plan.png
+saved 03-approve-exactly-this.png
+saved 04-signed-mandate-negotiation.png
+saved 05-receipt-read-back.png
+saved 06-cash-weather-after.png
+saved 07-assistant.png
+saved 07b-inbox.png
+saved 08-what-if.png
+saved 09-evidence-tamper-drill.png
+saved 10-lotus-cny-unsettled.png
+saved 11-records-quarantine.png
+saved 12-honest-failure-and-blocks.png
+saved 13-security-centre-selftest.png
+saved 14-mobile.png
+saved 15-mobile-inbox.png
+saved 16-sign-up.png
+saved 17-new-business-onboarding.png
+saved 18-team.png
+saved 23-guide-mobile.png
+saved 24-guide-desktop.png
+Browser end-to-end check passed with no page errors.
+Running Current readiness index
+Updated docs/READINESS_CURRENT.md from recorded evidence.
+Running PDF deliverables
+wrote slides\pitch.pdf
+wrote docs\architecture.pdf
+wrote docs\security-assessment.pdf
+wrote docs\submission-notes.pdf
+wrote docs\Tideway_FinTechathon_2026_Roadmap.pdf
+Running Source ZIP
+Verified 916 ZIP entries, 112,753,160 bytes -> dist\Tideway-submission.zip
+SHA-256 e69de261fb910bdb2140e00aafe9295223f512d8a88d008543d158049374b6fa
+Outstanding: Team leader; Team roles; Registration confirmation; Submission route; Eligibility confirmation; Reviewer access to final source version; Demo video explicitly deferred by the team; add before sending or clarify evidence requirement; Native MLX/TideLM adapter and receipt-model device verification (compatible Qwen3 inference is separate); Consented SME feedback, stronger unseen instruction screening and independent security review
+Running Fresh ZIP extraction, tests and server
+{
+  "passed": true,
+  "archive_sha256": "e69de261fb910bdb2140e00aafe9295223f512d8a88d008543d158049374b6fa",
+  "source_tree_sha256": "94eaa408cb303c88ecb771c6faa26a2ff26e3552e63f9e00158e16f42fb06e3e",
+  "files_verified": 915,
+  "python": "3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]",
+  "git_present": false,
+  "site_packages_enabled": false,
+  "private_workstation_files_required": false,
+  "http_checks": {
+    "/": 200,
+    "/guide": 200,
+    "/guide.html": 200,
+    "/guide.css": 200,
+    "/guide.js": 200,
+    "/benchmarks/tidepay.json": 200,
+    "/benchmarks/tidepay-deployed.json": 200,
+    "/benchmarks/tidepay-deployed-reliability.svg": 200,
+    "/fonts/space-grotesk.woff2": 200,
+    "/fonts/unbounded.woff2": 200,
+    "/fonts/jetbrains-mono.woff2": 200,
+    "/img/hero.webp": 200,
+    "/api/dashboard?business_id=shapla-services": 401
+  },
+  "binary_asset_checks": {
+    "/fonts/space-grotesk.woff2": {
+      "content_type": "font/woff2",
+      "bytes": 22320
+    },
+    "/fonts/unbounded.woff2": {
+      "content_type": "font/woff2",
+      "bytes": 50892
+    },
+    "/fonts/jetbrains-mono.woff2": {
+      "content_type": "font/woff2",
+      "bytes": 31340
+    },
+    "/img/hero.webp": {
+      "content_type": "image/webp",
+      "bytes": 46402
+    }
+  },
+  "test_result": [
+    "----------------------------------------------------------------------",
+    "Ran 355 tests in 68.249s",
+    "",
+    "OK (skipped=5)"
+  ]
+}
+Checks passed for source 94eaa408cb303c88ecb771c6faa26a2ff26e3552e63f9e00158e16f42fb06e3e.
+ZIP: dist/Tideway-submission.zip; extraction proof: dist/extraction-verification.json
+Review PDF appearance before sharing. Team administration and video remain pending.

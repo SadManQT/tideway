@@ -14,6 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+WEB_BINARY_SUFFIXES = {".woff", ".woff2", ".ttf", ".otf", ".webp", ".png", ".jpg", ".jpeg", ".ico"}
 
 
 def source_paths(source_root=None):
@@ -25,7 +26,9 @@ def source_paths(source_root=None):
         if config.is_file():
             paths.append(config)
     for folder in ("tideway", "tests", "web", "scripts"):
-        paths.extend(p for p in (root / folder).rglob("*") if p.suffix in (".py", ".js", ".mjs", ".css", ".html", ".json", ".svg")
+        paths.extend(p for p in (root / folder).rglob("*") if p.is_file()
+                     and (p.suffix in (".py", ".js", ".mjs", ".css", ".html", ".json", ".svg")
+                          or (folder == "web" and p.suffix.lower() in WEB_BINARY_SUFFIXES))
                      and "__pycache__" not in p.parts)
     return sorted(paths)
 
@@ -33,7 +36,8 @@ def source_paths(source_root=None):
 def line_ending_issues(source_root=None):
     """Detect bytes that contradict tracked LF source policy; never alter hashes."""
     root = Path(source_root) if source_root is not None else ROOT
-    return [p.relative_to(root).as_posix() for p in source_paths(root) if b"\r" in p.read_bytes()]
+    return [p.relative_to(root).as_posix() for p in source_paths(root)
+            if p.suffix.lower() not in WEB_BINARY_SUFFIXES and b"\r" in p.read_bytes()]
 
 
 def source_digest(source_root=None):

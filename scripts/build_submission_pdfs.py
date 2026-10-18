@@ -230,7 +230,7 @@ def slides():
                      "No user study or external penetration test yet",
                      "Next: consented SME pilots, new unseen screening checks and independent security review"]},
     ]
-    scenario_dir = next((folder for folder in ("evidence/remediation-v7", "evidence/readiness-v5", "evidence/readiness-v3", "evidence/upgrade-v1")
+    scenario_dir = next((folder for folder in ("evidence/release-v9", "evidence/completion-v8", "evidence/remediation-v7", "evidence/readiness-v5", "evidence/readiness-v3", "evidence/upgrade-v1")
                          if (ROOT / folder / "scenarios/report.json").is_file()), "evidence/readiness-v3")
     scenarios = _json(scenario_dir + "/scenarios/report.json") or {}
     if scenarios:

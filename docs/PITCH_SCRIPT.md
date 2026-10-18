@@ -6,6 +6,12 @@ a target-met rescue. Owner discount ceilings remain binding during negotiation.
 
 Match the regenerated `slides/pitch.pdf`. Keep the full linked live runbook ready; use a shorter live excerpt inside the pitch and offer the full workflow during questions. No recording is included.
 
+For a behavior example, use `docs/BEHAVIORAL_EVALUATION.md`: the 1% owner cap
+rejects a 1.5% counter-offer, and a repeated execution returns the same receipt.
+Keep the scope visible: six AI-authored backend paths, zero human participants.
+Show the model-selected tool and source result when a real model is available;
+the financial calculations and permission checks run in deterministic tools.
+
 | Time | Slides / message |
 |---|---|
 | 0:00-0:40 | Title/problem: SME owners need a dated payroll decision, with authority kept outside the model. Synthetic sandbox only. |

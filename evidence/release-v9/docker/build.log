@@ -1,0 +1,36 @@
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0
+            environment-variable.
+
+Sending build context to Docker daemon  131.3MB
+Step 1/8 : FROM python:3.11-slim-bookworm@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903ca5fd283f501e3a805f5f89
+ ---> 141fe9b385f3
+Step 2/8 : ENV PYTHONDONTWRITEBYTECODE=1     PYTHONUNBUFFERED=1
+ ---> Running in d93db67b170a
+ ---> Removed intermediate container d93db67b170a
+ ---> d20f23a22382
+Step 3/8 : WORKDIR /app
+ ---> Running in f4d34ea6502b
+ ---> Removed intermediate container f4d34ea6502b
+ ---> e916728980bf
+Step 4/8 : COPY . .
+ ---> 3197445dd1d9
+Step 5/8 : RUN python -S -m compileall -q run.py tideway scripts tests     && python -S scripts/verify_submission.py     && useradd --create-home --uid 10001 tideway     && mkdir -p /app/data     && chown -R tideway:tideway /app
+ ---> Running in 6381ea8aeb1d
+355 tests: 0 failures, 0 errors, 5 skipped.
+ ---> Removed intermediate container 6381ea8aeb1d
+ ---> f9e7d43089c9
+Step 6/8 : USER tideway
+ ---> Running in 33221b8d3bd1
+ ---> Removed intermediate container 33221b8d3bd1
+ ---> e0675fb4fca0
+Step 7/8 : EXPOSE 8787
+ ---> Running in e43ae2779bc6
+ ---> Removed intermediate container e43ae2779bc6
+ ---> 6a4bb13e40de
+Step 8/8 : CMD ["python", "run.py", "--host", "0.0.0.0", "--port", "8787", "--db", "/app/data/tideway.sqlite3"]
+ ---> Running in 11b56791d5cf
+ ---> Removed intermediate container 11b56791d5cf
+ ---> 14a5588f4075
+Successfully built 14a5588f4075
+Successfully tagged tideway-verification:3f4dc12573e3

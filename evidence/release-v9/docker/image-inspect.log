@@ -1,0 +1,71 @@
+[
+    {
+        "Id": "sha256:14a5588f407524e74aecd40225c25e3f8b6a1f238d3986f5f669fd65bc677e2c",
+        "RepoTags": [
+            "tideway-verification:3f4dc12573e3"
+        ],
+        "RepoDigests": [],
+        "Parent": "sha256:6a4bb13e40de2ce5747b78751b6977b7c3bcc290bbd90f0bad4d48999c77714c",
+        "Comment": "",
+        "Created": "2026-10-18T05:25:27.198766541Z",
+        "DockerVersion": "28.5.2",
+        "Author": "",
+        "Architecture": "amd64",
+        "Os": "linux",
+        "Size": 400068401,
+        "GraphDriver": {
+            "Data": {
+                "LowerDir": "/home/ramim/.cache/tideway-docker-audit/data-v9/overlay2/c36b7a7975ceed281e438727168899359e1f6f030ac177efd8845049a360d4df/diff:/home/ramim/.cache/tideway-docker-audit/data-v9/overlay2/7f717bbd3bd752162e3a6aed60f817ca9e13d4bb6ff2bf27d6f27975c55ef0b7/diff:/home/ramim/.cache/tideway-docker-audit/data-v9/overlay2/a83199cf960f2d95ef938e4b6556c482b5aac40f4012cc74fa95086490b9d670/diff:/home/ramim/.cache/tideway-docker-audit/data-v9/overlay2/90063a2b9b94c7312fe019e77dc1aec17053031aef6a36f0e62c43758d9b821c/diff:/home/ramim/.cache/tideway-docker-audit/data-v9/overlay2/5548e93b8b0f0924784d90529012a4d1dc2c78ff48caa904f9050ba06b3dddfc/diff:/home/ramim/.cache/tideway-docker-audit/data-v9/overlay2/2365b14298cc57151e4a8f2d6f9734788a3beb255978d7a7f88d0208c11b91ba/diff",
+                "MergedDir": "/home/ramim/.cache/tideway-docker-audit/data-v9/overlay2/a85717428ba56ea6956e9207a4b4bcde3c3d9c89030e971fb9af8a447b6eccb5/merged",
+                "UpperDir": "/home/ramim/.cache/tideway-docker-audit/data-v9/overlay2/a85717428ba56ea6956e9207a4b4bcde3c3d9c89030e971fb9af8a447b6eccb5/diff",
+                "WorkDir": "/home/ramim/.cache/tideway-docker-audit/data-v9/overlay2/a85717428ba56ea6956e9207a4b4bcde3c3d9c89030e971fb9af8a447b6eccb5/work"
+            },
+            "Name": "overlay2"
+        },
+        "RootFS": {
+            "Type": "layers",
+            "Layers": [
+                "sha256:e58989146fcec76699871403b9897b5c014af1ccd85f5a9300a215e7975525d7",
+                "sha256:b0323ff28afe21fb981d00843d08f925ac6c678a3d4e16be06f18fc89357f720",
+                "sha256:0df1f695216dce8e8c88a822f441e7c18e4945a5e7cd24964549a30bc2ee8b6f",
+                "sha256:e9a58519e8e3dc1326f31fbc9788c62ecff75201eb7aafee27c567d41b6fea1e",
+                "sha256:d77f942f5ee53aca56f89448d7a7864c9d2b900f17f231eb0ba6acbd0d0bd17d",
+                "sha256:1e0c210152038bb941c217b470c91c759c7934ee829cdd93b2b42ed5eb7f4b19",
+                "sha256:1c8adcdf1da7dc951fa660dd7891d29d8cdfee948c9d1f0a1c7dc159f6a1ec91"
+            ]
+        },
+        "Metadata": {
+            "LastTagTime": "2026-10-18T11:25:27.279240942+06:00"
+        },
+        "Config": {
+            "Cmd": [
+                "python",
+                "run.py",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8787",
+                "--db",
+                "/app/data/tideway.sqlite3"
+            ],
+            "Entrypoint": null,
+            "Env": [
+                "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "LANG=C.UTF-8",
+                "GPG_KEY=A035C8C19219BA821ECEA86B64E628F8D684696D",
+                "PYTHON_VERSION=3.11.17",
+                "PYTHON_SHA256=bfb74ad39efae27cda510f134ab408e00f9992c56851cfc0b1cdb5646da11599",
+                "PYTHONDONTWRITEBYTECODE=1",
+                "PYTHONUNBUFFERED=1"
+            ],
+            "ExposedPorts": {
+                "8787/tcp": {}
+            },
+            "Labels": null,
+            "OnBuild": null,
+            "User": "tideway",
+            "Volumes": null,
+            "WorkingDir": "/app"
+        }
+    }
+]

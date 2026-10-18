@@ -1,0 +1,48 @@
+{
+    "checked_at_utc":  "2026-10-18T05:22:32.6459211Z",
+    "remote_commit":  "2822a60de9e5ad261cf0cd51e884f6e11aaaae2b",
+    "run_number":  13,
+    "run_url":  "https://github.com/SadManQT/tideway/actions/runs/39062356778",
+    "conclusion":  "failure",
+    "jobs":  [
+                 {
+                     "name":  "Browser workflows and extracted package",
+                     "conclusion":  "success"
+                 },
+                 {
+                     "name":  "Optional photo validation / Pillow",
+                     "conclusion":  "success"
+                 },
+                 {
+                     "name":  "stdlib / ubuntu-24.04 / Python 3.14",
+                     "conclusion":  "success"
+                 },
+                 {
+                     "name":  "stdlib / ubuntu-24.04 / Python 3.11",
+                     "conclusion":  "success"
+                 },
+                 {
+                     "name":  "Isolated Docker build and persisted HTTP workflow",
+                     "conclusion":  "success"
+                 },
+                 {
+                     "name":  "stdlib / windows-2022 / Python 3.14",
+                     "conclusion":  "failure"
+                 },
+                 {
+                     "name":  "stdlib / macos-14 / Python 3.14",
+                     "conclusion":  "success"
+                 },
+                 {
+                     "name":  "stdlib / macos-14 / Python 3.11",
+                     "conclusion":  "success"
+                 },
+                 {
+                     "name":  "stdlib / windows-2022 / Python 3.11",
+                     "conclusion":  "failure"
+                 }
+             ],
+    "local_changes_pushed":  false,
+    "current_local_source_hosted_ci_verified":  false,
+    "note":  "Remote run 13 tests the parent commit. Its two Windows failures were traced to an implicit CP1252 read. The local UTF-8 fix requires a later hosted run after the team pushes it."
+}

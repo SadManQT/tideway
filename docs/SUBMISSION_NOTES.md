@@ -79,55 +79,43 @@ route before sending personal documents. This package contains no passports.
 ## Honest limits
 
 All data and counterparties are synthetic. Identity and keys are demo-grade.
-TidePay federation is a single-process simulation with illustrative masks.
-TideLM has a synthetic template-based benchmark, not real-world accuracy.
-Post-fix TideVision inference on Apple Silicon remains unverified. There is no
-completed SME user study, live cloud-provider benchmark or external penetration
-test. Docker instructions are supplied, but a successful Docker build must only
-be claimed on a machine where it was actually run.
+Federation uses one process and illustrative masks. Real SME participants remain
+zero. Native MLX planning/receipt inference, live-cloud evaluation and external
+penetration testing remain outstanding. Behavioral walkthroughs do not measure
+human usability, adoption or prediction accuracy.
 
 ## Evidence and current remediation
 
-Start with `docs/READINESS_CURRENT.md`. The exact shipped TidePay model is
-evaluated on 7,427 new synthetic invoices; mean absolute timing error is 8.5585
-days versus 10.2296 for the history heuristic. The low-history limitation is
-reported separately. Historical audit-model scores do not transfer to shipped
-weights. Native macOS Qwen3 first handled 28/32 sealed requests; all four misses
-and source snapshots are preserved alongside later guard regressions.
+Start with `docs/READINESS_CURRENT.md` and `docs/RELEASE_V9.md`. Current tests,
+browser proof and source hashes are under `evidence/release-v9/`. The compatible
+Qwen regression handled 32/32 disclosed requests with 32/32 payment containment;
+the actual-model browser check passed. Raw outputs are in its `model-regression/`
+and `browser-real/` folders. These are known-case/integration results, not unseen
+accuracy or native adapter scores. The six checks in `docs/BEHAVIORAL_EVALUATION.md`
+exercise AI-authored behavior paths against the backend.
 
-Historical v3 message screening detected only 2/24 unfamiliar attacks and flagged
-2/24 benign messages. Current v7 screening runs, model identities, confusion
-matrices, uncertainty and latency are retained in `evidence/screening-v7/` and
-explained in `docs/REMEDIATION_V7.md`; development and fresh results stay separate. Payment authority therefore remains outside the model and
-screening. Above-target plans require each approver's server-checked, plan-bound
-risk acknowledgement. Mock financing includes timing, total repayment,
-unverified eligibility and affordability through repayment.
+Exact shipped TidePay weights were evaluated on 7,427 new synthetic invoices:
+MAE 8.5585 days versus the history heuristic's 10.2296, with low-history limits
+disclosed. Historical first observations and misses remain unchanged. The
+v7 fresh 48-case screening run detected 23/24 attacks, retained verification
+for 8/8 legitimate payment changes and warned on 5/16 ordinary benign messages
+(31.25%). One Hindi exfiltration miss and five false warnings remain in
+`evidence/screening-v7/`; development results are reported separately.
 
-`python3 scripts/prepare_release.py` rebuilds and checks one frozen LF source
-tree, refreshes browser and PDF evidence, builds the local ZIP and verifies its
-fresh extraction. `--checks-only` runs core checks; Node 22+ and Chrome/Edge are
-required for the full command. No weight download, cloud provider, push or
-submission occurs. Real-user study status is pending with zero participants;
-the consent-aware kit does not invent feedback.
-
-## Independent audit follow-up
-
-See `docs/INDEPENDENT_AUDIT.md` for the contest requirement map, reproduced signing/configuration/financial defects, fixes and unresolved quality gaps. The current release reports supply exact test, browser and extraction results for one source digest. This review is performed by the coding assistant and is not an external security certification.
+`python3 scripts/prepare_release.py` checks a frozen LF source tree, including
+web fonts/images, refreshes browser/PDF evidence, builds the ZIP and verifies
+fresh extraction. The full command needs Node 22+ and Chrome/Edge; `--checks-only`
+runs core checks. No weights are downloaded and nothing is pushed or submitted.
+Historical defects and verification scope are in `docs/INDEPENDENT_AUDIT.md`
+and `docs/COMPLETION_V8.md`; this is the coding assistant's review.
 
 ## Owner constraints and residual risk
 
-The [completion review](COMPLETION_V8.md) records the current Windows checks,
-retained historical model measurements, PDF review and final package commands.
-
-Counter-offers and replans retain the owner discount ceiling, preference and
-exclusions. A 1% ceiling rejects a 1.5% counter; changed instructions require a
-new reviewed proposal. Replacements require fresh approval and consent. Legacy
-plans without recorded owner instructions fail closed. H11 retains approximately
-11.78% breach risk against a 10% target; likely-path feasibility and explicit
-acknowledgement do not promise successful collections or universal rescue.
-
-The v7 fresh 48-case AI-authored screening run detected 23/24 attacks, retained
-verification for 8/8 legitimate payment updates, and warned on 5/16 ordinary
-benign messages (31.25%). One Hindi exfiltration attack and five false warnings
-remain recorded. These are finite synthetic results; no later tuning used that
-fresh set, and no external security review pass is claimed.
+Counters and replans retain the owner ceiling, preference and exclusions. A 1%
+ceiling rejects a 1.5% counter; changing instructions needs a new reviewed plan.
+Replacements revalidate signed parent authority and require fresh approval and
+consent. Legacy plans without instructions fail closed. H11 retains 11.78% mean
+breach risk versus a 10% target; every required approver must acknowledge the
+exact residual risk. Likely-path feasibility does not guarantee collections.
+Mock financing discloses timing, total repayment, unverified eligibility and
+affordability through repayment.

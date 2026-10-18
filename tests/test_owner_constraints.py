@@ -229,7 +229,7 @@ class RiskDisplayBoundaries(unittest.TestCase):
         from pathlib import Path
         if not shutil.which("node"):
             self.skipTest("Node is required for the optional browser rendering check")
-        source = (Path(__file__).resolve().parents[1] / "web/app.js").read_text()
+        source = (Path(__file__).resolve().parents[1] / "web/app.js").read_text(encoding="utf-8")
         function = source[source.index("function residualRiskHtml("):source.index("function mandateCard(")]
         script = ('const isNum=Number.isFinite, esc=String, icon=()=>"";\n' + function +
                   '\nconsole.log(JSON.stringify([.1178,.10000001,.10,.10000000000000002].map(probability_breach_after => '
