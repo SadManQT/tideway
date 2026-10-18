@@ -806,6 +806,7 @@ main.view-enter .brief.storm .weather-badge { animation: tw-pop .6s var(--ease-s
 
 /* Progressive disclosure keeps the owner's first decision readable on a phone. */
 .owner-controls { min-width:0; margin:0; padding:0; border:0; }
+.lab-controls-group { min-width:0; margin:0; padding:0; border:0; }
 .owner-toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
 .owner-head h2 { margin:12px 0; }
 .owner-fields { display:flex; flex-wrap:wrap; gap:14px; align-items:end; }

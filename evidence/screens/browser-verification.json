@@ -1,8 +1,8 @@
 {
-  "run_at": "2026-10-18T12:25:15.080Z",
+  "run_at": "2026-10-18T13:38:29.608Z",
   "passed": true,
   "browser": "Chrome/155.0.8059.82",
-  "source_tree_sha256": "0ff559b3392aa65271d8fb62c40801dedb6edd7f4133caf0501dcf3958ce6466",
+  "source_tree_sha256": "d8ff43013b62f916601afc41fe33d087b463936cda7ba40621a1ced87ae27dbf",
   "source_unchanged_during_browser": true,
   "viewport": {
     "desktop": [
@@ -21,6 +21,7 @@
   "linked_payment_delay": true,
   "decision_lab_tested": true,
   "owner_view_tested": true,
+  "currency_tested": true,
   "model_inference_tested": false,
   "real_model_verification": null,
   "coverage": [
@@ -62,6 +63,13 @@
     "private brief download",
     "fresh coach proposal",
     "coach viewer isolation",
+    "29 currencies across 10 views",
+    "selected-unit financial inputs",
+    "exact converted approval confirmation",
+    "untouched policy preservation",
+    "source-aware Inbox conversion",
+    "selected-unit export",
+    "unsaved drafts and currency preferences",
     "missing payment-account disclosure and callback controls",
     "bound risk acknowledgement",
     "funding repayment and eligibility disclosure",

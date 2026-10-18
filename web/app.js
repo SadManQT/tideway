@@ -8,7 +8,8 @@ const state = {
   config: null, operator: null, businessId: "", targetDate: "", view: "overview",
   dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "", selftest: null, drill: null,
   whatif: freshWhatIf(), demoDelay: null, demoRequest: null, inbox: freshInbox(), recordFilter: "all", recordQuery: "", aiConsent: false,
-  busy: false, approving: null, displayCurrency: "", team: null, teamError: "", invite: null, speaking: false, ownerDetailed: false
+  busy: false, approving: null, displayCurrency: "", team: null, teamError: "", invite: null, speaking: false, ownerDetailed: false,
+  policyDraft: {}, chatDraft: ""
 };
 const VIEWS = {
   overview: ["Cash weather", "Where cash is heading, how likely a shortfall is, and why"],
@@ -39,13 +40,57 @@ function displayFx(code = currency()) {
     ? {code: show, rate: FX_PER_USD[show] / FX_PER_USD[code], converted: true} : {code, rate: 1, converted: false};
 }
 function money(minor, code = currency(), opts = {}) {
-  if (!isNum(minor)) return "—";
-  const fx = displayFx(code);
-  if (!opts.native && fx.converted) return "≈ " + money(Math.round(minor * fx.rate), fx.code, {...opts, native: true});
-  const units = minor / 100;
-  const decimals = opts.decimals ?? (Number.isInteger(units) ? 0 : 2);
-  const text = Math.abs(units).toLocaleString("en-US", {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
-  return `${units < 0 ? "−" : ""}${code} ${text}`;
+  return TidewayMoney.format(minor,code,opts.native?code:displayCurrency(),opts);
+}
+const displayCurrency = () => state.displayCurrency || currency();
+function moneyNames() {
+  const d=state.dashboard;
+  return [d?.business?.name,...Object.values(d?.records||{}).flatMap(rows=>rows.flatMap(r=>[r.id,r.customer,r.payee,r.payee_account]))].filter(Boolean);
+}
+function moneyProse(value) {return TidewayMoney.text(value,displayCurrency(),moneyNames());}
+function localizeMoneyText(root) {
+  const names=moneyNames(), walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  let node;
+  while((node=walker.nextNode())) {
+    if(node.parentElement.closest('pre,textarea,input,select,.msg.user,[data-currency-original]'))continue;
+    const shown=TidewayMoney.text(node.nodeValue,displayCurrency(),names);
+    if(shown!==node.nodeValue)node.nodeValue=shown;
+  }
+}
+function moneyDraft(input,edited=false) {
+  if(edited)input.dataset.moneyEdited='true';
+  return TidewayMoney.capture(input.value,input.dataset.moneyCurrency,input.dataset.moneyBase,
+    input.dataset.moneyEdited?undefined:input.dataset.moneyInitial,
+    input.dataset.moneyEdited||input.dataset.moneyMinor===''?null:Number(input.dataset.moneyMinor));
+}
+function moneyInput(model, fallback=0, attrs='', base=currency()) {
+  const value=TidewayMoney.value(model,fallback,base,displayCurrency());
+  const native=model?.error?null:model?.minor??fallback;
+  return `<input ${attrs} inputmode="decimal" data-money-currency="${esc(displayCurrency())}" data-money-base="${esc(base)}" data-money-initial="${esc(value)}" data-money-minor="${Number.isSafeInteger(native)?native:''}" value="${esc(value)}">`;
+}
+function selectedMinor(model,fallback=0){return TidewayMoney.read(model,fallback);}
+function changeDisplayCurrency(code) {
+  if(code&&!TidewayMoney.valid(code))throw new Error('Choose a supported currency.');
+  if(state.busy){$('#display-currency').value=state.displayCurrency;return;}
+  try {
+    window.TidewayOwner.validateCurrency();window.TidewayLab.validateCurrency();
+    for(const model of [state.whatif.expense,...Object.values(state.policyDraft),...state.inbox.drafts?.filter(x=>x.edited).map(x=>x.money)||[]])if(model?.error)throw new Error('Fix invalid monetary inputs before changing currency.');
+  }catch(error){$('#display-currency').value=state.displayCurrency;throw error;}
+  for(const input of document.querySelectorAll('#view input[data-money-currency]')) {
+    if(moneyDraft(input).error){$('#display-currency').value=state.displayCurrency;throw new Error('Fix the invalid amount before changing currency.');}
+  }
+  // Preserve ordinary form drafts too; converted money controls redraw from canonical models.
+  const fields=[...document.querySelectorAll('#view input,#view select,#view textarea')]
+    .filter(el=>!el.readOnly&&!el.disabled&&!['password','file','submit','button'].includes(el.type)&&!el.hasAttribute('data-money-currency')&&(el.id||el.form?.id&&el.name))
+    .map(el=>({id:el.id,form:el.form?.id,name:el.name,value:el.value,checked:el.checked,type:el.type}));
+  stopSpeaking();
+  state.displayCurrency=code;
+  try {localStorage.setItem(`tideway:currency:${state.operator.id}`,code);} catch(_) { /* optional preference */ }
+  render();
+  for(const field of fields) {
+    const el=field.id?document.getElementById(field.id):document.getElementById(field.form)?.elements.namedItem(field.name);
+    if(el){if(field.type==='checkbox'||field.type==='radio')el.checked=field.checked;else el.value=field.value;}
+  }
 }
 function compact(minor) {
   const units = minor / 100;
@@ -65,12 +110,6 @@ function addDays(isoDate, count) {
   const date = new Date(`${isoDate}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + count);
   return date.toISOString().slice(0, 10);
-}
-function parseMinor(text) {
-  const clean = String(text ?? "").replace(/[,\s]/g, "").replace(/^[A-Za-z]{3}/, "");
-  if (!/^\d+(\.\d{1,2})?$/.test(clean)) return null;
-  const [whole, fraction = ""] = clean.split(".");
-  return Number(whole) * 100 + Number(fraction.padEnd(2, "0"));
 }
 // Roles are per business: the same person can own one business and only view another.
 const currentBusiness = () => state.config?.businesses?.find((item) => item.business_id === state.businessId);
@@ -98,14 +137,14 @@ async function api(path, body) {
 let toastTimer;
 function toast(message) {
   const element = $("#toast");
-  element.textContent = message;
+  element.textContent = moneyProse(message);
   element.hidden = false;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { element.hidden = true; }, 5200);
 }
 function showError(error) {
   const banner = $("#app-error");
-  banner.textContent = error?.message || String(error);
+  banner.textContent = moneyProse(error?.message || String(error));
   banner.hidden = false;
 }
 function clearError() { $("#app-error").hidden = true; }
@@ -202,9 +241,10 @@ const ROLE_PILL = {owner: "teal", accountant: "info", viewer: ""};
 function resetSessionState() {
   stopSpeaking();
   window.TidewayOwner.reset();
+  window.TidewayLab.reset();
   Object.assign(state, {view: "overview", dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "",
     selftest: null, drill: null, whatif: freshWhatIf(), demoDelay: null, demoRequest: null, inbox: freshInbox(), aiConsent: false, approving: null,
-    team: null, teamError: "", invite: null, ownerDetailed: false});
+    team: null, teamError: "", invite: null, ownerDetailed: false, policyDraft: {}, chatDraft: "", displayCurrency: ""});
 }
 
 // Signs in, replacing anything the previous operator left in this tab.
@@ -357,8 +397,12 @@ async function startShell() {
   $("#operator-name").textContent = state.operator.name;
   const businesses = state.config.businesses || [];
   if (!businesses.some((item) => item.business_id === state.businessId)) state.businessId = businesses[0]?.business_id || "";
-  $("#business-select").innerHTML = businesses.map((item) => `<option value="${esc(item.business_id)}" ${item.business_id === state.businessId ? "selected" : ""}>${esc(item.name)} · ${esc(item.currency)}</option>`).join("");
+  $("#business-select").innerHTML = businesses.map((item) => `<option value="${esc(item.business_id)}" ${item.business_id === state.businessId ? "selected" : ""} title="Ledger currency ${esc(item.currency)}">${esc(item.name)}</option>`).join("");
   FX_PER_USD = Object.fromEntries((state.config.currencies || []).map((item) => [item.code, item.illustrative_per_usd]));
+  TidewayMoney.configure(FX_PER_USD);
+  if(!state.displayCurrency) {
+    try {const preferred=localStorage.getItem(`tideway:currency:${state.operator.id}`);if(preferred&&TidewayMoney.valid(preferred))state.displayCurrency=preferred;}catch(_) { /* optional preference */ }
+  }
   $("#display-currency").innerHTML = `<option value="">Business currency</option>` + (state.config.currencies || []).map((item) => `<option value="${esc(item.code)}" title="${esc(item.name)}" ${state.displayCurrency === item.code ? "selected" : ""}>${esc(item.code)}</option>`).join("");
   if (!businesses.length) {  // e.g. removed from every business: offer a way back in
     state.dashboard = null;
@@ -382,11 +426,12 @@ async function loadDashboard({businessId = state.businessId, targetDate = state.
   if (businessId !== state.businessId) {
     stopSpeaking();
     Object.assign(state, {run: null, receipt: null, chat: [], selftest: null, drill: null, whatif: freshWhatIf(), inbox: freshInbox(),
-      team: null, teamError: "", invite: null});
+      team: null, teamError: "", invite: null, policyDraft: {}, chatDraft: ""});
   } else if (target !== state.targetDate) {
     Object.assign(state, {run: null, receipt: null});
     state.whatif.result = null;
   }
+  if(dashboard.policy?.version!==state.dashboard?.policy?.version)state.policyDraft={};
   Object.assign(state, {businessId, targetDate: target, dashboard, audit: null, auditError: ""});
   syncContextControls();
   clearError();
@@ -413,7 +458,7 @@ function setBusy(busy) {
   state.busy = busy;
   document.body.classList.toggle("busy", busy);
   document.body.setAttribute("aria-busy", String(busy));
-  for (const control of document.querySelectorAll("#business-select, #target-date, [data-action=refresh]")) control.disabled = busy;
+  for (const control of document.querySelectorAll("#business-select, #target-date, #display-currency, [data-action=refresh], [data-action=logout]")) control.disabled = busy;
 }
 
 async function act(label, work) {
@@ -463,8 +508,10 @@ function render() {
     records: renderRecords, team: renderTeam, security: renderSecurity, evidence: renderEvidence,
     lab: () => window.TidewayLab.render()};
   $("#fx-note").hidden = !state.displayCurrency || state.displayCurrency === currency();
+  $("#fx-note").textContent=`You view and enter amounts in ${displayCurrency()}. Converted values (≈) use illustrative fixed rates. Entries are converted to the ${currency()} ledger; signed source documents retain their original units.`;
   const entering = playEntrance(lastScene.split("|")[1]);
   $("#view").innerHTML = state.dashboard ? (renderers[state.view] || renderOverview)() : `<div class="loading">Loading…</div>`;
+  if(state.dashboard)localizeMoneyText($("#view"));
   if (entering) {
     $("#view").querySelectorAll(".dot-future").forEach((dot, index) => dot.style.setProperty("--i", String(index)));
     if (state.view === "overview") countUp($("#view"));
@@ -584,8 +631,8 @@ function renderOverview() {
   <div class="owner-toolbar"><span class="pill">Detailed view</span><button class="button small ghost" data-action="owner-simple">Simple view</button></div>
   <section class="brief ${esc(d.weather.level)}">
     <div class="weather-badge">${icon(weatherIcon(d.weather.level))}${esc(d.weather.label)}</div>
-    <div><h2>${esc(d.brief.headline)}</h2><p>${esc(d.brief.detail)} ${esc(d.weather.text)}</p></div>
-    <div class="row">${speakButtonHtml()}<a class="button ghost" href="/api/export?kind=bank-pack&business_id=${encodeURIComponent(state.businessId)}&target_date=${encodeURIComponent(state.targetDate)}">${icon("download")}Bank-ready pack</a>${canApprove() ? `<button class="button ghost" data-action="run-agent">${icon("play")}Run the rescue agent</button>` : `<span class="pill">Viewer: read only</span>`}</div>
+    <div><h2>${esc(moneyProse(d.brief.headline))}</h2><p>${esc(moneyProse(d.brief.detail))} ${esc(moneyProse(d.weather.text))}</p></div>
+    <div class="row">${speakButtonHtml()}<a class="button ghost" href="/api/export?kind=bank-pack&business_id=${encodeURIComponent(state.businessId)}&target_date=${encodeURIComponent(state.targetDate)}&display_currency=${encodeURIComponent(displayCurrency())}">${icon("download")}Bank-ready pack</a>${canApprove() ? `<button class="button ghost" data-action="run-agent">${icon("play")}Run the rescue agent</button>` : `<span class="pill">Viewer: read only</span>`}</div>
   </section>
   <section class="metrics section-gap">
     ${metric("Opening cash", money(d.business.opening_cash_minor), `On ${day(d.business.opening_date, true)}`)}
@@ -607,7 +654,7 @@ function renderOverview() {
   </section>
   <section class="grid cols-2 section-gap">
     <div class="card"><div class="card-head"><div><h3>Early warnings</h3><p>Most severe first. Critical security signals block actions automatically.</p></div></div>
-      ${(d.warnings || []).length ? d.warnings.map((item) => `<div class="alert ${esc(item.severity)}">${icon(item.severity === "info" ? "spark" : "alert")}<div><strong>${esc(item.title)}</strong><span>${esc(item.detail)}</span></div></div>`).join("") : `<div class="alert success">${icon("check")}<div><strong>No warnings</strong><span>The reserve floor holds and no security signal is raised.</span></div></div>`}
+      ${(d.warnings || []).length ? d.warnings.map((item) => `<div class="alert ${esc(item.severity)}">${icon(item.severity === "info" ? "spark" : "alert")}<div><strong>${esc(item.title)}</strong><span>${esc(moneyProse(item.detail))}</span></div></div>`).join("") : `<div class="alert success">${icon("check")}<div><strong>No warnings</strong><span>The reserve floor holds and no security signal is raised.</span></div></div>`}
     </div>
     <div class="card"><div class="card-head"><div><h3>Business financial analysis</h3><p>From settled history and open balances.</p></div></div>
       <div class="kv">
@@ -623,8 +670,8 @@ function renderOverview() {
   </section>
   <section class="card section-gap"><div class="card-head"><div><h3>Customer payment behaviour</h3><p>Lateness = paid date − due date. Thin histories borrow from the business-wide average (credibility weighting), so one lucky payment never makes a customer look perfect.</p></div></div>
     <div class="table-wrap"><table><thead><tr><th>Customer</th><th>Grade</th><th class="num">Settled</th><th class="num">Expected delay</th><th class="num">P80 delay</th><th class="num">Own-history weight</th><th class="num">Open balance</th><th>Why</th></tr></thead><tbody>
-    ${customers.length ? "" : `<tr><td colspan="8" class="muted">No customer history yet. Add invoices to see who pays late.</td></tr>`}
-    ${customers.map((item) => `<tr><td><strong>${esc(item.customer)}</strong></td><td><span class="pill ${item.grade <= "B" ? "ok" : item.grade === "C" ? "unsettled" : "storm"}">${esc(item.grade)}</span></td><td class="num">${esc(item.settled_invoices)}</td><td class="num">${esc(days(item.expected_delay_days))}</td><td class="num">${esc(days(item.p80_delay_days))}</td><td class="num">${pct(item.own_history_weight)}</td><td class="num">${money(item.open_exposure_minor)}</td><td class="small muted">${esc(item.explanation)}</td></tr>`).join("")}
+    ${customers.length ? "" : `<p class="muted">No customer history yet. Add invoices to see who pays late.</p>`}
+    ${customers.map((item) => `<tr><td><strong>${esc(item.customer)}</strong></td><td><span class="pill ${item.grade <= "B" ? "ok" : item.grade === "C" ? "unsettled" : "storm"}">${esc(item.grade)}</span></td><td class="num">${esc(item.settled_invoices)}</td><td class="num">${esc(days(item.expected_delay_days))}</td><td class="num">${esc(days(item.p80_delay_days))}</td><td class="num">${pct(item.own_history_weight)}</td><td class="num">${money(item.open_exposure_minor)}</td><td class="small muted">${esc(moneyProse(item.explanation))}</td></tr>`).join("")}
     </tbody></table></div></section>`;
 }
 
@@ -653,7 +700,7 @@ function speakButtonHtml() {
 function briefText(d) {
   const top = (d.warnings || [])[0];
   return [`${d.business.name}.`, `Cash weather: ${d.weather.label}.`, d.brief.headline, d.brief.detail,
-    top ? `Top warning: ${top.title}. ${top.detail}` : "No warnings."].filter(Boolean).join(" ");
+    top ? `Top warning: ${top.title}. ${top.detail}` : "No warnings."].filter(Boolean).map(moneyProse).join(" ");
 }
 function updateSpeakButton() {
   const button = document.querySelector("[data-action=speak-brief]");
@@ -720,7 +767,7 @@ function renderTeam() {
     </div>
     <div class="stack">
       <div class="card plan-summary"><span class="eyebrow">Your plan</span><h3>${esc(sub.label || sub.plan || "Plan")}</h3>
-        <p class="plan-price"><strong>${sub.price_usd_month ? `$${esc(sub.price_usd_month)}` : "Free"}</strong>${sub.price_usd_month ? "<span> / month, illustrative: never charged</span>" : "<span> in this sandbox</span>"}</p>
+        <p class="plan-price"><strong>${sub.price_usd_month ? money(sub.price_usd_month*100,"USD") : "Free"}</strong>${sub.price_usd_month ? "<span> / month, illustrative: never charged</span>" : "<span> in this sandbox</span>"}</p>
         <meter class="seat-meter" min="0" max="${esc(sub.seats || 1)}" value="${esc(Math.min(used, sub.seats || 0))}" aria-label="${esc(used)} of ${esc(sub.seats ?? 0)} seats used or reserved"></meter>
         <div class="kv section-gap"><div><span>Members</span><strong>${esc(sub.seats_used ?? 0)}</strong></div><div><span>Pending invites</span><strong>${esc(sub.pending_invites ?? 0)}</strong></div><div><span>Seats available</span><strong>${esc(free)} of ${esc(sub.seats ?? 0)}</strong></div><div><span>Businesses on this plan</span><strong>${esc(sub.businesses ?? "—")}</strong></div></div></div>
       ${owner ? `<div class="card"><h3>Invite someone</h3><p class="small muted">They get a one-time code to create their account or add this business to an existing one.</p>
@@ -780,7 +827,7 @@ async function copyInvite() {
 function stepIcon(status) { return status === "blocked" ? "x" : status === "waiting" ? "lock" : status === "skipped" ? "pause" : "check"; }
 
 function timelineHtml(steps) {
-  return `<ol class="timeline">${steps.map((item, index) => `<li class="${esc(item.status)} reveal delay-${Math.min(index, 9)}"><span class="step-icon">${icon(stepIcon(item.status))}</span><div><strong>${esc(item.step)}</strong><p>${esc(item.summary)}</p><div class="meta">${esc(item.tool || "handover")} · ${esc(item.permission || "")}${isNum(item.duration_ms) ? ` · ${item.duration_ms} ms` : ""}${item.output_sha256 ? ` · output ${esc(item.output_sha256)}…` : ""}${item.audit_id ? ` · audit #${esc(item.audit_id)}` : ""}</div></div></li>`).join("")}</ol>`;
+  return `<ol class="timeline">${steps.map((item, index) => `<li class="${esc(item.status)} reveal delay-${Math.min(index, 9)}"><span class="step-icon">${icon(stepIcon(item.status))}</span><div><strong>${esc(item.step)}</strong><p>${esc(moneyProse(item.summary))}</p><div class="meta">${esc(item.tool || "handover")} · ${esc(item.permission || "")}${isNum(item.duration_ms) ? ` · ${item.duration_ms} ms` : ""}${item.output_sha256 ? ` · output ${esc(item.output_sha256)}…` : ""}${item.audit_id ? ` · audit #${esc(item.audit_id)}` : ""}</div></div></li>`).join("")}</ol>`;
 }
 
 function actionTerms(action) {
@@ -796,7 +843,7 @@ function actionCard(action) {
     <div class="terms">${actionTerms(action)}</div>
     ${provenance ? `<div class="provenance" aria-label="Where each value comes from">${provenance}</div>` : ""}
     ${isNum(action.shortfall_without_minor) ? `<p class="small muted">Without this action the plan is ${action.shortfall_without_minor > 0 ? `still ${money(action.shortfall_without_minor)} short` : "still safe (it reduces risk)"}.</p>` : ""}
-    <details><summary>Message the agent would send (sandbox only)</summary><div class="message-preview">${esc(action.message)}</div></details></div>`;
+    <details><summary>Message the agent would send (sandbox only)</summary><div class="message-preview">${esc(moneyProse(action.message))}</div></details></div>`;
 }
 
 function bundleCard(plan, bundle, index) {
@@ -820,7 +867,7 @@ function bundleCard(plan, bundle, index) {
       ${residualRiskHtml(plan, bundle)}
       ${bilateralTermsHtml(bundle)}
       <div class="compare"><div><span>Economic cost</span><strong>${money(bundle.economic_cost_minor)}</strong></div><div><span>Exposure</span><strong>${money(bundle.exposure_minor)}</strong></div>${isNum(after.minimum_cash_minor) ? `<div><span>Lowest likely cash after</span><strong>${money(after.minimum_cash_minor)}</strong></div>` : `<div><span>Reserve shortfall after</span><strong>${money(bundle.remaining_shortfall_minor)}</strong></div>`}<div><span>Counterparties to agree</span><strong>${esc(bundle.counterparties)}</strong></div></div>
-      ${bundle.why_not ? `<p class="why-not">${esc(bundle.why_not)}</p>` : ""}
+      ${bundle.why_not ? `<p class="why-not">${esc(moneyProse(bundle.why_not))}</p>` : ""}
       ${approvals.length ? `<p class="small">Approvals so far: ${approvals.map((item) => `${esc(item.operator_id)} (${esc(item.role)})`).join(", ")}</p>` : ""}
       ${bundle.actions.map(actionCard).join("")}
     </div></article>`;
@@ -849,8 +896,8 @@ function mandateCard(view) {
   m.actions.forEach((action) => {
     const replies = view.negotiations.filter((item) => item.action_id === action.action_id);
     if (replies.length) {
-      transcript.push(`<div class="chat-bubble ours">${esc(replies[0].request.message || `Request: ${action.type}`)}<small>Tideway agent → ${esc(action.counterparty)} (sandbox)</small></div>`);
-      replies.forEach((reply) => transcript.push(`<div class="chat-bubble theirs ${esc(reply.status)}">${esc(reply.response.message)}<small>${esc(reply.simulated_by)} · ${esc(reply.status)}</small></div>`));
+      transcript.push(`<div class="chat-bubble ours">${esc(moneyProse(replies[0].request.message || `Request: ${action.type}`))}<small>Tideway agent → ${esc(action.counterparty)} (sandbox)</small></div>`);
+      replies.forEach((reply) => transcript.push(`<div class="chat-bubble theirs ${esc(reply.status)}">${esc(moneyProse(reply.response.message))}<small>${esc(reply.simulated_by)} · ${esc(reply.status)}</small></div>`));
     }
   });
   const drill = m.actions.map((action) => `<div class="row"><span class="small">${esc(action.counterparty)}</span><button class="button small ghost" data-action="simulate" data-mandate="${esc(m.mandate_id)}" data-id="${esc(action.action_id)}" data-accept="true">Force accept</button><button class="button small ghost" data-action="simulate" data-mandate="${esc(m.mandate_id)}" data-id="${esc(action.action_id)}" data-accept="false">Force refuse</button></div>`).join("");
@@ -889,7 +936,7 @@ function receiptCard(receipt, earlier = false) {
     ${inEffect ? "" : `<div class="alert warning">${icon("alert")}<div><strong>The sandbox was reset after this execution</strong><span>These schedule changes are no longer in effect; the current projection does not include them. The receipt is kept as evidence.</span></div></div>`}
     <div class="before-after"><div class="kv"><div><span>Likely low before</span><strong class="negative">${money(before.minimum_cash_minor)}</strong></div><div><span>Shortfall before</span><strong>${money(before.reserve_shortfall_minor)}</strong></div></div><span class="arrow">→</span><div class="kv"><div><span>Likely low after</span><strong class="positive">${money(after.minimum_cash_minor)}</strong></div><div><span>Shortfall after</span><strong>${money(after.reserve_shortfall_minor)}</strong></div></div></div>
     <div class="status-strip section-gap"><span class="tag">receipt ${esc((receipt.receipt_id || "").slice(0, 10))}…</span><span class="tag">state v${esc(receipt.state_before?.version ?? "—")} → v${esc(receipt.state_after?.version ?? "—")}</span><span class="tag">idempotency ${esc((receipt.idempotency_key || "").slice(0, 18))}</span><span class="tag">audit ${esc((receipt.audit_hash || "").slice(0, 10))}…</span>${receipt.witness?.cosigned ? `<span class="tag good">witness cosigned ${esc(receipt.witness.size)} entries</span>` : ""}${receipt.replayed ? `<span class="tag">replayed: no second execution</span>` : ""}</div>
-    <div class="row section-gap">${actions.some((action) => action.type === "supplier_deferral") ? `<a class="button ghost" href="/api/export?kind=iso20022&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}ISO 20022 pain.001 draft (never sent)</a>` : ""}<a class="button ghost" href="/api/export?kind=receipts&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Receipts CSV</a></div>
+    <div class="row section-gap">${actions.some((action) => action.type === "supplier_deferral") ? `<a class="button ghost" href="/api/export?kind=iso20022&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}ISO 20022 pain.001 draft (never sent)</a>` : ""}<a class="button ghost" href="/api/export?kind=receipts&business_id=${encodeURIComponent(state.businessId)}&display_currency=${encodeURIComponent(displayCurrency())}">${icon("download")}Receipts CSV</a></div>
     <details class="section-gap"><summary>Full receipt</summary><pre>${esc(JSON.stringify(receipt, null, 2))}</pre></details></section>`;
 }
 
@@ -918,22 +965,22 @@ function renderRescue() {
   if (plan) {
     const owner = plan.owner_constraints;
     parts.push(`<div class="card owner-constraints section-gap"><strong>Owner instructions</strong><p>${owner && isNum(owner.max_discount_bps) ? `Maximum discount ${esc(owner.max_discount_bps / 100)}%; ranking ${esc(String(owner.prefer).replaceAll("_", " "))}.` : "Instructions are unavailable for this legacy proposal. Create a fresh owner-reviewed proposal."} Existing instructions remain binding when counter-offers or refusals require a new plan.</p></div>`);
-    parts.push(`<section class="card section-gap"><div class="card-head"><div><span class="eyebrow">Proposal ${esc(plan.plan_id.slice(0, 8))} · ${esc(plan.status)}</span><h3>${plan.action_needed ? `Gap of ${money(plan.gap_minor)} on the likely path` : "No action needed"}</h3><p>${esc(plan.explanation)}</p></div><div class="row">${plan.action_needed && !plan.bundles.some((bundle) => bundle.feasible) ? `<span class="pill storm">No safe option found</span>` : ""}${isNum(plan.futures_short_of_20_before) ? `<span class="pill ${plan.futures_short_of_20_before > 2 ? "storm" : "ok"}">Before: ${esc(plan.futures_short_of_20_before)} of 20 futures short</span>` : ""}</div></div>
+    parts.push(`<section class="card section-gap"><div class="card-head"><div><span class="eyebrow">Proposal ${esc(plan.plan_id.slice(0, 8))} · ${esc(plan.status)}</span><h3>${plan.action_needed ? `Gap of ${money(plan.gap_minor)} on the likely path` : "No action needed"}</h3><p>${esc(moneyProse(plan.explanation))}</p></div><div class="row">${plan.action_needed && !plan.bundles.some((bundle) => bundle.feasible) ? `<span class="pill storm">No safe option found</span>` : ""}${isNum(plan.futures_short_of_20_before) ? `<span class="pill ${plan.futures_short_of_20_before > 2 ? "storm" : "ok"}">Before: ${esc(plan.futures_short_of_20_before)} of 20 futures short</span>` : ""}</div></div>
       ${searchSummary(plan.search) ? `<p class="small muted">${esc(searchSummary(plan.search))}</p>` : ""}</section>`);
     parts.push(`<section class="stack section-gap">${plan.bundles.map((bundle, index) => bundleCard(plan, bundle, index)).join("")}</section>`);
     const levers = plan.levers || [];
     parts.push(`<section class="grid cols-2 section-gap">
-      <div class="card"><div class="card-head"><div><h3>What would need to change</h3><p>Any one of these alone would hold the reserve floor.</p></div></div>${levers.length ? `<ul class="small">${levers.map((item) => `<li>${esc(item.text)}${item.economic_cost_minor ? ` · ${money(item.economic_cost_minor)}` : ""}</li>`).join("")}</ul>` : `<p class="small muted">No single change is enough; that is why the plan combines actions.</p>`}</div>
+      <div class="card"><div class="card-head"><div><h3>What would need to change</h3><p>Any one of these alone would hold the reserve floor.</p></div></div>${levers.length ? `<ul class="small">${levers.map((item) => `<li>${esc(item.role === "user" ? item.text : moneyProse(item.text))}${item.economic_cost_minor ? ` · ${money(item.economic_cost_minor)}` : ""}</li>`).join("")}</ul>` : `<p class="small muted">No single change is enough; that is why the plan combines actions.</p>`}</div>
       <div class="card"><div class="card-head"><div><h3>Blocked by policy or security</h3><p>Never proposed, whatever the agent concludes.</p></div></div>${(plan.rejected || []).length ? plan.rejected.map((item) => `<div class="alert ${item.code === "SECURITY_BLOCKED" ? "critical" : "info"}">${icon(item.code === "SECURITY_BLOCKED" ? "shield" : "lock")}<div><strong>${esc(item.code)} · ${esc(item.counterparty)}</strong><span>${esc(item.reason)}</span></div></div>`).join("") : `<p class="small muted">Nothing blocked for this business.</p>`}</div></section>`);
     parts.push(`<section class="card section-gap"><div class="card-head"><div><h3>Financing options compared (mock catalogue)</h3><p>Topic E financing-option matching: every option normalised to cost and annual rate. None is executable; no lender or credit decision is connected.</p></div><span class="pill mock">MOCK</span></div>
       <div class="table-wrap"><table><thead><tr><th>Option</th><th class="num">Principal</th><th class="num">Fee</th><th class="num">Total repayment</th><th class="num">≈ APR</th><th>Timing</th><th>Assumptions and repayment pressure</th></tr></thead><tbody>
-      ${plan.financing.map((item) => `<tr><td><strong>${esc(item.label)}</strong><p class="small">${esc(item.collateral)}</p></td><td class="num">${money(item.principal_minor)}</td><td class="num">${money(item.fee_minor)}</td><td class="num">${money(item.repayment_minor)}</td><td class="num">${isNum(item.apr_bps) ? `${(item.apr_bps / 100).toFixed(1)}%` : "—"}</td><td>${esc(item.days_to_cash)} days to cash${item.available_date ? `<p class="small">Illustrated arrival ${esc(day(item.available_date))}; repay ${esc(day(item.repayment_date, true))}</p>` : ""}</td><td class="small"><strong>Eligibility unverified</strong><p>${esc(item.eligibility)}</p>${item.repayment_projection ? `<p>Reserve shortfall through repayment: ${money(item.repayment_projection.reserve_shortfall_minor)}; payroll ${item.repayment_projection.payroll_at_risk ? "at risk" : "funded on the projected path"}.</p>` : ""}<details><summary>Review assumptions</summary><ul>${[...(item.reasons || []), ...(item.eligibility_unknowns || [])].map((reason) => `<li>${esc(reason)}</li>`).join("")}</ul><p>${esc(item.apr_convention || "")}</p></details></td></tr>`).join("")}
+      ${plan.financing.map((item) => `<tr><td><strong>${esc(item.label)}</strong><p class="small">${esc(item.collateral)}</p></td><td class="num">${money(item.principal_minor)}</td><td class="num">${money(item.fee_minor)}</td><td class="num">${money(item.repayment_minor)}</td><td class="num">${isNum(item.apr_bps) ? `${(item.apr_bps / 100).toFixed(1)}%` : "—"}</td><td>${esc(item.days_to_cash)} days to cash${item.available_date ? `<p class="small">Illustrated arrival ${esc(day(item.available_date))}; repay ${esc(day(item.repayment_date, true))}</p>` : ""}</td><td class="small"><strong>Eligibility unverified</strong><p>${esc(moneyProse(item.eligibility))}</p>${item.repayment_projection ? `<p>Reserve shortfall through repayment: ${money(item.repayment_projection.reserve_shortfall_minor)}; payroll ${item.repayment_projection.payroll_at_risk ? "at risk" : "funded on the projected path"}.</p>` : ""}<details><summary>Review assumptions</summary><ul>${[...(item.reasons || []), ...(item.eligibility_unknowns || [])].map((reason) => `<li>${esc(moneyProse(reason))}</li>`).join("")}</ul><p>${esc(item.apr_convention || "")}</p></details></td></tr>`).join("")}
       ${plan.bundles[0]?.feasible ? `<tr><td><strong>${plan.bundles[0].bundle_id === "counter-offer" ? "Counter-offer bundle" : "Recommended bundle"}</strong> <span class="tag good">sandbox proposal</span></td><td class="num">—</td><td class="num">${money(plan.bundles[0].economic_cost_minor)}<p class="small">Economic comparison cost</p></td><td class="num">—</td><td class="num">—</td><td>On agreement</td><td class="small muted">Human approvals and exact counterparty consent are required before any sandbox execution.</td></tr>` : ""}
       </tbody></table></div></section>`);
     if ((plan.reminders || []).length) {
       parts.push(`<section class="card section-gap"><div class="card-head"><div><h3>Collection reminders, ranked by risk to the plan</h3><p>Zero-cash messages. A reply is a promise to pay: tracked, never counted as cash.${policy.autonomy_level === "delegate" ? " Under delegated autonomy the agent may send these alone (5 a day)." : ""}</p></div></div>
         ${plan.reminders.map((item) => { const sent = (d.messages || []).find((message) => message.record_id === item.record_id); return `<div class="action-card"><div class="row between"><strong>${esc(item.counterparty)} · ${money(item.amount_minor)} · tone: ${esc(item.tone)}</strong>${sent ? `<span class="pill ok">sent ${sent.human_present ? "by a person" : "by the agent (standing mandate)"}</span>` : canApprove() ? `<button class="button small ghost" data-action="remind" data-id="${esc(item.action_id)}">${icon("send")}Send in sandbox</button>` : ""}</div>
-          ${isNum(item.late_risk) ? `<span class="small muted">Arrives after the first breach in ${pct(item.late_risk)} of breaching futures.</span>` : ""}<div class="message-preview">${esc(item.message)}</div>${sent?.reply ? `<div class="chat-bubble theirs">${esc(sent.reply.message)}<small>${esc(sent.reply.note || "")}</small></div>` : ""}</div>`; }).join("")}</section>`);
+          ${isNum(item.late_risk) ? `<span class="small muted">Arrives after the first breach in ${pct(item.late_risk)} of breaching futures.</span>` : ""}<div class="message-preview">${esc(moneyProse(item.message))}</div>${sent?.reply ? `<div class="chat-bubble theirs">${esc(moneyProse(sent.reply.message))}<small>${esc(sent.reply.note || "")}</small></div>` : ""}</div>`; }).join("")}</section>`);
     }
   } else if (!(d.mandates || []).length) {
     const message = !latest ? "No current proposal for this target date. Run the rescue agent to create one."
@@ -976,13 +1023,13 @@ function toolResultHtml({tool, result: r}) {
     const pill = {safe: "ok", caution: "unsettled", high_risk: "storm"}[r.verdict] || "info";
     return `<div class="result-card"><div class="row between"><strong>Credit check · ${esc(r.customer)}</strong><span class="pill ${pill}">${esc(String(r.verdict || "").replaceAll("_", " "))}</span></div>
       ${kvHtml([["Amount", money(r.amount_minor, cur)], ["Terms asked", esc(days(r.terms_days))], ["Safer terms", esc(days(r.suggested_terms_days))], ["Expected payment", esc(day(r.expected_payment_date, true))]])}
-      <p class="small">${esc(r.advice)}</p>${(r.reasons || []).length ? `<ul class="small">${r.reasons.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>` : ""}<p class="hint">${esc(r.model)}</p></div>`;
+      <p class="small">${esc(moneyProse(r.advice))}</p>${(r.reasons || []).length ? `<ul class="small">${r.reasons.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>` : ""}<p class="hint">${esc(r.model)}</p></div>`;
   }
   if (tool === "customer_report") {
     return `<div class="result-card"><strong>Customer payment report</strong><ul class="small">${(r.customers || []).map((c) => `<li><strong>${esc(c.customer)}</strong> <span class="pill ${c.grade <= "B" ? "ok" : c.grade === "C" ? "unsettled" : "storm"}">grade ${esc(c.grade)}</span> · expected ${esc(days(c.expected_delay_days))} late · ${money(c.open_exposure_minor, cur)} open</li>`).join("")}</ul></div>`;
   }
   if (tool === "draft_reminders") {
-    return `<div class="result-card"><strong>${esc((r.drafts || []).length)} reminder draft(s)</strong>${(r.drafts || []).map((item) => `<div class="action-card"><strong>${esc(item.customer)} · tone: ${esc(item.tone)}</strong><div class="message-preview">${esc(item.message)}</div></div>`).join("")}
+    return `<div class="result-card"><strong>${esc((r.drafts || []).length)} reminder draft(s)</strong>${(r.drafts || []).map((item) => `<div class="action-card"><strong>${esc(item.customer)} · tone: ${esc(item.tone)}</strong><div class="message-preview">${esc(moneyProse(item.message))}</div></div>`).join("")}
       <p class="hint">${esc(r.note)}</p><div class="row"><button class="button small ghost" type="button" data-view="rescue">${icon("rescue")}Review in Rescue plan</button></div></div>`;
   }
   if (tool === "bank_pack") {
@@ -995,7 +1042,7 @@ function toolResultHtml({tool, result: r}) {
   }
   if (tool === "propose_plan") {
     const title = r.outcome === "no_action_needed" ? "No recovery action needed" : r.outcome === "no_safe_plan" || r.feasible === false ? "No safe plan · owner review needed" : "Rescue proposal · waiting for human approval";
-    return `<div class="result-card"><strong>${title}</strong><p class="small">${esc(r.explanation)}</p>
+    return `<div class="result-card"><strong>${title}</strong><p class="small">${esc(moneyProse(r.explanation))}</p>
       ${kvHtml([["Recommended cost", money(r.recommended_cost_minor)], ["Futures short after", isNum(r.futures_short_of_20_after) ? `${esc(r.futures_short_of_20_after)} of 20` : "—"]])}
       <div class="row"><button class="button small teal" type="button" data-view="rescue">${icon("rescue")}Open the Rescue plan</button></div></div>`;
   }
@@ -1039,9 +1086,9 @@ function copilotHtml(c) {
   const calls = c.plan?.calls || [];
   return `<div class="copilot">${(c.results || []).map(toolResultHtml).join("")}
     <div class="glass" aria-label="Model tool plan"><div class="row between"><strong>${esc(c.mode_label || tidelmLabel())}${c.plan?.intent ? ` · intent: <code>${esc(c.plan.intent)}</code>` : ""}</strong>${isNum(c.elapsed_ms) ? `<span class="tag">${esc((c.elapsed_ms / 1000).toFixed(1))} s locally</span>` : ""}</div>
-    <ol class="plan-calls">${calls.map((call) => `<li><code>${esc(call.tool)}</code> ${Object.entries(call.args || {}).map(([key, value]) => `<span class="arg">${esc(key)}=${esc(argText(value))}</span>`).join(" ") || `<span class="arg">no arguments</span>`}</li>`).join("")}</ol>
+    <details data-currency-original><summary>Original tool arguments (ledger units)</summary><ol class="plan-calls">${calls.map((call) => `<li><code>${esc(call.tool)}</code> ${Object.entries(call.args || {}).map(([key, value]) => `<span class="arg">${esc(key)}=${esc(argText(value))}</span>`).join(" ") || `<span class="arg">no arguments</span>`}</li>`).join("")}</ol></details>
     ${c.decision_rationale ? `<p class="small">${esc(c.decision_rationale.rationale || c.decision_rationale)}</p>` : ""}
-    ${c.trace?.length ? `<details><summary>Observed model and tool trace</summary><pre>${esc(JSON.stringify(c.trace, null, 2))}</pre></details>` : ""}
+    ${c.trace?.length ? `<details><summary>Observed model and tool trace (original ledger units)</summary><pre>${esc(JSON.stringify(c.trace, null, 2))}</pre></details>` : ""}
     <p class="hint">${esc(c.model_identity?.label || c.model_identity?.model || "Local model")} selected the calls. Financial figures and the decision summary come from deterministic tools.</p></div></div>`;
 }
 
@@ -1050,23 +1097,23 @@ function renderAssistant() {
   if (!state.chat.length) state.chat.push({role: "agent", text: on
     ? `Hi, I'm Tideway, using ${tidelmLabel()}. Ask in your own language (English, 中文, Español, Bahasa, Français, Português, Hinglish, Banglish): credit checks, late payers, a what-if, reminder drafts or a rescue plan. The model selects tool calls; Tideway's tools supply the figures. I can't approve or move money.`
     : "Hi, I'm Tideway. Ask me whether payroll is safe, how risky the month looks, who to chase, a what-if such as \"what if Nila Traders pays 10 days late\", or ask me for a rescue plan. I can explain and propose; I can't approve or move money."});
-  const prompts = on ? TIDELM_PROMPTS : LOCAL_PROMPTS;
+  const prompts = on ? TIDELM_PROMPTS.map(p=>p.replace('on 50,000?',`on ${displayCurrency()} ${displayCurrency()===currency()?'50,000':'500'}?`)) : LOCAL_PROMPTS;
   const consent = on ? "" : state.config.ai_configured ? `<label class="check small"><input id="ai-consent" type="checkbox" ${state.aiConsent ? "checked" : ""}> Use the AI model for this message (names are pseudonymised; ledger descriptions are omitted; inspect your question for private text)</label><button type="button" class="button small ghost" data-action="privacy-preview-chat">Inspect outgoing request before consent</button>` : `<p class="hint">Local agent mode: answers come from deterministic tools, no network. An optional LLM mode is available when a key is configured.</p>`;
   const mode = on ? `<div class="row chat-mode"><span class="pill teal">${icon("spark")}${esc(tidelmLabel())}</span></div>` : "";
   return `<section class="grid split"><div class="card chat ${on ? "with-mode" : ""}">${mode}<div class="chat-log" id="chat-log" aria-live="polite">${state.chat.map((item, index) => item.pending
-      ? `<div class="msg agent pending" role="status"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>${esc(item.text)}</div>`
-      : `<div class="msg ${item.role === "user" ? "user" : "agent"} ${item.unverified?.length || item.rejected ? "warn" : ""}">${esc(item.text)}${item.trace?.length ? `<div class="trace">${item.trace.map((t) => `<span>${esc(t.tool)} · ${esc(t.permission)}</span>`).join("")}</div>` : ""}${item.copilot ? copilotHtml(item.copilot) : ""}${item.question && !item.rejected ? feedbackHtml(item, index) : ""}${index === state.chat.length - 1 && item.role !== "user" ? suggestionsHtml(item.suggestions || (index === 0 ? prompts.slice(0, 3) : [])) : ""}</div>`).join("")}</div>
-    <form id="chat-form" class="chat-form"><label class="sr-only" for="chat-input">Your question</label><input id="chat-input" maxlength="2000" placeholder="${on ? "Ask in any language…" : "Ask about payroll, risk, a what-if or a plan…"}" autocomplete="off" required><button class="button primary" type="submit">${icon("send")}Ask</button></form></div>
+      ? `<div class="msg agent pending" role="status"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>${esc(item.role === "user" ? item.text : moneyProse(item.text))}</div>`
+      : `<div class="msg ${item.role === "user" ? "user" : "agent"} ${item.unverified?.length || item.rejected ? "warn" : ""}">${esc(item.role === "user" ? item.text : moneyProse(item.text))}${item.trace?.length ? `<div class="trace">${item.trace.map((t) => `<span>${esc(t.tool)} · ${esc(t.permission)}</span>`).join("")}</div>` : ""}${item.copilot ? copilotHtml(item.copilot) : ""}${item.question && !item.rejected ? feedbackHtml(item, index) : ""}${index === state.chat.length - 1 && item.role !== "user" ? suggestionsHtml(item.suggestions || (index === 0 ? prompts.slice(0, 3) : [])) : ""}</div>`).join("")}</div>
+    <p class="hint">Money in questions: include ${esc(displayCurrency())}, e.g. ${esc(displayCurrency())} 100. Dates, days and percentages keep their own units.</p><form id="chat-form" class="chat-form"><label class="sr-only" for="chat-input">Your question</label><input id="chat-input" value="${esc(state.chatDraft)}" maxlength="2000" placeholder="${on ? "Ask in any language…" : "Ask about payroll, risk, a what-if or a plan…"}" autocomplete="off" required><button class="button primary" type="submit">${icon("send")}Ask</button></form></div>
     <div class="card">${on ? "" : `${tidelmStatusCard("Ask Tideway still works with the local tool agent.")}<div class="section-gap"></div>`}<h3>Try asking</h3><div class="chips">${prompts.map((prompt) => `<button class="chip" data-action="prompt" data-prompt="${esc(prompt)}">${esc(prompt)}</button>`).join("")}</div>
     ${consent ? `<div class="section-gap">${consent}</div>` : ""}
     ${feedbackSummaryHtml()}
-    <h3 class="section-gap">Guardrails</h3><ul class="small">${on ? `<li>TideLM writes a typed plan; Tideway validates every call (known tool, typed arguments, real counterparty names) before anything runs.</li><li>Tools are read or propose only. There is no approve, pay or transfer tool.</li><li>Replies are composed by code from tool output, so the model cannot invent a figure.</li><li>Runs on this computer: no text leaves it.</li>` : `<li>Every number comes from a tool; LLM answers are checked and invented figures are flagged.</li><li>Only six read or propose tools exist. There is no approve, pay or transfer tool.</li><li>Record free text and real names are never sent to a model.</li><li>Each tool call is written to the audit trail with an output hash.</li>`}</ul></div></section>`;
+    <h3 class="section-gap">Guardrails</h3><ul class="small">${on ? `<li>TideLM writes a typed plan; Tideway validates every call (known tool, typed arguments, real counterparty names) before anything runs.</li><li>Tools are read or propose only. There is no approve, pay or transfer tool.</li><li>Replies are composed by code from tool output, so the model cannot invent a figure.</li><li>Runs on this computer: no text leaves it.</li>` : `<li>Every number comes from a tool; LLM answers are checked and invented figures are flagged.</li><li>Only scoped read or propose tools exist. There is no approve, pay or transfer tool.</li><li>Record free text and real names are never sent to a model.</li><li>Each tool call is written to the audit trail with an output hash.</li>`}</ul></div></section>`;
 }
 
 // TideLM first; a 503 falls back to the local agent, and a rejected plan is shown, not hidden.
 async function askTideLM(text) {
   try {
-    return {copilot: await api("/api/copilot/ask", {business_id: state.businessId, target_date: state.targetDate, message: text})};
+    return {copilot: await api("/api/copilot/ask", {business_id: state.businessId, target_date: state.targetDate, message: text, input_currency: displayCurrency()})};
   } catch (error) {
     if (markTideLMDown(error)) return null;
     if (error.status >= 400 && error.status < 500 && error.status !== 401) return {rejected: `Tideway rejected TideLM's plan, so nothing ran: ${error.message}`};
@@ -1080,13 +1127,14 @@ async function ask(message) {
   // Earlier turns only: the server appends the current message itself.
   const history = state.chat.slice(-8).map((item) => ({role: item.role === "user" ? "user" : "assistant", content: item.text}));
   const consent = Boolean(state.config.ai_configured && state.aiConsent);
+  state.chatDraft="";
   state.chat.push({role: "user", text});
   const pending = {role: "agent", pending: true, text: tidelmOn() ? "TideLM is reading your question on this computer…" : "Checking your numbers…"};
   state.chat.push(pending);
   render();
   const result = await act("Asking", async () => {
     const answer = tidelmOn() ? await askTideLM(text) : null;
-    return answer || {chat: await api("/api/chat", {business_id: state.businessId, target_date: state.targetDate, message: text, history, consent})};
+    return answer || {chat: await api("/api/chat", {business_id: state.businessId, target_date: state.targetDate, message: text, history, consent, input_currency: displayCurrency()})};
   });
   state.chat = state.chat.filter((item) => item !== pending);
   if (result?.copilot) {
@@ -1120,18 +1168,21 @@ const INBOX_SAMPLES = {
 
 function editableDraft(draft) {
   const r = draft.record || {};
-  return {id: r.id, type: r.record_type || "transaction", party: r.customer ?? r.payee ?? "", amount: String(r.amount ?? ""),
+  return {originalAmount:r.amount, originalCurrency:r.currency, id: r.id, type: r.record_type || "transaction", party: r.customer ?? r.payee ?? "", amount: String(r.amount ?? ""),
     currency: r.currency || currency(), date: r.issue_date ?? r.date ?? "", due: r.due_date ?? "", description: r.description ?? "",
     direction: r.type === "income" ? "income" : "expense", ready: Boolean(draft.ready), problem: draft.problem || "", checks: draft.checks || [], selected: Boolean(draft.ready), edited: false};
 }
 
 function draftRecord(e) {
-  const base = {record_type: e.type, id: e.id, amount: e.amount.replace(/[,\s]/g, ""), currency: e.currency.trim().toUpperCase(), description: e.description.trim()};
+  const minor=selectedMinor(e.money,TidewayMoney.parse(e.amount));
+  if(minor<=0)throw new Error('Enter a positive record amount before saving.');
+  const base = {record_type: e.type, id: e.id, amount: TidewayMoney.units(minor), currency: e.currency.trim().toUpperCase(), description: e.description.trim()};
   if (e.type === "invoice") return {...base, customer: e.party.trim(), issue_date: e.date || e.due, due_date: e.due || e.date};
   if (e.type === "bill") return {...base, payee: e.party.trim(), due_date: e.due || e.date};
   return {...base, date: e.date || e.due, type: e.direction, category: "Other"};
 }
 
+function draftSourceMinor(e) {try{return TidewayMoney.parse(e.amount);}catch(_){return null;}}
 function draftHtml(e, i) {
   const field = (label, name, value, attrs = "") => `<label class="field">${esc(label)}<input data-draft="${i}" data-field="${name}" value="${esc(value)}" ${attrs}></label>`;
   const status = e.edited ? `<span class="tag">edited · checked again when saved</span>`
@@ -1145,7 +1196,8 @@ function draftHtml(e, i) {
   return `<fieldset class="draft ${e.ready && !e.edited ? "ready" : e.edited ? "" : "problem"}"><legend>Draft ${i + 1}</legend>
     <div class="row between"><label class="check"><input type="checkbox" id="draft-sel-${i}" data-draft="${i}" data-field="selected" ${e.selected ? "checked" : ""}> Save this record</label><span>${status}${checks}</span></div>
     <div class="draft-grid"><label class="field">Record type<select data-draft="${i}" data-field="type">${["invoice", "bill", "transaction"].map((t) => `<option value="${t}" ${e.type === t ? "selected" : ""}>${t}</option>`).join("")}</select></label>
-    ${party}${field("Amount", "amount", e.amount, `inputmode="decimal"`)}${field("Currency", "currency", e.currency, `maxlength="3"`)}${dates}
+    ${party}<label class="field">Amount (${esc(displayCurrency())})${TidewayMoney.valid(e.currency)?moneyInput(e.money,draftSourceMinor(e),`data-draft="${i}" data-field="amount"`,e.currency):'<input disabled placeholder="Correct source currency below">'}</label><label class="field">View/input currency<input value="${esc(displayCurrency())}" readonly></label>${dates}
+    <details class="draft-wide" data-currency-original><summary>Original extraction and source currency</summary><p>Original source units are retained until you explicitly convert or correct them.</p>${field("Correct source currency", "currency", e.currency, `maxlength="3"`)}${e.currency!==currency()?`<button type="button" class="button small ghost" data-action="inbox-convert" data-index="${i}">Convert this source amount to the business ledger</button>`:''}<p>${esc(e.originalAmount??e.amount)} ${esc(e.originalCurrency??e.currency)}</p></details>
     <label class="field draft-wide">Description<input data-draft="${i}" data-field="description" value="${esc(e.description)}" maxlength="300"></label></div></fieldset>`;
 }
 
@@ -1180,7 +1232,7 @@ function renderInbox() {
   const on = tidelmOn();
   return `<section class="grid split"><form class="card" id="inbox-form"><div class="card-head"><div><h3>Paste a message</h3><p>TideLM reads it on this computer and drafts records. It cannot save, pay or approve anything.</p></div>${on ? `<span class="pill teal">${icon("spark")}${esc(tidelmLabel())}</span>` : ""}</div>
       ${on ? "" : `${tidelmStatusCard("You can still add records with Import CSV in Records.")}<div class="section-gap"></div>`}
-      <label class="field">SMS, WhatsApp or bank text<textarea id="inbox-text" maxlength="2000" spellcheck="false" placeholder="e.g. Invoice INV-2291 to Nila Traders, BDT 42,500, due 5 Nov">${esc(state.inbox.text)}</textarea></label>
+      <label class="field">SMS, WhatsApp or bank text<textarea id="inbox-text" maxlength="2000" spellcheck="false" placeholder="e.g. Invoice INV-2291 to Nila Traders, ${esc(displayCurrency())} 100, due 5 Nov">${esc(state.inbox.text)}</textarea></label>
       <div class="row section-gap"><button class="button primary" type="submit" ${on ? "" : "disabled"}>${icon("spark")}Extract</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="clean">Sample: invoice SMS</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="injection">Sample: injection attempt</button></div>
       ${photoHtml()}</form>
     <div class="card"><h3>Review every draft</h3><ul class="small"><li>Drafts only: nothing reaches the ledger until you tick it and save.</li><li>Check the party, amount, dates and record type against the original message before saving.</li><li>Screening misses some hidden instructions. No warning does not mean a message is trusted. Message text cannot grant payment authority.</li><li>Every field is validated again when you save. Pasted text stays on this computer; the audit trail keeps only its hash.</li></ul></div></section>
@@ -1257,16 +1309,16 @@ function renderWhatIf() {
       <div class="legend"><span><i></i>Likely</span><span><i class="what"></i>What-if</span><span><i class="reserve"></i>Reserve floor</span></div>
       ${result ? `<div class="kv section-gap"><div><span>Lowest cash</span><strong>${money(result.projection.minimum_cash_minor)}</strong></div><div><span>On</span><strong>${esc(day(result.projection.minimum_cash_date))}</strong></div><div><span>Reserve shortfall</span><strong class="${result.projection.reserve_shortfall_minor ? "negative" : "positive"}">${money(result.projection.reserve_shortfall_minor)}</strong></div><div><span>Payroll</span><strong>${result.projection.payroll_at_risk ? "at risk" : "funded"}</strong></div></div>` : ""}</div>
     <form class="card" id="whatif-form"><h3>Change the assumptions</h3>
-      ${customers.length ? "" : `<tr><td colspan="8" class="muted">No customer history yet. Add invoices to see who pays late.</td></tr>`}
+      ${customers.length ? "" : `<p class="muted">No customer history yet. Add invoices to see who pays late.</p>`}
     ${customers.map((item) => `<div class="slider-row"><label for="delay-${esc(item.customer)}">${esc(item.customer)} pays later by</label><input type="range" min="-10" max="30" step="1" id="delay-${esc(item.customer)}" data-customer="${esc(item.customer)}" value="${esc(w.delays[item.customer] || 0)}"><output>${esc(w.delays[item.customer] || 0)} days</output></div>`).join("") || `<p class="muted small">No open receivables.</p>`}
-      <div class="grid cols-2 section-gap"><label class="field">Extra expense (${esc(currency())})<input id="whatif-expense" inputmode="decimal" value="${esc(w.expense)}" placeholder="e.g. 15000"></label><label class="field">On date<input id="whatif-date" type="date" value="${esc(w.expenseDate || d.target_date)}"></label></div>
+      <div class="grid cols-2 section-gap"><label class="field">Extra expense (${esc(displayCurrency())})${moneyInput(w.expense||null,null,'id="whatif-expense" placeholder="0.00"')}</label><label class="field">On date<input id="whatif-date" type="date" value="${esc(w.expenseDate || d.target_date)}"></label></div>
       <label class="field section-gap">Assume this invoice is never paid<select id="whatif-drop"><option value="">None</option>${openInvoices.map((row) => `<option value="${esc(row.id)}" ${w.drop === row.id ? "selected" : ""}>${esc(row.customer)} · ${esc(row.id)} · ${money(row.amount_minor)}</option>`).join("")}</select></label>
       <div class="row section-gap"><button class="button primary" type="submit">${icon("sliders")}Run what-if</button><button class="button ghost" type="button" data-action="whatif-reset">Reset</button></div></form></section>${demoDelayHtml()}`;
 }
 
 function demoDelayHtml() {
   const d = state.dashboard;
-  if (!d.business.synthetic || state.operator?.role !== "owner") return "";
+  if (!d.business.synthetic || role() !== "owner") return "";
   const invoices = d.records.invoices.filter((r) => r.source === "demo" && ["confirmed", "overdue"].includes(r.status));
   const change = state.demoDelay?.business_id === state.businessId ? state.demoDelay : null;
   const rows = change ? [
@@ -1286,10 +1338,10 @@ function demoDelayHtml() {
     <label class="check section-gap"><input name="confirmed" type="checkbox" required> Apply this change to synthetic records and invalidate previous authority.</label>
     <button class="button teal section-gap" type="submit">Apply payment delay to demo ledger</button></form>
     ${change ? `<div class="table-wrap section-gap"><table><thead><tr><th>Calculated change</th><th>Before</th><th>After</th></tr></thead><tbody>${rows.map((r) => `<tr>${r.map((v) => `<td>${v}</td>`).join("")}</tr>`).join("")}</tbody></table></div>
-    <p class="small">${esc(change.invalidated_plans.length)} proposal(s) and ${esc(change.invalidated_mandates.length)} mandate(s) invalidated. ${esc(change.next)}</p>
+    <p class="small">${esc(change.invalidated_plans.length)} proposal(s) and ${esc(change.invalidated_mandates.length)} mandate(s) invalidated. ${esc(moneyProse(change.next))}</p>
     <p class="mono tiny">Snapshot ${esc(change.before_snapshot.slice(0, 12))} → ${esc(change.after_snapshot.slice(0, 12))}</p>
     <div class="row">${change.invalidated_mandates.length ? `<button type="button" class="button ghost" data-action="demo-stale">Check old mandate is blocked</button>` : ""}<button type="button" class="button primary" data-view="rescue">Create and review a fresh rescue</button></div>
-    ${change.staleResult ? `<p class="alert info" role="status">${esc(change.staleResult)}</p>` : ""}` : ""}</section>`;
+    ${change.staleResult ? `<p class="alert info" role="status">${esc(moneyProse(change.staleResult))}</p>` : ""}` : ""}</section>`;
 }
 
 async function applyDemoDelay(form) {
@@ -1308,8 +1360,8 @@ async function runWhatIf() {
   const w = state.whatif;
   const changes = {customer_delays: {}};
   Object.entries(w.delays).forEach(([customer, days]) => { if (Number(days)) changes.customer_delays[customer] = Number(days); });
-  if (w.expense) {
-    const minor = parseMinor(w.expense);
+  if (w.expense && !w.expense.empty) {
+    const minor = selectedMinor(w.expense);
     if (!minor) throw new Error("Extra expense must be a positive amount.");
     changes.extra_expense = {amount_minor: minor, date: w.expenseDate || state.targetDate};
   }
@@ -1331,9 +1383,9 @@ function renderRecords() {
   const shown = rows.filter((row) => (state.recordFilter === "all" || row.kind === state.recordFilter || (state.recordFilter === "flagged" && row.flags.length)) && (!query || `${row.id} ${row.party} ${row.text}`.toLowerCase().includes(query)))
     .sort((a, b) => String(b.date).localeCompare(String(a.date)));
   return `<section class="card"><div class="row between"><div class="row"><select id="record-filter" aria-label="Record type">${["all", "transaction", "invoice", "bill", "flagged"].map((value) => `<option value="${value}" ${state.recordFilter === value ? "selected" : ""}>${value === "flagged" ? "Quarantined / flagged" : value === "all" ? "All records" : value[0].toUpperCase() + value.slice(1) + "s"}</option>`).join("")}</select><input id="record-search" class="search" placeholder="Search id, party or text" value="${esc(state.recordQuery)}" aria-label="Search records"></div>
-    <div class="row"><a class="button ghost" href="/api/export?kind=records&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Export CSV</a>${canApprove() ? `<button class="button primary" data-action="import">${icon("upload")}Import CSV</button>` : ""}</div></div>
+    <div class="row"><a class="button ghost" href="/api/export?kind=records&business_id=${encodeURIComponent(state.businessId)}&display_currency=${encodeURIComponent(displayCurrency())}">${icon("download")}Export CSV</a>${canApprove() ? `<button class="button primary" data-action="import">${icon("upload")}Import CSV</button>` : ""}</div></div>
     <div class="table-wrap section-gap"><table><thead><tr><th>Type</th><th>Record</th><th>Party</th><th>Date</th><th class="num">Amount</th><th>Status</th><th>Screening</th></tr></thead><tbody>
-    ${shown.map((row) => `<tr class="${row.flags.length ? "flagged" : ""}"><td><span class="tag">${esc(row.kind)}</span></td><td><strong>${esc(row.id)}</strong><div class="small muted">${esc(row.text)}</div></td><td>${esc(row.party)}</td><td class="nowrap">${esc(day(row.date, true))}</td><td class="num ${row.amount < 0 ? "negative" : "positive"}">${money(row.amount)}</td><td class="small">${esc(row.status)}</td><td>${row.flags.length ? row.flags.map((flag) => `<span class="tag bad">${esc(flag.replaceAll("_", " "))}</span>`).join(" ") : `<span class="tag">no flags</span>`}</td></tr>`).join("")}
+    ${shown.map((row) => `<tr class="${row.flags.length ? "flagged" : ""}"><td><span class="tag">${esc(row.kind)}</span></td><td><strong>${esc(row.id)}</strong><div class="small muted">${esc(moneyProse(row.text))}</div></td><td>${esc(row.party)}</td><td class="nowrap">${esc(day(row.date, true))}</td><td class="num ${row.amount < 0 ? "negative" : "positive"}">${money(row.amount)}</td><td class="small">${esc(row.status)}</td><td>${row.flags.length ? row.flags.map((flag) => `<span class="tag bad">${esc(flag.replaceAll("_", " "))}</span>`).join(" ") : `<span class="tag">no flags</span>`}</td></tr>`).join("")}
     </tbody></table></div><p class="hint section-gap">Showing ${shown.length} of ${rows.length}. Text is rendered as data. Flags mean the agent never receives that text and it cannot change any action.</p></section>`;
 }
 
@@ -1367,10 +1419,10 @@ function renderSecurity() {
         ${d.standing_mandate ? `<p class="small section-gap">Standing (open) mandate ${esc(d.standing_mandate.mandate_id.slice(0, 8))}…: ${esc(JSON.stringify(d.standing_mandate.constraints))}; expires ${esc(day(d.standing_mandate.expires_at))}.</p>` : ""}</div></section>
     <section class="card section-gap"><div class="card-head"><div><h3>Policy</h3><p>Version ${esc(policy.version)}. Changing policy invalidates pending proposals and mandates. Owner only, PIN required.</p></div></div>
       <form id="policy-form" class="policy-grid">
-        ${[["reserve_floor_minor", "Reserve floor"], ["action_limit_minor", "Per-action limit"], ["daily_cap_minor", "Daily exposure cap"], ["dual_approval_threshold_minor", "Two approvers above"]].map(([key, label]) => `<label class="field">${esc(label)} (${esc(currency())})<input name="${key}" inputmode="decimal" value="${esc((policy[key] / 100).toFixed(2))}" ${owner ? "" : "disabled"}></label>`).join("")}
-        <label class="field">Max deferral (days)<input name="max_deferral_days" inputmode="numeric" value="${esc(policy.max_deferral_days)}" ${owner ? "" : "disabled"}></label>
-        <label class="field">Max discount (basis points)<input name="max_discount_bps" inputmode="numeric" value="${esc(policy.max_discount_bps)}" ${owner ? "" : "disabled"}></label>
-        <label class="field">Look-ahead (days)<input name="lookahead_days" inputmode="numeric" value="${esc(policy.lookahead_days)}" ${owner ? "" : "disabled"}></label>
+        ${[["reserve_floor_minor", "Reserve floor"], ["action_limit_minor", "Per-action limit"], ["daily_cap_minor", "Daily exposure cap"], ["dual_approval_threshold_minor", "Two approvers above"]].map(([key, label]) => `<label class="field">${esc(label)} (${esc(displayCurrency())})${moneyInput(state.policyDraft[key],policy[key],`name="${key}" ${owner?"":"disabled"}`)}</label>`).join("")}
+        <label class="field">Max deferral (days)<input name="max_deferral_days" inputmode="numeric" value="${esc(state.policyDraft.max_deferral_days??policy.max_deferral_days)}" ${owner ? "" : "disabled"}></label>
+        <label class="field">Max discount (basis points)<input name="max_discount_bps" inputmode="numeric" value="${esc(state.policyDraft.max_discount_bps??policy.max_discount_bps)}" ${owner ? "" : "disabled"}></label>
+        <label class="field">Look-ahead (days)<input name="lookahead_days" inputmode="numeric" value="${esc(state.policyDraft.lookahead_days??policy.lookahead_days)}" ${owner ? "" : "disabled"}></label>
         <label class="field">Payroll protection<input value="Always on (cannot be disabled)" disabled></label>
         ${owner ? `<div class="row"><button class="button primary" type="submit">${icon("lock")}Save policy</button></div>` : ""}</form></section>
     <section class="card section-gap"><div class="card-head"><div><h3>Payee verification (business-email-compromise defence)</h3><p>Changed bank details and look-alike names block every action on that bill until the owner verifies by calling a number already on file. The verifier then cannot approve actions for that payee (separation of duties).</p></div></div>
@@ -1379,7 +1431,7 @@ function renderSecurity() {
       ${!(payees.flagged || []).length && !(payees.lookalikes || []).length ? `<div class="alert success">${icon("check")}<div><strong>No payee changes</strong><span>Every open bill pays a known account.</span></div></div>` : ""}</section>
     <section class="card section-gap"><div class="card-head"><div><h3>Attack self-test</h3><p>Runs 5 task scenarios and 25 attacks against an isolated in-memory copy, assuming a hijacked model and a rubber-stamp human. The live workspace is never touched.</p></div>${canApprove() ? `<button class="button primary" data-action="selftest">${icon("shield")}Run self-test</button>` : ""}</div>
       ${selftest ? `<div class="scorecard"><div><strong>${esc(selftest.summary.tasks_completed)}/${esc(selftest.summary.tasks)}</strong><span>tasks completed</span></div><div><strong>${esc(selftest.summary.attacks_blocked)}/${esc(selftest.summary.attacks)}</strong><span>attacks blocked</span></div><div><strong>${esc(selftest.summary.attacks_not_blocked)}</strong><span>attacks not blocked</span></div></div>
-        <div class="table-wrap section-gap"><table><thead><tr><th>Case</th><th>Category</th><th>OWASP</th><th>Scenario</th><th>Result</th><th>Observed</th></tr></thead><tbody>${selftest.results.map((item) => `<tr><td class="nowrap"><strong>${esc(item.case_id)}</strong></td><td class="small">${esc(item.category)}</td><td class="small">${esc(item.owasp)}</td><td class="small">${esc(item.title)}</td><td class="${item.passed ? "result-pass" : "result-fail"}">${item.passed ? "PASS" : "FAIL"}</td><td class="small muted">${esc(item.observed)}</td></tr>`).join("")}</tbody></table></div><p class="hint section-gap">${esc(selftest.summary.assumptions)}</p>` : `<p class="muted small">Not run in this session yet.</p>`}</section>`;
+        <div class="table-wrap section-gap"><table><thead><tr><th>Case</th><th>Category</th><th>OWASP</th><th>Scenario</th><th>Result</th><th>Observed</th></tr></thead><tbody>${selftest.results.map((item) => `<tr><td class="nowrap"><strong>${esc(item.case_id)}</strong></td><td class="small">${esc(item.category)}</td><td class="small">${esc(item.owasp)}</td><td class="small">${esc(item.title)}</td><td class="${item.passed ? "result-pass" : "result-fail"}">${item.passed ? "PASS" : "FAIL"}</td><td class="small muted">${esc(moneyProse(item.observed))}</td></tr>`).join("")}</tbody></table></div><p class="hint section-gap">${esc(selftest.summary.assumptions)}</p>` : `<p class="muted small">Not run in this session yet.</p>`}</section>`;
 }
 
 // ---------------------------------------------------------------------------- evidence
@@ -1393,7 +1445,7 @@ function renderEvidence() {
   return `<section class="grid cols-2"><div class="card"><div class="card-head"><div><h3>Audit chain</h3><p>${esc(audit.hash_algorithm)}</p></div><span class="pill ${audit.hash_chain_valid ? "ok" : "storm"}">${audit.hash_chain_valid ? "Chain valid" : `Broken at entry ${esc(audit.first_invalid_entry)}`}</span></div>
       <div class="kv"><div><span>Entries</span><strong>${esc(audit.entries.length)}</strong></div><div><span>Head hash</span><strong class="mono tiny">${esc((audit.head_hash || "").slice(0, 24))}…</strong></div><div><span>Witness</span><strong>${witness.present ? (witness.consistent ? `cosigned ${esc(witness.size)}` : "INCONSISTENT") : "not yet cosigned"}</strong></div><div><span>Signed checkpoint</span><strong class="mono tiny">${esc((audit.checkpoint?.signature || "").slice(0, 20))}…</strong></div></div>
       ${witness.problem ? `<div class="alert critical section-gap">${icon("alert")}<div><strong>Witness mismatch</strong><span>${esc(witness.problem)}</span></div></div>` : ""}
-      <div class="row section-gap"><button class="button ghost" data-action="drill">${icon("chain")}Tamper drill (safe copy)</button><a class="button ghost" href="/api/export?kind=evidence&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Evidence JSON</a><a class="button ghost" href="/api/export?kind=receipts&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Receipts CSV</a><a class="button ghost" href="/api/export?kind=records&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Records CSV</a></div>
+      <div class="row section-gap"><button class="button ghost" data-action="drill">${icon("chain")}Tamper drill (safe copy)</button><a class="button ghost" href="/api/export?kind=evidence&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Evidence JSON</a><a class="button ghost" href="/api/export?kind=receipts&business_id=${encodeURIComponent(state.businessId)}&display_currency=${encodeURIComponent(displayCurrency())}">${icon("download")}Receipts CSV</a><a class="button ghost" href="/api/export?kind=records&business_id=${encodeURIComponent(state.businessId)}&display_currency=${encodeURIComponent(displayCurrency())}">${icon("download")}Records CSV</a></div>
       ${drill ? `<div class="alert ${drill.detected ? "success" : "critical"} section-gap">${icon(drill.detected ? "check" : "alert")}<div><strong>Edited entry ${esc(drill.edited_entry)} (${esc(drill.edited_action)}) → verification breaks at entry ${esc(drill.verification_breaks_at)}</strong><span>${esc(drill.explanation)} Live database modified: ${drill.live_database_modified ? "yes" : "no"}.</span></div></div>` : ""}
       <p class="hint section-gap">${esc(audit.note)}</p></div>
     <form class="card" id="verify-form"><h3>Verify a mandate</h3><p class="small muted">Paste any mandate JSON. The server checks its HMAC-SHA256 signature. Change one character and it fails.</p><label class="field section-gap">Mandate JSON<textarea id="verify-input" spellcheck="false"></textarea></label><div class="row section-gap"><button class="button primary" type="submit">Verify signature</button></div><div id="verify-result" class="section-gap"></div></form></section>
@@ -1428,17 +1480,22 @@ function openApprove(planId, bundleId) {
     && bundle.probability_breach_after > plan.risk_target
     ? {plan_id: planId, plan_hash: plan.plan_hash, bundle_id: bundleId,
        probability_breach_after: bundle.probability_breach_after, risk_target: plan.risk_target} : null;
-  state.approving = {planId, bundleId, bundle, riskTerms, opened: Date.now()};
-  const nat = (minor) => money(minor, currency(), {native: true});
+  state.approving = {planId, bundleId, bundle, riskTerms, opened: Date.now(), currency: displayCurrency()};
+  const nat = (minor) => money(minor);
   const lines = bundle.actions.map((action) => `<div class="line"><span>${esc(action.counterparty)} · ${action.type === "supplier_deferral" ? `move ${nat(action.amount_minor)} to ${esc(day(action.to_date))}` : `${esc(action.discount_bps / 100)}% off, pay ${nat(action.amount_minor)} by ${esc(day(action.to_date))}`}</span><b>${nat(action.economic_cost_minor)}</b></div>`);
   lines.push(`<div class="line"><span>Total exposure</span><b>${nat(bundle.exposure_minor)}</b></div>`);
   lines.push(`<div class="line"><span>Simulated futures still short after</span><b>${esc(bundle.futures_short_of_20_after ?? "—")} of 20</b></div>`);
   $("#approve-summary").innerHTML = lines.join("") + residualRiskHtml(plan, bundle) + bilateralTermsHtml(bundle) + `<p class="small muted">You approve these exact terms. Any change to the records, policy, payee, amount or dates voids this approval before execution. ${bundle.dual_approval_required ? "This exceeds the dual-approval threshold: a second person, including the owner, must approve too." : ""}</p>`;
+  if(displayCurrency()!==currency()) {
+    const original=bundle.actions.map(a=>`<p>${esc(a.counterparty)}: ${money(a.amount_minor,currency(),{native:true})} · ${esc(a.to_date)}</p>`).join('');
+    $("#approve-summary").insertAdjacentHTML('beforeend',`<details><summary>Original settlement terms (${esc(currency())}; immutable signing units)</summary>${original}<p>Exposure ${money(bundle.exposure_minor,currency(),{native:true})}. This view conversion does not create an FX trade.</p></details>`);
+  }
   $("#approve-risk-label").hidden = !riskTerms;
   $("#approve-risk-ack").checked = false;
   $("#approve-risk-ack").required = Boolean(riskTerms);
   $("#confirm-amount-label").hidden = !bundle.dual_approval_required;
   $("#confirm-amount").value = "";
+  $("#confirm-amount-label").querySelector("span").textContent=`Type the total exposure (${displayCurrency()})`;
   $("#approve-pin").value = "";
   $("#approve-error").textContent = "";
   const submit = $("#approve-submit");
@@ -1462,7 +1519,14 @@ async function submitApprove(event) {
     }
     body.risk_acknowledgement = {acknowledged: true, ...pending.riskTerms};
   }
-  if (pending.bundle.dual_approval_required) body.confirm_amount_minor = parseMinor($("#confirm-amount").value);
+  if (pending.bundle.dual_approval_required) {
+    try {
+      const typed=TidewayMoney.parseInput($("#confirm-amount").value,pending.currency);
+      const expected=TidewayMoney.bigConvert(pending.bundle.exposure_minor,currency(),pending.currency);
+      if(typed!==expected)throw new Error(`Type the displayed exposure in ${pending.currency} exactly.`);
+      body.confirm_amount_minor=pending.bundle.exposure_minor;
+    }catch(error){$("#approve-error").textContent=error.message;return;}
+  }
   try {
     const result = await api("/api/plan/approve", body);
     $("#approve-dialog").close();
@@ -1545,7 +1609,8 @@ async function savePolicy(form) {
   const values = new FormData(form);
   const changes = {};
   for (const key of ["reserve_floor_minor", "action_limit_minor", "daily_cap_minor", "dual_approval_threshold_minor"]) {
-    const minor = parseMinor(values.get(key));
+    if(!form.elements[key].value.trim())throw new Error('Enter each policy amount explicitly, including zero when intended.');
+    const minor = selectedMinor(moneyDraft(form.elements[key]));
     if (minor === null) throw new Error("Amounts must be non-negative with at most two decimals.");
     if (minor !== state.dashboard.policy[key]) changes[key] = minor;
   }
@@ -1643,7 +1708,13 @@ document.addEventListener("click", async (event) => {
         } catch (error) { state.demoDelay.staleResult = `Old execution refused: ${error.message}`; }
         render(); break;
       }
-      case "inbox-sample": state.inbox = {...freshInbox(), text: INBOX_SAMPLES[data.sample]?.(currency()) || ""}; render(); $("#inbox-text")?.focus(); break;
+      case "inbox-convert": {
+        const entry=state.inbox.drafts?.[Number(data.index)];if(!entry)break;
+        const n=selectedMinor(entry.money,TidewayMoney.parse(entry.amount));
+        entry.amount=TidewayMoney.units(TidewayMoney.convert(n,entry.currency,currency()));
+        entry.currency=currency();entry.money=null;entry.edited=true;render();break;
+      }
+      case "inbox-sample": state.inbox = {...freshInbox(), text: INBOX_SAMPLES[data.sample]?.(displayCurrency()) || ""}; render(); $("#inbox-text")?.focus(); break;
       case "inbox-save": await saveInbox(); break;
       case "inbox-photo": await readPhoto(); break;
       case "feedback": await sendFeedback(Number(data.index), data.helpful === "true"); break;
@@ -1691,7 +1762,7 @@ document.addEventListener("change", async (event) => {
     if (target.id === "business-select") { if (!await act("Business", () => loadDashboard({businessId: target.value, resetTarget: true}))) syncContextControls(); }
     else if (target.id === "target-date") { if (!target.value || !await act("Date", () => loadDashboard({targetDate: target.value}))) syncContextControls(); }
     else if (target.id === "ai-consent") { state.aiConsent = target.checked; }
-    else if (target.id === "display-currency") { state.displayCurrency = target.value; render(); }
+    else if (target.id === "display-currency") { changeDisplayCurrency(target.value); }
     else if (target.id === "record-filter") { state.recordFilter = target.value; render(); }
     else if (target.id === "whatif-drop") { state.whatif.drop = target.value; }
     else if (target.id === "whatif-date") { state.whatif.expenseDate = target.value; }
@@ -1700,6 +1771,7 @@ document.addEventListener("change", async (event) => {
       Object.assign(state.inbox, {...freshInbox(), text: state.inbox.text, photo: await shrinkPhoto(file), photoName: file.name});
       render();
     }
+    else if (target.dataset?.draft !== undefined && target.dataset.field==='currency') {render();}
     else if (target.dataset?.draft !== undefined && ["selected", "type"].includes(target.dataset.field)) {
       // Re-render so labels and the save count follow the change, then put focus back.
       const draft = state.inbox.drafts?.[Number(target.dataset.draft)];
@@ -1725,11 +1797,17 @@ document.addEventListener("input", (event) => {
     state.whatif.delays[target.dataset.customer] = Number(target.value);
     const output = target.parentElement.querySelector("output");
     if (output) output.textContent = `${target.value} days`;
-  } else if (target.id === "whatif-expense") state.whatif.expense = target.value;
+  } else if (target.id === "whatif-expense") state.whatif.expense = moneyDraft(target,true);
+  else if (target.form?.id === "policy-form") state.policyDraft[target.name] = target.hasAttribute("data-money-currency") ? moneyDraft(target,true) : target.value;
+  else if (target.id === "chat-input") state.chatDraft=target.value;
   else if (target.id === "inbox-text") state.inbox.text = target.value;
   else if (target.dataset?.draft !== undefined && !["selected", "type"].includes(target.dataset.field)) {
     const draft = state.inbox.drafts?.[Number(target.dataset.draft)];
-    if (draft) { draft[target.dataset.field] = target.value; draft.edited = true; }
+    if (draft) {
+      if(target.dataset.field==='amount') {draft.money=moneyDraft(target,true);if(!draft.money.error)draft.amount=TidewayMoney.units(draft.money.minor);}
+      else {draft[target.dataset.field]=target.value;if(target.dataset.field==='currency')draft.money=null;}
+      draft.edited=true;
+    }
   }
   else if (target.id === "record-search") { state.recordQuery = target.value; const position = target.selectionStart; render(); const box = $("#record-search"); box.focus(); box.setSelectionRange(position, position); }
 });

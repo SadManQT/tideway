@@ -1,6 +1,6 @@
 # Current technical readiness
 
-Current local release: [simple Owner view and goal-led recovery](RELEASE_V12.md). Prior model and decision-lab observations: [v11](RELEASE_V11.md).
+Current local release: [consistent selected-currency inputs, text and reports](RELEASE_V13.md). Prior features: [Owner view](OWNER_VIEW.md) and [Decision lab](DECISION_LAB.md).
 
 This is the current review index. Tideway remains a synthetic SME finance copilot:
 cash forecasts, recovery proposals, human approval, simulated negotiation and
@@ -41,7 +41,7 @@ Historical upgrade and Windows reports describe earlier source versions.
 
 | Check | Recorded result | Meaning and limit |
 |---|---|---|
-| Current unit run | 457 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
+| Current unit run | 465 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
 | Additional standard-library run | 252 run; 0 failures; 0 errors; 4 skipped | Python 3.11.16; optional photo tests require Pillow; report records its own source hash |
 | Financial scenarios | 24/24 expected workflows; 9 rescues | 8/9 executed rescues meet the 10% simulated risk target |
 | Shipped TidePay | 7,427 unseen synthetic invoices; MAE 8.5585 days | Heuristic 10.2296; training-only prior 11.7453; no weight changes |
@@ -90,8 +90,8 @@ Use a completed LF checkout: source edits during the run invalidate verification
 
 - [Current test summary](../evidence/test-summary.json) and
   [raw test log](../evidence/test-run.log).
-- [Current scenario report](../evidence/owner-view-v12/scenarios/report.json),
-  [linked delay receipt](../evidence/owner-view-v12/payment-delay.json) and
+- [Current scenario report](../evidence/currency-v13/scenarios/report.json),
+  [linked delay receipt](../evidence/currency-v13/payment-delay.json) and
   [browser workflow](../evidence/screens/browser-verification.json).
 - [Exact shipped prediction evaluation](DEPLOYED_MODEL_EVALUATION.md), with
   raw invoices, shared test IDs, predictions, intervals and calibration bins.
@@ -99,7 +99,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
   native runtime provenance and every first-observation output.
 - [Separate post-fix model regression](../evidence/readiness-v3/blind/model-post-fix-regression.json)
   and [Python 3.11 standard-library run](../evidence/readiness-v3/python311/test-summary.json).
-- [Release stages and PDF hashes](../evidence/owner-view-v12/release-checks.json).
+- [Release stages and PDF hashes](../evidence/currency-v13/release-checks.json).
   `dist/extraction-verification.json` and `dist/SHA256SUMS.txt` prove the actual
   distributed bytes, rather than referring to an earlier ZIP.
 - [Independent judge/auditor report](INDEPENDENT_AUDIT.md), with reproduced
@@ -108,7 +108,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
 - [User study protocol](USER_STUDY_KIT.md) and
   [pending participation status](../evidence/readiness-v3/user-study-status.json).
 
-Current test source digest: `0ff559b3392aa65271d8fb62c40801dedb6edd7f4133caf0501dcf3958ce6466`.
+Current test source digest: `d8ff43013b62f916601afc41fe33d087b463936cda7ba40621a1ced87ae27dbf`.
 Reports contain their own timestamps and hashes; older Windows/upgrade evidence
 is historical and does not attest to the current checkout.
 
@@ -176,8 +176,8 @@ Development cases are disclosed v6 regressions. The fresh set is separately AI-a
 
 AI-authored assumed behavior scenarios; real participants: 0. Backend workflow outcomes do not measure human task completion, satisfaction or SUS.
 
-[6/6 checks passed](../evidence/owner-view-v12/behavior-checks.json): decline without changes, incomplete approval, owner discount limits, residual-risk consent, a known hostile supplier message and repeat execution. Human validation remains pending.
+[6/6 checks passed](../evidence/currency-v13/behavior-checks.json): decline without changes, incomplete approval, owner discount limits, residual-risk consent, a known hostile supplier message and repeat execution. Human validation remains pending.
 
-## Owner view and decision lab
+## Currency consistency and related UI audit
 
-The default Cash weather screen explains spending room under expected receipts and without unpaid customer receipts, tests an isolated one-off expense, links dated cash flows to records, and compares three recovery priorities. English/Bangla Owner labels, factual data checks and a private script-free decision brief reduce the steps needed to understand a proposal. Saved previews remain unapproved; owner limits, protected relationships and retained bilateral assumptions are enforced atomically. See [feature guide](OWNER_VIEW.md), [Owner evaluation](../evidence/owner-view-v12/owner-view.json) and [decision-lab checks](../evidence/owner-view-v12/decision-lab.json). No human usability improvement or new model-quality score is claimed. The earlier PDF deck is retained; this feature guide describes the new interface.
+The owner-selected currency now applies to editable financial amounts, generated narrative text, trace summaries, approval review, financial cards and human-readable reports. Exact rational conversion preserves the canonical ledger and unchanged rounded inputs. Explicit monetary question tokens are normalized before model/agent calls; ambiguous foreign-unit amounts require a currency code. Signed evidence and settlement documents retain original units. Per-operator preferences and unsaved drafts are preserved; source-aware Inbox review, scoped demo roles and pending lab inputs are corrected. See [conversion checks](../evidence/currency-v13/currency-checks.json), [browser evidence](../evidence/screens/browser-verification.json) and [release notes](RELEASE_V13.md). These are synthetic engineering checks, not live FX or new real-model quality/human usability results. Earlier PDFs and model/container observations retain their original scope.

@@ -158,7 +158,7 @@ window.TidewayOwner = (() => {
     return Number(value);
   }
   function expense() {
-    const amount = minor(field('amount', 0)), date = field('date', report.expense.date);
+    const amount = selectedMinor(draft.amount,0), date = field('date', report.expense.date);
     // Historical views can still export their original zero-expense report.
     if (report.likely.available && (!date || date < report.as_of || date > report.end_date)) throw new Error('Choose an expense date within the displayed planning horizon.');
     return {expense_minor:amount, ...(report.likely.available?{expense_date:date}:{})};
@@ -176,9 +176,9 @@ window.TidewayOwner = (() => {
     return `<div class="owner-view" lang="${language}"><fieldset class="owner-controls" aria-label="Owner decisions" ${pending?'disabled':''}><div class="owner-toolbar"><span class="pill">${esc(t.simple)}</span><div class="row">${button('language',t.language,'aria-label="Switch Owner view language"')}${button('detailed',t.detailed)}</div></div>
       ${onboardingHtml(state.dashboard)}
       <section class="card owner-head"><span class="eyebrow">${esc(t.title)}</span><h2>${esc(t.statuses[r.status])}</h2><p>${esc(t.asof)} ${esc(day(r.as_of,true))} · ${esc(t.through)} ${esc(day(r.end_date,true))}</p><div class="row section-gap">${button('brief',t.private)}<span class="pill">${esc(t.readonly)}</span></div></section>
-      ${(state.dashboard.warnings||[]).filter(x=>x.severity==='critical').slice(0,2).map(x=>`<div class="alert critical section-gap"><div><strong>${esc(x.title)}</strong><p>${esc(x.detail)}</p><button class="button small ghost" data-view="security">${language==='bn'?'নিরাপত্তা যাচাই করুন':'Review security'}</button></div></div>`).join('')}
+      ${(state.dashboard.warnings||[]).filter(x=>x.severity==='critical').slice(0,2).map(x=>`<div class="alert critical section-gap"><div><strong>${esc(x.title)}</strong><p>${esc(moneyProse(x.detail))}</p><button class="button small ghost" data-view="${['reserve_breach','payroll_at_risk'].includes(x.code)?'rescue':'security'}">${['reserve_breach','payroll_at_risk'].includes(x.code)?(language==='bn'?'সমাধানের প্রস্তাব দেখুন':'Review recovery'):(language==='bn'?'নিরাপত্তা যাচাই করুন':'Review security')}</button></div></div>`).join('')}
       <section class="metrics section-gap">${metric(t.low,amountText(r.likely.minimum_cash_minor),r.likely.minimum_cash_date?day(r.likely.minimum_cash_date):'—',r.likely.reserve_shortfall_minor?'bad':'good')}${metric(t.gap,amountText(r.likely.reserve_shortfall_minor),`${language==='bn'?'রিজার্ভ':'Reserve'} ${amountText(r.reserve_floor_minor)}`,r.likely.reserve_shortfall_minor?'bad':'good')}${metric(t.payroll,r.payroll.identified?amountText(r.payroll.next_amount_minor):'—',r.payroll.identified?day(r.payroll.next_date,true):t.unknown)}</section>
-      <section class="card section-gap"><h3>${esc(t.room)}</h3><div class="owner-fields section-gap"><label class="field">${esc(t.amount)} (${esc(currency())})<input data-owner-field="amount" inputmode="decimal" value="${esc(field('amount',r.expense.amount_minor/100))}" ${!available?'disabled':''}></label><label class="field">${esc(t.date)}<input data-owner-field="date" type="date" min="${esc(r.as_of)}" max="${esc(r.end_date)}" value="${esc(field('date',r.expense.date))}" ${!available?'disabled':''}></label>${available?button('expense',t.test):''}</div>
+      <section class="card section-gap"><h3>${esc(t.room)}</h3><div class="owner-fields section-gap"><label class="field">${esc(t.amount)} (${esc(displayCurrency())})${moneyInput(draft.amount,r.expense.amount_minor,`data-owner-field="amount" ${!available?'disabled':''}`)}</label><label class="field">${esc(t.date)}<input data-owner-field="date" type="date" min="${esc(r.as_of)}" max="${esc(r.end_date)}" value="${esc(field('date',r.expense.date))}" ${!available?'disabled':''}></label>${available?button('expense',t.test):''}</div>
       <div class="owner-results"><div><span>${esc(t.expected)}</span><strong>${bound(r.spending_room.likely)}</strong></div><div><span>${esc(t.conservative)}</span><strong>${bound(r.spending_room.without_unpaid_customers)}</strong></div><div><span>${esc(t.after)}<small>${amountText(r.expense.amount_minor)} · ${esc(day(r.expense.date))}</small></span><strong>${amountText(r.after_expense.minimum_cash_minor)}</strong><small>${esc(t.afterGap)}: ${amountText(r.after_expense.reserve_shortfall_minor)}</small></div></div><p class="hint">${esc(t.scope)}</p></section>
       <section class="grid cols-2 section-gap"><div class="card"><h3>${esc(t.dependency)}</h3>${r.dependencies.length?r.dependencies.slice(0,3).map(x=>`<div class="owner-dependency"><strong>${esc(x.customer)}</strong><p>${esc(t.removal)} <b>${amountText(x.impact_on_lowest_cash_minor)}</b></p></div>`).join(''):`<p>${language==='bn'?'এই হিসাবে বকেয়া গ্রাহকের ওপর নির্ভরতা নেই।':'No unpaid-customer dependency identified.'}</p>`}<p class="hint">${esc(t.nonadditive)} ${r.dependency_coverage.complete?'':`${r.dependency_coverage.tested}/${r.dependency_coverage.customers_total} customers tested, in name order.`}</p></div>
       <div class="card"><h3>${esc(t.checks)}</h3><ul class="owner-checks"><li>${checks.quarantined_records} ${esc(t.flagged)}</li><li>${checks.customers_under_three_settlements.length} ${esc(t.thin)}</li><li>${checks.unpaid_invoices} ${esc(t.unpaid)}</li><li>${esc(r.payroll.identified?(language==='bn'?'বেতনের রেকর্ড আছে':'Upcoming payroll recorded'):t.unknown)}</li></ul><div class="row"><button class="button small ghost" data-view="records">${esc(t.records)}</button><button class="button small ghost" data-view="inbox">${esc(t.inbox)}</button></div></div></section>
@@ -196,7 +196,7 @@ window.TidewayOwner = (() => {
     const origin = key, serial = epoch;
     let path = name, body = common();
     if (name==='expense') {body={...body,...expense()};path='analyze';}
-    else if (name==='brief') {body={...body,expense_minor:report.expense.amount_minor,...(report.likely.available?{expense_date:report.expense.date}:{})};}
+    else if (name==='brief') {body={...body,display_currency:displayCurrency(),expense_minor:report.expense.amount_minor,...(report.likely.available?{expense_date:report.expense.date}:{})};}
     else if (name==='coach') {body={...body,max_discount_bps:minor(field('cap',Math.min(state.dashboard.policy.max_discount_bps,state.dashboard.plan?.owner_constraints?.max_discount_bps??state.dashboard.policy.max_discount_bps)/100),10000n),protected_counterparties:draft.protected||[]};}
     else if (name==='propose') {
       const option = coach?.options.find(x=>x.priority===data.priority);
@@ -223,10 +223,10 @@ window.TidewayOwner = (() => {
   }
   document.addEventListener('input',event=>{
     const el=event.target;
-    if (el?.dataset?.ownerField) {draft[el.dataset.ownerField]=el.value;if(el.dataset.ownerField==='cap'){coach=null;request=null;document.querySelector('.owner-options')?.remove();}}
+    if (el?.dataset?.ownerField) {draft[el.dataset.ownerField]=el.hasAttribute('data-money-currency')?moneyDraft(el,true):el.value;if(el.dataset.ownerField==='cap'){coach=null;request=null;document.querySelector('.owner-options')?.remove();}}
   });
   document.addEventListener('change',event=>{
     if (event.target?.hasAttribute('data-owner-protect')) {draft.protected=[...document.querySelectorAll('[data-owner-protect]:checked')].map(x=>x.dataset.ownerProtect);coach=null;request=null;renderApp();}
   });
-  return {render,action,bind(renderer){renderApp=renderer;},reset(){key='';epoch++;draft={};report=null;coach=null;request=null;pending=false;language='en';}};
+  return {render,action,validateCurrency(){sync();if(draft.amount?.error)throw new Error('Fix the invalid Owner expense before changing currency.');},bind(renderer){renderApp=renderer;},reset(){key='';epoch++;draft={};report=null;coach=null;request=null;pending=false;language='en';}};
 })();

@@ -98,10 +98,12 @@ jobs:
           echo "PYTHON=$(command -v python)" >> "$GITHUB_ENV"
       - name: Check JavaScript syntax
         run: node scripts/check_javascript.mjs
+      - name: Check exact currency conversion and untouched inputs
+        run: node scripts/test_currency.mjs
       - name: Test browser integration with a fixed-output local backend
         run: node scripts/capture_screens.mjs --test-local-backend --out tmp/ci-local-backend
       - name: Test the linked payment-delay workflow
-        run: node scripts/capture_screens.mjs --test-payment-delay --test-decision-lab --test-owner-view
+        run: node scripts/capture_screens.mjs --test-payment-delay --test-decision-lab --test-owner-view --test-currency
       - name: Validate the current source before packaging
         run: python -S scripts/verify_submission.py
       - name: Build integrity-checked review package

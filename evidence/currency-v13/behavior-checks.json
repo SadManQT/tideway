@@ -1,0 +1,98 @@
+{
+  "version": "behavior-path-sandbox-v1",
+  "run_at_utc": "2026-10-18T13:36:56.228277+00:00",
+  "source_tree_sha256": "d8ff43013b62f916601afc41fe33d087b463936cda7ba40621a1ced87ae27dbf",
+  "source_unchanged": true,
+  "scope": "AI-authored assumed behavior paths, checked against the actual backend with fresh synthetic ledgers.",
+  "human_participants": 0,
+  "human_usability_measured": false,
+  "behavior_assumptions_empirically_calibrated": false,
+  "human_timing_measured": false,
+  "sus_score": null,
+  "model_inference_tested": false,
+  "cases": [
+    {
+      "id": "S1",
+      "assumed_behavior": "A cautious owner reviews a proposal and declines to act.",
+      "passed": true,
+      "observed": {
+        "proposal_count": 3,
+        "decision": "decline_before_approval",
+        "financial_ledger_unchanged": true
+      },
+      "automated_runtime_ms": 367.66
+    },
+    {
+      "id": "S2",
+      "assumed_behavior": "A hurried owner tries to proceed after one of two required approvals.",
+      "passed": true,
+      "observed": {
+        "approval_status": "awaiting_second_approval",
+        "mandate_issued": false,
+        "premature_execution_blocked": true,
+        "financial_ledger_unchanged": true
+      },
+      "automated_runtime_ms": 447.97
+    },
+    {
+      "id": "S3",
+      "assumed_behavior": "A cost-conscious owner keeps a one-percent discount ceiling.",
+      "passed": true,
+      "observed": {
+        "owner_cap_bps": 100,
+        "counter_discount_bps": [
+          150
+        ],
+        "above_cap_counter_blocked": true,
+        "replan_constraints_retained": true,
+        "fresh_approvals_required": true,
+        "financial_ledger_unchanged": true
+      },
+      "automated_runtime_ms": 337.92
+    },
+    {
+      "id": "S4",
+      "assumed_behavior": "A risk-averse owner declines an above-target proposal.",
+      "passed": true,
+      "observed": {
+        "proposal_risk": 0.1283,
+        "risk_target": 0.1,
+        "approval_without_acknowledgement_blocked": true,
+        "decision": "decline_above_target_risk",
+        "financial_ledger_unchanged": true
+      },
+      "automated_runtime_ms": 879.16
+    },
+    {
+      "id": "S5",
+      "assumed_behavior": "A bookkeeper inspects a supplier message containing a bypass instruction.",
+      "passed": true,
+      "observed": {
+        "rule_flags": [
+          "instruction_override",
+          "control_bypass",
+          "action_command"
+        ],
+        "record_imported": false,
+        "financial_ledger_unchanged": true,
+        "scope": "Known-message rule check only; no semantic model or document extraction was run."
+      },
+      "automated_runtime_ms": 127.55
+    },
+    {
+      "id": "S6",
+      "assumed_behavior": "An impatient operator repeats the same execution request.",
+      "passed": true,
+      "observed": {
+        "fresh_approval_rounds": 2,
+        "read_back_verified": true,
+        "same_receipt_replayed": true,
+        "additional_financial_changes_on_retry": false
+      },
+      "automated_runtime_ms": 506.91
+    }
+  ],
+  "checks_passed": 6,
+  "checks_total": 6,
+  "passed": true
+}

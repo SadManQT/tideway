@@ -529,11 +529,12 @@ def reply_from_results(results, currency, lang="en"):
     return ("" if lang == "zh" else " ").join(lines)
 
 
-def bank_pack_html(pack):
+def bank_pack_html(pack, display_currency=None):
     """The bank-ready pack as one printable, self-contained HTML page (no scripts, everything escaped)."""
     from html import escape
     currency = pack["business"]["currency"]
-    m = lambda minor: escape(money_text(minor, currency))  # noqa: E731
+    from .currency_view import display
+    m = lambda minor: escape(display(minor, currency, display_currency))  # noqa: E731
     kpis, forecast, risk = pack["kpis"], pack["forecast"], pack["risk"]
     pct = lambda value: "—" if value is None else f"{value * 100:.0f}%"  # noqa: E731
     rows = "".join(f"<tr><td>{escape(item['month'])}</td><td>{m(item['in_minor'])}</td><td>{m(item['out_minor'])}</td>"
@@ -550,7 +551,8 @@ h1{{color:#0f3d36;border-bottom:3px solid #1f8a70;padding-bottom:6px}}h2{{color:
 td,th{{border:1px solid #c7d6d1;padding:5px 8px;text-align:left}}th{{background:#e6f2ee}}.note{{color:#5b6b67;font-size:9.5pt}}
 .grid{{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px}}@media print{{body{{margin:0}}}}</style>
 <h1>Bank-ready pack: {escape(business['name'])}</h1>
-<p>{escape(business.get('sector') or 'Small business')} · {escape(business.get('country') or '')} · currency {escape(currency)} · prepared on {escape(pack['prepared_on'])}</p>
+<p>{escape(business.get('sector') or 'Small business')} · {escape(business.get('country') or '')} · view currency {escape(display_currency or currency)} · prepared on {escape(pack['prepared_on'])}</p>
+<p class="note">Converted figures use illustrative fixed rates; the original ledger is in {escape(currency)}. This is not an FX trade or signed financial authority.</p>
 <h2>Key figures</h2><div class="grid">{''.join(f'<div><strong>{escape(label)}</strong><br>{value}</div>' for label, value in facts)}</div>
 <h2>Cash history (settled)</h2><table><tr><th>Month</th><th>In</th><th>Out</th><th>Net</th></tr>{rows or '<tr><td colspan=4>No history yet</td></tr>'}</table>
 <h2>Receivables aging</h2><table><tr><th>Days overdue</th><th>Amount</th></tr>{aging}</table>

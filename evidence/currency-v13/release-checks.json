@@ -1,0 +1,29 @@
+{
+  "run_at_utc": "2026-10-18T13:39:20+00:00",
+  "source_tree_sha256": "d8ff43013b62f916601afc41fe33d087b463936cda7ba40621a1ced87ae27dbf",
+  "stages_passed": [
+    "Python compile",
+    "JavaScript syntax",
+    "Exact currency conversion and unchanged-input round-trips",
+    "Unit suite",
+    "Sandbox task and attack scorecard",
+    "Distinct financial scenarios",
+    "Payment delay and fresh approvals",
+    "Behavior-driven sandbox paths",
+    "Decision lab financial witnesses and replay",
+    "Owner view exact cash explanations and priority previews",
+    "Browser desktop/mobile, delay, decision lab, Owner view and currency workflows",
+    "Injected local-model integration",
+    "Current readiness index"
+  ],
+  "pdfs_rebuilt": false,
+  "visual_review_automated": false,
+  "pdf_sha256": {
+    "slides/pitch.pdf": "ae585fb9f1cd2561c3fb189d8010568ca722a23a3d056348cf99a97ec503b928",
+    "docs/architecture.pdf": "b00e1f2efd84e1ebcaf9d789e879439b1fc4866050282110fe439236b491834e",
+    "docs/security-assessment.pdf": "40a57d0e882f34e1494f785227d889608d10b0c2e8f63cb07725747d42f59a0e",
+    "docs/submission-notes.pdf": "d6582d5bcca31becde40d4a8e75367221198e5445b09f63f0692bc2d26829c51",
+    "docs/Tideway_FinTechathon_2026_Roadmap.pdf": "1c5001b6b7cab9126a0dcdfe2e123776ee9b02b7c599794051c72e56a15d0b25"
+  },
+  "scope": "Local synthetic checks; no hosted CI, model-quality rerun, SME participation or submission implied."
+}

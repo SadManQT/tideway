@@ -1,0 +1,47 @@
+// Exact input/presentation properties, independent hand-computed cases and lifecycle drafts.
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {dirname,resolve} from 'node:path';
+import {runInNewContext} from 'node:vm';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+const root=fileURLToPath(new URL('..',import.meta.url));
+const digest=()=>{const r=spawnSync(process.env.PYTHON||(process.platform==='win32'?'python':'python3'),['-c','from scripts.verify_submission import source_digest; print(source_digest()[0])'],{cwd:root,encoding:'utf8',windowsHide:true});assert.equal(r.status,0,r.stderr);return r.stdout.trim();};
+const before=digest();
+const py=spawnSync(process.env.PYTHON||(process.platform==='win32'?'python':'python3'),['-c','import json; from tideway.domain import CURRENCIES; print(json.dumps({k:v[1] for k,v in CURRENCIES.items()}))'],{cwd:root,encoding:'utf8',windowsHide:true});
+assert.equal(py.status,0,py.stderr);
+const context={};runInNewContext(readFileSync(new URL('../web/currency.js',import.meta.url),'utf8'),context);
+const m=context.TidewayMoney, rates=JSON.parse(py.stdout);m.configure(rates);
+assert.equal(m.convert(10000,'USD','BDT'),1220000);
+assert.equal(m.convert(2280000,'BDT','USD'),18689);
+assert.equal(m.convert(100,'GBP','EUR'),115);
+assert.equal(m.convert(-100,'GBP','EUR'),-115);
+assert.equal(m.format(2280000,'BDT','USD'),'≈ USD 186.89');
+assert.equal(m.format(1,'BDT','USD'),'≈ USD < 0.01');
+assert.equal(m.text('Scheduled low BDT 22,800; likely low -BDT 22,800.','USD'),'Scheduled low ≈ USD 186.89; likely low ≈ −USD 186.89.');
+assert.equal(m.text('USD 100 Consulting has BDT 12,200. ID USD123: 20 days, 10%, 2026-10-31.','GBP',['USD 100 Consulting']),'USD 100 Consulting has ≈ GBP 75. ID USD123: 20 days, 10%, 2026-10-31.');
+for(const raw of ['1.001','1,23','-1','Infinity','NaN','1e3','1 2','123abc'])assert.ok(m.capture(raw,'USD','BDT').error,raw);
+assert.equal(m.read(m.capture('100.00','USD','BDT')),1220000);
+assert.equal(m.read(m.capture('usd 100.00','USD','BDT')),1220000);
+assert.equal(m.parseInput('BDT 80,000','BDT'),8000000n);
+assert.throws(()=>m.parseInput('BDT 80,000','USD'));
+for(const from of Object.keys(rates))for(const to of Object.keys(rates))for(const amount of [0,1,99,100,123456789,m.MAX]) {
+  const displayed=m.value(null,amount,from,to);
+  assert.equal(m.read(m.capture(displayed,to,from,displayed,amount)),amount,`${from} -> ${to}: untouched value changed`);
+  assert.equal(m.value(m.capture(displayed,to,from,displayed,amount),0,from,from),m.units(amount));
+}
+const changed=m.capture('100','USD','BDT');
+assert.equal(m.value(changed,0,'BDT','EUR'),'86.00');
+assert.equal(m.value(changed,0,'BDT','USD'),'100');
+assert.equal(m.units(m.bigConvert(m.MAX,'USD','IDR')),'16300000000000000.00');
+assert.equal(m.read(m.capture('16300000000000000.00','IDR','USD')),m.MAX);
+assert.equal(m.parse('1,234.56'),123456);
+assert.throws(()=>m.parse('1,23'));
+assert.throws(()=>m.convert(1,'USD','INVALID'));
+assert.throws(()=>m.read(m.capture('9999999999999999','USD','BDT')));
+assert.equal(before,digest(),'Source changed during currency checks');
+const outIndex=process.argv.indexOf('--out');
+const path=resolve(root,outIndex>=0?process.argv[outIndex+1]:'evidence/currency-v13/currency-checks.json');
+mkdirSync(dirname(path),{recursive:true});
+writeFileSync(path,JSON.stringify({passed:true,run_at:new Date().toISOString(),source_tree_sha256:before,currencies:Object.keys(rates).length,currency_pairs:Object.keys(rates).length**2,canonical_roundtrip_cases:Object.keys(rates).length**2*6,scope:'Exact illustrative arithmetic, draft preservation and presentation checks; no live FX quote, trade, model-quality score or human study.'},null,2)+'\n');
+console.log(`Currency checks passed: ${Object.keys(rates).length**2*6} unchanged-value currency round-trips plus exact conversions, prose, invalid input and large-value checks.`);

@@ -21,7 +21,7 @@ export async function checkOwnerView({evaluate,click,until,view,viewport,shot,ph
   if (!await evaluate(`state.dashboard.snapshot_hash===${JSON.stringify(initial)} && !state.dashboard.plan && !state.dashboard.mandates.length`)) throw new Error('Expense preview changed financial state');
   await evaluate("(()=>{window.fetch=window.__ownerFetch;delete window.__ownerFetch;document.querySelector('.owner-timeline').closest('details').open=true;})()");
   await evaluate("(()=>{const el=document.querySelector('#display-currency');el.value='USD';el.dispatchEvent(new Event('change',{bubbles:true}));})()");
-  if (!await evaluate("document.querySelector('.owner-results').textContent.includes('USD') && document.querySelector('[data-owner-field=amount]').value==='1234.56'")) throw new Error('Display FX changed the native expense input or failed to render');
+  if (!await evaluate("document.querySelector('.owner-results').textContent.includes('USD') && document.querySelector('[data-owner-field=amount]').value==='10.12' && moneyDraft(document.querySelector('[data-owner-field=amount]')).minor===123456")) throw new Error('Selected-currency expense or exact underlying value is wrong');
   await evaluate("(()=>{const el=document.querySelector('#display-currency');el.value='';el.dispatchEvent(new Event('change',{bubbles:true}));})()");
   await evaluate("document.querySelector('.owner-timeline').closest('details').open=true");
   const source = await evaluate("document.querySelector('[data-action=owner-source]').dataset.id");

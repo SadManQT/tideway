@@ -26,7 +26,7 @@ from .vision import TideVision, TideVisionUnavailable
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = {"/": "index.html", "/index.html": "index.html", "/styles.css": "styles.css", "/app.js": "app.js",
           "/decision-lab.js": "decision-lab.js",
-          "/owner-view.js": "owner-view.js",
+          "/owner-view.js": "owner-view.js", "/currency.js": "currency.js",
           "/quick-start.js": "quick-start.js",
           "/favicon.svg": "favicon.svg",
           "/fonts/space-grotesk.woff2": "fonts/space-grotesk.woff2", "/fonts/unbounded.woff2": "fonts/unbounded.woff2",
@@ -75,6 +75,16 @@ class Application:
         self.owner_view = OwnerView(self.tideway)
 
     # ---- helpers ---------------------------------------------------------------
+
+    def currency_question(self, business_id, body):
+        if "input_currency" not in body:
+            return body["message"]
+        from .currency_view import question
+        snapshot = self.store.snapshot(business_id)
+        protected = [snapshot["business"]["name"]]
+        protected.extend(str(row[key]) for rows in snapshot["records"].values() for row in rows
+                         for key in ("id","customer","payee","payee_account") if row.get(key))
+        return question(body["message"], body["input_currency"], snapshot["business"]["currency"], protected)
 
     @staticmethod
     def fields(body, allowed, required=()):
@@ -153,11 +163,13 @@ class Application:
         kind = query.get("kind", ["evidence"])[0]
         business_id = validate_business_id(query.get("business_id", [""])[0])
         self.scoped(operator, business_id)
+        from .currency_view import code, convert
+        shown = code(query["display_currency"][0]) if "display_currency" in query else None
         if kind == "evidence":
             return canonical_json(self.store.evidence(business_id)), "application/json", f"tideway-{business_id}-evidence.json"
         if kind == "bank-pack":
             from .copilot import bank_pack, bank_pack_html
-            return (bank_pack_html(bank_pack(self.tideway, business_id, query.get("target_date", [None])[0])), "text/html",
+            return (bank_pack_html(bank_pack(self.tideway, business_id, query.get("target_date", [None])[0]), shown), "text/html",
                     f"tideway-{business_id}-bank-pack.html")
         if kind == "iso20022":
             return self.tideway.iso20022(business_id), "application/xml", f"tideway-{business_id}-pain001-draft.xml"
@@ -165,6 +177,14 @@ class Application:
         writer = csv.writer(stream)
         if kind == "records":
             records = self.store.records(business_id)
+            if shown:
+                writer.writerow(["record_type", "id", "date", "party", "view_amount_minor", "view_currency", "rate_basis", "ledger_amount_minor", "ledger_currency"])
+                for rows in records.values():
+                    for row in rows:
+                        writer.writerow([row["record_type"] if "record_type" in row else "transaction" if "type" in row else "invoice" if "customer" in row else "bill",
+                                         csv_cell(row["id"]), row.get("date", row.get("due_date", "")), csv_cell(row.get("customer", row.get("payee", row.get("category", "")))),
+                                         convert(row["amount_minor"],row["currency"],shown), shown, "illustrative fixed rate; not an import or FX trade", row["amount_minor"], row["currency"]])
+                return "\ufeff"+stream.getvalue(), "text/csv", f"tideway-{business_id}-records-{shown}.csv"
             writer.writerow(["record_type", "id", "date", "description", "amount_minor", "currency", "type", "category",
                              "customer", "payee", "payee_account", "issue_date", "due_date", "expected_collection_date",
                              "paid_date", "status", "priority", "reschedule_allowed", "risk_flags", "source"])
@@ -184,6 +204,12 @@ class Application:
                                  "|".join(row["risk_flags"]), row["source"]])
             return "﻿" + stream.getvalue(), "text/csv", f"tideway-{business_id}-records.csv"
         if kind == "receipts":
+            if shown:
+                native = self.store.snapshot(business_id)["business"]["currency"]
+                writer.writerow(["receipt_id", "view_currency", "view_exposure_minor", "view_cash_moved_minor", "ledger_currency", "ledger_exposure_minor", "ledger_cash_moved_minor", "audit_hash"])
+                for receipt in self.store.executions(business_id):
+                    writer.writerow([receipt["receipt_id"],shown,convert(receipt["exposure_minor"],native,shown),convert(receipt["cash_moved_minor"],native,shown),native,receipt["exposure_minor"],receipt["cash_moved_minor"],receipt["audit_hash"]])
+                return "\ufeff"+stream.getvalue(), "text/csv", f"tideway-{business_id}-receipts-{shown}.csv"
             writer.writerow(["receipt_id", "mandate_id", "plan_id", "bundle_id", "idempotency_key", "executed_by", "human_present",
                              "exposure_minor", "cash_moved_minor", "actions_json", "state_before_hash", "state_after_hash",
                              "read_back_verified", "audit_hash"])
@@ -228,11 +254,13 @@ class Application:
             if not business_id:
                 raise ValidationError("business_id is required.")
             if path in ("/api/owner/analyze", "/api/owner/brief"):
-                self.fields(body, ("business_id", "target_date", "expense_minor", "expense_date", "expected_snapshot"), ("business_id",))
+                self.fields(body, ("business_id", "target_date", "expense_minor", "expense_date", "expected_snapshot") + (("display_currency",) if path.endswith("/brief") else ()), ("business_id",))
                 result = self.owner_view.analyze(business_id, body.get("target_date"), body.get("expense_minor", 0), body.get("expense_date"), body.get("expected_snapshot"))
                 if path.endswith("/brief"):
                     from .owner_view import brief_html
-                    return {"read_only": True, "executed": False, "snapshot_hash": result["snapshot_hash"], "html": brief_html(result)}
+                    from .currency_view import code
+                    shown = code(body["display_currency"]) if "display_currency" in body else None
+                    return {"read_only": True, "executed": False, "snapshot_hash": result["snapshot_hash"], "html": brief_html(result,shown)}
                 return result
             if path in ("/api/owner/coach", "/api/owner/propose"):
                 shared = ("business_id", "target_date", "max_discount_bps", "protected_counterparties", "expected_snapshot")
@@ -256,8 +284,8 @@ class Application:
                 return self.lab.analyze(business_id, body.get("target_date"), body["kind"], plan_id=body.get("plan_id"),
                                         bundle_id=body.get("bundle_id"), max_days=body.get("max_days", 30), delay_days=body.get("delay_days", 7))
             if path == "/api/lab/privacy":
-                self.fields(body, ("business_id", "target_date", "message", "history"), ("business_id", "message"))
-                return self.agent.privacy_preview(business_id, body.get("target_date"), body["message"], body.get("history"), operator["role"])
+                self.fields(body, ("business_id", "target_date", "message", "history", "input_currency"), ("business_id", "message"))
+                return self.agent.privacy_preview(business_id, body.get("target_date"), self.currency_question(business_id,body), body.get("history"), operator["role"])
             if path == "/api/lab/watch":
                 self.fields(body, ("business_id", "enabled", "pin"), ("business_id", "enabled", "pin"))
                 self.require(operator, "owner")
@@ -313,16 +341,16 @@ class Application:
                                                 body["expected_snapshot"], body["request_id"], operator,
                                                 body["pin"], actor, body.get("target_date"))
         if path == "/api/chat":
-            self.fields(body, ("business_id", "target_date", "message", "history", "consent"), ("business_id", "message"))
+            self.fields(body, ("business_id", "target_date", "message", "history", "consent", "input_currency"), ("business_id", "message"))
             history = body.get("history", [])
             if not isinstance(history, list) or len(history) > 20 or not isinstance(body.get("consent", False), bool):
                 raise ValidationError("Invalid chat request.")
-            return self.agent.chat(business_id, body.get("target_date"), body["message"], history, body.get("consent", False),
+            return self.agent.chat(business_id, body.get("target_date"), self.currency_question(business_id,body), history, body.get("consent", False),
                                    "agent:llm" if body.get("consent") and self.agent.key else "agent:local", operator["role"],
                                    operator["name"])
         if path == "/api/copilot/ask":
-            self.fields(body, ("business_id", "target_date", "message"), ("business_id", "message"))
-            return self.tidelm.ask(self.tideway, business_id, body.get("target_date"), body["message"], operator["role"],
+            self.fields(body, ("business_id", "target_date", "message", "input_currency"), ("business_id", "message"))
+            return self.tidelm.ask(self.tideway, business_id, body.get("target_date"), self.currency_question(business_id,body), operator["role"],
                                    name=operator["name"])
         if path == "/api/inbox/extract":
             self.fields(body, ("business_id", "text"), ("business_id", "text"))

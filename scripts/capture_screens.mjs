@@ -14,6 +14,7 @@ import {createServer} from "node:http";
 import {fileURLToPath} from "node:url";
 import {checkDecisionLab} from "./decision_lab_browser.mjs";
 import {checkOwnerView} from "./owner_view_browser.mjs";
+import {checkCurrency} from "./currency_browser.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 function sourceDigest() {
@@ -40,6 +41,8 @@ const labOnly = process.argv.includes("--test-decision-lab-only");
 const testDecisionLab = process.argv.includes("--test-decision-lab") || labOnly;
 const ownerOnly = process.argv.includes("--test-owner-view-only");
 const testOwnerView = process.argv.includes("--test-owner-view") || ownerOnly;
+const currencyOnly = process.argv.includes("--test-currency-only");
+const testCurrency = process.argv.includes("--test-currency") || currencyOnly;
 let tidelmAvailable = false;
 if (testLocalBackend && testRealBackend) throw new Error("Choose either --test-local-backend (test double) or --test-real-backend (actual inference).");
 if (testRealBackend && (!process.env.TIDEWAY_LOCAL_MODEL_URL || !process.env.TIDEWAY_LOCAL_TEXT_MODEL
@@ -84,9 +87,11 @@ async function waitFor(url, tries = 60) {
 }
 
 const work = mkdtempSync(join(tmpdir(), "tideway-e2e-"));
+let serverLog = '';
 const server = spawn(process.env.PYTHON || (process.platform === "win32" ? "python" : "python3"),
   [join(ROOT, "run.py"), "--db", join(work, "e2e.sqlite3"), "--port", String(PORT)],
-  {stdio: "ignore", windowsHide: true, env: {...process.env, ...modelEnvironment, OPENAI_API_KEY: ""}});
+  {stdio: ['ignore','pipe','pipe'], windowsHide: true, env: {...process.env, ...modelEnvironment, OPENAI_API_KEY: ""}});
+for(const stream of [server.stdout,server.stderr])stream.on('data',chunk=>{serverLog=(serverLog+chunk.toString()).slice(-200000);});
 const chrome = spawn(CHROME, ["--headless=new", `--remote-debugging-port=${DEBUG_PORT}`, `--user-data-dir=${join(work, "profile")}`,
   "--no-first-run", "--no-default-browser-check", "--hide-scrollbars", "about:blank"], {stdio: "ignore", windowsHide: true});
 server.on("error", error => errors.push(`Python launch: ${error.message}`));
@@ -129,10 +134,12 @@ const loginAs = (id, pin) => evaluate(`(async () => {
   const config = await (await fetch('/api/config')).json();
   await fetch('/api/session/logout', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Tideway-Token': config.csrf_token}, body: '{}'});
   const response = await fetch('/api/session/login', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Tideway-Token': config.csrf_token}, body: JSON.stringify({operator_id: '${id}', pin: '${pin}'})});
+  if(!response.ok)throw new Error((await response.json()).error || 'Test sign-in failed');
   return response.status; })()`);
 async function reload() {
+  const previousDocument=await evaluate('performance.timeOrigin');
   await send("Page.reload");
-  await until("document.readyState === 'complete' && !!document.querySelector('#view .metric, #login:not([hidden])')", "page ready");
+  await until(`performance.timeOrigin!==${previousDocument} && document.readyState === 'complete' && !!document.querySelector('#view .metric, #login:not([hidden])')`, "page ready");
   // Existing detailed workflows remain covered after the new simple landing view.
   if (await evaluate("!!document.querySelector('[data-action=owner-detailed]')")) await click('[data-action=owner-detailed]');
 }
@@ -190,7 +197,9 @@ try {
   await shot("00-landing-mobile");
   await viewport(1440, 900);
 
-  if (ownerOnly) {
+  if (currencyOnly) {
+    await checkCurrency({evaluate,click,until,view,viewport,shot,phoneCheck,loginAs,reload});
+  } else if (ownerOnly) {
     await checkOwnerView({evaluate,click,until,view,viewport,shot,phoneCheck,loginAs,reload});
   } else if (labOnly) {
     await checkDecisionLab({evaluate,click,until,view,viewport,shot,phoneCheck,loginAs,reload});
@@ -351,7 +360,7 @@ try {
     await until("document.querySelectorAll('.chat-log .msg:not(.pending)').length >= 5", "refusal answer");
   } else if (testLocalBackend) {
     await until("document.body.textContent.includes('unbenchmarked')", "compatible model labelled honestly");
-    await click('[data-prompt="Should I give Nila Traders 30 days credit on 50,000?"]');
+    await click('[data-prompt^="Should I give Nila Traders 30 days credit on "]');
     await until("document.querySelectorAll('.chat-log .msg:not(.pending)').length >= 3", "local compatible answer");
     await click('[data-prompt="pay Rahman now"]');
     await until("document.body.textContent.includes('not permitted')", "compatible model forbidden tool denied");
@@ -461,6 +470,15 @@ try {
 
   if (testDecisionLab) await checkDecisionLab({evaluate,click,until,view,viewport,shot,phoneCheck,loginAs,reload});
   if (testOwnerView) await checkOwnerView({evaluate,click,until,view,viewport,shot,phoneCheck,loginAs,reload});
+  if (testCurrency) {
+    // Prior execution evidence deliberately survives reset. A fresh currency DB
+    // prevents cumulative daily exposure from invalidating a separate UI test.
+    const freePort=async()=>{const socket=createServer();await new Promise(resolve=>socket.listen(0,'127.0.0.1',resolve));const port=socket.address().port;await new Promise(resolve=>socket.close(resolve));return port;};
+    const currencyPort=await freePort();let currencyDebug=await freePort();while(currencyDebug===currencyPort)currencyDebug=await freePort();
+    const result=spawnSync(process.execPath,[join(ROOT,'scripts/capture_screens.mjs'),'--test-currency-only','--chrome',CHROME,'--out',join(OUT,'currency')],
+      {cwd:ROOT,stdio:'inherit',windowsHide:true,env:{...process.env,TIDEWAY_E2E_PORT:String(currencyPort),TIDEWAY_DEBUG_PORT:String(currencyDebug)}});
+    if(result.error||result.status!==0)throw new Error(result.error?.message||'Isolated currency browser failed');
+  }
 
   // A new owner signs up: inline validation, then an empty workspace with onboarding, then the team.
   await viewport(1440, 900);
@@ -516,9 +534,9 @@ try {
     source_unchanged_during_browser:true,
     viewport: {desktop: [1440, 900], mobile: [375, 812]}, page_errors: errors,
     tidelm_available: tidelmAvailable, test_only_local_backend: testLocalBackend, test_real_backend:testRealBackend,
-    linked_payment_delay: testPaymentDelay, decision_lab_tested:testDecisionLab, owner_view_tested:testOwnerView, model_inference_tested:realModelVerification?.passed === true,
+    linked_payment_delay: testPaymentDelay, decision_lab_tested:testDecisionLab, owner_view_tested:testOwnerView, currency_tested:testCurrency, model_inference_tested:realModelVerification?.passed === true,
     real_model_verification:realModelVerification,
-    coverage: ownerOnly ? ["Owner view desktop and mobile", "Bengali labels", "exact expense preview with no writes", "source-record navigation", "three priority previews", "private brief download", "fresh proposal and viewer isolation"] : labOnly ? ["decision lab tools and role isolation; complete lab helper exercised"] : ["landing", "cash projection", "dual approval", "negotiation", "execution and read-back",
+    coverage: currencyOnly ? ["29 currencies across 10 views", "selected-unit inputs", "exact conversion", "unchanged rounded policy values", "narrative and trace formatting", "approval confirmation conversion", "Inbox review conversion", "CSV presentation export", "unsaved drafts", "currency preferences", "all USD views at mobile width"] : ownerOnly ? ["Owner view desktop and mobile", "Bengali labels", "exact expense preview with no writes", "source-record navigation", "three priority previews", "private brief download", "fresh proposal and viewer isolation"] : labOnly ? ["decision lab tools and role isolation; complete lab helper exercised"] : ["landing", "cash projection", "dual approval", "negotiation", "execution and read-back",
       ...(testRealBackend ? ["actual local model browser risk answer", "actual local model browser money refusal", "actual model chat preserves financial state"]
         : testLocalBackend ? ["test-double local model browser integration"] : tidelmAvailable ? ["model availability display"] : ["assistant fallback"]),
       "what-if", "audit tamper drill", "international fixtures", "fraud blocks",
@@ -526,6 +544,7 @@ try {
       ...(testDecisionLab ? ["reverse stress witnesses", "assumed agreement stress", "recovery comparison", "privacy preview", "judge challenges", "capsule upload replay", "bilateral proposal", "PIN-gated event replan", "seven lab tabs at mobile width", "lab viewer isolation"] : []),
       "role-aware first-use guidance", "guidance preferences and keyboard focus", "guidance never changes financial state", "residual-risk disclosure",
       ...(testOwnerView ? ["Owner view desktop and mobile", "Bengali labels", "exact expense preview", "source-record navigation", "three priority previews", "private brief download", "fresh coach proposal", "coach viewer isolation"] : []),
+      ...(testCurrency ? ["29 currencies across 10 views", "selected-unit financial inputs", "exact converted approval confirmation", "untouched policy preservation", "source-aware Inbox conversion", "selected-unit export", "unsaved drafts and currency preferences"] : []),
       ...(testLocalBackend ? ["owner discount cap counter rejection", "replan cap/preference/exclusion preservation", "successor provenance and fresh approval"] : []),
       "missing payment-account disclosure and callback controls", "bound risk acknowledgement", "funding repayment and eligibility disclosure",
       ...(testPaymentDelay ? ["approved payment delay", "stale execution refusal", "fresh proposal and counter approval", "delay mobile"] : [])],
@@ -533,6 +552,7 @@ try {
   }, null, 2) + "\n");
   console.log("Browser end-to-end check passed with no page errors.");
 } catch (error) {
+  writeFileSync(join(OUT,'server-diagnostics.log'),serverLog);
   try {
     await shot("failure");
     writeFileSync(join(OUT,"failure.json"),JSON.stringify(await evaluate("({page:document.querySelector('#view')?.innerText,toasts:document.querySelector('#toasts')?.innerText,bodyEnd:document.body.innerText.slice(-2500)})"),null,2));

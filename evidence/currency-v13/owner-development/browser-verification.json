@@ -1,0 +1,36 @@
+{
+  "run_at": "2026-10-18T12:47:20.572Z",
+  "passed": true,
+  "browser": "Chrome/155.0.8059.82",
+  "source_tree_sha256": "8756f5cca3df1a2a72a78b8cbaf830d145a072153613597b45e29bbd11247f58",
+  "source_unchanged_during_browser": true,
+  "viewport": {
+    "desktop": [
+      1440,
+      900
+    ],
+    "mobile": [
+      375,
+      812
+    ]
+  },
+  "page_errors": [],
+  "tidelm_available": false,
+  "test_only_local_backend": false,
+  "test_real_backend": false,
+  "linked_payment_delay": false,
+  "decision_lab_tested": false,
+  "owner_view_tested": true,
+  "model_inference_tested": false,
+  "real_model_verification": null,
+  "coverage": [
+    "Owner view desktop and mobile",
+    "Bengali labels",
+    "exact expense preview with no writes",
+    "source-record navigation",
+    "three priority previews",
+    "private brief download",
+    "fresh proposal and viewer isolation"
+  ],
+  "fixture": "fresh synthetic database; no real money or external provider"
+}

@@ -9,6 +9,7 @@
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
   <script src="/quick-start.js" defer></script>
+  <script src="/currency.js" defer></script>
   <script src="/decision-lab.js" defer></script>
   <script src="/owner-view.js" defer></script>
   <script src="/app.js" defer></script>
@@ -201,7 +202,7 @@
       <h2 id="approve-title">Approve exactly this</h2>
       <div id="approve-summary" class="approve-summary"></div>
       <label id="approve-risk-label" class="small" hidden><input id="approve-risk-ack" type="checkbox"> <span>I understand this option exceeds the simulated risk target and accept the remaining risk shown above. This is not a guarantee that the reserve or payroll will be funded.</span></label>
-      <label id="confirm-amount-label" class="field" hidden>Type the total exposure to confirm you read it<input id="confirm-amount" inputmode="decimal" autocomplete="off"></label>
+      <label id="confirm-amount-label" class="field" hidden><span>Type the total exposure to confirm you read it</span><input id="confirm-amount" inputmode="decimal" autocomplete="off"></label>
       <label class="field">Your PIN<input id="approve-pin" type="password" inputmode="numeric" maxlength="12" required autocomplete="off"></label>
       <div id="approve-error" class="form-error" role="alert"></div>
       <div class="dialog-actions"><button type="button" class="button ghost" data-close="approve-dialog">Cancel</button><button type="submit" class="button primary" id="approve-submit" disabled>Approve</button></div>

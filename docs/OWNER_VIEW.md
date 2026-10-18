@@ -51,7 +51,10 @@ early-payment agreements remain assumptions. Excluding customer receipts removes
 their open invoices and associated unsettled early-payment agreements. Paid
 history and actual recorded cash remain. Fees and funding costs are not invented
 or automatically added. Display-currency conversion uses the existing labelled
-illustrative rates; inputs, approvals and exports remain in the business currency.
+illustrative rates. Inputs, approval review and presentation reports use the
+selected currency; the exact ledger and signing units stay in the business
+currency. Untouched rounded values are preserved. See [currency behaviour and
+verification](RELEASE_V13.md).
 
 ## Integrity and privacy
 

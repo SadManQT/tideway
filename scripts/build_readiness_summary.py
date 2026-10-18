@@ -18,7 +18,8 @@ def main(argv=None):
     model = read('evidence/readiness-v3/blind/model-first-observation.json')
     screening = read('evidence/readiness-v3/blind/screening-first-observation.json')
     pay = read('evidence/readiness-v3/tidepay/report.json')
-    current = args.evidence_dir or ('evidence/owner-view-v12' if (ROOT / 'evidence/owner-view-v12/scenarios/report.json').is_file()
+    current = args.evidence_dir or ('evidence/currency-v13' if (ROOT / 'evidence/currency-v13/scenarios/report.json').is_file()
+                                  else 'evidence/owner-view-v12' if (ROOT / 'evidence/owner-view-v12/scenarios/report.json').is_file()
                                   else 'evidence/upgrade-v11' if (ROOT / 'evidence/upgrade-v11/scenarios/report.json').is_file()
                                   else 'evidence/upgrade-v10' if (ROOT / 'evidence/upgrade-v10/scenarios/report.json').is_file()
                                   else 'evidence/release-v9' if (ROOT / 'evidence/release-v9/scenarios/report.json').is_file()
@@ -265,6 +266,9 @@ be guaranteed from synthetic checks while these validation gaps remain.
     if current == 'evidence/owner-view-v12':
         doc = doc.replace('# Current technical readiness\n', '# Current technical readiness\n\nCurrent local release: [simple Owner view and goal-led recovery](RELEASE_V12.md). Prior model and decision-lab observations: [v11](RELEASE_V11.md).\n',1)
         doc += ('\n## Owner view and decision lab\n\nThe default Cash weather screen explains spending room under expected receipts and without unpaid customer receipts, tests an isolated one-off expense, links dated cash flows to records, and compares three recovery priorities. English/Bangla Owner labels, factual data checks and a private script-free decision brief reduce the steps needed to understand a proposal. Saved previews remain unapproved; owner limits, protected relationships and retained bilateral assumptions are enforced atomically. See [feature guide](OWNER_VIEW.md), [Owner evaluation](../evidence/owner-view-v12/owner-view.json) and [decision-lab checks](../evidence/owner-view-v12/decision-lab.json). No human usability improvement or new model-quality score is claimed. The earlier PDF deck is retained; this feature guide describes the new interface.\n')
+    if current == 'evidence/currency-v13':
+        doc = doc.replace('# Current technical readiness\n','# Current technical readiness\n\nCurrent local release: [consistent selected-currency inputs, text and reports](RELEASE_V13.md). Prior features: [Owner view](OWNER_VIEW.md) and [Decision lab](DECISION_LAB.md).\n',1)
+        doc += ('\n## Currency consistency and related UI audit\n\nThe owner-selected currency now applies to editable financial amounts, generated narrative text, trace summaries, approval review, financial cards and human-readable reports. Exact rational conversion preserves the canonical ledger and unchanged rounded inputs. Explicit monetary question tokens are normalized before model/agent calls; ambiguous foreign-unit amounts require a currency code. Signed evidence and settlement documents retain original units. Per-operator preferences and unsaved drafts are preserved; source-aware Inbox review, scoped demo roles and pending lab inputs are corrected. See [conversion checks](../evidence/currency-v13/currency-checks.json), [browser evidence](../evidence/screens/browser-verification.json) and [release notes](RELEASE_V13.md). These are synthetic engineering checks, not live FX or new real-model quality/human usability results. Earlier PDFs and model/container observations retain their original scope.\n')
     if current == 'evidence/upgrade-v10':
         doc = doc.replace('# Current technical readiness\n',
                           '# Current technical readiness\n\nCurrent local release: [screening, cash-gap and HTTP fixes](RELEASE_V10.md).\n', 1)

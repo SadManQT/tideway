@@ -206,10 +206,11 @@ class OwnerView:
                                       owner_request={"request_id": request_id, "signature": signature})
 
 
-def brief_html(report):
+def brief_html(report, display_currency=None):
     """Private, script-free handover document, generated from the same report."""
     e = lambda value: escape(str(value), quote=True)
-    money = lambda value: e(money_text(value, report["currency"])) if value is not None else "Not available"
+    from .currency_view import display
+    money = lambda value: e(display(value, report["currency"], display_currency)) if value is not None else "Not available"
     rows = "".join(f"<tr><td>{e(d['date'])}</td><td>{money(d['inflow_minor'])}</td><td>{money(d['outflow_minor'])}</td><td>{money(d['closing_cash_minor'])}</td></tr>" for d in report["calendar"])
     dependencies = "".join(f"<li>{e(r['customer'])}: lowest cash falls by {money(r['impact_on_lowest_cash_minor'])} if its unpaid receipts do not arrive.</li>" for r in report["dependencies"][:3])
     return f"""<!doctype html><html lang="en"><meta charset="utf-8"><title>Tideway decision brief</title>

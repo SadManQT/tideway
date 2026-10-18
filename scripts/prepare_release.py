@@ -23,7 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--checks-only', action='store_true', help='Core tests, syntax and sandbox checks; no browser/PDF/package')
     parser.add_argument('--reuse-pdfs', action='store_true', help='Use existing visually reviewed PDFs; still repeat all other checks')
-    parser.add_argument('--evidence-dir', default='evidence/owner-view-v12', help='Current release evidence; historical observations are retained')
+    parser.add_argument('--evidence-dir', default='evidence/currency-v13', help='Current release evidence; historical observations are retained')
     args = parser.parse_args()
     issues = line_ending_issues()
     if issues:
@@ -48,6 +48,7 @@ def main():
     python = [sys.executable] + (['-S'] if sys.flags.no_site else [])
     run('Python compile', python + ['-m', 'compileall', '-q', 'run.py', 'tideway', 'scripts', 'tests'])
     run('JavaScript syntax', ['node', 'scripts/check_javascript.mjs'])
+    run('Exact currency conversion and unchanged-input round-trips', ['node','scripts/test_currency.mjs','--out',str(out / 'currency-checks.json')])
     run('Unit suite', python + ['scripts/verify_submission.py'])
     run('Sandbox task and attack scorecard', python + ['scripts/evaluate.py'])
     run('Distinct financial scenarios', python + ['scripts/evaluate_upgrade_scenarios.py', '--out', str(out / 'scenarios')])
@@ -56,7 +57,7 @@ def main():
     run('Decision lab financial witnesses and replay', python + ['scripts/evaluate_decision_lab.py', '--out', str(out / 'decision-lab.json')])
     run('Owner view exact cash explanations and priority previews', python + ['scripts/evaluate_owner_view.py', '--out', str(out / 'owner-view.json')])
     if not args.checks_only:
-        run('Browser desktop/mobile, delay, decision lab and Owner view', ['node', 'scripts/capture_screens.mjs', '--test-payment-delay', '--test-decision-lab', '--test-owner-view'])
+        run('Browser desktop/mobile, delay, decision lab, Owner view and currency workflows', ['node', 'scripts/capture_screens.mjs', '--test-payment-delay', '--test-decision-lab', '--test-owner-view', '--test-currency'])
         run('Injected local-model integration', ['node', 'scripts/capture_screens.mjs', '--test-local-backend', '--out', str(out / 'browser-integration')])
         run('Current readiness index', python + ['scripts/build_readiness_summary.py', '--evidence-dir', args.evidence_dir])
         if not args.reuse_pdfs:
