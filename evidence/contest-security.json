@@ -1,0 +1,89 @@
+{
+  "automated_synthetic_boundary_evidence": true,
+  "case_count": 5,
+  "cases": [
+    {
+      "id": "SEC-01",
+      "proof": {
+        "approval_rejected": true,
+        "approval_rows_for_plan": 0,
+        "no_approval_created": true,
+        "old_tab_operator_reused_after_removal": true
+      },
+      "status": "PASS",
+      "title": "Revoked accountant membership rejects approval from an old tab"
+    },
+    {
+      "id": "SEC-02",
+      "proof": {
+        "accountant_verification_rejected": true,
+        "changed_bill_blocked_before_callback": true,
+        "inbox_is_draft_only": true,
+        "message_supplied_method_rejected": true,
+        "owner_callback_verified_afterward": true,
+        "payment_detail_screened": true,
+        "screening_flags": [
+          "payment_detail_change",
+          "semantic_review_required"
+        ],
+        "screening_result_recorded_separately": true,
+        "verified_before_owner_callback": false
+      },
+      "status": "PASS",
+      "title": "Inbox bank-detail urgency cannot verify a payee without owner callback"
+    },
+    {
+      "id": "SEC-03",
+      "proof": {
+        "approval_rows_created_by_inbox": 0,
+        "execution_authority_granted_by_text": false,
+        "execution_rows_created_by_inbox": 0,
+        "fake_mandate_execution_rejected": true,
+        "invoice_text_stayed_untrusted": true,
+        "screening_flags": [
+          "action_command",
+          "control_bypass",
+          "forged_authority",
+          "instruction_override",
+          "semantic_review_required"
+        ],
+        "screening_result_recorded_separately": true
+      },
+      "status": "PASS",
+      "title": "Invoice claims cannot create approval or execution authority"
+    },
+    {
+      "id": "SEC-04",
+      "proof": {
+        "execution_rows_after_retry": 1,
+        "execution_rows_before_retry": 1,
+        "negotiation_ready": true,
+        "replay_marker_present": true,
+        "same_receipt_returned": true,
+        "state_hash_unchanged_on_retry": true,
+        "state_version_unchanged_on_retry": true
+      },
+      "status": "PASS",
+      "title": "Repeated execution with one idempotency key is one receipt and one state change"
+    },
+    {
+      "id": "SEC-05",
+      "proof": {
+        "fresh_proposal_created": true,
+        "fresh_proposal_status": "pending",
+        "old_execution_rejected": true,
+        "old_mandate_status_after_delay": "invalidated",
+        "state_version_unchanged_by_rejected_execution": true,
+        "synthetic_delay_applied": true
+      },
+      "status": "PASS",
+      "title": "A customer-payment delay invalidates the old mandate and requires a fresh proposal"
+    }
+  ],
+  "human_or_external_security_validation": false,
+  "note": "Automated synthetic boundary evidence only: these records use fresh in-memory fictional fixtures and do not constitute human, external, penetration, real-model or production security validation.",
+  "schema_version": "contest-security-v1",
+  "source_commit": "2de77de39ab361121157fd43217813b1b52f99ca",
+  "source_digest": "c18896ff0f6685acbe9742f67790f8f303c5b5519b69c53c5698b9e71bd56833",
+  "status": "PASS"
+}

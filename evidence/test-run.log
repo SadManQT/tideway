@@ -14,6 +14,12 @@ test_fixture_has_preregistered_denominators_and_observational_twins (test_blind_
 test_safe_stop_is_not_counted_as_tool_relevance (test_blind_readiness.BlindReadinessProtocol.test_safe_stop_is_not_counted_as_tool_relevance) ... ok
 test_tool_name_alone_does_not_pass_wrong_credit_amount (test_blind_readiness.BlindReadinessProtocol.test_tool_name_alone_does_not_pass_wrong_credit_amount) ... ok
 test_unwanted_tool_and_unsafe_mutation_fail_separate_checks (test_blind_readiness.BlindReadinessProtocol.test_unwanted_tool_and_unsafe_mutation_fail_separate_checks) ... ok
+test_all_cases_are_present_and_sanitized (test_contest_security.ContestSecurityEvidence.test_all_cases_are_present_and_sanitized) ... ok
+test_sec_01_revoked_membership_rejects_old_tab_approval (test_contest_security.ContestSecurityEvidence.test_sec_01_revoked_membership_rejects_old_tab_approval) ... ok
+test_sec_02_inbox_bank_change_requires_owner_callback (test_contest_security.ContestSecurityEvidence.test_sec_02_inbox_bank_change_requires_owner_callback) ... ok
+test_sec_03_invoice_claim_is_not_authority (test_contest_security.ContestSecurityEvidence.test_sec_03_invoice_claim_is_not_authority) ... ok
+test_sec_04_idempotent_retry_has_one_receipt_and_state_change (test_contest_security.ContestSecurityEvidence.test_sec_04_idempotent_retry_has_one_receipt_and_state_change) ... ok
+test_sec_05_payment_delay_stales_mandate_and_reproposes (test_contest_security.ContestSecurityEvidence.test_sec_05_payment_delay_stales_mandate_and_reproposes) ... ok
 test_bank_pack_is_escaped_and_complete (test_conversation.BankPack.test_bank_pack_is_escaped_and_complete) ... ok
 test_answers_differ_by_question (test_conversation.Conversation.test_answers_differ_by_question) ... ok
 test_classifier_is_multilingual_and_strict (test_conversation.Conversation.test_classifier_is_multilingual_and_strict) ... ok
@@ -34,22 +40,22 @@ test_currency (test_core.DomainTests.test_currency) ... ok
 test_hidden_unicode_is_stripped_and_flagged (test_core.DomainTests.test_hidden_unicode_is_stripped_and_flagged) ... ok
 test_injection_flags (test_core.DomainTests.test_injection_flags) ... ok
 test_money_is_exact_minor_units (test_core.DomainTests.test_money_is_exact_minor_units) ... ok
-test_cookie_flags (test_core.HttpTests.test_cookie_flags) ... [19/Oct/2026 00:39:35] "POST /api/session/login HTTP/1.1" 200 -
+test_cookie_flags (test_core.HttpTests.test_cookie_flags) ... [19/Oct/2026 01:57:05] "POST /api/session/login HTTP/1.1" 200 -
 ok
-test_csrf_origin_host (test_core.HttpTests.test_csrf_origin_host) ... [19/Oct/2026 00:39:35] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:39:35] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:39:35] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:39:35] "GET /api/config HTTP/1.1" 403 -
+test_csrf_origin_host (test_core.HttpTests.test_csrf_origin_host) ... [19/Oct/2026 01:57:05] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:57:05] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:57:05] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:57:05] "GET /api/config HTTP/1.1" 403 -
 ok
-test_dual_bundle_needs_typed_amount (test_core.HttpTests.test_dual_bundle_needs_typed_amount) ... [19/Oct/2026 00:39:36] "POST /api/session/login HTTP/1.1" 200 -
-[19/Oct/2026 00:39:36] "POST /api/plan/propose HTTP/1.1" 200 -
-[19/Oct/2026 00:39:36] "POST /api/plan/approve HTTP/1.1" 400 -
-[19/Oct/2026 00:39:36] "POST /api/plan/approve HTTP/1.1" 200 -
+test_dual_bundle_needs_typed_amount (test_core.HttpTests.test_dual_bundle_needs_typed_amount) ... [19/Oct/2026 01:57:05] "POST /api/session/login HTTP/1.1" 200 -
+[19/Oct/2026 01:57:05] "POST /api/plan/propose HTTP/1.1" 200 -
+[19/Oct/2026 01:57:05] "POST /api/plan/approve HTTP/1.1" 400 -
+[19/Oct/2026 01:57:06] "POST /api/plan/approve HTTP/1.1" 200 -
 ok
-test_requires_login (test_core.HttpTests.test_requires_login) ... [19/Oct/2026 00:39:36] "GET /api/dashboard?business_id=shapla-services HTTP/1.1" 401 -
+test_requires_login (test_core.HttpTests.test_requires_login) ... [19/Oct/2026 01:57:06] "GET /api/dashboard?business_id=shapla-services HTTP/1.1" 401 -
 ok
-test_viewer_cannot_propose (test_core.HttpTests.test_viewer_cannot_propose) ... [19/Oct/2026 00:39:36] "POST /api/session/login HTTP/1.1" 200 -
-[19/Oct/2026 00:39:36] "POST /api/plan/propose HTTP/1.1" 403 -
+test_viewer_cannot_propose (test_core.HttpTests.test_viewer_cannot_propose) ... [19/Oct/2026 01:57:06] "POST /api/session/login HTTP/1.1" 200 -
+[19/Oct/2026 01:57:06] "POST /api/plan/propose HTTP/1.1" 403 -
 ok
 test_baseline_network_keeps_never_pays_impact (test_counterparty_network_regression.CounterpartyNetworkRegression.test_baseline_network_keeps_never_pays_impact) ... ok
 test_network_after_executed_early_payment_keeps_stress_valid (test_counterparty_network_regression.CounterpartyNetworkRegression.test_network_after_executed_early_payment_keeps_stress_valid) ... ok
@@ -177,7 +183,7 @@ test_valid_download_replaces_corrupt_cache_only_after_verification (test_local_d
 ok
 test_verified_cache_is_used_without_network (test_local_demo_model.PinnedDownloads.test_verified_cache_is_used_without_network) ... Verified cached artifact.bin
 ok
-test_explicit_cache_and_profile_control_verified_file_and_server_alias (test_local_demo_model.ProfileSelection.test_explicit_cache_and_profile_control_verified_file_and_server_alias) ... Cache: C:\Users\User\AppData\Local\Temp\tmpl404bepc\explicit-cache
+test_explicit_cache_and_profile_control_verified_file_and_server_alias (test_local_demo_model.ProfileSelection.test_explicit_cache_and_profile_control_verified_file_and_server_alias) ... Cache: C:\Users\User\AppData\Local\Temp\tmpa4huteyj\explicit-cache
 Model: larger-test-model; optional compatible backend, not TideLM.
 TIDEWAY_LOCAL_MODEL_URL=http://127.0.0.1:8790/v1
 TIDEWAY_LOCAL_TEXT_MODEL=larger-test-model
@@ -296,30 +302,30 @@ test_quarantined_names_and_text_never_enter_scoped_or_observed_model_context (te
 test_rescue_followup_consumes_observed_tools_and_records_public_trace (test_reasoning_guards.ReasoningGuards.test_rescue_followup_consumes_observed_tools_and_records_public_trace) ... ok
 test_viewer_and_advise_permissions_block_proposal_before_reads (test_reasoning_guards.ReasoningGuards.test_viewer_and_advise_permissions_block_proposal_before_reads) ... ok
 test_whole_plan_names_are_validated_before_any_proposal (test_reasoning_guards.ReasoningGuards.test_whole_plan_names_are_validated_before_any_proposal) ... ok
-test_anonymous_errors_are_not_audited (test_regressions.HttpRegressions.test_anonymous_errors_are_not_audited) ... [19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 400 -
+test_anonymous_errors_are_not_audited (test_regressions.HttpRegressions.test_anonymous_errors_are_not_audited) ... [19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 400 -
 ok
-test_malformed_requests_get_4xx (test_regressions.HttpRegressions.test_malformed_requests_get_4xx) ... [19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 400 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 400 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
+test_malformed_requests_get_4xx (test_regressions.HttpRegressions.test_malformed_requests_get_4xx) ... [19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 400 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 400 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
 ok
-test_missing_static_file_is_404_not_dropped (test_regressions.HttpRegressions.test_missing_static_file_is_404_not_dropped) ... [19/Oct/2026 00:41:22] "GET /benchmarks/missing.json HTTP/1.1" 404 -
+test_missing_static_file_is_404_not_dropped (test_regressions.HttpRegressions.test_missing_static_file_is_404_not_dropped) ... [19/Oct/2026 01:58:48] "GET /benchmarks/missing.json HTTP/1.1" 404 -
 ok
-test_rejected_posts_deliver_403_without_reset_or_state_changes (test_regressions.HttpRegressions.test_rejected_posts_deliver_403_without_reset_or_state_changes) ... [19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
-[19/Oct/2026 00:41:22] "POST /api/session/login HTTP/1.1" 403 -
+test_rejected_posts_deliver_403_without_reset_or_state_changes (test_regressions.HttpRegressions.test_rejected_posts_deliver_403_without_reset_or_state_changes) ... [19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
+[19/Oct/2026 01:58:48] "POST /api/session/login HTTP/1.1" 403 -
 ok
 test_refilled_buckets_are_pruned (test_regressions.RateLimiterRegressions.test_refilled_buckets_are_pruned) ... ok
 test_advise_blocks_proposal_and_failed_replan_keeps_mandate (test_regressions.StoreRegressions.test_advise_blocks_proposal_and_failed_replan_keeps_mandate) ... ok
@@ -360,31 +366,31 @@ test_superseded_or_stale_plan_consent_cannot_be_reused (test_risk_acknowledgemen
 test_wrong_boolean_identity_hash_risk_target_and_extra_fields_are_refused (test_risk_acknowledgement.RiskAcknowledgement.test_wrong_boolean_identity_hash_risk_target_and_extra_fields_are_refused) ... ok
 test_existing_workspace_approval_rows_are_preserved_without_invented_consent (test_risk_acknowledgement.RiskSchemaMigration.test_existing_workspace_approval_rows_are_preserved_without_invented_consent) ... ok
 test_feedback_keeps_only_a_hash_of_the_question (test_saas.Feedback.test_feedback_keeps_only_a_hash_of_the_question) ... ok
-test_invite_join_role_and_seat_limit (test_saas.SaaS.test_invite_join_role_and_seat_limit) ... [19/Oct/2026 00:41:37] "POST /api/signup HTTP/1.1" 200 -
-[19/Oct/2026 00:41:37] "POST /api/team/invite HTTP/1.1" 200 -
-[19/Oct/2026 00:41:38] "POST /api/team/join HTTP/1.1" 200 -
-[19/Oct/2026 00:41:38] "POST /api/plan/propose HTTP/1.1" 403 -
-[19/Oct/2026 00:41:38] "POST /api/team/join HTTP/1.1" 400 -
-[19/Oct/2026 00:41:38] "POST /api/team/invite HTTP/1.1" 200 -
-[19/Oct/2026 00:41:38] "POST /api/team/invite HTTP/1.1" 400 -
-[19/Oct/2026 00:41:38] "POST /api/team/invite HTTP/1.1" 400 -
-[19/Oct/2026 00:41:38] "GET /api/team?business_id=kestrel-b-856350 HTTP/1.1" 200 -
+test_invite_join_role_and_seat_limit (test_saas.SaaS.test_invite_join_role_and_seat_limit) ... [19/Oct/2026 01:59:06] "POST /api/signup HTTP/1.1" 200 -
+[19/Oct/2026 01:59:06] "POST /api/team/invite HTTP/1.1" 200 -
+[19/Oct/2026 01:59:06] "POST /api/team/join HTTP/1.1" 200 -
+[19/Oct/2026 01:59:06] "POST /api/plan/propose HTTP/1.1" 403 -
+[19/Oct/2026 01:59:06] "POST /api/team/join HTTP/1.1" 400 -
+[19/Oct/2026 01:59:06] "POST /api/team/invite HTTP/1.1" 200 -
+[19/Oct/2026 01:59:06] "POST /api/team/invite HTTP/1.1" 400 -
+[19/Oct/2026 01:59:06] "POST /api/team/invite HTTP/1.1" 400 -
+[19/Oct/2026 01:59:06] "GET /api/team?business_id=kestrel-b-167761 HTTP/1.1" 200 -
 ok
-test_last_owner_cannot_be_removed_and_weak_pins_are_refused (test_saas.SaaS.test_last_owner_cannot_be_removed_and_weak_pins_are_refused) ... [19/Oct/2026 00:41:38] "POST /api/signup HTTP/1.1" 200 -
-[19/Oct/2026 00:41:38] "POST /api/team/remove HTTP/1.1" 400 -
-[19/Oct/2026 00:41:38] "POST /api/signup HTTP/1.1" 400 -
-[19/Oct/2026 00:41:38] "POST /api/signup HTTP/1.1" 400 -
-[19/Oct/2026 00:41:38] "POST /api/signup HTTP/1.1" 400 -
-[19/Oct/2026 00:41:38] "POST /api/signup HTTP/1.1" 400 -
-[19/Oct/2026 00:41:38] "POST /api/signup HTTP/1.1" 400 -
+test_last_owner_cannot_be_removed_and_weak_pins_are_refused (test_saas.SaaS.test_last_owner_cannot_be_removed_and_weak_pins_are_refused) ... [19/Oct/2026 01:59:06] "POST /api/signup HTTP/1.1" 200 -
+[19/Oct/2026 01:59:06] "POST /api/team/remove HTTP/1.1" 400 -
+[19/Oct/2026 01:59:06] "POST /api/signup HTTP/1.1" 400 -
+[19/Oct/2026 01:59:06] "POST /api/signup HTTP/1.1" 400 -
+[19/Oct/2026 01:59:06] "POST /api/signup HTTP/1.1" 400 -
+[19/Oct/2026 01:59:06] "POST /api/signup HTTP/1.1" 400 -
+[19/Oct/2026 01:59:06] "POST /api/signup HTTP/1.1" 400 -
 ok
-test_signup_creates_an_isolated_workspace (test_saas.SaaS.test_signup_creates_an_isolated_workspace) ... [19/Oct/2026 00:41:38] "POST /api/signup HTTP/1.1" 200 -
-[19/Oct/2026 00:41:38] "GET /api/config HTTP/1.1" 200 -
-[19/Oct/2026 00:41:38] "GET /api/dashboard?business_id=kestrel-a-03d63b HTTP/1.1" 200 -
-[19/Oct/2026 00:41:38] "POST /api/session/login HTTP/1.1" 200 -
-[19/Oct/2026 00:41:38] "GET /api/dashboard?business_id=kestrel-a-03d63b HTTP/1.1" 403 -
-[19/Oct/2026 00:41:38] "GET /api/dashboard?business_id=shapla-services HTTP/1.1" 403 -
-[19/Oct/2026 00:41:38] "POST /api/plan/propose HTTP/1.1" 403 -
+test_signup_creates_an_isolated_workspace (test_saas.SaaS.test_signup_creates_an_isolated_workspace) ... [19/Oct/2026 01:59:07] "POST /api/signup HTTP/1.1" 200 -
+[19/Oct/2026 01:59:07] "GET /api/config HTTP/1.1" 200 -
+[19/Oct/2026 01:59:07] "GET /api/dashboard?business_id=kestrel-a-11b846 HTTP/1.1" 200 -
+[19/Oct/2026 01:59:07] "POST /api/session/login HTTP/1.1" 200 -
+[19/Oct/2026 01:59:07] "GET /api/dashboard?business_id=kestrel-a-11b846 HTTP/1.1" 403 -
+[19/Oct/2026 01:59:07] "GET /api/dashboard?business_id=shapla-services HTTP/1.1" 403 -
+[19/Oct/2026 01:59:07] "POST /api/plan/propose HTTP/1.1" 403 -
 ok
 test_control_removal_and_implicit_substitution_compositions (test_screening_context.ContextualTextScreening.test_control_removal_and_implicit_substitution_compositions) ... ok
 test_control_substitution_and_indirect_exfiltration_categories (test_screening_context.ContextualTextScreening.test_control_substitution_and_indirect_exfiltration_categories) ... ok
@@ -528,6 +534,12 @@ test_empty_template_has_zero_participants_and_no_fabricated_averages (test_user_
 test_nonfinite_times_and_invalid_status_combinations (test_user_study.UserStudy.test_nonfinite_times_and_invalid_status_combinations) ... ok
 test_partial_sus_and_aggregate_only_export (test_user_study.UserStudy.test_partial_sus_and_aggregate_only_export) ... ok
 test_sus_formula_and_invalid_fields (test_user_study.UserStudy.test_sus_formula_and_invalid_fields) ... ok
+test_mapping_covers_existing_csv_tasks_without_new_fields (test_user_study_scenarios.UserStudyScenarios.test_mapping_covers_existing_csv_tasks_without_new_fields) ... ok
+test_p5_keeps_interruption_time_separate_from_active_time (test_user_study_scenarios.UserStudyScenarios.test_p5_keeps_interruption_time_separate_from_active_time) ... ok
+test_required_protocol_and_scenario_fields (test_user_study_scenarios.UserStudyScenarios.test_required_protocol_and_scenario_fields) ... ok
+test_spec_explicitly_labels_examples_as_non_evidence (test_user_study_scenarios.UserStudyScenarios.test_spec_explicitly_labels_examples_as_non_evidence) ... ok
+test_spec_has_five_unique_scenario_ids (test_user_study_scenarios.UserStudyScenarios.test_spec_has_five_unique_scenario_ids) ... ok
+test_spec_has_no_participant_rows_or_identity_data (test_user_study_scenarios.UserStudyScenarios.test_spec_has_no_participant_rows_or_identity_data) ... ok
 test_document_addressed_to_us_is_a_bill (test_vision.Dates.test_document_addressed_to_us_is_a_bill) ... ok
 test_written_dates_become_iso_and_ambiguous_ones_are_flagged (test_vision.Dates.test_written_dates_become_iso_and_ambiguous_ones_are_flagged) ... ok
 test_drafts_and_injection_written_on_the_photo (test_vision.Vision.test_drafts_and_injection_written_on_the_photo) ... skipped 'Pillow is not installed (optional photo feature)'
@@ -536,6 +548,6 @@ test_photo_is_downscaled_and_metadata_removed (test_vision.Vision.test_photo_is_
 test_unreadable_output_is_a_clear_error (test_vision.Vision.test_unreadable_output_is_a_clear_error) ... skipped 'Pillow is not installed (optional photo feature)'
 
 ----------------------------------------------------------------------
-Ran 474 tests in 157.479s
+Ran 486 tests in 161.908s
 
 OK (skipped=5)

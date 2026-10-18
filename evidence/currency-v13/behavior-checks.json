@@ -1,7 +1,7 @@
 {
   "version": "behavior-path-sandbox-v1",
-  "run_at_utc": "2026-10-18T18:42:34.053001+00:00",
-  "source_tree_sha256": "83b777058dfb66b8f2a248bc1ddce9bb44039fcc65e9aa586fa626f6dd4911a6",
+  "run_at_utc": "2026-10-18T20:00:09.578638+00:00",
+  "source_tree_sha256": "c18896ff0f6685acbe9742f67790f8f303c5b5519b69c53c5698b9e71bd56833",
   "source_unchanged": true,
   "scope": "AI-authored assumed behavior paths, checked against the actual backend with fresh synthetic ledgers.",
   "human_participants": 0,
@@ -20,7 +20,7 @@
         "decision": "decline_before_approval",
         "financial_ledger_unchanged": true
       },
-      "automated_runtime_ms": 388.01
+      "automated_runtime_ms": 386.56
     },
     {
       "id": "S2",
@@ -32,7 +32,7 @@
         "premature_execution_blocked": true,
         "financial_ledger_unchanged": true
       },
-      "automated_runtime_ms": 435.64
+      "automated_runtime_ms": 455.62
     },
     {
       "id": "S3",
@@ -48,7 +48,7 @@
         "fresh_approvals_required": true,
         "financial_ledger_unchanged": true
       },
-      "automated_runtime_ms": 316.28
+      "automated_runtime_ms": 349.76
     },
     {
       "id": "S4",
@@ -61,7 +61,7 @@
         "decision": "decline_above_target_risk",
         "financial_ledger_unchanged": true
       },
-      "automated_runtime_ms": 886.53
+      "automated_runtime_ms": 947.14
     },
     {
       "id": "S5",
@@ -77,7 +77,7 @@
         "financial_ledger_unchanged": true,
         "scope": "Known-message rule check only; no semantic model or document extraction was run."
       },
-      "automated_runtime_ms": 112.73
+      "automated_runtime_ms": 118.72
     },
     {
       "id": "S6",
@@ -89,7 +89,7 @@
         "same_receipt_replayed": true,
         "additional_financial_changes_on_retry": false
       },
-      "automated_runtime_ms": 505.78
+      "automated_runtime_ms": 565.26
     }
   ],
   "checks_passed": 6,

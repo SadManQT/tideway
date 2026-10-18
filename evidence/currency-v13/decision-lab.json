@@ -1,7 +1,7 @@
 {
   "version": "decision-lab-evaluation-v1",
-  "run_at_utc": "2026-10-18T18:42:37.137776+00:00",
-  "source_tree_sha256": "83b777058dfb66b8f2a248bc1ddce9bb44039fcc65e9aa586fa626f6dd4911a6",
+  "run_at_utc": "2026-10-18T20:00:12.701043+00:00",
+  "source_tree_sha256": "c18896ff0f6685acbe9742f67790f8f303c5b5519b69c53c5698b9e71bd56833",
   "source_unchanged": true,
   "passed": true,
   "synthetic_businesses": 3,
@@ -19,7 +19,7 @@
         "no_saved_proposals": true,
         "fresh_funding_draws": true
       },
-      "elapsed_ms": 1285,
+      "elapsed_ms": 1309,
       "analyses": {
         "reverse": {
           "version": "resilience-v1",
@@ -154,7 +154,7 @@
           "customers_tested": 2,
           "complete_customer_coverage": true,
           "projection_evaluations": 17,
-          "elapsed_ms": 2,
+          "elapsed_ms": 3,
           "scope": "Smallest integer delay for one customer at a time, with all other likely receipts fixed; simultaneous shocks and model error are not covered."
         },
         "promises": {
@@ -428,7 +428,7 @@
         "passed": true,
         "engine_compatible": true,
         "authenticated_origin": false,
-        "capsule_sha256": "b5caeaad00e7b3877110247c2cb2edbac80a97d68bdad158194879405448d186",
+        "capsule_sha256": "aa8237573072d1e497bbc698031b71a161300fa2c3b4c052bd7a53eab3086354",
         "actual_projection": {
           "scenario": "likely",
           "currency": "BDT",
@@ -472,7 +472,7 @@
         "no_saved_proposals": true,
         "fresh_funding_draws": true
       },
-      "elapsed_ms": 1171,
+      "elapsed_ms": 1168,
       "analyses": {
         "reverse": {
           "version": "resilience-v1",
@@ -607,7 +607,7 @@
           "customers_tested": 2,
           "complete_customer_coverage": true,
           "projection_evaluations": 17,
-          "elapsed_ms": 2,
+          "elapsed_ms": 1,
           "scope": "Smallest integer delay for one customer at a time, with all other likely receipts fixed; simultaneous shocks and model error are not covered."
         },
         "promises": {
@@ -857,7 +857,7 @@
         "passed": true,
         "engine_compatible": true,
         "authenticated_origin": false,
-        "capsule_sha256": "d5375e185f001ded9bcc4d5fe60fd1be969f0c3d16c17656c3f6a22a4cf78e06",
+        "capsule_sha256": "371309dcc5a35b271e9ca1a63e47d3c8d2b79c1ddb07642ad5b055d3a3a1a0d7",
         "actual_projection": {
           "scenario": "likely",
           "currency": "CNY",
@@ -901,7 +901,7 @@
         "no_saved_proposals": true,
         "fresh_funding_draws": true
       },
-      "elapsed_ms": 150,
+      "elapsed_ms": 178,
       "analyses": {
         "reverse": {
           "version": "resilience-v1",
@@ -1129,7 +1129,7 @@
         "passed": true,
         "engine_compatible": true,
         "authenticated_origin": false,
-        "capsule_sha256": "c94b8b67c6c5fd1d248b8a0329a50cee5dd443259b6704a2cfec28f222e08346",
+        "capsule_sha256": "ff5c0ed1cb1ec8d5834a89d947fe1c12ae8da03b2125281d9e4c0f19b5dfe3d6",
         "actual_projection": {
           "scenario": "likely",
           "currency": "SGD",
