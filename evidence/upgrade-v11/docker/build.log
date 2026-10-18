@@ -1,0 +1,37 @@
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            BuildKit is currently disabled; enable it by removing the DOCKER_BUILDKIT=0
+            environment-variable.
+
+time="2026-10-18T14:56:41+06:00" level=error msg="Can't add file /mnt/c/Users/User/OneDrive/Desktop/2-1/CSE 207/TF/FinMate/evidence/upgrade-v11/model-regression-release/progress.jsonl to tar: archive/tar: write too long"
+Sending build context to Docker daemon  198.9MB
+Step 1/8 : FROM python:3.11-slim-bookworm@sha256:0a310eeecf4e1f5a0743f9a6520c90c88d089c903ca5fd283f501e3a805f5f89
+ ---> 141fe9b385f3
+Step 2/8 : ENV PYTHONDONTWRITEBYTECODE=1     PYTHONUNBUFFERED=1
+ ---> Running in fa9e1573f7fb
+ ---> Removed intermediate container fa9e1573f7fb
+ ---> b64e140d272f
+Step 3/8 : WORKDIR /app
+ ---> Running in 9efa0065bd25
+ ---> Removed intermediate container 9efa0065bd25
+ ---> b9926bc6ae90
+Step 4/8 : COPY . .
+ ---> c702d8bd472e
+Step 5/8 : RUN python -S -m compileall -q run.py tideway scripts tests     && python -S scripts/verify_submission.py     && useradd --create-home --uid 10001 tideway     && mkdir -p /app/data     && chown -R tideway:tideway /app
+ ---> Running in d5f1f3526110
+429 tests: 0 failures, 0 errors, 5 skipped.
+ ---> Removed intermediate container d5f1f3526110
+ ---> 567fc5bb6589
+Step 6/8 : USER tideway
+ ---> Running in 8a0638250f27
+ ---> Removed intermediate container 8a0638250f27
+ ---> 9c40244e6a7d
+Step 7/8 : EXPOSE 8787
+ ---> Running in 7f551ffa389d
+ ---> Removed intermediate container 7f551ffa389d
+ ---> 414696a40db4
+Step 8/8 : CMD ["python", "run.py", "--host", "0.0.0.0", "--port", "8787", "--db", "/app/data/tideway.sqlite3"]
+ ---> Running in 2900cb96aac2
+ ---> Removed intermediate container 2900cb96aac2
+ ---> 1583b53bd194
+Successfully built 1583b53bd194
+Successfully tagged tideway-verification:2e843fed8cbb

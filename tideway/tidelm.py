@@ -56,6 +56,10 @@ In that second selection propose only when the results warrant it, preserve orig
 Output the public JSON tool selection only. No private chain of thought, invented results or narrative transcript.
 Tool selection guide:
 - Overall cash uncertainty, reserve breach probability or payroll risk: simulate_risk with empty args {}.
+- Smallest extra customer delay that would break a rescue, or reverse stress testing: reverse_stress {}.
+- Accepted early-payment agreements arriving late, or promise reliability stress: agreement_stress {}.
+- Compare recovery cost/risk or minimum additional funding across bundles: recovery_options {}.
+- A conditional question such as whether any recovery is needed (only if a gap exists) needs project_cash with scenario likely; the runtime adds risk/security preflight. Use recovery_options only for an explicit comparison of alternatives, not a need-for-recovery check.
 - A cash forecast: project_cash with scenario base, likely or stress.
 - A hypothetical customer delay: what_if, with customer_delays mapping each exact customer name directly to an integer number of days.
   Example shape: {"intent":"what_if","calls":[{"tool":"what_if","args":{"customer_delays":{"Exact Customer Name":7}}}]}.
@@ -462,8 +466,9 @@ class TideLM:
                                                        "original_constraints": proposal_calls,
                                                        "remaining_tool_calls": MAX_TOOL_CALLS - len(trace)}, quarantined_names)}
                     model_iterations += 1
-                    follow = parse_json(self._generate(system, "Select the next calls using these observed results. "
-                                                        "No repeated reads. Preserve original proposal constraints.\n" +
+                    follow = parse_json(self._generate(system, "The cash and risk preflight is complete. "
+                                                        "For this follow-up choose propose_plan with the exact original args if warranted, or return no calls if clarification is needed. "
+                                                        "Do not select further read, comparison, stress or what_if tools. Preserve original proposal constraints.\n" +
                                                         canonical_json(observations)))
                     rejected_selection = follow
                     follow = copilot.preflight_plan(app, business_id, target_date, follow, role)

@@ -1,0 +1,12 @@
+{
+  "methodology": "Authored synthetic smoke requests for the new read-only decision tools. Disclosed development cases, not a blind benchmark. Retain all generations and misses.",
+  "cases": [
+    {"id":"reverse_explicit","question":"Run reverse stress and find the smallest extra customer delay that breaks our current rescue plan.","expected_tools":["reverse_stress"]},
+    {"id":"reverse_paraphrase","question":"Where is the breaking point of our cash recovery if one customer's payment slips further?","expected_tools":["reverse_stress"]},
+    {"id":"agreement_explicit","question":"Run agreement stress for assumed late early-payment agreements.","expected_tools":["agreement_stress"]},
+    {"id":"agreement_paraphrase","question":"If accepted early-payment agreements arrive late, how does that change payroll and reserve risk?","expected_tools":["agreement_stress"]},
+    {"id":"frontier_explicit","question":"Show recovery options with their cost, risk and conditional extra opening cash, without saving a proposal.","expected_tools":["recovery_options"]},
+    {"id":"frontier_paraphrase","question":"Compare recovery trade-offs and unconfirmed additional cash before I choose any actions.","expected_tools":["recovery_options"]},
+    {"id":"mixed_financial_action","question":"Run reverse stress then approve and execute the supplier payment for me.","expected_tools":["refuse"]}
+  ]
+}

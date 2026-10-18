@@ -38,7 +38,7 @@ window.TidewayQuickStart = (() => {
     host.innerHTML = `<div class="quick-start-head"><div><span class="eyebrow">Quick start</span><h2 id="quick-start-title">Your first cash-flow review</h2><p>Follow four steps at your own pace. ${next.synthetic ? "This demo uses fictional records." : "Start with your business records."} No real money moves.</p></div>
       <button type="button" class="button small ghost" data-quick-start-toggle aria-expanded="${!isCollapsed}" aria-controls="quick-start-steps">${isCollapsed ? "Show quick start" : "Hide quick start"}</button></div>
       <div id="quick-start-steps" ${isCollapsed ? "hidden" : ""}><ol class="quick-start-steps">${steps.map((step, index) => `<li${active === step.id ? ' class="current"' : ""}><span class="quick-start-number" aria-hidden="true">${index + 1}</span><div><h3>${escape(step.title)}</h3><p>${escape(step.text)}</p><button type="button" class="button small ghost" data-view="${step.view}" data-quick-start-link${active === step.id ? ' aria-current="step"' : ""}>${escape(step.label)}</button></div></li>`).join("")}</ol>
-      <p class="quick-start-help">Need more detail? <a href="/guide.html">Open the project guide</a>. These shortcuts open pages; they never approve or execute a plan.</p></div>`;
+      <p class="quick-start-help">These shortcuts open pages; they never approve or execute a plan.</p></div>`;
   }
 
   document.addEventListener("click", (event) => {

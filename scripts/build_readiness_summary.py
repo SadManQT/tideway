@@ -18,7 +18,8 @@ def main(argv=None):
     model = read('evidence/readiness-v3/blind/model-first-observation.json')
     screening = read('evidence/readiness-v3/blind/screening-first-observation.json')
     pay = read('evidence/readiness-v3/tidepay/report.json')
-    current = args.evidence_dir or ('evidence/upgrade-v10' if (ROOT / 'evidence/upgrade-v10/scenarios/report.json').is_file()
+    current = args.evidence_dir or ('evidence/upgrade-v11' if (ROOT / 'evidence/upgrade-v11/scenarios/report.json').is_file()
+                                  else 'evidence/upgrade-v10' if (ROOT / 'evidence/upgrade-v10/scenarios/report.json').is_file()
                                   else 'evidence/release-v9' if (ROOT / 'evidence/release-v9/scenarios/report.json').is_file()
                                   else 'evidence/completion-v8' if (ROOT / 'evidence/completion-v8/scenarios/report.json').is_file()
                                   else 'evidence/remediation-v7' if (ROOT / 'evidence/remediation-v7/scenarios/report.json').is_file()
@@ -31,7 +32,11 @@ def main(argv=None):
     regression = read('evidence/readiness-v3/blind/model-post-fix-regression.json')
     python311 = read('evidence/readiness-v3/python311/test-summary.json')
     risk_met = sum(bool(row.get('risk_target_met')) for row in scenarios['rows'] if row['executed'])
-    audit_path = ROOT / current / 'model-regression/report.json'
+    audit_path = ROOT / current / 'model-regression-release/report.json'
+    if not audit_path.is_file():
+        audit_path = ROOT / current / 'model-regression-final/report.json'
+    if not audit_path.is_file():
+        audit_path = ROOT / current / 'model-regression/report.json'
     if not audit_path.is_file():
         audit_path = ROOT / 'evidence/readiness-v5/model-regression/report.json'
     if not audit_path.is_file():
@@ -118,8 +123,7 @@ From the project root on macOS (`python` on Windows):
 python3 run.py
 ```
 
-Open http://127.0.0.1:8787 and http://127.0.0.1:8787/guide.html.
-Opening guide.html directly from Finder does not start the application server.
+Open http://127.0.0.1:8787. Personal preparation material is not served or linked by the product.
 
 ```
 python3 scripts/prepare_release.py --checks-only
@@ -254,6 +258,9 @@ be guaranteed from synthetic checks while these validation gaps remain.
     if (ROOT / 'docs/RELEASE_V9.md').is_file() and current == 'evidence/release-v9':
         doc = doc.replace('# Current technical readiness\n',
                           '# Current technical readiness\n\nCurrent local release: [fixes and verification scope](RELEASE_V9.md).\n', 1)
+    if current == 'evidence/upgrade-v11':
+        doc = doc.replace('# Current technical readiness\n', '# Current technical readiness\n\nCurrent local release: [decision support, event replanning and bilateral negotiation](RELEASE_V11.md). Previous screening and HTTP evidence: [v10](RELEASE_V10.md).\n', 1)
+        doc += ('\n## Decision lab\n\nReverse stress includes one-day-less witnesses; agreement lateness rates are supplied assumptions; recovery comparisons use disjoint conditional funding draws. Owner-authorised synthetic events invalidate old mandates before optional re-proposal. Two-sided supplied synthetic ledgers are checked again at approval/execution and retained counter-offers. Private replay recomputes financial outputs, while privacy preview shares the initial cloud request builder. See [feature guide](DECISION_LAB.md) and [current evaluation](../evidence/upgrade-v11/decision-lab.json). These engineering checks do not replace real SME participation, native Mac verification or external review.\n')
     if current == 'evidence/upgrade-v10':
         doc = doc.replace('# Current technical readiness\n',
                           '# Current technical readiness\n\nCurrent local release: [screening, cash-gap and HTTP fixes](RELEASE_V10.md).\n', 1)

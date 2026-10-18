@@ -82,6 +82,7 @@ class PlanSchemaContract(unittest.TestCase):
     def test_valid_examples_still_pass_authority_and_malformed_args_do_not(self):
         examples = {
             "project_cash": {"scenario": "likely"}, "simulate_risk": {},
+            "reverse_stress": {}, "agreement_stress": {}, "recovery_options": {},
             "what_if": {"customer_delays": {"Bay Logistics": 7},
                         "extra_expense": {"amount": 100, "date": "2026-10-20", "currency": "BDT"}},
             "propose_plan": {"exclude_counterparties": [], "max_discount_pct": 2.5, "prefer": "lowest_cost"},

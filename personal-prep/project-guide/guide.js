@@ -1,7 +1,7 @@
 "use strict";
 
 /*
- * Tideway public handbook
+ * Tideway personal team preparation guide (not served by the application)
  *
  * This file intentionally has no network calls, framework runtime, or generated
  * server dependency. The viva bank is a deterministic cross-product of the

@@ -1,8 +1,8 @@
 @charset "UTF-8";
 
-@font-face { font-family: "Space Grotesk"; src: url("/fonts/space-grotesk.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
-@font-face { font-family: "Unbounded"; src: url("/fonts/unbounded.woff2") format("woff2"); font-weight: 600 900; font-display: swap; }
-@font-face { font-family: "JetBrains Mono"; src: url("/fonts/jetbrains-mono.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Space Grotesk"; src: url("../../web/fonts/space-grotesk.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+@font-face { font-family: "Unbounded"; src: url("../../web/fonts/unbounded.woff2") format("woff2"); font-weight: 600 900; font-display: swap; }
+@font-face { font-family: "JetBrains Mono"; src: url("../../web/fonts/jetbrains-mono.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
 
 :root {
   --paper: #cfe94b;

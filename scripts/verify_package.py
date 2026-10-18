@@ -120,8 +120,8 @@ def main():
                     time.sleep(.1)
             else:
                 raise RuntimeError('Extracted server did not start')
-            for route, expected in (('/', 200), ('/guide', 200), ('/guide.html', 200), ('/guide.css', 200),
-                                    ('/guide.js', 200), ('/benchmarks/tidepay.json', 200),
+            for route, expected in (('/', 200), ('/guide', 404), ('/guide.html', 404), ('/guide.css', 404),
+                                    ('/guide.js', 404), ('/personal-prep/project-guide/guide.html', 404), ('/benchmarks/tidepay.json', 200),
                                     ('/benchmarks/tidepay-deployed.json', 200),
                                     ('/benchmarks/tidepay-deployed-reliability.svg', 200),
                                     *[(route, 200) for route in binary_assets],

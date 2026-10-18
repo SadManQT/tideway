@@ -1,0 +1,13 @@
+{
+  "source_tree_sha256": "e0d58d285f5f2feb55af3678475369546eeb7a7465914cfb48acd2ffe5c08827",
+  "unit_tests": 429,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 1,
+  "product_browser_passed": true,
+  "prep_routes_404_signed_in_and_anonymous": true,
+  "no_product_guide_links": true,
+  "personal_guide_local_file_verified": true,
+  "main_financial_model_code_changed": false,
+  "prior_model_and_docker_evidence": "Historical reports retain their own source seals. No new model-quality or Docker run is claimed for this routing/package change."
+}

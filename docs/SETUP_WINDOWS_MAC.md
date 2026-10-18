@@ -176,8 +176,9 @@ The [current readiness index](READINESS_CURRENT.md) links exact-artifact predict
 results and the first sealed actual Mac model run (28/32, four retained misses).
 The optional compatible model remains distinct from historical MLX adapter scores.
 
-Open `/guide.html` through the running app, for example
-`http://127.0.0.1:8787/guide.html`; opening the file in Finder does not start Python.
+The product does not serve the team's personal preparation guide. Team members
+can open `personal-prep/project-guide/guide.html` directly from Finder or Explorer;
+the guide works locally and is excluded from submission packages.
 
 ## Optional local semantic screening
 

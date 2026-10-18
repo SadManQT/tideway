@@ -16,6 +16,7 @@ const VIEWS = {
   assistant: ["Ask Tideway", "Plain-English questions answered from tool output, never from guesses"],
   inbox: ["Inbox", "Paste a message; TideLM drafts records; nothing is saved until you confirm"],
   whatif: ["What-if", "Explore read-only assumptions; a separate owner action can apply a synthetic demo delay"],
+  lab: ["Decision lab", "Challenge a rescue, compare recovery and inspect privacy before acting"],
   records: ["Records", "The ledger behind every number, with untrusted text quarantined"],
   team: ["Team", "Who can see and act for this business, pending invites and your plan"],
   security: ["Security centre", "Permission tiers, kill switch, policy, payee verification and the attack self-test"],
@@ -441,6 +442,9 @@ function actAndReload(label, request) {
 // ---------------------------------------------------------------------------- render
 
 function render() {
+  const labNav = document.querySelector('.nav-item[data-view="lab"]');
+  if (labNav) labNav.hidden = state.config?.features?.decision_lab === false;
+  if (state.view === "lab" && labNav?.hidden) state.view = "overview";
   const [title, subtitle] = VIEWS[state.view] || VIEWS.overview;
   $("#operator-role").textContent = role();
   $("#page-title").textContent = title;
@@ -455,7 +459,8 @@ function render() {
   badge.hidden = !(plan && plan.bundles?.length) && !(state.dashboard?.mandates || []).length;
   badge.textContent = (state.dashboard?.mandates || []).length ? "mandate" : "plan";
   const renderers = {overview: renderOverview, rescue: renderRescue, assistant: renderAssistant, inbox: renderInbox, whatif: renderWhatIf,
-    records: renderRecords, team: renderTeam, security: renderSecurity, evidence: renderEvidence};
+    records: renderRecords, team: renderTeam, security: renderSecurity, evidence: renderEvidence,
+    lab: () => window.TidewayLab.render()};
   $("#fx-note").hidden = !state.displayCurrency || state.displayCurrency === currency();
   const entering = playEntrance(lastScene.split("|")[1]);
   $("#view").innerHTML = state.dashboard ? (renderers[state.view] || renderOverview)() : `<div class="loading">Loading…</div>`;
@@ -474,6 +479,15 @@ function render() {
 
 function metric(label, value, note, cls = "") {
   return `<div class="metric ${cls}"><span class="label">${esc(label)}</span><span class="value">${value}</span><span class="note">${esc(note)}</span></div>`;
+}
+
+window.TidewayLab.bind(render);
+
+function bilateralTermsHtml(bundle) {
+  const pact = bundle.bilateral;
+  if (!pact) return "";
+  const ledger = pact.supplier_ledger;
+  return `<div class="alert info section-gap"><div><strong>Two-sided synthetic liquidity terms</strong><p>Supplier opening cash ${money(ledger.opening_cash_minor)}, reserve ${money(ledger.reserve_floor_minor)}, payroll ${money(ledger.payroll_minor)} on ${esc(ledger.payroll_date)}, other income ${money(ledger.other_income_minor)} on ${esc(ledger.other_income_date)}. These are supplied assumptions. Approval and execution recheck the supplier cash path as well as your own.</p><span class="small lab-hash">Assumptions SHA-256: ${esc(pact.assumptions_sha256)}</span></div></div>`;
 }
 
 function weatherIcon(level) { return level === "clear" ? "check" : level === "unsettled" ? "wave" : "alert"; }
@@ -800,6 +814,7 @@ function bundleCard(plan, bundle, index) {
       <div class="row">${bundle.feasible ? `<span class="pill ok">Holds the reserve</span>` : `<span class="pill storm">Shortfall remains</span>`}${isNum(bundle.futures_short_of_20_after) ? `<span class="pill ${bundle.risk_target_met ? "ok" : "unsettled"}">${esc(bundle.futures_short_of_20_after)} of 20 futures short</span>` : ""}${bundle.dual_approval_required ? `<span class="pill violet">Two approvers</span>` : ""}${button}</div></div>
     <div class="bundle-body">
       ${residualRiskHtml(plan, bundle)}
+      ${bilateralTermsHtml(bundle)}
       <div class="compare"><div><span>Economic cost</span><strong>${money(bundle.economic_cost_minor)}</strong></div><div><span>Exposure</span><strong>${money(bundle.exposure_minor)}</strong></div>${isNum(after.minimum_cash_minor) ? `<div><span>Lowest likely cash after</span><strong>${money(after.minimum_cash_minor)}</strong></div>` : `<div><span>Reserve shortfall after</span><strong>${money(bundle.remaining_shortfall_minor)}</strong></div>`}<div><span>Counterparties to agree</span><strong>${esc(bundle.counterparties)}</strong></div></div>
       ${bundle.why_not ? `<p class="why-not">${esc(bundle.why_not)}</p>` : ""}
       ${approvals.length ? `<p class="small">Approvals so far: ${approvals.map((item) => `${esc(item.operator_id)} (${esc(item.role)})`).join(", ")}</p>` : ""}
@@ -1032,7 +1047,7 @@ function renderAssistant() {
     ? `Hi, I'm Tideway, using ${tidelmLabel()}. Ask in your own language (English, 中文, Español, Bahasa, Français, Português, Hinglish, Banglish): credit checks, late payers, a what-if, reminder drafts or a rescue plan. The model selects tool calls; Tideway's tools supply the figures. I can't approve or move money.`
     : "Hi, I'm Tideway. Ask me whether payroll is safe, how risky the month looks, who to chase, a what-if such as \"what if Nila Traders pays 10 days late\", or ask me for a rescue plan. I can explain and propose; I can't approve or move money."});
   const prompts = on ? TIDELM_PROMPTS : LOCAL_PROMPTS;
-  const consent = on ? "" : state.config.ai_configured ? `<label class="check small"><input id="ai-consent" type="checkbox" ${state.aiConsent ? "checked" : ""}> Use the AI model for this message (names are pseudonymised; record text never leaves this computer)</label>` : `<p class="hint">Local agent mode: answers come from deterministic tools, no network. An optional LLM mode is available when a key is configured.</p>`;
+  const consent = on ? "" : state.config.ai_configured ? `<label class="check small"><input id="ai-consent" type="checkbox" ${state.aiConsent ? "checked" : ""}> Use the AI model for this message (names are pseudonymised; ledger descriptions are omitted; inspect your question for private text)</label><button type="button" class="button small ghost" data-action="privacy-preview-chat">Inspect outgoing request before consent</button>` : `<p class="hint">Local agent mode: answers come from deterministic tools, no network. An optional LLM mode is available when a key is configured.</p>`;
   const mode = on ? `<div class="row chat-mode"><span class="pill teal">${icon("spark")}${esc(tidelmLabel())}</span></div>` : "";
   return `<section class="grid split"><div class="card chat ${on ? "with-mode" : ""}">${mode}<div class="chat-log" id="chat-log" aria-live="polite">${state.chat.map((item, index) => item.pending
       ? `<div class="msg agent pending" role="status"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>${esc(item.text)}</div>`
@@ -1414,7 +1429,7 @@ function openApprove(planId, bundleId) {
   const lines = bundle.actions.map((action) => `<div class="line"><span>${esc(action.counterparty)} · ${action.type === "supplier_deferral" ? `move ${nat(action.amount_minor)} to ${esc(day(action.to_date))}` : `${esc(action.discount_bps / 100)}% off, pay ${nat(action.amount_minor)} by ${esc(day(action.to_date))}`}</span><b>${nat(action.economic_cost_minor)}</b></div>`);
   lines.push(`<div class="line"><span>Total exposure</span><b>${nat(bundle.exposure_minor)}</b></div>`);
   lines.push(`<div class="line"><span>Simulated futures still short after</span><b>${esc(bundle.futures_short_of_20_after ?? "—")} of 20</b></div>`);
-  $("#approve-summary").innerHTML = lines.join("") + residualRiskHtml(plan, bundle) + `<p class="small muted">You approve these exact terms. Any change to the records, policy, payee, amount or dates voids this approval before execution. ${bundle.dual_approval_required ? "This exceeds the dual-approval threshold: a second person, including the owner, must approve too." : ""}</p>`;
+  $("#approve-summary").innerHTML = lines.join("") + residualRiskHtml(plan, bundle) + bilateralTermsHtml(bundle) + `<p class="small muted">You approve these exact terms. Any change to the records, policy, payee, amount or dates voids this approval before execution. ${bundle.dual_approval_required ? "This exceeds the dual-approval threshold: a second person, including the owner, must approve too." : ""}</p>`;
   $("#approve-risk-label").hidden = !riskTerms;
   $("#approve-risk-ack").checked = false;
   $("#approve-risk-ack").required = Boolean(riskTerms);
@@ -1588,6 +1603,7 @@ document.addEventListener("click", async (event) => {
   if (!button) return;
   const data = button.dataset;
   try {
+    if (data.action.startsWith("lab-")) { await window.TidewayLab.action(data.action.slice(4), data); return; }
     switch (data.action) {
       case "logout": await logout(); break;
       case "demo-login": await demoLogin(data.id); break;
@@ -1613,6 +1629,7 @@ document.addEventListener("click", async (event) => {
         break;
       }
       case "prompt": await ask(data.prompt); break;
+      case "privacy-preview-chat": await window.TidewayLab.previewChat($("#chat-input").value); break;
       case "whatif-reset": state.whatif = freshWhatIf(); render(); break;
       case "demo-stale": {
         try {

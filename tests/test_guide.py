@@ -1,203 +1,80 @@
-"""Regression checks for Tideway's public handbook page."""
-
-from __future__ import annotations
-
-import re
-import unittest
+"""Personal preparation must never be exposed through the product or release."""
+import http.client
+from http.server import ThreadingHTTPServer
+import json
 from pathlib import Path
+import threading
+import unittest
 
+from tideway.server import Application, STATIC, make_handler
+from scripts.build_submission_package import allowed_source
 
 ROOT = Path(__file__).resolve().parents[1]
-WEB = ROOT / "web"
 
 
-def _without_comments(source):
-    source = re.sub(r"/\*.*?\*/", "", source, flags=re.DOTALL)
-    return re.sub(r"//[^\n]*", "", source)
+class GuideIsolationTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.app = Application(":memory:")
+        class Quiet(make_handler(cls.app)):
+            def log_message(self, *_args):
+                pass
+        cls.server = ThreadingHTTPServer(("127.0.0.1", 0), Quiet)
+        cls.port = cls.server.server_port
+        threading.Thread(target=cls.server.serve_forever, daemon=True).start()
+        conn = http.client.HTTPConnection("127.0.0.1", cls.port, timeout=5)
+        conn.request("POST", "/api/session/login", json.dumps({"operator_id": "nadia", "pin": "2468"}),
+                     {"Content-Type": "application/json", "X-Tideway-Token": cls.app.csrf})
+        result = conn.getresponse()
+        assert result.status == 200
+        cls.cookie = result.getheader("Set-Cookie").split(";", 1)[0]
+        result.read()
+        conn.close()
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.server.shutdown()
+        cls.server.server_close()
+        cls.app.store.close()
 
-def _matching_bracket(source, opening):
-    pairs = {"[": "]", "{": "}", "(": ")"}
-    closing = pairs[source[opening]]
-    depth = 0
-    quote = None
-    escaped = False
-    for index in range(opening, len(source)):
-        char = source[index]
-        if quote:
-            if escaped:
-                escaped = False
-            elif char == "\\":
-                escaped = True
-            elif char == quote:
-                quote = None
-            continue
-        if char in "'\"`":
-            quote = char
-        elif char == source[opening]:
-            depth += 1
-        elif char == closing:
-            depth -= 1
-            if depth == 0:
-                return index
-    return None
+    def get(self, path, signed_in=False):
+        conn = http.client.HTTPConnection("127.0.0.1", self.port, timeout=5)
+        conn.request("GET", path, headers={"Cookie": self.cookie} if signed_in else {})
+        result = conn.getresponse()
+        status, body = result.status, result.read().decode("utf-8")
+        conn.close()
+        return status, body
 
+    def test_guide_and_personal_paths_return_404_even_after_sign_in(self):
+        for path in ("/guide", "/guide.html", "/guide.css", "/guide.js", "/guide/",
+                     "/personal-prep/project-guide/guide.html", "/personal-prep/project-guide/guide.js"):
+            for signed_in in (False, True):
+                with self.subTest(path=path, signed_in=signed_in):
+                    status, body = self.get(path, signed_in)
+                    self.assertEqual(status, 404)
+                    self.assertEqual(json.loads(body), {"error": "Not found."})
 
-def _array_item_count(body):
-    if not body.strip():
-        return 0
-    depth = 0
-    items = 1
-    quote = None
-    escaped = False
-    for char in body:
-        if quote:
-            if escaped:
-                escaped = False
-            elif char == "\\":
-                escaped = True
-            elif char == quote:
-                quote = None
-            continue
-        if char in "'\"`":
-            quote = char
-        elif char in "[{(":
-            depth += 1
-        elif char in "]})":
-            depth -= 1
-        elif char == "," and depth == 0:
-            items += 1
-    return items
+    def test_landing_shell_and_quick_start_do_not_link_to_prep(self):
+        for path in ("/", "/quick-start.js"):
+            status, body = self.get(path)
+            self.assertEqual(status, 200)
+            self.assertNotIn("/guide", body)
+            self.assertNotIn("Project guide", body)
 
-
-def _array_lengths(source):
-    """Return lengths for simple JavaScript array constants."""
-    lengths = {}
-    declaration = re.compile(r"\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*\[")
-    for match in declaration.finditer(source):
-        end = _matching_bracket(source, match.end() - 1)
-        if end is not None:
-            lengths[match.group(1)] = _array_item_count(source[match.end():end])
-    return lengths
-
-
-def _strip_outer_parentheses(expression):
-    expression = expression.strip()
-    while expression.startswith("(") and expression.endswith(")"):
-        end = _matching_bracket(expression, 0)
-        if end != len(expression) - 1:
-            break
-        expression = expression[1:-1].strip()
-    return expression
-
-
-def _viva_question_count_at_least_thousand(source):
-    """Evaluate deterministic count constants/products without executing JavaScript."""
-    source = _without_comments(source)
-    arrays = _array_lengths(source)
-    assignments = re.compile(
-        r"\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*([^;\n]+)"
-    )
-    declarations = assignments.findall(source)
-    known = {}
-
-    for name, expression in declarations:
-        expression = _strip_outer_parentheses(expression)
-        literal = re.fullmatch(r"\d+", expression)
-        if literal:
-            known[name] = int(literal.group())
-        else:
-            length = re.fullmatch(r"([A-Za-z_$][\w$]*)\.length", expression)
-            if length and length.group(1) in arrays:
-                known[name] = arrays[length.group(1)]
-
-    def evaluate(expression):
-        factors = [_strip_outer_parentheses(part) for part in expression.split("*")]
-        if len(factors) < 2:
-            literal = re.fullmatch(r"\d+", factors[0])
-            return int(literal.group()) if literal else known.get(factors[0])
-        values = []
-        for factor in factors:
-            if re.fullmatch(r"\d+", factor):
-                values.append(int(factor))
-            elif factor in known:
-                values.append(known[factor])
-            else:
-                length = re.fullmatch(r"([A-Za-z_$][\w$]*)\.length", factor)
-                if not length or length.group(1) not in arrays:
-                    return None
-                values.append(arrays[length.group(1)])
-        result = 1
-        for value in values:
-            result *= value
-        return result
-
-    for name, expression in declarations:
-        value = evaluate(expression)
-        context = f"{name} {expression}"
-        if value is not None and value >= 1000 and re.search(
-            r"(?i)viva|question|categor(?:y|ies)|angle(?:s)?", context
-        ):
-            return True
-
-    # Also accept a clearly labelled literal or numeric product used directly by
-    # the generator, even when it is not assigned to a const/let/var declaration.
-    for line in source.splitlines():
-        if not re.search(r"(?i)viva|question|categor(?:y|ies)|angle(?:s)?", line):
-            continue
-        for literal in re.findall(r"\b\d{4,}\b", line):
-            if int(literal) >= 1000:
-                return True
-        for left, right in re.findall(r"\b(\d+)\s*\*\s*(\d+)\b", line):
-            if int(left) * int(right) >= 1000:
-                return True
-    return False
-
-
-class GuidePageTests(unittest.TestCase):
-    def _read(self, name):
-        path = WEB / name
-        self.assertTrue(path.is_file(), f"Expected public guide asset: {path}")
-        return path.read_text(encoding="utf-8")
-
-    def test_public_guide_assets_exist(self):
+    def test_prep_assets_are_outside_the_web_root_and_static_allowlist(self):
         for name in ("guide.html", "guide.css", "guide.js"):
+            self.assertFalse((ROOT / "web" / name).exists())
+            self.assertNotIn("/" + name, STATIC)
+            self.assertNotIn(name, STATIC.values())
+        self.assertNotIn("/guide", STATIC)
+
+    def test_submission_and_container_exclude_personal_prep(self):
+        for name in ("personal-prep/project-guide/guide.html", "personal-prep/README.md", "web/guide.js",
+                     "evidence/screens/23-guide-mobile.png", "evidence/upgrade-v11/browser-integration/24-guide-desktop.png"):
             with self.subTest(name=name):
-                self.assertTrue((WEB / name).is_file())
-
-    def test_server_exposes_guide_assets(self):
-        from tideway.server import STATIC
-
-        self.assertEqual(STATIC["/guide"], "guide.html")
-        self.assertEqual(STATIC["/guide.html"], "guide.html")
-        self.assertEqual(STATIC["/guide.css"], "guide.css")
-        self.assertEqual(STATIC["/guide.js"], "guide.js")
-
-    def test_guide_markup_has_sections_assets_disclaimer_and_setup(self):
-        html = self._read("guide.html")
-        for anchor in ("overview", "problems", "response", "features", "setup", "viva"):
-            with self.subTest(anchor=anchor):
-                self.assertRegex(html, rf'href\s*=\s*["\']#{anchor}["\']')
-        self.assertRegex(html, r'<link\b[^>]*\bhref\s*=\s*["\'][^"\']*guide\.css(?:[?#][^"\']*)?["\']')
-        self.assertRegex(html, r'<script\b[^>]*\bsrc\s*=\s*["\'][^"\']*guide\.js(?:[?#][^"\']*)?["\']')
-        normalized = re.sub(r"\s+", " ", html).lower()
-        self.assertIn("synthetic sandbox", normalized)
-        self.assertIn("no real money", normalized)
-        self.assertIn("python3 run.py", html)
-
-    def test_guide_javascript_has_viva_generator_and_thousand_questions(self):
-        script = self._read("guide.js")
-        self.assertRegex(
-            script,
-            re.compile(
-                r"(?i)\b(?:generate|build|create|make)[A-Za-z0-9_$]*viva[A-Za-z0-9_$]*\b"
-                r"|\bviva[A-Za-z0-9_$]*(?:generator|questions?)\b"
-            ),
-        )
-        self.assertTrue(
-            _viva_question_count_at_least_thousand(script),
-            "guide.js must deterministically generate/prove at least 1,000 Viva questions",
-        )
+                self.assertFalse(allowed_source(name))
+        self.assertTrue(allowed_source("web/index.html"))
+        self.assertIn("personal-prep", (ROOT / ".dockerignore").read_text(encoding="utf-8").splitlines())
 
 
 if __name__ == "__main__":

@@ -10,6 +10,8 @@ Out of scope: moving real money, production bank integration, binding credit dec
 
 ## 2. Architecture
 
+The optional [Decision lab](DECISION_LAB.md) extends the same engine: `resilience.py` provides bounded reverse stress, assumed agreement stress and recovery comparisons; `decision_lab.py` coordinates read/propose operations; `event_store.py` commits owner-authorised synthetic events and invalidation receipts; `bilateral.py` rechecks supplied supplier liquidity; `replay.py` validates and recomputes private financial capsules. The browser module is `web/decision-lab.js`. These modules do not obtain approval or payment authority.
+
 ```
  Browser UI (vanilla JS)  --JSON over loopback, cookie + CSRF-->  server.py (HTTP, CSP, rate limits, tenant + role checks)
                                                                     |
@@ -120,7 +122,7 @@ bound human acknowledgement and may need escalation or changed business terms.
 
 ## 11. Agent and optional LLM mode
 
-Six tools: `read_ledger`, `profile_customers`, `project_cash`, `simulate_risk`, `check_security`, `compare_plans` (creates a proposal; never approves). Maximum eight tool calls per request. The default **local agent** is a deterministic planner that runs a visible step-by-step rescue run and answers questions from tool output, with no network. The optional **LLM mode** (OpenAI Responses API, user key, per-message consent) sends only pseudonymised counterparty names and tool output, never record free text; tool results are framed as data; every number in the answer is compared against tool output and ungrounded figures are flagged. Hijacked-model behaviour is tested with a simulated transport (see the security self-assessment). No live-model measurement has been made.
+Nine tools: `read_ledger`, `profile_customers`, `project_cash`, `simulate_risk`, `check_security`, `reverse_stress`, `agreement_stress`, `recovery_options`, `compare_plans` (creates a proposal; never approves). Maximum eight tool calls per request. The default **local agent** is a deterministic planner that runs a visible step-by-step rescue and answers questions from tool output, with no network. The optional **LLM mode** (OpenAI Responses API, user key, per-message consent) pseudonymises known counterparties and omits ledger descriptions. User questions and unrecognised personal text require review in the privacy inspector. Tool results are framed as data; every number in the answer is compared against tool output and ungrounded figures are flagged. Hijacked-model behaviour is tested with a simulated transport; no live cloud-provider requests are measured. Actual compatible local-model runs are recorded separately from these injected checks.
 
 ## 12. Audit and evidence
 
@@ -180,7 +182,7 @@ The exact deployed weights are separately evaluated in `evidence/readiness-v3/ti
 
 `POST /api/demo/payment-delay` is an explicit owner/PIN operation, separate from read-only What-if. It is limited to synthetic demo invoices, validates the whole requested horizon before commit, compares the expected snapshot inside `BEGIN IMMEDIATE`, preserves quarantine, removes a superseded reminder promise, changes the collection date and calls `_bump`. That invalidates pending/approved proposals and live bundle mandates. A unique request id and payload hash replay the same original receipt on retry; conflicts fail. Audit, version and receipt commit atomically. The old approvals remain as evidence; they cannot authorise the changed ledger. A fresh proposal must pass the ordinary approval, signed mandate, simulated negotiation and idempotent execution path. See `docs/PAYMENT_DELAY_RUNBOOK.md` and `scripts/demo_payment_delay.py`.
 
-The tracked `submission-team.public.json` supplies only confirmed public names/institution. Private `submission-team.json`, .env files, databases, signing keys, caches and unrelated root files are excluded from the distributable package. The package builder requires current source hashes in both test and browser reports. `scripts/verify_package.py` verifies distributed bytes, runs extracted tests with Python `-S` and checks fresh startup/public handbook/protected API boundaries without Git or site packages.
+The tracked `submission-team.public.json` supplies only confirmed public names/institution. Private `submission-team.json`, .env files, databases, signing keys, caches, personal preparation material and unrelated root files are excluded from the distributable package. The package builder requires current source hashes in both test and browser reports. `scripts/verify_package.py` verifies distributed bytes, runs extracted tests with Python `-S` and checks fresh startup and protected API boundaries without Git or site packages. The product does not serve the team's personal guide or link to it.
 
 ## Current financing and residual-risk contract
 

@@ -12,6 +12,7 @@ import {join, dirname} from "node:path";
 import {existsSync} from "node:fs";
 import {createServer} from "node:http";
 import {fileURLToPath} from "node:url";
+import {checkDecisionLab} from "./decision_lab_browser.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 function sourceDigest() {
@@ -34,6 +35,9 @@ const errors = [];
 const testLocalBackend = process.argv.includes("--test-local-backend");
 const testRealBackend = process.argv.includes("--test-real-backend");
 const testPaymentDelay = process.argv.includes("--test-payment-delay");
+const labOnly = process.argv.includes("--test-decision-lab-only");
+const testDecisionLab = process.argv.includes("--test-decision-lab") || labOnly;
+let tidelmAvailable = false;
 if (testLocalBackend && testRealBackend) throw new Error("Choose either --test-local-backend (test double) or --test-real-backend (actual inference).");
 if (testRealBackend && (!process.env.TIDEWAY_LOCAL_MODEL_URL || !process.env.TIDEWAY_LOCAL_TEXT_MODEL
     || process.env.TIDEWAY_LOCAL_TEXT_MODEL === "tideway-browser-test"
@@ -163,6 +167,7 @@ try {
   await viewport(1440, 900);
   await send("Page.navigate", {url: `http://127.0.0.1:${PORT}/`});
   await until("document.readyState === 'complete' && !document.querySelector('#login').hidden", "login screen");
+  if (await evaluate("!!document.querySelector('a[href*=\"guide\"],a[href*=\"personal-prep\"]')")) throw new Error("Personal prep is linked from the product landing page");
   const clean = (selector) => `!/\\b(undefined|NaN|null)\\b/.test(document.querySelector('${selector}').innerText)`;
   async function phoneCheck(name, selector) {
     const overflow = await evaluate("document.documentElement.scrollWidth - window.innerWidth");
@@ -177,9 +182,13 @@ try {
   await shot("00-landing-mobile");
   await viewport(1440, 900);
 
+  if (labOnly) {
+    await checkDecisionLab({evaluate,click,until,view,viewport,shot,phoneCheck,loginAs,reload});
+  } else {
   // Accountant signs in with the one-click demo button, runs the agent and gives the first of two approvals.
   await click('[data-action="demo-login"][data-id="imran"]');
   await until("!!document.querySelector('#view .metric') && document.querySelector('#operator-role').textContent === 'accountant'", "demo sign-in");
+  if (await evaluate("!!document.querySelector('a[href*=\"guide\"],a[href*=\"personal-prep\"]')")) throw new Error("Personal prep is linked from the signed-in product");
   await until("!document.querySelector('#quick-start').hidden && document.querySelectorAll('#quick-start [data-quick-start-link]').length === 4", "quick start available");
   const guidanceSnapshot = await evaluate("state.dashboard.snapshot_hash");
   if (!await evaluate("document.querySelector('#quick-start').textContent.includes('fictional records') && document.querySelector('[data-quick-start-toggle]').getAttribute('aria-expanded') === 'true'")) throw new Error("first-use quick start is not expanded and demo aware");
@@ -319,7 +328,7 @@ try {
   // Assistant, what-if and evidence on the same business.
   // When TideLM is not installed the assistant shows a status card and keeps the local agent.
   // When it is, the chips change and asking would load the model, so this check only looks.
-  const tidelmAvailable = await evaluate("state.config.tidelm?.available === true");
+  tidelmAvailable = await evaluate("state.config.tidelm?.available === true");
   if (testRealBackend && !tidelmAvailable) throw new Error("Actual-model browser verification requires an available configured local model; fallback is not evidence of inference.");
   await view("assistant");
   if (!tidelmAvailable) {
@@ -438,6 +447,8 @@ try {
   await view("inbox");
   await shot("15-mobile-inbox", false);
 
+  if (testDecisionLab) await checkDecisionLab({evaluate,click,until,view,viewport,shot,phoneCheck,loginAs,reload});
+
   // A new owner signs up: inline validation, then an empty workspace with onboarding, then the team.
   await viewport(1440, 900);
   await click('[data-action="logout"]');
@@ -477,18 +488,13 @@ try {
   await until("state.view === 'rescue'", "viewer follows quick start");
   if (await evaluate("!!document.querySelector('[data-action=approve], [data-action=execute], [data-action=run-agent]')")) throw new Error("viewer guidance exposed financial actions");
 
-  // Public handbook must render without a financial session, including its assets.
+  // Personal team preparation is deliberately unavailable from the product.
   await evaluate(`(async () => { const c = await (await fetch('/api/config')).json(); await fetch('/api/session/logout', {method:'POST',headers:{'Content-Type':'application/json','X-Tideway-Token':c.csrf_token},body:'{}'}); return true; })()`);
-  for (const route of ["/guide", "/guide.html"]) {
-    await send("Page.navigate", {url:`http://127.0.0.1:${PORT}${route}`});
-    await until("document.querySelector('#viva-count')?.textContent.includes('1,200')", "public guide question bank");
-    if (!await evaluate("getComputedStyle(document.body).backgroundColor === 'rgb(207, 233, 75)'")) throw new Error("Guide stylesheet did not load");
+  for (const route of ["/guide", "/guide.html", "/guide.css", "/guide.js", "/personal-prep/project-guide/guide.html"]) {
+    const response = await fetch(`http://127.0.0.1:${PORT}${route}`);
+    if (response.status !== 404) throw new Error(`Personal prep route was exposed: ${route} (${response.status})`);
   }
-  await viewport(375, 812, true);
-  await phoneCheck("public guide", "body");
-  await shot("23-guide-mobile", false);
-  await viewport(1440, 900);
-  await shot("24-guide-desktop", false);
+  }
   if (errors.length) throw new Error(`Page errors: ${errors.join(" | ")}`);
   const finalSourceDigest = sourceDigest();
   if (initialSourceDigest !== finalSourceDigest) throw new Error("Source changed during browser verification; repeat after edits are complete.");
@@ -497,13 +503,14 @@ try {
     source_unchanged_during_browser:true,
     viewport: {desktop: [1440, 900], mobile: [375, 812]}, page_errors: errors,
     tidelm_available: tidelmAvailable, test_only_local_backend: testLocalBackend, test_real_backend:testRealBackend,
-    linked_payment_delay: testPaymentDelay, model_inference_tested:realModelVerification?.passed === true,
+    linked_payment_delay: testPaymentDelay, decision_lab_tested:testDecisionLab, model_inference_tested:realModelVerification?.passed === true,
     real_model_verification:realModelVerification,
-    coverage: ["landing", "cash projection", "dual approval", "negotiation", "execution and read-back",
+    coverage: labOnly ? ["decision lab tools and role isolation; complete lab helper exercised"] : ["landing", "cash projection", "dual approval", "negotiation", "execution and read-back",
       ...(testRealBackend ? ["actual local model browser risk answer", "actual local model browser money refusal", "actual model chat preserves financial state"]
         : testLocalBackend ? ["test-double local model browser integration"] : tidelmAvailable ? ["model availability display"] : ["assistant fallback"]),
       "what-if", "audit tamper drill", "international fixtures", "fraud blocks",
-      "security self-test", "mobile overflow", "signup", "invite", "viewer isolation", "public guide routes and assets",
+      "security self-test", "mobile overflow", "signup", "invite", "viewer isolation", "personal prep unlinked and routes unavailable",
+      ...(testDecisionLab ? ["reverse stress witnesses", "assumed agreement stress", "recovery comparison", "privacy preview", "judge challenges", "capsule upload replay", "bilateral proposal", "PIN-gated event replan", "seven lab tabs at mobile width", "lab viewer isolation"] : []),
       "role-aware first-use guidance", "guidance preferences and keyboard focus", "guidance never changes financial state", "residual-risk disclosure",
       ...(testLocalBackend ? ["owner discount cap counter rejection", "replan cap/preference/exclusion preservation", "successor provenance and fresh approval"] : []),
       "missing payment-account disclosure and callback controls", "bound risk acknowledgement", "funding repayment and eligibility disclosure",
@@ -512,6 +519,10 @@ try {
   }, null, 2) + "\n");
   console.log("Browser end-to-end check passed with no page errors.");
 } catch (error) {
+  try {
+    await shot("failure");
+    writeFileSync(join(OUT,"failure.json"),JSON.stringify(await evaluate("({page:document.querySelector('#view')?.innerText,toasts:document.querySelector('#toasts')?.innerText,bodyEnd:document.body.innerText.slice(-2500)})"),null,2));
+  } catch (_diagnosticError) { /* retain the original failure */ }
   console.error(error.message);
   process.exitCode = 1;
 } finally {

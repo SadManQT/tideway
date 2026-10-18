@@ -85,14 +85,14 @@ def run(phase, host="127.0.0.1", port=8787):
     wait_ready(anonymous)
     uid = os.getuid()
     assert uid == 10001, f"Expected configured non-root uid10001; got {uid}"
-    private_paths = [".git", ".env", ".env.local", "submission-team.json", ".opencode", ".claude", ".vscode", "models", "tmp", "dist", "evidence/private"]
+    private_paths = [".git", ".env", ".env.local", "submission-team.json", ".opencode", ".claude", ".vscode", "models", "tmp", "dist", "evidence/private", "personal-prep"]
     assert not any((Path("/app") / name).exists() for name in private_paths), "Private/excluded paths leaked into image"
     assert not list(Path("/app").glob("*.key")) and not list(Path("/app").glob("*.sqlite3")), "Host private data leaked into image root"
-    guide = anonymous.request("GET", "/guide")
-    assert "<html" in guide.lower() and "tideway" in guide.lower(), "Public guide failed to render HTML"
+    for route in ("/guide", "/guide.html", "/guide.css", "/guide.js", "/personal-prep/project-guide/guide.html"):
+        anonymous.request("GET", route, expected=404)
     anonymous.request("GET", "/api/dashboard?" + urlencode({"business_id": BUSINESS}), expected=401)
     owner = Client(host, port).login("nadia", "2468")
-    checks = {"non_root_runtime": True, "private_paths_excluded": True, "public_guide_html": True,
+    checks = {"non_root_runtime": True, "private_paths_excluded": True, "personal_prep_unavailable": True,
               "protected_dashboard_requires_login": True}
     if phase == "workflow":
         owner.request("POST", "/api/session/login", {"operator_id": "nadia", "pin": "2468"}, expected=403, csrf=False)

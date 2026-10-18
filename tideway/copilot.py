@@ -23,6 +23,9 @@ from .projection import horizon_end, summary
 TOOLS = {
     "project_cash": {"scenario"},
     "simulate_risk": set(),
+    "reverse_stress": set(),
+    "agreement_stress": set(),
+    "recovery_options": set(),
     "what_if": {"customer_delays", "extra_expense", "drop_invoice_customer"},
     "propose_plan": {"exclude_counterparties", "max_discount_pct", "prefer"},
     "explain_plan": set(),
@@ -364,6 +367,10 @@ def run_plan(app, business_id, target_date, plan, actor, lang="en", role="owner"
             simulation = app.analysis(business_id, target_date, snapshot)["simulation"]
             results.append({"tool": tool, "result": {k: simulation[k] for k in ("probability_breach", "futures_short_of_20",
                                                                                "probability_payroll_unfunded", "most_common_breach_date", "runs")}})
+        elif tool in ("reverse_stress", "agreement_stress", "recovery_options"):
+            from .decision_lab import DecisionLab
+            kind = {"reverse_stress": "reverse", "agreement_stress": "promises", "recovery_options": "frontier"}[tool]
+            results.append({"tool": tool, "result": DecisionLab(app).analyze(business_id, target_date, kind)})
         elif tool == "what_if":
             changes = {}
             delays = args.get("customer_delays") or {}
@@ -470,6 +477,16 @@ def reply_from_results(results, currency, lang="en"):
         elif tool == "simulate_risk":
             lines.append(t(lang, "risk", short=r["futures_short_of_20"], payroll=round(r["probability_payroll_unfunded"] * 100),
                            runs=r["runs"]))
+        elif tool == "reverse_stress":
+            hits = [x for x in r["rows"] if x["minimum_delay_days"] is not None]
+            lines.append((f"Smallest tested single-customer breaking point: {hits[0]['customer']}, {hits[0]['minimum_delay_days']} extra days. "
+                          f"Reserve shortfall {money_text(hits[0]['after']['reserve_shortfall_minor'], currency)}. ") if hits else "No single-customer breaking point was found inside the tested delay bound. ")
+            lines.append(r["scope"])
+        elif tool == "agreement_stress":
+            lines.append(f"Stress-tested {r['agreements_tested']} accepted early-payment agreements with {r['delay_days']} extra days. "
+                         f"At an assumed 25% late-performance rate, reserve-breach risk is {r['rows'][2]['probability_breach']*100:.2f}% of simulated futures. These are assumptions, not observed reliability.")
+        elif tool == "recovery_options":
+            lines.append(f"Compared {len(r['rows'])} recovery options. Additional cash estimates require confirmed funding at opening; all actions still need fresh human approval. Open Decision lab for the costs, dates and consent requirements.")
         elif tool == "what_if":
             lines.append(conversation.whatif_text(r["projection"], r["baseline"], currency, lang))
         elif tool in ("propose_plan", "explain_plan"):

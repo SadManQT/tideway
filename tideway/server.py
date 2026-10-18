@@ -4,6 +4,7 @@ from __future__ import annotations
 import csv
 import io
 import json
+import os
 import re
 import secrets
 import sys
@@ -24,9 +25,9 @@ from .vision import TideVision, TideVisionUnavailable
 
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = {"/": "index.html", "/index.html": "index.html", "/styles.css": "styles.css", "/app.js": "app.js",
+          "/decision-lab.js": "decision-lab.js",
           "/quick-start.js": "quick-start.js",
-          "/favicon.svg": "favicon.svg", "/guide": "guide.html", "/guide.html": "guide.html",
-          "/guide.css": "guide.css", "/guide.js": "guide.js",
+          "/favicon.svg": "favicon.svg",
           "/fonts/space-grotesk.woff2": "fonts/space-grotesk.woff2", "/fonts/unbounded.woff2": "fonts/unbounded.woff2",
           "/fonts/jetbrains-mono.woff2": "fonts/jetbrains-mono.woff2", "/img/hero.webp": "img/hero.webp",
           "/benchmarks/tidepay.json": "../evidence/upgrade-v1/tidepay/report.json",
@@ -66,6 +67,9 @@ class Application:
         self.selftest_cache = None
         self.tidelm = TideLM()
         self.vision = TideVision(semantic_model=self.tidelm)
+        from .decision_lab import DecisionLab
+        self.lab = DecisionLab(self.tideway)
+        self.lab_enabled = os.environ.get("TIDEWAY_DECISION_LAB", "1").strip() != "0"
 
     # ---- helpers ---------------------------------------------------------------
 
@@ -98,7 +102,8 @@ class Application:
     def config(self, operator):
         return {**self.tideway.config(operator), "csrf_token": self.csrf, "operator": operator,
                 "ai_configured": bool(self.agent.key), "ai_model": self.agent.model if self.agent.key else None,
-                "tidelm": self.tidelm.status(), "vision": self.vision.status()}
+                "tidelm": self.tidelm.status(), "vision": self.vision.status(),
+                "features": {"decision_lab": self.lab_enabled}}
 
     def bundle_for(self, business_id, plan_id, bundle_id):
         plan = self.store.plan(business_id, plan_id)
@@ -126,6 +131,10 @@ class Application:
             return self.tideway.network(business_id, one("target_date"))
         if path == "/api/dashboard":
             return self.tideway.dashboard(business_id, one("target_date"))
+        if path == "/api/lab/watch":
+            if not self.lab_enabled:
+                raise ValidationError("Decision lab is disabled.")
+            return self.store.event_watch(business_id)
         if path == "/api/plan":
             return self.store.plan(business_id, one("plan_id", ""))
         if path == "/api/mandate":
@@ -212,6 +221,52 @@ class Application:
         business_id = validate_business_id(body.get("business_id", "")) if "business_id" in body else None
         if business_id:
             operator = self.scoped(operator, business_id)
+        if path.startswith("/api/lab/"):
+            if not self.lab_enabled:
+                raise ValidationError("Decision lab is disabled.")
+            if not business_id:
+                raise ValidationError("business_id is required.")
+            from . import replay
+            shared = ("business_id", "target_date", "plan_id", "bundle_id")
+            if path == "/api/lab/analyze":
+                self.fields(body, shared + ("kind", "max_days", "delay_days"), ("business_id", "kind"))
+                return self.lab.analyze(business_id, body.get("target_date"), body["kind"], plan_id=body.get("plan_id"),
+                                        bundle_id=body.get("bundle_id"), max_days=body.get("max_days", 30), delay_days=body.get("delay_days", 7))
+            if path == "/api/lab/privacy":
+                self.fields(body, ("business_id", "target_date", "message", "history"), ("business_id", "message"))
+                return self.agent.privacy_preview(business_id, body.get("target_date"), body["message"], body.get("history"), operator["role"])
+            if path == "/api/lab/watch":
+                self.fields(body, ("business_id", "enabled", "pin"), ("business_id", "enabled", "pin"))
+                self.require(operator, "owner")
+                return self.store.set_event_watch(business_id, body["enabled"], operator, body["pin"], actor)
+            if path == "/api/lab/event":
+                self.fields(body, ("business_id", "target_date", "event", "expected_snapshot", "request_id", "pin"), ("business_id", "event", "expected_snapshot", "request_id", "pin"))
+                self.require(operator, "owner")
+                return self.lab.event(business_id, body.get("target_date"), body["event"], body["expected_snapshot"], body["request_id"], operator, body["pin"], actor)
+            if path == "/api/lab/capsule":
+                self.fields(body, shared, ("business_id",))
+                return replay.export_capsule(self.lab.context(business_id, body.get("target_date"), body.get("plan_id"), body.get("bundle_id")))
+            if path == "/api/lab/replay":
+                self.fields(body, ("business_id", "capsule"), ("business_id", "capsule"))
+                # Cross-business capsules are not a route around membership.
+                capsule_snapshot = body["capsule"].get("snapshot") if isinstance(body["capsule"], dict) else None
+                capsule_business = capsule_snapshot.get("business") if isinstance(capsule_snapshot, dict) else None
+                if not isinstance(capsule_business, dict) or capsule_business.get("business_id") != business_id:
+                    raise ValidationError("Replay capsule must belong to the selected business.")
+                return replay.replay_capsule(body["capsule"])
+            if path == "/api/lab/challenge":
+                self.fields(body, shared + ("kind", "customer", "delay_days", "bill_id", "text"), ("business_id", "kind"))
+                context = self.lab.context(business_id, body.get("target_date"), body.get("plan_id"), body.get("bundle_id"))
+                return replay.challenge(self.lab, context, body["kind"], body.get("customer"), body.get("delay_days", 7), body.get("bill_id"), body.get("text", ""))
+            if path in ("/api/lab/bilateral", "/api/lab/bilateral/propose"):
+                allowed = ("business_id", "target_date", "bill_id", "supplier_ledger", "plan_id")
+                if path.endswith("/propose"):
+                    self.fields(body, allowed + ("quote_id", "expected_snapshot"), ("business_id", "bill_id", "supplier_ledger", "quote_id", "expected_snapshot"))
+                    self.require(operator, "owner", "accountant")
+                    return self.lab.bilateral_propose(business_id, body.get("target_date"), body["bill_id"], body["supplier_ledger"], body["quote_id"], body["expected_snapshot"], actor, body.get("plan_id"))
+                self.fields(body, allowed, ("business_id", "bill_id", "supplier_ledger"))
+                return self.lab.bilateral_quotes(business_id, body.get("target_date"), body["bill_id"], body["supplier_ledger"], body.get("plan_id"))
+            raise LookupError(path)
         if path == "/api/feedback":
             self.fields(body, ("business_id", "mode", "helpful", "question", "comment"), ("business_id", "mode", "helpful", "question"))
             return self.store.add_feedback(business_id, operator, body["mode"], body["helpful"], body["question"], body.get("comment", ""))
@@ -440,6 +495,8 @@ def make_handler(app):
             if not self.trusted_host():
                 return self.reply(403, {"error": "Untrusted host. Open the loopback address printed by the server."})
             parsed = urlsplit(self.path)
+            if parsed.path in ("/guide", "/guide.html", "/guide.css", "/guide.js") or parsed.path.startswith(("/guide/", "/personal-prep/")):
+                return self.reply(404, {"error": "Not found."})
             if parsed.path in STATIC:
                 name = STATIC[parsed.path]
                 try:

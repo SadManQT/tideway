@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from verify_submission import source_digest  # noqa: E402
 
 EXCLUDED_ROOTS = {".git", ".aws", ".agents", ".codex", ".claude", ".opencode", ".vscode",
-                  ".venv", "venv", "node_modules", "data", "models", "tmp", "dist", "demo"}
+                  ".venv", "venv", "node_modules", "data", "models", "tmp", "dist", "demo", "personal-prep"}
 RELEASE_FOLDERS = {"tideway", "web", "scripts", "tests", "docs", "slides", "evidence", "licenses", "examples"}
 RELEASE_CONFIG_FILES = {".github/workflows/ci.yml"}
 RELEASE_ROOT_FILES = {"README.md", "LICENSE", "THIRD_PARTY_NOTICES", "Makefile", "Dockerfile", ".dockerignore",
@@ -33,6 +33,8 @@ def allowed_source(name):
     if not isinstance(name, str) or "\\" in name or any(ord(c) < 32 for c in name):
         return False
     p = PurePosixPath(name)
+    if p.name.casefold() in {"guide.html", "guide.css", "guide.js", "23-guide-mobile.png", "24-guide-desktop.png"}:
+        return False
     if (p.is_absolute() or ".." in p.parts or not p.parts or p.as_posix() != name
             or any(":" in part for part in p.parts) or p.parts[0] in EXCLUDED_ROOTS):
         return False

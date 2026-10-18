@@ -5,8 +5,8 @@ Two modes share the same scoped tools:
 * local (default): a deterministic planner that runs the rescue workflow and
   answers plain-English questions from tool output.  No network.
 * LLM (optional, per-message consent): an OpenAI Responses API loop.  Before
-  any call, counterparty names are replaced with pseudonyms and record free
-  text is never sent.  Every figure in the model's answer is checked against
+  any call, counterparty names are replaced with pseudonyms and ledger
+  descriptions are omitted. User questions need privacy review. Every figure in the model's answer is checked against
   tool output; ungrounded numbers are flagged, not shown as fact.
 
 Neither mode can approve, execute, transfer money, run SQL or shell, or call
@@ -27,7 +27,8 @@ from .projection import summary
 
 
 PLANNER_ROLES = ("owner", "accountant")
-TOOL_NAMES = ("read_ledger", "profile_customers", "project_cash", "simulate_risk", "check_security", "compare_plans")
+TOOL_NAMES = ("read_ledger", "profile_customers", "project_cash", "simulate_risk", "check_security", "compare_plans",
+              "reverse_stress", "agreement_stress", "recovery_options")
 MAX_TOOL_CALLS = 8
 
 SYSTEM = """You are Tideway, an approval-gated cash-flow copilot for one small business in a synthetic sandbox.
@@ -76,6 +77,9 @@ TOOLS = [
     _tool("profile_customers", "Each customer's payment behaviour grade and expected delay (pseudonymised)."),
     _tool("project_cash", "Scheduled, likely (behaviour-adjusted) and stress cash projections."),
     _tool("simulate_risk", "Seeded Monte Carlo: probability of breaching the reserve floor."),
+    _tool("reverse_stress", "Find the smallest extra single-customer delay that breaks the current rescue, with witnesses."),
+    _tool("agreement_stress", "Stress assumed late performance of accepted early-payment agreements; not observed default rates."),
+    _tool("recovery_options", "Compare available recovery costs, risk and conditional additional opening cash. Read only."),
     _tool("check_security", "Security status: paused agent, changed bank details, quarantined text."),
     _tool("compare_plans", "Create a recovery proposal for human review. Never approves or executes."),
 ]
@@ -86,6 +90,7 @@ class Pseudonyms:
 
     def __init__(self, records):
         self.forward, self.backward = {}, {}
+        self.accounts = {r["payee_account"] for r in records["bills"] if r.get("payee_account")}
         counters = {"Customer": 0, "Supplier": 0}
         for kind, field, label in (("invoices", "customer", "Customer"), ("bills", "payee", "Supplier")):
             for row in records[kind]:
@@ -102,8 +107,12 @@ class Pseudonyms:
         if isinstance(value, list):
             return [self.scrub(item) for item in value]
         if isinstance(value, str):
+            for account in sorted(self.accounts, key=len, reverse=True):
+                value = value.replace(account, "[account removed]")
             for name, alias in sorted(self.forward.items(), key=lambda pair: -len(pair[0])):
                 value = value.replace(name, alias)
+            value = re.sub(r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}", "[email removed]", value)
+            value = re.sub(r"(?<!\w)\+?\d(?:[\s()-]*\d){9,14}(?!\w)", "[possible phone removed]", value)
             return value
         return value
 
@@ -165,6 +174,34 @@ class Agent:
     def store(self):
         return self.app.store
 
+    def provider_payload(self, target, inputs, role):
+        allowed = TOOL_NAMES if role in PLANNER_ROLES else tuple(n for n in TOOL_NAMES if n != "compare_plans")
+        return {"model": self.model, "instructions": SYSTEM + f"\nScope: one business, target date {target}.",
+                "input": inputs, "tools": [item for item in TOOLS if item["name"] in allowed],
+                "parallel_tool_calls": False, "store": False, "max_output_tokens": 1500}
+
+    def privacy_preview(self, business_id, target_date, message, history=None, role="owner"):
+        if not isinstance(message, str) or not message.strip() or len(message) > 2000:
+            raise ValidationError("Enter a question of 1-2000 characters.")
+        if history is not None and (not isinstance(history, list) or len(history) > 20):
+            raise ValidationError("History must contain at most 20 messages.")
+        snapshot = self.store.snapshot(business_id)
+        target = self.app._target(snapshot, target_date)
+        aliases = Pseudonyms(snapshot["records"])
+        inputs = self.cloud_inputs(aliases, message, history or [])
+        payload = self.provider_payload(target, inputs, role)
+        return {"business_id": business_id, "snapshot_hash": snapshot["snapshot_hash"], "read_only": True,
+                "provider_configured": bool(self.key), "network_call_made": False, "consent_granted": False,
+                "initial_payload": payload, "payload_sha256": hashlib.sha256(canonical_json(payload).encode()).hexdigest(),
+                "tool_output_preview": aliases.scrub({"invoices": snapshot["records"]["invoices"][:5], "bills": snapshot["records"]["bills"][:5]}),
+                "note": "Exact initial cloud payload built by the same function used for sending. Later tool outputs are separately scrubbed. IDs, amounts, dates and unrecognised personal text may remain: inspect before consent. This preview sends nothing and grants no consent."}
+
+    @staticmethod
+    def cloud_inputs(aliases, message, history):
+        inputs = [{"role": item["role"], "content": aliases.scrub(item["content"])[:2000]} for item in history[-6:]
+                  if isinstance(item, dict) and item.get("role") in ("user", "assistant") and isinstance(item.get("content"), str)]
+        return inputs + [{"role": "user", "content": aliases.scrub(message)}]
+
     # ---- scoped tools --------------------------------------------------------
 
     def tool(self, name, business_id, target_date, actor, trace):
@@ -173,7 +210,11 @@ class Agent:
         started = time.monotonic()
         snapshot = self.store.snapshot(business_id)
         policy = snapshot["policy"]
-        if name == "compare_plans":
+        if name in ("reverse_stress", "agreement_stress", "recovery_options"):
+            from .decision_lab import DecisionLab
+            result = DecisionLab(self.app).analyze(business_id, target_date, {"reverse_stress": "reverse", "agreement_stress": "promises", "recovery_options": "frontier"}[name])
+            permission = "agent_read"
+        elif name == "compare_plans":
             plan = self.app.propose(business_id, target_date, actor, proposed_by="agent")
             recommended = plan["bundles"][0] if plan["bundles"] else None
             result = {"plan_id": plan["plan_id"], "gap_minor": plan["gap_minor"], "action_needed": plan["action_needed"],
@@ -338,6 +379,11 @@ class Agent:
         elif re.search(r"\b(approve|execute|transfer|wire|send money|pay (the )?(supplier|bill|now|them)|release)\b", text):
             answer = ("I can't approve, execute or move money; that is deliberate. I can build a proposal. A person must "
                       "review it, enter their PIN and approve. Above the dual-approval threshold a second person must approve too.")
+        elif re.search(r"reverse stress|breaking point|smallest.{0,20}delay|agreement stress|promise reliability|recovery options|recovery trade.?off", text):
+            tool = "reverse_stress" if re.search(r"reverse stress|breaking point|smallest.{0,20}delay", text) else "agreement_stress" if re.search(r"agreement stress|promise reliability", text) else "recovery_options"
+            result = self.tool(tool, business_id, target, actor, trace)
+            answer = copilot.reply_from_results([{"tool": tool, "result": result}], currency)
+            topic = "risk"
         elif what_if:
             names = {row["customer"] for row in snapshot["records"]["invoices"]}
             customer = next((name for name in names if name.casefold() == what_if.group(1).strip().casefold()), None)
@@ -436,18 +482,14 @@ class Agent:
         snapshot = self.store.snapshot(business_id)
         target = target_date or snapshot["business"]["default_target_date"]
         aliases = Pseudonyms(snapshot["records"])
-        inputs = [{"role": item["role"], "content": aliases.scrub(item["content"])[:2000]} for item in history[-6:]
-                  if isinstance(item, dict) and item.get("role") in ("user", "assistant") and isinstance(item.get("content"), str)]
-        inputs.append({"role": "user", "content": aliases.scrub(message)})
+        inputs = self.cloud_inputs(aliases, message, history)
         trace, outputs, calls = [], [], 0
         started = time.monotonic()
         try:
             for _turn in range(5):
                 if time.monotonic() - started >= 120:
                     raise ProviderError("The 120-second answer budget was reached. Ask a narrower question.")
-                payload = {"model": self.model, "instructions": SYSTEM + f"\nScope: one business, target date {target}.",
-                           "input": inputs, "tools": [item for item in TOOLS if item["name"] in allowed], "parallel_tool_calls": False, "store": False,
-                           "max_output_tokens": 1500}
+                payload = self.provider_payload(target, inputs, role)
                 response = self.transport(payload, self.key)
                 if time.monotonic() - started >= 120:
                     raise ProviderError("The 120-second answer budget was reached; no further tools were run.")

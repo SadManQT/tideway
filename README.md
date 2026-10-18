@@ -2,7 +2,9 @@
 
 **Plan ahead for payroll.** On-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, and acts only with your approval.
 
-18 October local release: [screening, cash-gap diagnostics and HTTP hardening](docs/RELEASE_V10.md).
+18 October local upgrade: [decision support, event replanning and two-business negotiation](docs/RELEASE_V11.md).
+Open **Decision lab** after sign-in: [features, boundaries and a judge demonstration](docs/DECISION_LAB.md).
+Previous release: [screening, cash-gap diagnostics and HTTP hardening](docs/RELEASE_V10.md).
 The [behavior-driven evaluation](docs/BEHAVIORAL_EVALUATION.md) contains six scripted sandbox paths; real SME participants remain zero.
 
 Judge/auditor review (17 October): [fixed defects and remaining contest gaps](docs/INDEPENDENT_AUDIT.md). Exact current verification counts and provenance: [readiness index](docs/READINESS_CURRENT.md).
@@ -12,12 +14,12 @@ Judge/auditor review (17 October): [fixed defects and remaining contest gaps](do
 ## Two-minute tour for judges
 
 1. `python3 run.py` and open <http://127.0.0.1:8787>. Click **Nadia (Owner)** on the landing page.
-   The public project handbook is available at <http://127.0.0.1:8787/guide.html> (or `/guide`).
 2. **Cash weather**: Shapla Services is in a storm; press **Read my brief**.
 3. **Ask Tideway**: say "hi", then ask in another language, e.g. "Nila Traders 晚20天付款会怎样？". Open the plan under the answer to see exactly which tools the model chose.
 4. **Rescue plan**: run the agent, then approve with PIN `2468` (and Imran `1357` for the second approval).
 5. **Inbox**: paste the injection sample and watch it get flagged.
 6. **Security centre**: run the self-test (every attack blocked). **Evidence**: run the tamper drill.
+7. **Decision lab**: find a plan's breaking point, stress late agreements, compare recovery options, replay a private capsule or inspect the initial cloud payload. Nadia can arm the synthetic event monitor; an event changes the ledger and prepares a fresh proposal without approving it. Two-business negotiation checks supplied supplier reserve/payroll assumptions before creating an ordinary approval-gated proposal.
 
 The role-aware **Quick start** card guides a first forecast, proposal, approval review and receipt check. Its shortcuts only navigate; they never approve or execute. Optional local-model setup is documented for Windows and macOS in [SETUP_WINDOWS_MAC.md](docs/SETUP_WINDOWS_MAC.md). Without optional model files, the deterministic local agent answers.
 

@@ -16,6 +16,8 @@ provide comprehensive connection/header-flood protection. See
 
 ## 1. Assets and trust boundaries
 
+Decision lab follows the same tenant, session and CSRF boundaries. Synthetic event injection requires an actual owner membership, PIN, snapshot compare-and-swap and durable idempotency key; ledger change, old-authority invalidation and audit commit together. Post-commit proposal failures are disclosed without pretending the event failed. Replacement plans preserve owner instructions and retained supplier liquidity assumptions. A supplied synthetic supplier ledger never reads another tenant. Replay rejects malformed/tampered capsules and mismatched engine hashes; self-hashing is not proof of authorship. Privacy preview makes no provider call, grants no consent and uses the actual initial payload builder. Unrecognised personal text can remain. See [feature boundaries](DECISION_LAB.md).
+
 | Asset | Why it matters | Boundary that protects it |
 |---|---|---|
 | Money movement (sandbox) | The only consequential action | Signed mandate, maker-checker approval, role checks in `store.py` |
@@ -142,7 +144,7 @@ the authority even if a server ignores the schema. Generated proposals still req
 normal human approvals and simulated consent. Quick-start shortcuts only navigate;
 browser checks verify they do not mutate financial state or open approval dialogs.
 
-Public handbook and benchmark assets disclose synthetic documentation only. Session, tenant, role, Host/Origin, CSRF and execution controls remain in place for financial APIs. Package verification excludes private local metadata and checks actual extracted bytes; the synthetic public roster does not establish eligibility or registration.
+Public benchmark assets disclose synthetic evaluation only. The team's personal preparation guide is not served by the product and is excluded from submission ZIPs and Docker images. Session, tenant, role, Host/Origin, CSRF and execution controls remain in place for financial APIs. Package verification excludes private local metadata and checks actual extracted bytes; the synthetic public roster does not establish eligibility or registration.
 
 ## 9. Current independent checks and strengthened approval
 

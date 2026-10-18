@@ -1,8 +1,8 @@
 {
-  "run_at": "2026-10-18T06:35:25.401Z",
+  "run_at": "2026-10-18T09:36:21.522Z",
   "passed": true,
   "browser": "Chrome/155.0.8059.82",
-  "source_tree_sha256": "a803d9ffe64bb22bd29ce7899cd9809e47ec05b5e41d2f17bccd9ce919133f09",
+  "source_tree_sha256": "e0d58d285f5f2feb55af3678475369546eeb7a7465914cfb48acd2ffe5c08827",
   "source_unchanged_during_browser": true,
   "viewport": {
     "desktop": [
@@ -19,6 +19,7 @@
   "test_only_local_backend": false,
   "test_real_backend": false,
   "linked_payment_delay": true,
+  "decision_lab_tested": true,
   "model_inference_tested": false,
   "real_model_verification": null,
   "coverage": [
@@ -37,7 +38,17 @@
     "signup",
     "invite",
     "viewer isolation",
-    "public guide routes and assets",
+    "personal prep unlinked and routes unavailable",
+    "reverse stress witnesses",
+    "assumed agreement stress",
+    "recovery comparison",
+    "privacy preview",
+    "judge challenges",
+    "capsule upload replay",
+    "bilateral proposal",
+    "PIN-gated event replan",
+    "seven lab tabs at mobile width",
+    "lab viewer isolation",
     "role-aware first-use guidance",
     "guidance preferences and keyboard focus",
     "guidance never changes financial state",

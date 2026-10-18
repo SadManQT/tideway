@@ -1,6 +1,6 @@
 # Current technical readiness
 
-Current local release: [screening, cash-gap and HTTP fixes](RELEASE_V10.md).
+Current local release: [decision support, event replanning and bilateral negotiation](RELEASE_V11.md). Previous screening and HTTP evidence: [v10](RELEASE_V10.md).
 
 This is the current review index. Tideway remains a synthetic SME finance copilot:
 cash forecasts, recovery proposals, human approval, simulated negotiation and
@@ -41,7 +41,7 @@ Historical upgrade and Windows reports describe earlier source versions.
 
 | Check | Recorded result | Meaning and limit |
 |---|---|---|
-| Current unit run | 375 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
+| Current unit run | 429 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
 | Additional standard-library run | 252 run; 0 failures; 0 errors; 4 skipped | Python 3.11.16; optional photo tests require Pillow; report records its own source hash |
 | Financial scenarios | 24/24 expected workflows; 9 rescues | 8/9 executed rescues meet the 10% simulated risk target |
 | Shipped TidePay | 7,427 unseen synthetic invoices; MAE 8.5585 days | Heuristic 10.2296; training-only prior 11.7453; no weight changes |
@@ -73,8 +73,7 @@ From the project root on macOS (`python` on Windows):
 python3 run.py
 ```
 
-Open http://127.0.0.1:8787 and http://127.0.0.1:8787/guide.html.
-Opening guide.html directly from Finder does not start the application server.
+Open http://127.0.0.1:8787. Personal preparation material is not served or linked by the product.
 
 ```
 python3 scripts/prepare_release.py --checks-only
@@ -91,8 +90,8 @@ Use a completed LF checkout: source edits during the run invalidate verification
 
 - [Current test summary](../evidence/test-summary.json) and
   [raw test log](../evidence/test-run.log).
-- [Current scenario report](../evidence/upgrade-v10/scenarios/report.json),
-  [linked delay receipt](../evidence/upgrade-v10/payment-delay.json) and
+- [Current scenario report](../evidence/upgrade-v11/scenarios/report.json),
+  [linked delay receipt](../evidence/upgrade-v11/payment-delay.json) and
   [browser workflow](../evidence/screens/browser-verification.json).
 - [Exact shipped prediction evaluation](DEPLOYED_MODEL_EVALUATION.md), with
   raw invoices, shared test IDs, predictions, intervals and calibration bins.
@@ -100,7 +99,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
   native runtime provenance and every first-observation output.
 - [Separate post-fix model regression](../evidence/readiness-v3/blind/model-post-fix-regression.json)
   and [Python 3.11 standard-library run](../evidence/readiness-v3/python311/test-summary.json).
-- [Release stages and PDF hashes](../evidence/upgrade-v10/release-checks.json).
+- [Release stages and PDF hashes](../evidence/upgrade-v11/release-checks.json).
   `dist/extraction-verification.json` and `dist/SHA256SUMS.txt` prove the actual
   distributed bytes, rather than referring to an earlier ZIP.
 - [Independent judge/auditor report](INDEPENDENT_AUDIT.md), with reproduced
@@ -109,7 +108,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
 - [User study protocol](USER_STUDY_KIT.md) and
   [pending participation status](../evidence/readiness-v3/user-study-status.json).
 
-Current test source digest: `a803d9ffe64bb22bd29ce7899cd9809e47ec05b5e41d2f17bccd9ce919133f09`.
+Current test source digest: `e0d58d285f5f2feb55af3678475369546eeb7a7465914cfb48acd2ffe5c08827`.
 Reports contain their own timestamps and hashes; older Windows/upgrade evidence
 is historical and does not attest to the current checkout.
 
@@ -121,7 +120,7 @@ improvement. Optional semantic checks remain advisory and require a local model.
 Real consented SME feedback, current MLX/TideLM planning and receipt-model evaluation,
 external security testing and real-data calibration remain outstanding.
 Partial settlements, reversals and real lender eligibility require separate
-financial design before live integration. Stored hosted run 14 concluded success for commit 6dbb3151562f9c0e8079ad32fbbc71b29f56c87b.
+financial design before live integration. Stored hosted run 16 concluded success for commit ddf71c173744c06e28df493cef18b8efddc43d20.
 That historical receipt does not attest to this local remediation; no push or
 hosted run was performed for these changes.
 See the explicit infrastructure status below for the separately tested Docker
@@ -149,14 +148,14 @@ be guaranteed from synthetic checks while these validation gaps remain.
 - Planner candidates now mix cost, stressed cash and headroom, with stable customer
   draws and independent finalist validation. Counteroffer repair locks changed terms
   and requires fresh human approval and exact counterparty consent for every request.
-- [Known D06/H11 risk follow-up](../evidence/upgrade-v10/planner/report.json)
+- [Known D06/H11 risk follow-up](../evidence/readiness-v5/planner/report.json)
   separates risk estimates, sampling uncertainty and the allowed-action limit.
   An above-target business is escalated, not made successful by raising the target.
-- Docker status: PASS: frozen-source Linux image, isolated HTTP and persisted-state checks.
-  [Raw Docker proof](../evidence/upgrade-v10/docker/report.json).
+- Docker status: Not yet a passing current-source Docker run; inspect raw status.
+  [Raw Docker proof](../evidence/upgrade-v11/docker/report.json).
   No native MLX, host-network reachability or external penetration test is implied.
-- [Stored hosted CI status](../evidence/upgrade-v10/hosted-ci-status.json):
-  Stored hosted run 14 concluded success for commit 6dbb3151562f9c0e8079ad32fbbc71b29f56c87b. No hosted run for the current remediation is claimed.
+- [Stored hosted CI status](../evidence/upgrade-v11/hosted-ci-status.json):
+  Stored hosted run 16 concluded success for commit ddf71c173744c06e28df493cef18b8efddc43d20. No hosted run for the current remediation is claimed.
 - [Implementation and verification report](REMEDIATION_V7.md).
 
 ## Owner constraints and v7 screening follow-up
@@ -177,17 +176,8 @@ Development cases are disclosed v6 regressions. The fresh set is separately AI-a
 
 AI-authored assumed behavior scenarios; real participants: 0. Backend workflow outcomes do not measure human task completion, satisfaction or SUS.
 
-[6/6 checks passed](../evidence/upgrade-v10/behavior-checks.json): decline without changes, incomplete approval, owner discount limits, residual-risk consent, a known hostile supplier message and repeat execution. Human validation remains pending.
+[6/6 checks passed](../evidence/upgrade-v11/behavior-checks.json): decline without changes, incomplete approval, owner discount limits, residual-risk consent, a known hostile supplier message and repeat execution. Human validation remains pending.
 
-## Current Windows follow-up
+## Decision lab
 
-- [screening-baseline](../evidence/upgrade-v10/screening-baseline/report.json): 48 cases; combined attack recall 95.8%; ordinary-benign warning false-positive rate 18.8%; payment review recall 100.0%.
-- [screening-revised](../evidence/upgrade-v10/screening-revised/report.json): 48 cases; combined attack recall 100.0%; ordinary-benign warning false-positive rate 0.0%; payment review recall 100.0%.
-- [screening-challenge](../evidence/upgrade-v10/screening-challenge/report.json): 24 cases; combined attack recall 100.0%; ordinary-benign warning false-positive rate 12.5%; payment review recall 100.0%.
-- [screening-final-known](../evidence/upgrade-v10/screening-final-known/report.json): 72 cases; combined attack recall 100.0%; ordinary-benign warning false-positive rate 0.0%; payment review recall 100.0%.
-
-Same Windows compatible model for paired disclosed development; source-aware challenge, not external or independent blind validation. The challenge first observation is preserved; final-known is a post-fix regression over all disclosed cases. Native MLX planning and receipt-model verification are deferred until Mac access is available.
-
-[H11 cash-gap diagnostic](../evidence/upgrade-v10/liquidity-gap.json): original risk 11.78%; conditional on MYR 3,000.00 extra cash at opening, fresh-draw risk 0.43%. Funding is unconfirmed and unexecuted. Baseline ledger, target and approval requirements are unchanged.
-
-HTTP regressions reject duplicate JSON keys and ambiguous body framing, tolerate malformed cookies as unauthenticated, share anonymous rate limits across invalid cookie values, and bound body reads by a total deadline. These are internal tests, not an external security audit.
+Reverse stress includes one-day-less witnesses; agreement lateness rates are supplied assumptions; recovery comparisons use disjoint conditional funding draws. Owner-authorised synthetic events invalidate old mandates before optional re-proposal. Two-sided supplied synthetic ledgers are checked again at approval/execution and retained counter-offers. Private replay recomputes financial outputs, while privacy preview shares the initial cloud request builder. See [feature guide](DECISION_LAB.md) and [current evaluation](../evidence/upgrade-v11/decision-lab.json). These engineering checks do not replace real SME participation, native Mac verification or external review.

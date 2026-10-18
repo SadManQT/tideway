@@ -18,6 +18,7 @@ import re
 import secrets
 import sqlite3
 import uuid
+from copy import deepcopy
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -42,6 +43,7 @@ from .domain import (
     days_between,
 )
 from .projection import project, summary
+from .event_store import EventStoreMixin
 
 
 SESSION_HOURS = 8
@@ -197,7 +199,7 @@ CREATE INDEX IF NOT EXISTS mandate_business ON mandates(business_id,status,creat
 """
 
 
-class Store:
+class Store(EventStoreMixin):
     def __init__(self, path, key_path=None, witness_path=None):
         self._memory = str(path) == ":memory:"
         self.path = None if self._memory else Path(path)
@@ -1093,11 +1095,26 @@ class Store:
 
     # ---- plans, approvals and mandates -------------------------------------
 
-    def create_plan(self, business_id, payload, snapshot_hash, proposed_by, actor, replaces_mandate=None):
+    def create_plan(self, business_id, payload, snapshot_hash, proposed_by, actor, replaces_mandate=None, event_request_id=None):
         """Store a proposal.  With replaces_mandate, that mandate is cancelled in the same transaction,
         only after every check has passed, so a refused proposal never leaves it cancelled."""
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            event_value = None
+            if event_request_id is not None:
+                event_key = f"lab-event:{business_id}:{event_request_id}"
+                event_row = db.execute("SELECT value FROM metadata WHERE key=?", (event_key,)).fetchone()
+                if not event_row:
+                    raise ValidationError("The replan event was not found.")
+                event_value = json.loads(event_row[0])
+                event_receipt = event_value["receipt"]
+                if event_receipt.get("plan_id"):
+                    saved = db.execute("SELECT * FROM plans WHERE id=? AND business_id=?", (event_receipt["plan_id"], business_id)).fetchone()
+                    approvals = [self._approval_dict(item) for item in db.execute(
+                        "SELECT bundle_id,operator_id,role,review_ms,created_at,risk_acknowledgement FROM approvals WHERE plan_id=? ORDER BY created_at", (saved["id"],))]
+                    return {**json.loads(saved["payload"]), "plan_id": saved["id"], "plan_hash": saved["plan_hash"], "status": saved["status"], "approvals": approvals}
+                if event_receipt["after_snapshot"] != snapshot_hash or event_receipt["target_date"] != payload["target_date"]:
+                    raise ValidationError("The event was superseded; refresh and create a new proposal.")
             snapshot = self._snapshot(db, business_id)
             if snapshot["policy"]["agent_paused"]:
                 raise ValidationError("The agent is paused (kill switch). Resume it to create new proposals.")
@@ -1106,6 +1123,13 @@ class Store:
             if snapshot["snapshot_hash"] != snapshot_hash:
                 raise ValidationError("Records changed while planning; compare again.")
             constraints = check_plan_constraints(payload, snapshot["policy"])
+            if event_value is not None and (constraints != event_value["receipt"]["owner_constraints"]
+                    or not set(event_value["receipt"]["excluded_counterparties"]) <= set(payload.get("excluded_counterparties", []))):
+                raise ValidationError("Event replanning must preserve the owner's instructions and exclusions.")
+            payload = deepcopy(payload)
+            from .bilateral import carry_terms
+            if event_value is not None:
+                carry_terms(snapshot, payload["bundles"], event_value["receipt"].get("bilateral"), payload["target_date"])
             supersedes = None
             if replaces_mandate is not None:
                 old, signed = self._load_bundle_mandate(db, business_id, replaces_mandate)
@@ -1119,6 +1143,8 @@ class Store:
                         or signed["business_id"] != business_id):
                     raise ValidationError("The parent proposal changed or does not match its signed mandate; create a fresh owner-reviewed proposal.")
                 previous_constraints = check_plan_constraints(parent, snapshot["policy"])
+                parent_bundle = next(b for b in parent["bundles"] if b["bundle_id"] == signed["bundle_id"])
+                carry_terms(snapshot, payload["bundles"], parent_bundle.get("bilateral"), payload["target_date"])
                 if (constraints["max_discount_bps"] > previous_constraints["max_discount_bps"]
                         or constraints["prefer"] != previous_constraints["prefer"]
                         or not set(parent.get("excluded_counterparties", ())) <= set(payload.get("excluded_counterparties", ()))
@@ -1150,6 +1176,9 @@ class Store:
                                                 "actions": [action["action_id"] for action in item["actions"]],
                                                 "economic_cost_minor": item["economic_cost_minor"]} for item in payload["bundles"]],
                                    "gap_minor": payload["gap_minor"]})
+            if event_value is not None:
+                event_value["receipt"]["plan_id"] = identifier
+                db.execute("UPDATE metadata SET value=? WHERE key=?", (canonical_json(event_value), event_key))
         return {**body, "plan_id": identifier, "plan_hash": plan_hash, "status": "pending", "approvals": [], **receipt}
 
     def plan(self, business_id, plan_id):
@@ -1224,6 +1253,9 @@ class Store:
                 raise ValidationError("An action is above the per-action limit.")
         if self._exposure_today(snapshot["business"]["id"]) + exposure > policy["daily_cap_minor"]:
             raise ValidationError("This bundle would exceed the daily exposure cap.")
+        if bundle.get("bilateral") is not None:
+            from .bilateral import validate_bundle
+            validate_bundle(snapshot, bundle, max(action["to_date"] for action in bundle["actions"]))
         return exposure
 
     def _exposure_today(self, business_id):

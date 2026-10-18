@@ -4,7 +4,8 @@ FinTechathon 2026 International Track, Topic E: SME Finance Copilot.
 This package is a synthetic research prototype. It connects to no real bank,
 lender, customer or supplier and moves no real money.
 
-Current local follow-up: [v10 changes and retained limitations](RELEASE_V10.md).
+Current local upgrade: [v11 decision lab and verification](RELEASE_V11.md), with a [reviewer feature guide](DECISION_LAB.md).
+Previous follow-up: [v10 changes and retained limitations](RELEASE_V10.md).
 Screening results distinguish disclosed development, a source-aware challenge
 first observation and a post-fix known-case regression. H11's original risk
 remains above target; an extra-cash diagnostic is conditional, unconfirmed and
@@ -44,9 +45,11 @@ python -m unittest discover -s tests -v
 python -m tideway.selftest
 ```
 
-The public handbook is at `/guide`. The model-status card distinguishes the
+The model-status card distinguishes the
 deterministic default from optional local-compatible and Apple Silicon inference. Receipt
 extraction and TideLM are optional, with limitations in `docs/MODEL_CARD.md`.
+
+Open **Decision lab** for reverse stress, assumed agreement lateness, recovery comparisons, owner-authorised event replanning, judge challenges/private financial replay, initial cloud payload inspection and two-business synthetic liquidity negotiation. Read tools never approve or execute; changed events and accepted bilateral quotes still require fresh normal approvals. See `docs/DECISION_LAB.md` for a focused walkthrough and limits.
 
 ## Deliverable map
 

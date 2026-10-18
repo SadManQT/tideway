@@ -327,6 +327,10 @@ class Tideway:
             kind = action["counterparty_kind"]
             profile = snapshot["counterparties"].get(f"{kind}:{action['counterparty']}", {}).get("profile")
             response = counterparty.respond(action, profile)
+            if bundle.get("bilateral") and action["record_id"] == bundle["bilateral"]["bill_id"]:
+                from .bilateral import validate_bundle
+                response["bilateral_liquidity"] = validate_bundle(snapshot, bundle, plan["target_date"])
+                response["assumptions_sha256"] = bundle["bilateral"]["assumptions_sha256"]
             replies.append(self.store.record_negotiation(business_id, mandate_id, action, response,
                                                          counterparty.AGENT_VERSION, actor))
         return {"replies": replies, **self.store.mandate(business_id, mandate_id)}

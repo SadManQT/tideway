@@ -1,0 +1,63 @@
+{
+  "renderer": "pypdfium2",
+  "tool_scope": "Optional temporary PDF review tools; not runtime or ZIP dependencies",
+  "visual_inspection_completed": true,
+  "pdfs": [
+    {
+      "file": "slides/pitch.pdf",
+      "sha256": "ae585fb9f1cd2561c3fb189d8010568ca722a23a3d056348cf99a97ec503b928",
+      "pages": 17,
+      "all_pages_have_text": true,
+      "all_pages_rendered": true,
+      "contact_sheets": [
+        "evidence/guide-isolation/pdf-review/pitch-1.png",
+        "evidence/guide-isolation/pdf-review/pitch-2.png"
+      ]
+    },
+    {
+      "file": "docs/architecture.pdf",
+      "sha256": "b00e1f2efd84e1ebcaf9d789e879439b1fc4866050282110fe439236b491834e",
+      "pages": 9,
+      "all_pages_have_text": true,
+      "all_pages_rendered": true,
+      "contact_sheets": [
+        "evidence/guide-isolation/pdf-review/architecture-1.png"
+      ]
+    },
+    {
+      "file": "docs/security-assessment.pdf",
+      "sha256": "40a57d0e882f34e1494f785227d889608d10b0c2e8f63cb07725747d42f59a0e",
+      "pages": 8,
+      "all_pages_have_text": true,
+      "all_pages_rendered": true,
+      "contact_sheets": [
+        "evidence/guide-isolation/pdf-review/security-assessment-1.png"
+      ]
+    },
+    {
+      "file": "docs/submission-notes.pdf",
+      "sha256": "d6582d5bcca31becde40d4a8e75367221198e5445b09f63f0692bc2d26829c51",
+      "pages": 3,
+      "all_pages_have_text": true,
+      "all_pages_rendered": true,
+      "contact_sheets": [
+        "evidence/guide-isolation/pdf-review/submission-notes-1.png"
+      ]
+    },
+    {
+      "file": "docs/Tideway_FinTechathon_2026_Roadmap.pdf",
+      "sha256": "1c5001b6b7cab9126a0dcdfe2e123776ee9b02b7c599794051c72e56a15d0b25",
+      "pages": 20,
+      "all_pages_have_text": true,
+      "all_pages_rendered": true,
+      "contact_sheets": [
+        "evidence/guide-isolation/pdf-review/Tideway_FinTechathon_2026_Roadmap-1.png",
+        "evidence/guide-isolation/pdf-review/Tideway_FinTechathon_2026_Roadmap-2.png",
+        "evidence/guide-isolation/pdf-review/Tideway_FinTechathon_2026_Roadmap-3.png"
+      ]
+    }
+  ],
+  "reviewed_page_count": 37,
+  "unchanged_previously_reviewed_pages": 20,
+  "review": "Four updated PDFs: all 37 pages rendered and inspected. Roadmap PDF remains byte-identical to its prior 20-page visual review."
+}

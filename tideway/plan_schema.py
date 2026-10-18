@@ -39,6 +39,9 @@ def _build_schema():
     args = {
         "project_cash": _object({"scenario": {"type": "string", "enum": ["base", "likely", "stress"]}}),
         "simulate_risk": _object({}),
+        "reverse_stress": _object({}),
+        "agreement_stress": _object({}),
+        "recovery_options": _object({}),
         "what_if": _object({
             "customer_delays": _nullable({"type": "object", "maxProperties": MAX_NAMES,
                                 "additionalProperties": {"type": "integer", "minimum": -30, "maximum": 90}}),

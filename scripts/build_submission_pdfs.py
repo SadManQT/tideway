@@ -230,7 +230,7 @@ def slides():
                      "No user study or external penetration test yet",
                      "Next: consented SME pilots, new unseen screening checks and independent security review"]},
     ]
-    scenario_dir = next((folder for folder in ("evidence/upgrade-v10", "evidence/release-v9", "evidence/completion-v8", "evidence/remediation-v7", "evidence/readiness-v5", "evidence/readiness-v3", "evidence/upgrade-v1")
+    scenario_dir = next((folder for folder in ("evidence/upgrade-v11", "evidence/upgrade-v10", "evidence/release-v9", "evidence/completion-v8", "evidence/remediation-v7", "evidence/readiness-v5", "evidence/readiness-v3", "evidence/upgrade-v1")
                          if (ROOT / folder / "scenarios/report.json").is_file()), "evidence/readiness-v3")
     scenarios = _json(scenario_dir + "/scenarios/report.json") or {}
     if scenarios:
@@ -278,6 +278,13 @@ def slides():
                                     "Old mandate refused; new proposal replaces supplier deferral with early-payment offers",
                                     "Bay counters at 1.5%; fresh approvals, consent, execute once and verify",
                                     "Runbook: docs/PAYMENT_DELAY_RUNBOOK.md; no video recorded"]})
+    lab = _json("evidence/upgrade-v11/decision-lab.json") or {}
+    if lab.get("passed"):
+        deck.append({"title": "Challenge before acting", "subtitle": "Stress the rescue; protect both sides",
+                     "bullets": ["Smallest single-customer delay with a one-day-less witness; assumed agreement lateness",
+                                 "Compare recovery cost/risk; extra cash stays conditional and unconfirmed",
+                                 "Owner-authorised events invalidate old mandates; fresh proposals need approval",
+                                 "Synthetic buyer/supplier cash paths, private financial replay and cloud payload inspection"]})
     team = _json("submission-team.public.json") or {}
     if team.get("team_name"):
         deck[0]["bullets"].append(team["team_name"])

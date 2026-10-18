@@ -1,0 +1,57 @@
+{
+  "checked_at_utc": "2026-10-18T07:16:16.7512343Z",
+  "run_number": 16,
+  "commit": "ddf71c173744c06e28df493cef18b8efddc43d20",
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/SadManQT/tideway/actions/runs/39106728786",
+  "jobs": [
+    {
+      "name": "Isolated Docker build and persisted HTTP workflow",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "stdlib / ubuntu-24.04 / Python 3.14",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Optional photo validation / Pillow",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "stdlib / ubuntu-24.04 / Python 3.11",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "Browser workflows and extracted package",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "stdlib / windows-2022 / Python 3.14",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "stdlib / windows-2022 / Python 3.11",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "stdlib / macos-14 / Python 3.11",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "stdlib / macos-14 / Python 3.14",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "remote_commit": "ddf71c173744c06e28df493cef18b8efddc43d20",
+  "scope": "Last hosted baseline only. Local v11 edits have not been pushed and have no new hosted CI run."
+}

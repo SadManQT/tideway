@@ -221,7 +221,8 @@ def liquidity_gap(minimums, reserve, risk_target=.1):
 
 
 def monte_carlo(business, policy, records, target_date, adjustments=(), promises=None,
-                runs=1000, seed=0, lookahead_days=0, as_of=None):
+                runs=1000, seed=0, lookahead_days=0, as_of=None,
+                agreement_failure_bps=None, agreement_delay_days=7):
     """Probability of breaching the reserve floor under payment-timing uncertainty.
 
     Only the timing of open customer invoices is uncertain; every other event
@@ -229,6 +230,9 @@ def monte_carlo(business, policy, records, target_date, adjustments=(), promises
     customer per simulated future, so a slow customer is slow on all its
     invoices (the cautious choice).  No invoice is paid before its expected date.
     """
+    if agreement_failure_bps is not None and (type(agreement_failure_bps) is not int or not 0 <= agreement_failure_bps <= 10000
+            or type(agreement_delay_days) is not int or not 1 <= agreement_delay_days <= 60):
+        raise ValueError("Invalid agreement stress assumptions.")
     as_of = as_of or business["opening_date"]
     end = horizon_end(business, target_date, lookahead_days)
     events, _ = build_events(business, records, end, adjustments, promises=promises)
@@ -237,6 +241,7 @@ def monte_carlo(business, policy, records, target_date, adjustments=(), promises
     fixed = [0] * length
     payroll_index = set()
     uncertain = []
+    conditional = []
     invoices = {row["id"]: row for row in records["invoices"]}
     for event in events:
         index = days_between(start, event["date"])
@@ -244,6 +249,8 @@ def monte_carlo(business, policy, records, target_date, adjustments=(), promises
             row = invoices[event["id"]]
             minimum_late = max(0, days_between(row["due_date"], as_of))
             uncertain.append((event["id"], event["amount_minor"], event["date"], row["due_date"], row["customer"], minimum_late))
+        elif event["kind"] == "invoice_early_payment" and agreement_failure_bps is not None:
+            conditional.append((index, event["effect_minor"], invoices[event["id"]]["customer"]))
         else:
             fixed[index] += event["effect_minor"]
             if event.get("payroll"):
@@ -259,6 +266,7 @@ def monte_carlo(business, policy, records, target_date, adjustments=(), promises
         floor = delay_cdf(probs, minimum_late - 1) if minimum_late > 0 else 0.0  # still unpaid today
         return max(minimum_late, delay_quantile(probs, floor + u * (1 - floor)))
     rng = random.Random(seed)
+    agreement_rng = random.Random(stable_seed(seed, "agreement-stress-v1"))
     reserve = policy["reserve_floor_minor"]
     # Keep the random stream aligned when comparing bundles. An early-payment
     # agreement removes an uncertain event, but must not give every remaining
@@ -274,6 +282,13 @@ def monte_carlo(business, policy, records, target_date, adjustments=(), promises
     for _ in range(runs):
         draws = {customer: rng.random() for customer in customers}
         net = fixed[:]
+        # A disjoint stream preserves the original invoice draws. A customer's
+        # agreements share a failure draw; acceptance is not settled cash.
+        failures = {customer: agreement_rng.random() for customer in sorted({c for _, _, c in conditional})}
+        for index, amount, customer in conditional:
+            offset = index + (agreement_delay_days if failures[customer] * 10000 < agreement_failure_bps else 0)
+            if offset < length:
+                net[offset] += amount
         arrivals = {}
         for invoice_id, amount, expected, due, customer, minimum_late in uncertain:
             local = random.Random(int(draws[customer] * 2 ** 53))

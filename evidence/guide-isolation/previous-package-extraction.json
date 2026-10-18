@@ -1,0 +1,49 @@
+{
+  "passed": true,
+  "archive_sha256": "7ce4486575a27f59bb1bb843270067209521d6c185668ecec7564a01542812e7",
+  "source_tree_sha256": "2a998782e856e8e9bf525047d1fda8ba83c72fc697636f2625cb9e409d352e93",
+  "files_verified": 1257,
+  "python": "3.13.7 (tags/v3.13.7:bcee1c3, Aug 14 2025, 14:15:11) [MSC v.1944 64 bit (AMD64)]",
+  "git_present": false,
+  "site_packages_enabled": false,
+  "private_workstation_files_required": false,
+  "http_checks": {
+    "/": 200,
+    "/guide": 200,
+    "/guide.html": 200,
+    "/guide.css": 200,
+    "/guide.js": 200,
+    "/benchmarks/tidepay.json": 200,
+    "/benchmarks/tidepay-deployed.json": 200,
+    "/benchmarks/tidepay-deployed-reliability.svg": 200,
+    "/fonts/space-grotesk.woff2": 200,
+    "/fonts/unbounded.woff2": 200,
+    "/fonts/jetbrains-mono.woff2": 200,
+    "/img/hero.webp": 200,
+    "/api/dashboard?business_id=shapla-services": 401
+  },
+  "binary_asset_checks": {
+    "/fonts/space-grotesk.woff2": {
+      "content_type": "font/woff2",
+      "bytes": 22320
+    },
+    "/fonts/unbounded.woff2": {
+      "content_type": "font/woff2",
+      "bytes": 50892
+    },
+    "/fonts/jetbrains-mono.woff2": {
+      "content_type": "font/woff2",
+      "bytes": 31340
+    },
+    "/img/hero.webp": {
+      "content_type": "image/webp",
+      "bytes": 46402
+    }
+  },
+  "test_result": [
+    "----------------------------------------------------------------------",
+    "Ran 429 tests in 110.902s",
+    "",
+    "OK (skipped=5)"
+  ]
+}
