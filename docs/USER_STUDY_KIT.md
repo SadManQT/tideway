@@ -10,6 +10,52 @@ exploratory 25-minute session. Record recruitment and personal connections in
 private planning notes; a convenience sample cannot establish representative
 usability or willingness to adopt. This implementation has not contacted anyone.
 
+## Five SME scenario templates (not evidence)
+
+The fixed scripts, acceptance criteria and observer fields are in
+[`evidence/readiness-v3/user-study-scenarios.json`](../evidence/readiness-v3/user-study-scenarios.json).
+Read each scenario's exact `moderator_read_aloud` dialogue and use its synthetic
+stimulus. This file is a protocol template, not a participant dataset:
+
+- `scenario_status` is `not_observed`, `study_status` is `pending`, and there are
+  zero participant rows.
+- Every supplied outcome and time below is labelled **ILLUSTRATIVE
+  EXAMPLE/TEMPLATE — NOT AN OBSERVED RESULT**. Do not copy an example into the
+  private CSV or describe it as a completion, assistance, timing or learning
+  result.
+- The checked-in `evidence/readiness-v3/user-study-status.json` remains
+  `status: pending_no_consented_participants` with `consented_participants: 0`.
+
+| Scenario | Exact persona and fixed dialogue focus | Existing CSV task | Illustrative example only | Learning points to check |
+|---|---|---|---|---|
+| **P1 — owner payroll safety** | Owner of synthetic Shapla Services; read: “Can Shapla pay salaries on 31 October while keeping its reserve? Show where you found the answer.” | **T1** → `t1_status`, `t1_seconds` | `assisted`, **92 seconds** | Finds Cash weather; separates payroll funding from the reserve-floor result; sees enough evidence to ask for help. |
+| **P2 — accountant selected currency** | Accountant; set **Show amounts in** to CNY, then ask the fixed T3 question about Bay Logistics paying 15 days late and explain the answer in CNY. | **T3** → `t3_status`, `t3_seconds` (optional model rules still apply) | `completed` without help, **75 seconds** | Finds the currency control; sees consistent selected-currency presentation; understands that the ledger is unchanged and the answer is receipt-grounded. |
+| **P3 — owner relationship protection** | Owner protecting a long-term customer relationship; read: “Which customer is most important to the current cash risk, and why? Explain what respectful next step you would consider without sending anything.” | **T2** → `t2_status`, `t2_seconds` | `assisted`, **140 seconds** | Connects customer evidence to exposure/timing; considers a respectful proposal; understands that no message is sent automatically. |
+| **P4 — owner remaining risk** | Owner reviewing a rescue proposal; read: “Explain its cost and remaining risk before deciding whether to approve the simulated actions.” | **T4** → `t4_status`, `t4_seconds` | `completed` without help, **110 seconds** | Reads cost and exact residual risk; understands feasibility is not a guarantee; makes a reasoned approve-or-decline decision. |
+| **P5 — bookkeeper interruption/draft preservation** | Bookkeeper reviewing the fixed TEST-271 supplier message; pause after draft fields appear, then resume from the saved draft. | **T5** → `t5_status`, `t5_seconds` | `completed` without help, **55 seconds active time**; interruption time is separate | Keeps legitimate fields as a draft; treats the bypass sentence as untrusted; preserves verification and approval boundaries after interruption. |
+
+### Observer rules for these templates
+
+- **Acceptance:** mark a mapped task successful only when every acceptance
+  criterion in the JSON is visible in the participant's action or answer. A safe
+  refusal, a reasoned decline, or leaving a flagged draft unsaved counts when
+  that is the stated criterion. Never infer success from a time or from the
+  supplied example.
+- **Assistance:** run unassisted first. Do not point, explain, search or correct.
+  After 60 seconds stuck, read the scenario's fixed hint once and record the
+  mapped CSV task as `assisted`. Use `completed` only when the participant met
+  the criteria without that hint.
+- **Timing:** start after the read-aloud prompt when the first task action
+  begins; stop at success, abandonment or moderator termination. Exclude
+  consent, setup, sign-in and post-task explanation. Record only active task
+  time in the existing `t1_seconds`–`t5_seconds` field. For P5, pause during
+  interruption and keep interruption duration separate; the current CSV has no
+  interruption column, so do not add one or fold it into `t5_seconds`.
+- **Data boundary:** use only the fixed anonymous CSV fields already documented
+  below. Do not collect free-text comments, identity data, scenario labels,
+  dialogue responses or new timing columns. The JSON contains no participant
+  rows and must not be imported as study evidence.
+
 ## Consent and privacy
 
 Read this before observing or recording anything:

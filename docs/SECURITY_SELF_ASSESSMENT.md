@@ -81,7 +81,7 @@ Each self-test case in `tideway/selftest.py` is mapped to the OWASP Top 10 for L
 | `AT-DOS-01` | Burst requests are rate-limited | LLM10 | Token-bucket rate limiter refuses burst requests. |
 | `AT-DEL-01` | The agent principal cannot execute a money mandate | ASI03 | The agent principal cannot execute a money mandate even with a standing mandate active. |
 
-Latest run: **30/30 cases pass (5 task cases, 25 attack cases, 0 attacks not blocked)**. Raw output is in `evidence/results.csv`, `evidence/run-log.jsonl` and `evidence/verification-summary.json`. Additional unit and HTTP tests are in `tests/test_core.py`: exact money parsing, currency rules, CSV validation, hidden-Unicode and injection flags, 401 without login, 403 on bad CSRF, Origin and Host, cookie flags, typed-amount requirement for dual bundles, and spreadsheet formula escaping.
+Latest run: **30/30 cases pass (5 task cases, 25 attack cases, 0 attacks not blocked)**. Raw output is in `evidence/results.csv`, `evidence/run-log.jsonl` and `evidence/verification-summary.json`. The explicit contest scenarios SEC-01 through SEC-05 are separately reproduced by [`docs/CONTEST_SECURITY_EVIDENCE.md`](CONTEST_SECURITY_EVIDENCE.md) and recorded in `evidence/contest-security.json`; they remain automated synthetic boundary evidence, not human or external security validation. Additional unit and HTTP tests are in `tests/test_core.py`: exact money parsing, currency rules, CSV validation, hidden-Unicode and injection flags, 401 without login, 403 on bad CSRF, Origin and Host, cookie flags, typed-amount requirement for dual bundles, and spreadsheet formula escaping.
 
 ## 4. Web-layer controls
 
