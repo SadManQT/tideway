@@ -526,6 +526,23 @@ class Store(EventStoreMixin):
                              (business_id, operator_id)).fetchone()
         return row["role"] if row else None
 
+    @staticmethod
+    def _member_operator(db, business_id, operator):
+        """Return the operator with the current business role, inside a write transaction.
+
+        The HTTP layer scopes requests before dispatch, but membership can be
+        revoked or downgraded between that check and a consequential store
+        operation.  The membership row is authoritative while the transaction
+        holds its write lock; callers must not be trusted to supply the role.
+        """
+        if not isinstance(operator, dict) or not isinstance(operator.get("id"), str):
+            raise ValidationError("A signed-in operator is required.")
+        row = db.execute("SELECT role FROM memberships WHERE business_id=? AND operator_id=?",
+                         (business_id, operator["id"])).fetchone()
+        if not row:
+            raise ValidationError("An active membership in this business is required.")
+        return {**operator, "role": row["role"]}
+
     def businesses_for(self, operator_id):
         with self.connect() as db:
             rows = db.execute("SELECT b.*, m.role FROM businesses b JOIN memberships m ON m.business_id=b.id "
@@ -582,14 +599,15 @@ class Store(EventStoreMixin):
         return business, {"id": operator_id, "name": name, "role": "owner"}
 
     def create_invite(self, business_id, inviter, role, display_name):
-        if inviter["role"] != "owner":
-            raise ValidationError("Only the owner can invite people.")
         if role not in ROLES:
             raise ValidationError("Role must be owner, accountant or viewer.")
         name = text_value({"name": display_name}, "name", limit=80, label="Name")
         token = secrets.token_urlsafe(9)
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            inviter = self._member_operator(db, business_id, inviter)
+            if inviter["role"] != "owner":
+                raise ValidationError("Only the owner can invite people.")
             self._business_row(db, business_id)
             plan = (db.execute("SELECT plan FROM subscriptions WHERE business_id=?", (business_id,)).fetchone() or {"plan": "demo"})["plan"]
             seats = db.execute("SELECT COUNT(*) FROM memberships WHERE business_id=?", (business_id,)).fetchone()[0]
@@ -647,10 +665,11 @@ class Store(EventStoreMixin):
         return {"members": members, "pending_invites": invites, "subscription": self.subscription(business_id)}
 
     def remove_member(self, business_id, owner, operator_id):
-        if owner["role"] != "owner":
-            raise ValidationError("Only the owner can remove people.")
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            owner = self._member_operator(db, business_id, owner)
+            if owner["role"] != "owner":
+                raise ValidationError("Only the owner can remove people.")
             row = db.execute("SELECT role FROM memberships WHERE business_id=? AND operator_id=?",
                              (business_id, operator_id)).fetchone()
             if not row:
@@ -673,6 +692,7 @@ class Store(EventStoreMixin):
         note = text_value({"comment": comment or ""}, "comment", required=False, limit=500, label="Comment")
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            operator = self._member_operator(db, business_id, operator)
             self._business_row(db, business_id)
             db.execute("INSERT INTO feedback(business_id,operator_id,mode,helpful,question_sha256,comment,created_at) VALUES (?,?,?,?,?,?,?)",
                        (business_id, operator["id"], mode, int(helpful), hashlib.sha256(question.encode()).hexdigest(), note, utc_now()))
@@ -978,10 +998,11 @@ class Store(EventStoreMixin):
 
     def set_policy(self, business_id, changes, operator, actor):
         pause_only = set(changes) == {"agent_paused"} and changes["agent_paused"] is True
-        if operator["role"] != "owner" and not (pause_only and operator["role"] in APPROVER_ROLES):
-            raise ValidationError("Only the owner can change policy. Any approver can pause the agent.")
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            operator = self._member_operator(db, business_id, operator)
+            if operator["role"] != "owner" and not (pause_only and operator["role"] in APPROVER_ROLES):
+                raise ValidationError("Only the owner can change policy. Any approver can pause the agent.")
             business = self._business_row(db, business_id)
             current = self._policy(db, business_id)
             allowed = {"reserve_floor_minor", "action_limit_minor", "daily_cap_minor", "dual_approval_threshold_minor",
@@ -1047,12 +1068,13 @@ class Store(EventStoreMixin):
         return None if _expired(document["expires_at"]) else document
 
     def verify_payee(self, business_id, payee, account, operator, actor, method):
-        if operator["role"] != "owner":
-            raise ValidationError("Only the owner can verify changed bank details.")
         if method != "callback_number_on_file":
             raise ValidationError("Verification must use a phone number already on file, never one from the request.")
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            operator = self._member_operator(db, business_id, operator)
+            if operator["role"] != "owner":
+                raise ValidationError("Only the owner can verify changed bank details.")
             self._business_row(db, business_id)
             if not all(isinstance(value, str) for value in (payee, account)):
                 raise ValidationError("Payee and account must be text.")
@@ -1332,11 +1354,14 @@ class Store(EventStoreMixin):
                                   "remaining risk before approving; refresh if the proposal changed.")
 
     def approve(self, business_id, plan_id, bundle_id, operator, pin, actor, review_ms=None, risk_acknowledgement=None):
-        if operator["role"] not in APPROVER_ROLES:
-            raise ValidationError("Only an owner or accountant can approve; viewers and the agent cannot.")
+        if not isinstance(operator, dict) or not isinstance(operator.get("id"), str):
+            raise ValidationError("A signed-in operator is required.")
         self.verify_pin(operator["id"], pin)
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            operator = self._member_operator(db, business_id, operator)
+            if operator["role"] not in APPROVER_ROLES:
+                raise ValidationError("Only an owner or accountant can approve; viewers and the agent cannot.")
             snapshot = self._snapshot(db, business_id)
             derived = self.derived(snapshot)
             row, payload = self._fresh_plan(db, business_id, plan_id, snapshot)
@@ -1521,11 +1546,12 @@ class Store(EventStoreMixin):
             return {"negotiation_id": identifier, "mandate_status": status, "response": response, **receipt}
 
     def cancel_mandate(self, business_id, mandate_id, operator, actor):
-        if operator["role"] not in APPROVER_ROLES:
-            raise ValidationError("Viewers cannot cancel mandates.")
         self._mandate_id(mandate_id)
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            operator = self._member_operator(db, business_id, operator)
+            if operator["role"] not in APPROVER_ROLES:
+                raise ValidationError("Viewers cannot cancel mandates.")
             row = db.execute("SELECT * FROM mandates WHERE business_id=? AND id=?", (business_id, mandate_id)).fetchone()
             if not row:
                 raise ValidationError("Mandate was not found for this business.")
@@ -1550,10 +1576,11 @@ class Store(EventStoreMixin):
     def execute(self, business_id, mandate_id, idempotency_key, operator, actor):
         if not idempotency_ok(idempotency_key):
             raise ValidationError("idempotency_key must contain 1-120 safe characters.")
-        if operator["role"] not in APPROVER_ROLES:
-            raise ValidationError("Only an owner or accountant can execute; viewers and the agent cannot.")
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            operator = self._member_operator(db, business_id, operator)
+            if operator["role"] not in APPROVER_ROLES:
+                raise ValidationError("Only an owner or accountant can execute; viewers and the agent cannot.")
             prior = db.execute("SELECT * FROM executions WHERE business_id=? AND idempotency_key=?",
                                (business_id, idempotency_key)).fetchone()
             if prior:
@@ -1662,6 +1689,7 @@ class Store(EventStoreMixin):
                 raise ValidationError("Reminders need an open invoice for the same customer.")
             human_present = operator is not None
             if human_present:
+                operator = self._member_operator(db, business_id, operator)
                 if operator["role"] not in APPROVER_ROLES:
                     raise ValidationError("Viewers cannot send reminders.")
             else:
@@ -1732,10 +1760,11 @@ class Store(EventStoreMixin):
             return result
 
     def reset_sandbox(self, business_id, operator, actor):
-        if operator["role"] not in APPROVER_ROLES:
-            raise ValidationError("Viewers cannot reset the sandbox.")
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            operator = self._member_operator(db, business_id, operator)
+            if operator["role"] not in APPROVER_ROLES:
+                raise ValidationError("Viewers cannot reset the sandbox.")
             business = self._business_row(db, business_id)
             db.execute("UPDATE sandbox_state SET current_date=?,state_json=?,reset_count=reset_count+1,updated_at=? WHERE business_id=?",
                        (business["opening_date"], canonical_json(self._empty_state()), utc_now(), business_id))
