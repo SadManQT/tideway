@@ -572,7 +572,14 @@ class Tideway:
         dates = derived["likely_dates"]
 
         def run(rows=None, invoice_dates=None):
-            projection = project(business, policy, rows or records, target, adjustments=state["adjustments"], scenario="what-if",
+            scenario_records = records if rows is None else rows
+            scenario_invoice_ids = {row["id"] for row in scenario_records["invoices"]}
+            # A stress scenario may remove invoices; omit only the committed
+            # early-payment adjustments that would otherwise dangle.
+            scenario_adjustments = [item for item in state["adjustments"]
+                                    if item.get("kind") != "invoice_early_payment"
+                                    or item.get("invoice_id") in scenario_invoice_ids]
+            projection = project(business, policy, scenario_records, target, adjustments=scenario_adjustments, scenario="what-if",
                                  invoice_dates=invoice_dates or dates, promises=state["promises"],
                                  lookahead_days=policy["lookahead_days"])
             result = summary(projection)
