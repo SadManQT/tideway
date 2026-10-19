@@ -1,0 +1,20 @@
+{
+  "captured_at_utc": "2026-10-19T09:42:23.565962+00:00",
+  "cpu": [
+    "AMD Ryzen 7 7700 8-Core Processor"
+  ],
+  "physical_ram_gib": 31.1,
+  "os": "Microsoft Windows 11 Pro",
+  "os_version": "10.0.26200",
+  "os_build": "26200",
+  "architecture": "64-bit",
+  "edge": [
+    {
+      "product_version": "155.0.4283.62",
+      "file_version": "155.0.4283.62",
+      "executable_sha256": "c2451a012ff88e82449834de5b526ebb42b5a3fc25958d795910d2b172c975b6",
+      "executable_last_write_utc": "2026-10-16T02:06:23.2615505Z"
+    }
+  ],
+  "scope": "Measured on the current audit machine; compare the measured CPU/RAM fields with the reported Intel Core i5/16 GB survey laptop. The two contexts are not established as the same machine. Browser version is not assigned retrospectively to the survey."
+}

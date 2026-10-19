@@ -1,0 +1,12 @@
+{
+  "schema_version": "tideway-survey-context-capture-manifest-v1",
+  "captured_at_utc": "2026-10-19T09:42:23.565962+00:00",
+  "collector_sha256": "001010388b25f42ebf4d09b2a190275685f8078078b50fff7a3dacd55fb97f35",
+  "sha256": {
+    "verification.json": "4a7e3c89fdab19c557a16d8a7d48146811facb266e6215a8f3fea7cf0db7e92d",
+    "system-info.json": "4e4e9cb0cdd3b5e3bd87a0d2ae0a0d003945274bcd47513cf1bf6abb623d771e",
+    "runtime-provenance.json": "219143a19cdb99d04814ab25ef5a3ca419c8a419d0bd870cca604076ea0bf192",
+    "source-lineage.json": "d5304aae62fdffa42e5341193043d56034a57a6d9c0aceabc2be32835056b956",
+    "system-info.txt": "cbd60977ca9ffd059cf8413a761d3beb9d49ca3e8820f43103ec6d9d3b48698d"
+  }
+}

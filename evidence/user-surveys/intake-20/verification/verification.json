@@ -1,0 +1,35 @@
+{
+  "schema_version": "tideway-survey-context-verification-v1",
+  "captured_at_utc": "2026-10-19T09:42:23.565962+00:00",
+  "scope": "Current artifact measurements and supplied export linkage; historical session binding is unresolved.",
+  "sources": {
+    "sme": {
+      "filename": "sme-survey-20.csv",
+      "rows": 20,
+      "sha256": "c03c5de70709ada7bb8e9c268c31971f16d153b9b4975d78f3b9f4f8c95bedef",
+      "archived_bytes_match_intake": true,
+      "download_copy_checked": true
+    },
+    "security": {
+      "filename": "security-survey-20.csv",
+      "rows": 20,
+      "sha256": "09d4ed2f042b5b61355cba077902d0bf296e07a55a3aa8de31ada9b4f2ff8f02",
+      "archived_bytes_match_intake": true,
+      "download_copy_checked": true
+    }
+  },
+  "record_linkage": {
+    "source_rows_verified": 40,
+    "reported_overlap_references_verified": 10,
+    "role_label_differences": 2,
+    "identity_independently_verified": false,
+    "role_note": "Different role labels do not by themselves prove different people; the correspondence remains team-reported."
+  },
+  "original_observation_sheets_identified": false,
+  "survey_commit_verified": false,
+  "survey_browser_version_verified": false,
+  "survey_runtime_verified": false,
+  "current_edge_version": "155.0.4283.62",
+  "cache_artifact_integrity_verified": true,
+  "completion": "Export linkage and current context verified; original session provenance cannot be reconstructed from these artifacts alone."
+}

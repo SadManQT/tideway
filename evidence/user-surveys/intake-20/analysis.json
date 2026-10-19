@@ -328,8 +328,19 @@
   "collection_independently_verified": false,
   "metadata_followup": {
     "file": "session-metadata.json",
-    "sha256": "003bd319344c475f98ccd47b0d3c2a3cee3f6ba99dd6b345d5ecf7ffd2b682f7",
+    "sha256": "c75e12d759656ac91701ea59348c056315edf9c929fb7ad408273cdef912a7a2",
     "initial_analysis_sha256": "0daef55a6103df71a4e01a82d8c2cd66735698f516a26ddacead7fb875a75d23",
     "scope": "Later team-reported metadata and corrected English; source CSV bytes and calculated observations are unchanged."
+  },
+  "artifact_verification": {
+    "manifest": "verification/manifest.json",
+    "manifest_sha256": "c15d16d7a3db51d0b315e1ab1a45e6e10ca9a7060be14f92e5b7a220063fd50a",
+    "source_exports": "Archived CSV bytes and 40 rows linked to the intake receipt and aggregate hashes.",
+    "overlap": "The 10 team-reported ID pairs exist in both supplied files; this does not independently verify identity.",
+    "current_system_info": "verification/system-info.json",
+    "current_runtime_artifacts": "verification/runtime-provenance.json",
+    "related_application_tree": "verification/source-lineage.json",
+    "historical_session_binding_verified": false,
+    "scope": "Current context and artifact integrity only. The measured AMD/approximately 32 GB machine differs from the reported Intel i5/16 GB survey laptop. The historical survey commit, browser version and runtime use remain unbound."
   }
 }

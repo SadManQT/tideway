@@ -1,0 +1,26 @@
+{
+  "captured_at_utc": "2026-10-19T09:42:23.565962+00:00",
+  "audit_checkout_commit": "39552f00633737b5bef924300baacb7e5a548e1f",
+  "application_source_tree_sha256": "f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c",
+  "related_commits": [
+    {
+      "commit": "cb45bc7a442d111148dbc70da798ea5415cee7c7",
+      "application_tree_matches_current": true
+    },
+    {
+      "commit": "e360e8bdaa446fb2f99d34f1de772f1209626963",
+      "application_tree_matches_current": true
+    },
+    {
+      "commit": "39552f00633737b5bef924300baacb7e5a548e1f",
+      "application_tree_matches_current": true
+    }
+  ],
+  "engineering_receipt_sha256": {
+    "evidence/test-summary.json": "d0dadda0d80b572de53b984f670f1b244159b0ffae2934e80bec085fcfdedd3b",
+    "evidence/screens/browser-verification.json": "81f363cf1cde3349a2eb9ece32b1b63a262da1cf4d03ef50d13adaac1b87d5f4"
+  },
+  "historical_survey_commit": null,
+  "historical_survey_working_tree": null,
+  "scope": "These commits share the verified application tree. Date or byte equivalence alone does not identify which checkout ran during the survey."
+}

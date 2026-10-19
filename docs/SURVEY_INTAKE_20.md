@@ -21,20 +21,56 @@ records its source, outstanding artifacts and scope.
 | Assistance | One fixed hint after 60 seconds stuck |
 | Failed and skipped tasks | Retained |
 | Device | Windows laptop; Intel Core i5; 16 GB RAM |
-| OS and browser | Windows 11; Microsoft Edge. Exact browser version was not supplied |
+| OS and browser | Windows 11; Microsoft Edge. Historical survey-laptop version is unbound; current audit-machine version is captured separately below |
 | Language and currency | Bangla or English, recorded per participant; BDT; selected-currency check included |
 | AI model | Qwen3-4B-Instruct-2507, Q4_K_M |
 | Runtime | llama.cpp b11678; local, inside Tideway through a loopback server |
 | Fallback | Recorded separately and not counted as model success, according to the team; per-generation fallback records were not inspected |
 | Tested commit / local changes | Not supplied; the current repository commit is not substituted for the session build |
 | Collection | Outcomes and times were recorded during sessions. SUS was completed individually afterward, without coaching |
-| Original records | The team states that observation sheets and unchanged exports were supplied. The two preserved CSV exports were inspected; separate observation sheets have not been identified in this intake |
+| Original records | Both CSV exports match the archived copies, intake receipt and aggregate hashes; 40 row fingerprints and the 10 reported overlap references are linked privately. Separate observation sheets have not been identified |
 
 The team states that model/runtime hashes were recorded in
-`runtime-provenance.json`. A survey-linked copy has not been identified in this
-intake. The existing v14 engineering runtime manifest belongs to a separate
-model evaluation and is not treated as proof of the survey runtime. The exact
-Edge version in the proposed `system-info.txt` also remains uninspected.
+`runtime-provenance.json`. The cache artifacts have now been freshly verified
+and recorded in the current-context manifest below. A session-linked invocation
+record has not been identified. The v14 engineering model evaluation remains a
+separate observation and is not treated as a participant-session log.
+
+## Artifact verification
+
+The [verification report](../evidence/user-surveys/intake-20/verification/verification.json)
+and [hashed capture manifest](../evidence/user-surveys/intake-20/verification/manifest.json)
+record the automated checks. Capture timestamps describe this audit, not the
+earlier participant sessions.
+
+| Check | Verified result | Scope |
+|---|---|---|
+| Original CSV linkage | Both Downloads files, private archived copies, intake receipt and aggregate source hashes match; 20 rows in each file | Verifies supplied export bytes, not how observations were collected |
+| Reported overlap | All 10 reported anonymous ID pairs exist. Two pairs use different role labels across the files | Role labels can vary by context; the identity correspondence remains team-reported |
+| Current Edge | 155.0.4283.62; executable version and SHA-256 captured | Measured audit machine has an AMD Ryzen 7 7700 and 31.1 GiB physical RAM. It is not established as the reported Intel i5/16 GB survey laptop |
+| Model cache | Qwen3-4B-Instruct-2507-Q4_K_M, 2,497,281,120 bytes; SHA-256 matches the repository pin | Cached artifact integrity; no new inference or participant use is claimed |
+| Runtime archive | llama.cpp b11678 Windows Vulkan archive; size and SHA-256 match the repository pin | Archive integrity, not a log of the runtime invoked in the survey |
+| Application lineage | The application trees at cb45bc7, e360e8b and 39552f0 match the current tested source digest | The exact participant-session checkout and uncommitted changes remain unknown |
+
+The readable [current system info](../evidence/user-surveys/intake-20/verification/system-info.txt),
+[runtime provenance](../evidence/user-surveys/intake-20/verification/runtime-provenance.json)
+and [source lineage](../evidence/user-surveys/intake-20/verification/source-lineage.json)
+retain the measurements. The application digest is
+`f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c`.
+This audit closes supplied-export linkage and current artifact measurement.
+It cannot retroactively identify the survey laptop/browser, checkout, model
+invocations or absent observation sheets.
+
+With the original private intake present, verify the capture using:
+
+```bash
+python evidence/user-surveys/intake-20/verification-tools/verify_context.py --check
+```
+
+For a separate new current-context capture on Windows, supply `--model-cache`
+and a new `--out` directory under this public intake. Existing captures refuse
+overwrite. The tool publishes no participant rows, identity data, workstation
+name, credentials or private file paths.
 
 ## SME records
 

@@ -71,15 +71,26 @@
   "collection": {
     "outcomes_and_times": "Recorded during the sessions, as clarified by the user.",
     "sus": "Completed individually afterward, without coaching.",
-    "original_records": "The team states that original observation sheets and unchanged exports were supplied. The two preserved CSV exports were inspected; separate observation sheets have not been identified in this intake.",
+    "original_records": "The team reports original observation sheets and unchanged exports. The two original CSV exports match the archived copies, intake receipt and aggregate source hashes; 40 row fingerprints and the 10 reported overlap references are preserved privately. Separate observation sheets have not been identified.",
     "english_correction": "Future tense and demo/fictional cohort wording were corrected to describe completed human sessions on the explicit basis of the user clarification. Financial fixtures and actions remain fictional/sandboxed."
   },
   "outstanding_artifacts": [
-    "Tested commit and working-tree state",
-    "Exact browser version / system-info.txt",
-    "Survey-linked runtime-provenance.json and model/runtime hashes",
-    "Original session observation sheets and per-generation fallback records",
+    "Historical session commit / working-tree state; related application trees have been compared",
+    "Historical survey-laptop Edge version; current audit-machine version has been captured",
+    "Session-linked runtime invocation and fallback logs; current cache hashes are verified",
+    "Original observation sheets beyond the verified CSV exports",
     "Structured security outcomes and technical logs"
   ],
-  "scope": "Team-reported human retest using a fictional financial sandbox. This metadata does not establish native MLX adapter or receipt-model verification, external security review, a blind model benchmark or causal usability improvement."
+  "scope": "Team-reported human retest using a fictional financial sandbox. This metadata does not establish native MLX adapter or receipt-model verification, external security review, a blind model benchmark or causal usability improvement.",
+  "artifact_verification": {
+    "manifest": "verification/manifest.json",
+    "manifest_sha256": "c15d16d7a3db51d0b315e1ab1a45e6e10ca9a7060be14f92e5b7a220063fd50a",
+    "source_exports": "Archived CSV bytes and 40 rows linked to the intake receipt and aggregate hashes.",
+    "overlap": "The 10 team-reported ID pairs exist in both supplied files; this does not independently verify identity.",
+    "current_system_info": "verification/system-info.json",
+    "current_runtime_artifacts": "verification/runtime-provenance.json",
+    "related_application_tree": "verification/source-lineage.json",
+    "historical_session_binding_verified": false,
+    "scope": "Current context and artifact integrity only. The measured AMD/approximately 32 GB machine differs from the reported Intel i5/16 GB survey laptop. The historical survey commit, browser version and runtime use remain unbound."
+  }
 }

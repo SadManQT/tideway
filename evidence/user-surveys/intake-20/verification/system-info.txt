@@ -1,0 +1,8 @@
+Tideway CURRENT audit context
+Captured at UTC: 2026-10-19T09:42:23.565962+00:00
+Edge: 155.0.4283.62
+CPU: AMD Ryzen 7 7700 8-Core Processor
+Physical RAM GiB: 31.1
+OS: Microsoft Windows 11 Pro
+Application source SHA-256: f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c
+Scope: current machine only; historical survey laptop/build/browser not established.
