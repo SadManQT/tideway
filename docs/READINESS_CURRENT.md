@@ -64,8 +64,9 @@ timings without structured technical outcomes, so no security pass rate is infer
 The [survey artifact audit](SURVEY_INTAKE_20.md#artifact-verification) verifies both
 source exports, 40 row fingerprints, the reported overlap references, cached
 model/runtime hashes and related application trees. Current Edge 155.0.4283.62
-was measured on a different hardware configuration from the reported survey
-laptop; historical session build/browser/runtime binding remains unresolved.
+was measured on the desktop PC. The team confirmed that the survey used a
+separate laptop, explaining the hardware difference. Historical laptop-session
+build/browser/runtime binding remains unresolved.
 
 The prediction cohort contains 80 new synthetic SMEs, four seeds and 7,427
 invoices after the shipped model's historical training period. No fresh labels

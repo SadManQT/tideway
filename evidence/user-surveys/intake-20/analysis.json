@@ -328,7 +328,7 @@
   "collection_independently_verified": false,
   "metadata_followup": {
     "file": "session-metadata.json",
-    "sha256": "c75e12d759656ac91701ea59348c056315edf9c929fb7ad408273cdef912a7a2",
+    "sha256": "ffa7a75b7e69c306925a0552c64d47a8bfbda55dcfdd55c5f8926b8e84f330b4",
     "initial_analysis_sha256": "0daef55a6103df71a4e01a82d8c2cd66735698f516a26ddacead7fb875a75d23",
     "scope": "Later team-reported metadata and corrected English; source CSV bytes and calculated observations are unchanged."
   },
@@ -341,6 +341,15 @@
     "current_runtime_artifacts": "verification/runtime-provenance.json",
     "related_application_tree": "verification/source-lineage.json",
     "historical_session_binding_verified": false,
-    "scope": "Current context and artifact integrity only. The measured AMD/approximately 32 GB machine differs from the reported Intel i5/16 GB survey laptop. The historical survey commit, browser version and runtime use remain unbound."
+    "scope": "Current desktop context and artifact integrity only. The user explicitly confirmed the survey was performed on a separate laptop; the hardware difference is explained. The historical survey commit, laptop browser version and session runtime use remain unbound."
+  },
+  "device_context_clarification": {
+    "basis": "The user clarified that the survey was conducted on a laptop and current development/audit work is on a desktop PC.",
+    "survey_device_type": "laptop",
+    "current_audit_device_type": "desktop PC",
+    "distinct_devices_reported": true,
+    "hardware_difference_explained": true,
+    "historical_survey_browser_build_runtime_verified": false,
+    "scope": "Separate devices explain the hardware difference. Current desktop measurements are not assigned to the laptop session."
   }
 }

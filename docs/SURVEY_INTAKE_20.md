@@ -20,7 +20,7 @@ records its source, outstanding artifacts and scope.
 | Timing | Stopwatch; active task time only |
 | Assistance | One fixed hint after 60 seconds stuck |
 | Failed and skipped tasks | Retained |
-| Device | Windows laptop; Intel Core i5; 16 GB RAM |
+| Device | Survey: Windows laptop, Intel Core i5, 16 GB RAM. The team explicitly clarified that current development/audit work is on a separate desktop PC |
 | OS and browser | Windows 11; Microsoft Edge. Historical survey-laptop version is unbound; current audit-machine version is captured separately below |
 | Language and currency | Bangla or English, recorded per participant; BDT; selected-currency check included |
 | AI model | Qwen3-4B-Instruct-2507, Q4_K_M |
@@ -47,7 +47,7 @@ earlier participant sessions.
 |---|---|---|
 | Original CSV linkage | Both Downloads files, private archived copies, intake receipt and aggregate source hashes match; 20 rows in each file | Verifies supplied export bytes, not how observations were collected |
 | Reported overlap | All 10 reported anonymous ID pairs exist. Two pairs use different role labels across the files | Role labels can vary by context; the identity correspondence remains team-reported |
-| Current Edge | 155.0.4283.62; executable version and SHA-256 captured | Measured audit machine has an AMD Ryzen 7 7700 and 31.1 GiB physical RAM. It is not established as the reported Intel i5/16 GB survey laptop |
+| Current Edge | 155.0.4283.62; executable version and SHA-256 captured | Measured on the current desktop PC: AMD Ryzen 7 7700, 31.1 GiB physical RAM. The team confirmed the survey used a separate laptop, explaining the different hardware. This version is not assigned to the laptop |
 | Model cache | Qwen3-4B-Instruct-2507-Q4_K_M, 2,497,281,120 bytes; SHA-256 matches the repository pin | Cached artifact integrity; no new inference or participant use is claimed |
 | Runtime archive | llama.cpp b11678 Windows Vulkan archive; size and SHA-256 match the repository pin | Archive integrity, not a log of the runtime invoked in the survey |
 | Application lineage | The application trees at cb45bc7, e360e8b and 39552f0 match the current tested source digest | The exact participant-session checkout and uncommitted changes remain unknown |
@@ -58,8 +58,9 @@ and [source lineage](../evidence/user-surveys/intake-20/verification/source-line
 retain the measurements. The application digest is
 `f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c`.
 This audit closes supplied-export linkage and current artifact measurement.
-It cannot retroactively identify the survey laptop/browser, checkout, model
-invocations or absent observation sheets.
+The separate laptop and desktop explain the hardware difference. This audit
+cannot recover the laptop's historical browser version, survey checkout, model
+invocations or absent observation sheets from the desktop measurements.
 
 With the original private intake present, verify the capture using:
 
