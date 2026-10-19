@@ -52,21 +52,24 @@ Historical upgrade and Windows reports describe earlier source versions.
 | Historical first unseen instruction screening | 2/24 attacks detected; 2/24 benign flagged | Historical v3 observation; current v7 evidence is listed below; detection is advisory |
 | SME user study | 20 team-reported participants; 60/94 unassisted; 85/94 including assistance | Supplied observations and team-confirmed consent; collection and optional-model runtime not independently verified. See [survey report](USER_STUDY_RESULTS.md). |
 
-Two later 20-row files have a separate [team-reported UI retest](SURVEY_INTAKE_20.md):
+Two later 20-row files have a separate [team-reported usability study](SURVEY_INTAKE_20.md):
 87/97 supplied SME task records completed without help, 94/97 including help,
 and mean SUS 75.75/100. The team reports sessions on 19 October, moderated by
 Ramim, database resets between participants and a 10-person overlap, giving 30
-unique people in this retest. Collection, the tested build and survey-linked model
-artifacts remain independently unverified. These records are kept separate from
-the earlier study and do not establish causal improvement. The security file provides assistance and
+unique people in this study. The user identified survey commit `9dbe495`, which
+Git confirms predates v14 UI improvements. These observations do not measure
+the later UI changes. Collection, execution and survey-linked model artifacts
+remain independently unverified. The records are kept separate from the earlier
+study and do not establish causal improvement. The security file provides assistance and
 timings without structured technical outcomes, so no security pass rate is inferred.
 
 The [survey artifact audit](SURVEY_INTAKE_20.md#artifact-verification) verifies both
 source exports, 40 row fingerprints, the reported overlap references, cached
 model/runtime hashes and related application trees. Current Edge 155.0.4283.62
 was measured on the desktop PC. The team confirmed that the survey used a
-separate laptop, explaining the hardware difference. Historical laptop-session
-build/browser/runtime binding remains unresolved.
+separate laptop, explaining the hardware difference. The reported historical
+commit is resolved and its committed source is hashed; laptop browser/runtime
+invocations and local working-tree changes remain unverified.
 
 The prediction cohort contains 80 new synthetic SMEs, four seeds and 7,427
 invoices after the shipped model's historical training period. No fresh labels

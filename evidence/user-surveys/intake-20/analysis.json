@@ -1,6 +1,6 @@
 {
   "schema_version": "tideway-survey-intake-analysis-v1",
-  "classification": "team_reported_current_ui_retest",
+  "classification": "team_reported_pre_v14_usability_study",
   "sources": {
     "sme": {
       "filename": "sme-survey-20.csv",
@@ -62,7 +62,7 @@
   "analysis_source_is_tested_build": false,
   "survey_date": "2026-10-19",
   "moderator": "Ramim",
-  "tested_commit": null,
+  "tested_commit": "9dbe4955514909fc8125fef1665b10be585c3ac3",
   "ai_model": {
     "name": "Qwen3-4B-Instruct-2507",
     "version": "Qwen3-4B-Instruct-2507",
@@ -86,7 +86,7 @@
     "SME consent YES is lowercased to yes in a temporary analysis copy only; archived source bytes are unchanged.",
     "Security narratives and participant-level values are not exported publicly.",
     "No missing dates, model details, security outcomes or cohort overlap are inferred.",
-    "Follow-up metadata is attributed to the user; database resets use the latest affirmative correction. The analysis source digest is not substituted for the missing tested commit."
+    "Follow-up metadata is attributed to the user; database resets use the latest affirmative correction. The analysis source digest is not substituted for the historically reported commit."
   ],
   "sme": {
     "schema_version": "tideway-user-study-v1",
@@ -229,7 +229,7 @@
       "Only complete ten-item SUS responses are scored; partial or missing responses produce no fabricated score.",
       "Public output contains aggregates only: no participant IDs, raw rows, response items, free text, contact details or input paths."
     ],
-    "status": "team_reported_current_ui_retest",
+    "status": "team_reported_pre_v14_usability_study",
     "consented_records": 20,
     "consent_basis": "Source cells say YES, normalized only for analysis. The team separately confirmed prior consent covering anonymous outcomes, timings, questionnaire responses and non-identifying observer notes.",
     "source_sha256": "c03c5de70709ada7bb8e9c268c31971f16d153b9b4975d78f3b9f4f8c95bedef",
@@ -324,11 +324,11 @@
     },
     "scope": "Assistance and timing records only. Explicit system outcomes, technical pass/fail fields, raw attack logs and reviewer qualifications were not supplied. No security pass rate or independent penetration-test claim can be calculated."
   },
-  "interpretation": "The team reports a completed retest on 2026-10-19, moderated by Ramim, with 20 SME and 20 security-task records, 10 overlapping and 30 unique people. Database resets were confirmed in a later correction. The tested commit and survey-linked runtime artifacts remain unavailable; no causal improvement, native-model verification or independent technical security pass is inferred. This intake remains separate from the earlier study.",
+  "interpretation": "The team reports completed sessions on 2026-10-19 moderated by Ramim: 20 SME and 20 security-task records, 10 overlapping and 30 unique people. The user identified commit 9dbe495 as the survey build; Git confirms it predates v14 UI improvements. Database resets were confirmed. Survey-linked runtime artifacts and local working-tree changes remain unverified; these results do not validate later v14 UI changes or establish a causal improvement, native-model verification or independent technical security pass. The intake remains separate from the earlier study.",
   "collection_independently_verified": false,
   "metadata_followup": {
     "file": "session-metadata.json",
-    "sha256": "ffa7a75b7e69c306925a0552c64d47a8bfbda55dcfdd55c5f8926b8e84f330b4",
+    "sha256": "f54b291027f2ee678398df4a1a36b2f85aa74ddf0b147c4340669f82742148c5",
     "initial_analysis_sha256": "0daef55a6103df71a4e01a82d8c2cd66735698f516a26ddacead7fb875a75d23",
     "scope": "Later team-reported metadata and corrected English; source CSV bytes and calculated observations are unchanged."
   },
@@ -341,7 +341,7 @@
     "current_runtime_artifacts": "verification/runtime-provenance.json",
     "related_application_tree": "verification/source-lineage.json",
     "historical_session_binding_verified": false,
-    "scope": "Current desktop context and artifact integrity only. The user explicitly confirmed the survey was performed on a separate laptop; the hardware difference is explained. The historical survey commit, laptop browser version and session runtime use remain unbound."
+    "scope": "Current desktop artifact integrity is verified. The user identified historical survey commit 9dbe495, which exists and predates v14. Survey laptop browser version, runtime invocation logs and local code edits remain unverified."
   },
   "device_context_clarification": {
     "basis": "The user clarified that the survey was conducted on a laptop and current development/audit work is on a desktop PC.",
@@ -351,5 +351,10 @@
     "hardware_difference_explained": true,
     "historical_survey_browser_build_runtime_verified": false,
     "scope": "Separate devices explain the hardware difference. Current desktop measurements are not assigned to the laptop session."
-  }
+  },
+  "reported_build": {
+    "file": "reported-build.json",
+    "sha256": "833231d7d9266dfe9dbb8b7c0069ec318645bf971dd19f5d44fad82a8671a9ab"
+  },
+  "covers_v14_ui_upgrade": false
 }

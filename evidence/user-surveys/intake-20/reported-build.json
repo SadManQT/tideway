@@ -1,0 +1,17 @@
+{
+  "schema_version": "tideway-team-reported-survey-build-v1",
+  "reported_commit": "9dbe4955514909fc8125fef1665b10be585c3ac3",
+  "title": "fix: harden agent privacy and grounding",
+  "commit_author_date": "2026-10-19T00:35:39+06:00",
+  "basis": "The user identified commit 9dbe495 in a screenshot as the laptop build used for the survey.",
+  "commit_exists_in_repository": true,
+  "execution_independently_verified": false,
+  "uncommitted_changes_during_session": null,
+  "committed_application_snapshot_sha256": "f9f2e636cc065390d1f3f29b6f567282307b8314a98a332f86f80774186573eb",
+  "committed_application_source_files": 158,
+  "digest_method": "SHA-256 of the same sorted source-file SHA-256 map used by verify_submission.source_digest; read from Git blobs without checkout. Algorithm cross-checked against current committed and working-tree source.",
+  "later_v14_commit": "cb45bc7a442d111148dbc70da798ea5415cee7c7",
+  "predates_v14_ui_upgrade": true,
+  "covers_v14_ui_upgrade": false,
+  "scope": "The reported commit is resolved and its committed source is reproducible. Unknown local changes are not assumed absent. These participant results do not validate later v14 UI changes."
+}

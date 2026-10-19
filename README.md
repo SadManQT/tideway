@@ -6,7 +6,7 @@ Judge/auditor review (17 October): [fixed defects and remaining contest gaps](do
 
 [Team-reported survey results](docs/USER_STUDY_RESULTS.md): 20 SME participants and 20 security-task participants, with 10 overlapping and 30 unique people. The report records consent confirmation, calculations, source provenance and missing session/model metadata.
 
-[Team-reported UI retest](docs/SURVEY_INTAKE_20.md): 19 October, moderated by Ramim; 20 SME and 20 security-task participants with a reported 10-person overlap. Session setup, consent and database resets are recorded with attribution. Collection and the tested build remain independently unverified; this retest is kept separate from the earlier study.
+[Team-reported usability study](docs/SURVEY_INTAKE_20.md): 19 October, moderated by Ramim; 20 SME and 20 security-task participants with a reported 10-person overlap. The user identified build `9dbe495`, which predates v14 UI changes. Session setup, consent and database resets are recorded with attribution; collection/execution remain independently unverified. This study is kept separate from the earlier intake.
 
 ![Tideway landing page](evidence/screens/00-landing.png)
 

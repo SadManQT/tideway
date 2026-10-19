@@ -1,6 +1,6 @@
-# Team-reported current-UI usability retest
+# Team-reported usability study on build 9dbe495
 
-The team supplied two 20-row CSV files and subsequently confirmed that they describe real, completed sessions on 19 October 2026, moderated by Ramim. The English below incorporates that clarification and the later confirmation that the database was reset between participants. The calculated results remain unchanged. Collection and the tested build have not been independently verified. This retest is kept separate from the earlier team-reported study.
+The team supplied two 20-row CSV files and subsequently confirmed that they describe real, completed sessions on 19 October 2026, moderated by Ramim, with database resets between participants. The user identified `9dbe495` as the laptop build used for the study. Git confirms the commit exists and predates the v14 customer/payment and cost/risk UI improvements. These observations apply to the team-reported earlier build; they do not measure those later UI changes. Calculated results are unchanged, and collection/execution have not been independently observed. This study is kept separate from the earlier intake.
 
 ## Session and method
 
@@ -10,7 +10,7 @@ records its source, outstanding artifacts and scope.
 
 | Field | Team-reported information |
 |---|---|
-| Study | Tideway current-UI usability retest |
+| Study | Tideway usability study on team-reported build 9dbe495 |
 | Session date | 19 October 2026 |
 | Moderator | Ramim |
 | Recruitment | Convenience sample of SME owners, bookkeepers and accountants; participants were not involved in implementing Tideway |
@@ -26,7 +26,7 @@ records its source, outstanding artifacts and scope.
 | AI model | Qwen3-4B-Instruct-2507, Q4_K_M |
 | Runtime | llama.cpp b11678; local, inside Tideway through a loopback server |
 | Fallback | Recorded separately and not counted as model success, according to the team; per-generation fallback records were not inspected |
-| Tested commit / local changes | Not supplied; the current repository commit is not substituted for the session build |
+| Tested commit / local changes | User identified `9dbe4955514909fc8125fef1665b10be585c3ac3`, confirmed in Git. Local working-tree changes during the session are unknown |
 | Collection | Outcomes and times were recorded during sessions. SUS was completed individually afterward, without coaching |
 | Original records | Both CSV exports match the archived copies, intake receipt and aggregate hashes; 40 row fingerprints and the 10 reported overlap references are linked privately. Separate observation sheets have not been identified |
 
@@ -50,17 +50,23 @@ earlier participant sessions.
 | Current Edge | 155.0.4283.62; executable version and SHA-256 captured | Measured on the current desktop PC: AMD Ryzen 7 7700, 31.1 GiB physical RAM. The team confirmed the survey used a separate laptop, explaining the different hardware. This version is not assigned to the laptop |
 | Model cache | Qwen3-4B-Instruct-2507-Q4_K_M, 2,497,281,120 bytes; SHA-256 matches the repository pin | Cached artifact integrity; no new inference or participant use is claimed |
 | Runtime archive | llama.cpp b11678 Windows Vulkan archive; size and SHA-256 match the repository pin | Archive integrity, not a log of the runtime invoked in the survey |
-| Application lineage | The application trees at cb45bc7, e360e8b and 39552f0 match the current tested source digest | The exact participant-session checkout and uncommitted changes remain unknown |
+| Reported survey build | 9dbe495 exists in Git; its committed application snapshot is reproducibly hashed | Execution is team-reported; local edits remain unknown. The snapshot predates v14 UI improvements |
+| Later application lineage | The application trees at cb45bc7, e360e8b and 39552f0 match the current tested source digest | This later source family is distinct from the reported survey build |
 
 The readable [current system info](../evidence/user-surveys/intake-20/verification/system-info.txt),
 [runtime provenance](../evidence/user-surveys/intake-20/verification/runtime-provenance.json)
 and [source lineage](../evidence/user-surveys/intake-20/verification/source-lineage.json)
-retain the measurements. The application digest is
+retain the measurements. The current audit application's digest is
 `f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c`.
+The [reported historical build](../evidence/user-surveys/intake-20/reported-build.json)
+has committed application snapshot digest
+`f9f2e636cc065390d1f3f29b6f567282307b8314a98a332f86f80774186573eb`.
+It was calculated directly from Git blobs and does not assume absent local edits.
 This audit closes supplied-export linkage and current artifact measurement.
 The separate laptop and desktop explain the hardware difference. This audit
-cannot recover the laptop's historical browser version, survey checkout, model
-invocations or absent observation sheets from the desktop measurements.
+records the user-identified checkout but cannot recover the laptop's historical
+browser version, local edits, model invocations or absent observation sheets
+from the desktop measurements.
 
 With the original private intake present, verify the capture using:
 
@@ -109,7 +115,7 @@ Mean supplied confidence: **2.75 before**, **4 after**, on a 1-5 scale. Increase
 
 An earlier read in this intake showed SME consent=demo and security column example_behavior. The later supplied snapshots preserved here instead contain SME consent=YES and security column observed_behavior. The earlier bytes were not archived and their hashes are unknown. The team subsequently clarified that the data and session description refer to real, completed sessions, and asked that the English be corrected. This report preserves that attribution and the source history; collection has not been independently verified.
 
-The team reports 20 SME participants and 20 security-task participants, with 10 overlapping and **30 unique people in this retest**, not 40. It supplied an anonymous correspondence for the overlapping records and states that no participants returned from the earlier study. These are team-reported counts. They are not merged with the earlier study to assert an independently verified cumulative sample.
+The team reports 20 SME participants and 20 security-task participants, with 10 overlapping and **30 unique people in this study**, not 40. It supplied an anonymous correspondence for the overlapping records and states that no participants returned from the earlier study. These are team-reported counts. They are not merged with the earlier study to assert an independently verified cumulative sample.
 
 These files followed illustrative data supplied in chat. The later explicit statement that the sessions were real is recorded as a team report. The earlier future-tense and demo/fictional wording has been corrected on that basis; the financial fixtures and actions remain fictional/sandboxed. No model output, technical pass rate, tested commit or unavailable artifact has been invented. Native MLX adapter/receipt verification and independent technical security review remain separate.
 

@@ -2,7 +2,7 @@
   "schema_version": "tideway-team-reported-session-metadata-v1",
   "basis": "Follow-up user statements. The user explicitly clarified that the sessions were real and completed, requested English corrections, and subsequently confirmed database resets.",
   "independently_verified": false,
-  "study_type": "Tideway current-UI usability retest",
+  "study_type": "Tideway usability study on the team-reported pre-v14 build",
   "session_date": "2026-10-19",
   "moderator": "Ramim",
   "recruitment": "Convenience sample of SME owners, bookkeepers and accountants.",
@@ -17,7 +17,7 @@
     ],
     "basis": "Team confirmation in the follow-up session statement; not independently observed."
   },
-  "tested_commit": null,
+  "tested_commit": "9dbe4955514909fc8125fef1665b10be585c3ac3",
   "uncommitted_changes": null,
   "database_reset_between_participants": true,
   "database_reset_basis": "Latest user correction: database reset kora hoisilo. This supersedes the earlier no answer. No reset logs were supplied.",
@@ -75,7 +75,7 @@
     "english_correction": "Future tense and demo/fictional cohort wording were corrected to describe completed human sessions on the explicit basis of the user clarification. Financial fixtures and actions remain fictional/sandboxed."
   },
   "outstanding_artifacts": [
-    "Historical session commit / working-tree state; related application trees have been compared",
+    "Local working-tree changes during the survey are unknown; reported commit 9dbe495 is resolved in Git",
     "Historical survey-laptop Edge version; current audit-machine version has been captured",
     "Session-linked runtime invocation and fallback logs; current cache hashes are verified",
     "Original observation sheets beyond the verified CSV exports",
@@ -91,7 +91,7 @@
     "current_runtime_artifacts": "verification/runtime-provenance.json",
     "related_application_tree": "verification/source-lineage.json",
     "historical_session_binding_verified": false,
-    "scope": "Current desktop context and artifact integrity only. The user explicitly confirmed the survey was performed on a separate laptop; the hardware difference is explained. The historical survey commit, laptop browser version and session runtime use remain unbound."
+    "scope": "Current desktop artifact integrity is verified. The user identified historical survey commit 9dbe495, which exists and predates v14. Survey laptop browser version, runtime invocation logs and local code edits remain unverified."
   },
   "device_context_clarification": {
     "basis": "The user clarified that the survey was conducted on a laptop and current development/audit work is on a desktop PC.",
@@ -101,5 +101,11 @@
     "hardware_difference_explained": true,
     "historical_survey_browser_build_runtime_verified": false,
     "scope": "Separate devices explain the hardware difference. Current desktop measurements are not assigned to the laptop session."
-  }
+  },
+  "tested_commit_basis": "The user identified commit 9dbe495 in a screenshot as the laptop build used for the survey.",
+  "reported_build": {
+    "file": "reported-build.json",
+    "sha256": "833231d7d9266dfe9dbb8b7c0069ec318645bf971dd19f5d44fad82a8671a9ab"
+  },
+  "covers_v14_ui_upgrade": false
 }
