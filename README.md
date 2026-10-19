@@ -6,7 +6,7 @@ Judge/auditor review (17 October): [fixed defects and remaining contest gaps](do
 
 [Team-reported survey results](docs/USER_STUDY_RESULTS.md): 20 SME participants and 20 security-task participants, with 10 overlapping and 30 unique people. The report records consent confirmation, calculations, source provenance and missing session/model metadata.
 
-[Additional supplied survey records](docs/SURVEY_INTAKE_20.md): separate analyses of two later 20-row files. Collection, tested build and overlap remain unverified; these rows are not added to the earlier participant counts.
+[Team-reported UI retest](docs/SURVEY_INTAKE_20.md): 19 October, moderated by Ramim; 20 SME and 20 security-task participants with a reported 10-person overlap. Session setup, consent and database resets are recorded with attribution. Collection and the tested build remain independently unverified; this retest is kept separate from the earlier study.
 
 ![Tideway landing page](evidence/screens/00-landing.png)
 

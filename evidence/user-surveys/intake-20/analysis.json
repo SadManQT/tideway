@@ -1,6 +1,6 @@
 {
   "schema_version": "tideway-survey-intake-analysis-v1",
-  "classification": "supplied_records_collection_unverified",
+  "classification": "team_reported_current_ui_retest",
   "sources": {
     "sme": {
       "filename": "sme-survey-20.csv",
@@ -60,28 +60,33 @@
   },
   "analysis_source_tree_sha256": "f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c",
   "analysis_source_is_tested_build": false,
-  "survey_date": null,
-  "moderator": null,
+  "survey_date": "2026-10-19",
+  "moderator": "Ramim",
   "tested_commit": null,
   "ai_model": {
-    "name": null,
-    "version": null,
-    "device": null,
-    "execution_context": null
+    "name": "Qwen3-4B-Instruct-2507",
+    "version": "Qwen3-4B-Instruct-2507",
+    "quantization": "Q4_K_M",
+    "runtime": "llama.cpp b11678",
+    "device": "Windows laptop; Intel Core i5; 16 GB RAM; Windows 11",
+    "execution_context": "Local, inside Tideway through a loopback server.",
+    "basis": "Team report; survey-linked artifact hashes have not been inspected."
   },
   "cohorts": {
     "sme_records": 20,
     "security_records": 20,
-    "overlap": null,
-    "unique_people": null,
-    "overlap_with_earlier_intake": null,
-    "merged_into_existing_study": false
+    "overlap": 10,
+    "unique_people": 30,
+    "overlap_with_earlier_intake": 0,
+    "merged_into_existing_study": false,
+    "count_basis": "Team-reported 10-person overlap and no returning participants; not independently verified."
   },
   "source_revision_note": "An earlier read in this intake showed SME consent=demo and security column example_behavior. The later supplied snapshots preserved here instead contain SME consent=YES and security column observed_behavior. The earlier bytes were not archived and their hashes are unknown. Changed labels alone do not establish collection provenance.",
   "normalization": [
     "SME consent YES is lowercased to yes in a temporary analysis copy only; archived source bytes are unchanged.",
     "Security narratives and participant-level values are not exported publicly.",
-    "No missing dates, model details, security outcomes or cohort overlap are inferred."
+    "No missing dates, model details, security outcomes or cohort overlap are inferred.",
+    "Follow-up metadata is attributed to the user; database resets use the latest affirmative correction. The analysis source digest is not substituted for the missing tested commit."
   ],
   "sme": {
     "schema_version": "tideway-user-study-v1",
@@ -218,15 +223,15 @@
       "formula": "2.5 * sum(odd response - 1, 5 - even response), one-based item numbering"
     },
     "limitations": [
-      "Descriptive calculations of supplied records; no new field session or verified participant count is established by this import.",
+      "Calculated from supplied CSV records. The team reports completed field sessions; collection, reset procedure and tested build were not independently observed.",
       "Small convenience samples support exploratory feedback only, not representative usability or market-fit claims.",
       "Unattempted and unavailable-model tasks are excluded from attempted-task denominators and reported separately.",
       "Only complete ten-item SUS responses are scored; partial or missing responses produce no fabricated score.",
       "Public output contains aggregates only: no participant IDs, raw rows, response items, free text, contact details or input paths."
     ],
-    "status": "supplied_records_collection_unverified",
+    "status": "team_reported_current_ui_retest",
     "consented_records": 20,
-    "consent_basis": "The supplied consent cell says YES; case is normalized only for analysis. This does not independently verify consent or collection.",
+    "consent_basis": "Source cells say YES, normalized only for analysis. The team separately confirmed prior consent covering anonymous outcomes, timings, questionnaire responses and non-identifying observer notes.",
     "source_sha256": "c03c5de70709ada7bb8e9c268c31971f16d153b9b4975d78f3b9f4f8c95bedef",
     "overall": {
       "attempted_tasks": 97,
@@ -238,7 +243,7 @@
   },
   "security": {
     "schema_version": "tideway-supplied-security-assistance-v1",
-    "status": "supplied_records_collection_unverified",
+    "status": "team_reported_security_task_observations",
     "record_count": 20,
     "source_sha256": "09d4ed2f042b5b61355cba077902d0bf296e07a55a3aa8de31ada9b4f2ff8f02",
     "roles": {
@@ -251,7 +256,7 @@
       "beginner": 6,
       "intermediate": 5
     },
-    "consent_basis": "No consent column or session-specific confirmation accompanies this file; earlier survey consent is not assumed to cover this intake.",
+    "consent_basis": "The team confirmed prior consent in the follow-up session statement. The security CSV has no consent column; collection was not independently observed.",
     "cases": {
       "sec01": {
         "records": 20,
@@ -319,5 +324,12 @@
     },
     "scope": "Assistance and timing records only. Explicit system outcomes, technical pass/fail fields, raw attack logs and reviewer qualifications were not supplied. No security pass rate or independent penetration-test claim can be calculated."
   },
-  "interpretation": "This intake is separate from the earlier team-reported study. Counts describe rows in the supplied files, not independently verified new people, a verified current-build retest, or causal evidence of improvement."
+  "interpretation": "The team reports a completed retest on 2026-10-19, moderated by Ramim, with 20 SME and 20 security-task records, 10 overlapping and 30 unique people. Database resets were confirmed in a later correction. The tested commit and survey-linked runtime artifacts remain unavailable; no causal improvement, native-model verification or independent technical security pass is inferred. This intake remains separate from the earlier study.",
+  "collection_independently_verified": false,
+  "metadata_followup": {
+    "file": "session-metadata.json",
+    "sha256": "003bd319344c475f98ccd47b0d3c2a3cee3f6ba99dd6b345d5ecf7ffd2b682f7",
+    "initial_analysis_sha256": "0daef55a6103df71a4e01a82d8c2cd66735698f516a26ddacead7fb875a75d23",
+    "scope": "Later team-reported metadata and corrected English; source CSV bytes and calculated observations are unchanged."
+  }
 }

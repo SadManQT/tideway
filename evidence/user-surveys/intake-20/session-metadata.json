@@ -1,0 +1,85 @@
+{
+  "schema_version": "tideway-team-reported-session-metadata-v1",
+  "basis": "Follow-up user statements. The user explicitly clarified that the sessions were real and completed, requested English corrections, and subsequently confirmed database resets.",
+  "independently_verified": false,
+  "study_type": "Tideway current-UI usability retest",
+  "session_date": "2026-10-19",
+  "moderator": "Ramim",
+  "recruitment": "Convenience sample of SME owners, bookkeepers and accountants.",
+  "participants_involved_in_implementation": false,
+  "consent": {
+    "obtained_before_recording": true,
+    "scope": [
+      "anonymous task outcomes",
+      "timings",
+      "questionnaire responses",
+      "non-identifying observer notes"
+    ],
+    "basis": "Team confirmation in the follow-up session statement; not independently observed."
+  },
+  "tested_commit": null,
+  "uncommitted_changes": null,
+  "database_reset_between_participants": true,
+  "database_reset_basis": "Latest user correction: database reset kora hoisilo. This supersedes the earlier no answer. No reset logs were supplied.",
+  "fresh_database_file_per_participant": null,
+  "task_order": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5"
+  ],
+  "timing": "Stopwatch; active task time only.",
+  "assistance": "One fixed hint after 60 seconds stuck.",
+  "failures_and_skipped_tasks_retained": true,
+  "setup": {
+    "device": "Windows laptop",
+    "cpu": "Intel Core i5",
+    "ram_gb": 16,
+    "os": "Windows 11",
+    "browser": "Microsoft Edge",
+    "browser_version": null,
+    "languages": [
+      "bn",
+      "en"
+    ],
+    "currency": "BDT",
+    "selected_currency_check_included": true
+  },
+  "ai": {
+    "name": "Qwen3-4B-Instruct-2507",
+    "quantization": "Q4_K_M",
+    "runtime": "llama.cpp",
+    "runtime_release": "b11678",
+    "execution_context": "Local, inside Tideway through a loopback server.",
+    "model_sha256": null,
+    "runtime_sha256": null,
+    "claimed_manifest_filename": "runtime-provenance.json",
+    "survey_specific_manifest_inspected": false,
+    "fallback_policy": "Fallback use was recorded separately and was not counted as model success.",
+    "per_generation_fallback_records_inspected": false
+  },
+  "cohorts": {
+    "sme_records": 20,
+    "security_records": 20,
+    "overlap": 10,
+    "unique_people": 30,
+    "returning_from_earlier_study": 0,
+    "mapping_basis": "The user reports that the first ten security IDs correspond to the first ten SME IDs in this intake; no identity data is published.",
+    "basis": "Team report, not independent participant verification."
+  },
+  "collection": {
+    "outcomes_and_times": "Recorded during the sessions, as clarified by the user.",
+    "sus": "Completed individually afterward, without coaching.",
+    "original_records": "The team states that original observation sheets and unchanged exports were supplied. The two preserved CSV exports were inspected; separate observation sheets have not been identified in this intake.",
+    "english_correction": "Future tense and demo/fictional cohort wording were corrected to describe completed human sessions on the explicit basis of the user clarification. Financial fixtures and actions remain fictional/sandboxed."
+  },
+  "outstanding_artifacts": [
+    "Tested commit and working-tree state",
+    "Exact browser version / system-info.txt",
+    "Survey-linked runtime-provenance.json and model/runtime hashes",
+    "Original session observation sheets and per-generation fallback records",
+    "Structured security outcomes and technical logs"
+  ],
+  "scope": "Team-reported human retest using a fictional financial sandbox. This metadata does not establish native MLX adapter or receipt-model verification, external security review, a blind model benchmark or causal usability improvement."
+}

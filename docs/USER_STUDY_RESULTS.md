@@ -109,6 +109,10 @@ source basis. Public artifacts exclude raw narratives and the anonymous mapping.
 Two later files, `sme-survey-20.csv` and `security-survey-20.csv`, have a
 [separate intake report](SURVEY_INTAKE_20.md) and
 [aggregate analysis](../evidence/user-surveys/intake-20/analysis.json).
-Their session metadata, tested build and cohort overlap are unknown. Their rows
-are not merged into this report or counted as verified new participants. The
-original observations, source hashes and limitations above remain unchanged.
+The team subsequently reported sessions on 19 October moderated by Ramim,
+consent, Windows/local-Qwen setup, database resets between participants and a
+10-person cohort overlap, giving 30 unique people in that retest. The tested
+commit and survey-linked runtime artifacts remain unavailable for inspection.
+The retest is kept separate from this earlier report; its team-reported counts
+are not added to claim an independently verified cumulative sample. The original
+observations, source hashes and limitations above remain unchanged.
