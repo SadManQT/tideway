@@ -1,7 +1,7 @@
 {
   "version": "decision-lab-evaluation-v1",
-  "run_at_utc": "2026-10-18T20:00:12.701043+00:00",
-  "source_tree_sha256": "c18896ff0f6685acbe9742f67790f8f303c5b5519b69c53c5698b9e71bd56833",
+  "run_at_utc": "2026-10-19T06:44:19.813150+00:00",
+  "source_tree_sha256": "ddafe10453c8ae6bb7bf29f27d8dc0eb0c7d0ecca8445269ee3b8f602cc62fe2",
   "source_unchanged": true,
   "passed": true,
   "synthetic_businesses": 3,
@@ -19,7 +19,7 @@
         "no_saved_proposals": true,
         "fresh_funding_draws": true
       },
-      "elapsed_ms": 1309,
+      "elapsed_ms": 1211,
       "analyses": {
         "reverse": {
           "version": "resilience-v1",
@@ -154,7 +154,7 @@
           "customers_tested": 2,
           "complete_customer_coverage": true,
           "projection_evaluations": 17,
-          "elapsed_ms": 3,
+          "elapsed_ms": 2,
           "scope": "Smallest integer delay for one customer at a time, with all other likely receipts fixed; simultaneous shocks and model error are not covered."
         },
         "promises": {
@@ -428,7 +428,7 @@
         "passed": true,
         "engine_compatible": true,
         "authenticated_origin": false,
-        "capsule_sha256": "aa8237573072d1e497bbc698031b71a161300fa2c3b4c052bd7a53eab3086354",
+        "capsule_sha256": "6c516612877a0649c58f692ce70fcbbe0a9df76e850eda7323140c21779c30e5",
         "actual_projection": {
           "scenario": "likely",
           "currency": "BDT",
@@ -472,7 +472,7 @@
         "no_saved_proposals": true,
         "fresh_funding_draws": true
       },
-      "elapsed_ms": 1168,
+      "elapsed_ms": 1107,
       "analyses": {
         "reverse": {
           "version": "resilience-v1",
@@ -857,7 +857,7 @@
         "passed": true,
         "engine_compatible": true,
         "authenticated_origin": false,
-        "capsule_sha256": "371309dcc5a35b271e9ca1a63e47d3c8d2b79c1ddb07642ad5b055d3a3a1a0d7",
+        "capsule_sha256": "322659fdbe6a879130fdd500dac00f198ca2639e0a2ac9fc0a1d059c700798ac",
         "actual_projection": {
           "scenario": "likely",
           "currency": "CNY",
@@ -901,7 +901,7 @@
         "no_saved_proposals": true,
         "fresh_funding_draws": true
       },
-      "elapsed_ms": 178,
+      "elapsed_ms": 154,
       "analyses": {
         "reverse": {
           "version": "resilience-v1",
@@ -1129,7 +1129,7 @@
         "passed": true,
         "engine_compatible": true,
         "authenticated_origin": false,
-        "capsule_sha256": "ff5c0ed1cb1ec8d5834a89d947fe1c12ae8da03b2125281d9e4c0f19b5dfe3d6",
+        "capsule_sha256": "08853b0acc55dfeaec71142b94a3faf921982e03997b2be03532a040b84264dc",
         "actual_projection": {
           "scenario": "likely",
           "currency": "SGD",

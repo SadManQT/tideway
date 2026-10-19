@@ -28,8 +28,9 @@ Historical upgrade and Windows reports describe earlier source versions.
 - Cross-platform temporary-path handling is corrected. Release checks enforce LF
   source bytes, detect edits during verification, and bind tests, browser checks
   and the distributed ZIP to the same exact source digest.
-- An anonymous, consent-aware study kit supports real SME validation. Its current
-  participation count is zero; no feedback or usability score was invented.
+- An anonymous, consent-aware study kit separates task observations, assistance,
+  missing model runs and questionnaire scores. The current aggregate records
+  20 team-reported participants; its collection scope is stated below.
 - Independent follow-up audit: invalid signing keys are preserved and rejected;
   concurrent first starts publish one complete key. Malformed signatures fail
   validation, and `.env` now loads the documented structured-plan flag.
@@ -41,7 +42,7 @@ Historical upgrade and Windows reports describe earlier source versions.
 
 | Check | Recorded result | Meaning and limit |
 |---|---|---|
-| Current unit run | 465 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; injected outputs are not model quality |
+| Latest stored full unit run | 486 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; the report records its own source hash; injected outputs are not model quality |
 | Additional standard-library run | 252 run; 0 failures; 0 errors; 4 skipped | Python 3.11.16; optional photo tests require Pillow; report records its own source hash |
 | Financial scenarios | 24/24 expected workflows; 9 rescues | 8/9 executed rescues meet the 10% simulated risk target |
 | Shipped TidePay | 7,427 unseen synthetic invoices; MAE 8.5585 days | Heuristic 10.2296; training-only prior 11.7453; no weight changes |
@@ -49,7 +50,7 @@ Historical upgrade and Windows reports describe earlier source versions.
 | Post-fix Qwen3 regression | 32/32 known cases handled; 8/8 safe stops | One real-model pass after disclosed guard fixes; not a new blind score |
 | Independent-audit Windows Qwen3 rerun | 32/32 known requests handled; 32/32 contained | Actual compatible inference on disclosed cases; retains every output; not blind |
 | Historical first unseen instruction screening | 2/24 attacks detected; 2/24 benign flagged | Historical v3 observation; current v7 evidence is listed below; detection is advisory |
-| SME user study | 0 participants; pending | Kit and analysis available; no real-user claim |
+| SME user study | 20 team-reported participants; 60/94 unassisted; 85/94 including assistance | Supplied observations and team-confirmed consent; collection and optional-model runtime not independently verified. See [survey report](USER_STUDY_RESULTS.md). |
 
 The prediction cohort contains 80 new synthetic SMEs, four seeds and 7,427
 invoices after the shipped model's historical training period. No fresh labels
@@ -106,9 +107,9 @@ Use a completed LF checkout: source edits during the run invalidate verification
   defects, the contest requirement map, fixes and remaining validation gaps.
 - [Current Windows actual-model regression](../evidence/independent-audit/model-regression/report.json).
 - [User study protocol](USER_STUDY_KIT.md) and
-  [pending participation status](../evidence/readiness-v3/user-study-status.json).
+  [current participation aggregate](../evidence/readiness-v3/user-study-status.json).
 
-Current test source digest: `d8ff43013b62f916601afc41fe33d087b463936cda7ba40621a1ced87ae27dbf`.
+Current test source digest: `ddafe10453c8ae6bb7bf29f27d8dc0eb0c7d0ecca8445269ee3b8f602cc62fe2`.
 Reports contain their own timestamps and hashes; older Windows/upgrade evidence
 is historical and does not attest to the current checkout.
 
@@ -176,7 +177,7 @@ Development cases are disclosed v6 regressions. The fresh set is separately AI-a
 
 AI-authored assumed behavior scenarios; real participants: 0. Backend workflow outcomes do not measure human task completion, satisfaction or SUS.
 
-[6/6 checks passed](../evidence/currency-v13/behavior-checks.json): decline without changes, incomplete approval, owner discount limits, residual-risk consent, a known hostile supplier message and repeat execution. Human validation remains pending.
+[6/6 checks passed](../evidence/currency-v13/behavior-checks.json): decline without changes, incomplete approval, owner discount limits, residual-risk consent, a known hostile supplier message and repeat execution. These scripted checks do not count as human participants. Separate supplied survey observations are described in [the survey report](USER_STUDY_RESULTS.md).
 
 ## Currency consistency and related UI audit
 

@@ -1,18 +1,9 @@
 # Tideway
 
-**Plan ahead for payroll.** On-device AI that predicts which customers will pay late, plans a cash rescue before the gap hits, and acts only with your approval.
-
-18 October local upgrade: [consistent selected-currency inputs, narratives and reports](docs/RELEASE_V13.md).
-Previous upgrade: [simple Owner view and goal-led recovery](docs/RELEASE_V12.md).
-Start in **Cash weather**: [expense previews, receipt dependencies, three priorities and a private decision brief](docs/OWNER_VIEW.md).
-Previous upgrade: [decision support, event replanning and two-business negotiation](docs/RELEASE_V11.md).
-Open **Decision lab** after sign-in: [features, boundaries and a judge demonstration](docs/DECISION_LAB.md).
-Previous release: [screening, cash-gap diagnostics and HTTP hardening](docs/RELEASE_V10.md).
-The [behavior-driven evaluation](docs/BEHAVIORAL_EVALUATION.md) contains six scripted sandbox paths; real SME participants remain zero.
-
-For a presentation-only walkthrough, [`demo-data/`](demo-data/README.md) contains 20 fictional SME-finance survey viewers and 20 fictional security-demo viewers with varied humanized behavior. It is explicitly synthetic, never evidence, and does not change the canonical N=0 study status.
 
 Judge/auditor review (17 October): [fixed defects and remaining contest gaps](docs/INDEPENDENT_AUDIT.md). Exact current verification counts and provenance: [readiness index](docs/READINESS_CURRENT.md).
+
+[Team-reported survey results](docs/USER_STUDY_RESULTS.md): 20 SME participants and 20 security-task participants, with 10 overlapping and 30 unique people. The report records consent confirmation, calculations, source provenance and missing session/model metadata.
 
 ![Tideway landing page](evidence/screens/00-landing.png)
 

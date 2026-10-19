@@ -1,14 +1,16 @@
 # Tideway user study kit
 
-**User validation is pending: zero participants have been observed.** The kit and
-helper prepare a consented study; they do not stand in for one. Report the actual
-sample size beside every result. Do not populate the template from hypothetical
-responses, generated personas or developer walkthroughs.
+**Current supplied observations: 20 SME participants, with consent confirmed by
+the team.** See [results and collection limits](USER_STUDY_RESULTS.md) and the
+[current aggregate](../evidence/readiness-v3/user-study-status.json). The team
+reports that these are fresh field-survey observations; collection was not
+independently verified. Report actual sample size beside every result. This
+document remains the protocol; its illustrative scenarios are not collected rows.
 
 Invite three to five consenting SME owners, bookkeepers or accountants for an
 exploratory 25-minute session. Record recruitment and personal connections in
 private planning notes; a convenience sample cannot establish representative
-usability or willingness to adopt. This implementation has not contacted anyone.
+usability or willingness to adopt. The helper itself does not recruit participants.
 
 ## Five SME scenario templates (not evidence)
 
@@ -23,8 +25,9 @@ stimulus. This file is a protocol template, not a participant dataset:
   EXAMPLE/TEMPLATE — NOT AN OBSERVED RESULT**. Do not copy an example into the
   private CSV or describe it as a completion, assistance, timing or learning
   result.
-- The checked-in `evidence/readiness-v3/user-study-status.json` remains
-  `status: pending_no_consented_participants` with `consented_participants: 0`.
+- The current `evidence/readiness-v3/user-study-status.json` is generated from
+  the separately supplied observations. This scenario specification does not
+  change those observations or create additional participants.
 
 | Scenario | Exact persona and fixed dialogue focus | Existing CSV task | Illustrative example only | Learning points to check |
 |---|---|---|---|---|
@@ -174,8 +177,10 @@ denominators. It exports no raw rows, IDs, response items or private input paths
 Unknown columns, non-enum roles, unconsented observations, duplicated IDs,
 nonfinite timings and invalid ratings are rejected without echoing private cells.
 
-The checked-in status is **N=0, pending**, with `null` averages/rates where no
-observations exist. A template or passing helper tests must never be described as
-completed SME validation. Once real sessions occur, disclose convenience
+The current aggregate records **N=20 team-reported SME participants**. Its
+source hashes, consent basis, reported DeepSeek usage, missing session metadata
+and data-origin comparison are recorded in [the survey report](USER_STUDY_RESULTS.md).
+The supplied records are not independent verification of collection, native
+TideLM inference or representative usability. Future sessions must disclose
 recruitment, sample size, assistance, skipped tasks, model availability and
-remaining uncertainty alongside the aggregate results.
+remaining uncertainty alongside the aggregate results. Missing values stay null.

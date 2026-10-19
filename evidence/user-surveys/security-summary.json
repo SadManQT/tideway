@@ -1,0 +1,77 @@
+{
+  "schema_version": "tideway-human-security-task-survey-v1",
+  "collection_basis": "Team-supplied CSV observations; the team states these are fresh field surveys.",
+  "consent_basis": "The team explicitly confirmed in chat that consent was obtained before recording data for both surveys. Source CSVs have no consent column; normalized consent=yes uses that confirmation.",
+  "participant_count": 20,
+  "overlap_with_sme": 10,
+  "unique_people_across_cohorts": 30,
+  "roles": {
+    "owner": 10,
+    "accountant": 5,
+    "bookkeeper": 5
+  },
+  "cases": {
+    "sec01": {
+      "outcomes": {
+        "old_tab_rejected": 20
+      },
+      "assistance": {
+        "unassisted": 15,
+        "prompted_once": 5
+      },
+      "median_seconds": 45.5
+    },
+    "sec02": {
+      "outcomes": {
+        "owner_callback_required": 20
+      },
+      "assistance": {
+        "unassisted": 16,
+        "prompted_once": 4
+      },
+      "median_seconds": 69.0
+    },
+    "sec03": {
+      "outcomes": {
+        "draft_only_no_authority": 20
+      },
+      "assistance": {
+        "unassisted": 18,
+        "prompted_once": 2
+      },
+      "median_seconds": 65.5
+    },
+    "sec04": {
+      "outcomes": {
+        "single_receipt_on_retry": 20
+      },
+      "assistance": {
+        "unassisted": 17,
+        "prompted_once": 3
+      },
+      "median_seconds": 61.5
+    },
+    "sec05": {
+      "outcomes": {
+        "fresh_proposal_after_delay": 20
+      },
+      "assistance": {
+        "unassisted": 16,
+        "prompted_once": 4
+      },
+      "median_seconds": 88.5
+    }
+  },
+  "confidence": {
+    "scale": "1 to 5, self-reported",
+    "mean_before": 2.95,
+    "mean_after": 4.2
+  },
+  "scope": "The team states the security participants were not involved in implementation. The records contain scenario outcomes and human reactions; reviewer qualifications, independent test methodology and technical logs were not supplied.",
+  "external_penetration_test_established": false,
+  "survey_date": null,
+  "observer": null,
+  "source_sha256": "0abdc5db8d225a96217e4bba04b11d44e4b4c7c0477b35297a91e74aa5a69d85",
+  "raw_narratives_published": false,
+  "independent_collection_verified": false
+}

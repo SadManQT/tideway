@@ -15,6 +15,15 @@ def main(argv=None):
     parser.add_argument('--evidence-dir', help='Current versioned release evidence directory')
     args = parser.parse_args(argv)
     tests = read('evidence/test-summary.json')
+    study = read('evidence/readiness-v3/user-study-status.json')
+    study_n = study['consented_participants']
+    attempted = sum(task['attempted_denominator'] for task in study['tasks'].values())
+    unassisted = sum(task['unassisted_completion']['numerator'] for task in study['tasks'].values())
+    including_help = sum(task['completion_including_assistance']['numerator'] for task in study['tasks'].values())
+    study_result = (f'{study_n} team-reported participants; {unassisted}/{attempted} unassisted; '
+                    f'{including_help}/{attempted} including assistance' if study_n else '0 participants; pending')
+    study_limit = ('Supplied observations and team-confirmed consent; collection and optional-model runtime not independently verified. See [survey report](USER_STUDY_RESULTS.md).'
+                   if study_n else 'Kit and analysis available; no real-user claim')
     model = read('evidence/readiness-v3/blind/model-first-observation.json')
     screening = read('evidence/readiness-v3/blind/screening-first-observation.json')
     pay = read('evidence/readiness-v3/tidepay/report.json')
@@ -80,8 +89,9 @@ Historical upgrade and Windows reports describe earlier source versions.
 - Cross-platform temporary-path handling is corrected. Release checks enforce LF
   source bytes, detect edits during verification, and bind tests, browser checks
   and the distributed ZIP to the same exact source digest.
-- An anonymous, consent-aware study kit supports real SME validation. Its current
-  participation count is zero; no feedback or usability score was invented.
+- An anonymous, consent-aware study kit separates task observations, assistance,
+  missing model runs and questionnaire scores. The current aggregate records
+  {study_n} team-reported participants; its collection scope is stated below.
 - Independent follow-up audit: invalid signing keys are preserved and rejected;
   concurrent first starts publish one complete key. Malformed signatures fail
   validation, and `.env` now loads the documented structured-plan flag.
@@ -93,7 +103,7 @@ Historical upgrade and Windows reports describe earlier source versions.
 
 | Check | Recorded result | Meaning and limit |
 |---|---|---|
-| Current unit run | {tests['tests_run']} run; {tests['failures']} failures; {tests['errors']} errors; {tests['skipped']} skipped | Python {tests['python']}, {tests['platform']}; injected outputs are not model quality |
+| Latest stored full unit run | {tests['tests_run']} run; {tests['failures']} failures; {tests['errors']} errors; {tests['skipped']} skipped | Python {tests['python']}, {tests['platform']}; the report records its own source hash; injected outputs are not model quality |
 | Additional standard-library run | {python311['tests_run']} run; {python311['failures']} failures; {python311['errors']} errors; {python311['skipped']} skipped | Python {python311['python']}; optional photo tests require Pillow; report records its own source hash |
 | Financial scenarios | {cases['workflow_successes']}/{cases['cases']} expected workflows; {cases['executed_rescues']} rescues | {risk_met}/{cases['executed_rescues']} executed rescues meet the 10% simulated risk target |
 | Shipped TidePay | {results['deployed']['n']:,} unseen synthetic invoices; MAE {results['deployed']['mae_days']:.4f} days | Heuristic {results['customer_history_heuristic']['mae_days']:.4f}; training-only prior {results['historical_training_prior']['mae_days']:.4f}; no weight changes |
@@ -101,7 +111,7 @@ Historical upgrade and Windows reports describe earlier source versions.
 | Post-fix Qwen3 regression | {regression['matched']['numerator']}/{regression['requests']} known cases handled; {regression['safe_stop_handled']['numerator']}/{regression['safe_stop_handled']['denominator']} safe stops | One real-model pass after disclosed guard fixes; not a new blind score |
 | Independent-audit Windows Qwen3 rerun | {audit_result} | Actual compatible inference on disclosed cases; retains every output; not blind |
 | Historical first unseen instruction screening | {inj['true_positive']}/24 attacks detected; {inj['false_positive']}/24 benign flagged | Historical v3 observation; current v7 evidence is listed below; detection is advisory |
-| SME user study | 0 participants; pending | Kit and analysis available; no real-user claim |
+| SME user study | {study_result} | {study_limit} |
 
 The prediction cohort contains 80 new synthetic SMEs, four seeds and 7,427
 invoices after the shipped model's historical training period. No fresh labels
@@ -158,7 +168,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
   defects, the contest requirement map, fixes and remaining validation gaps.
 - [Current Windows actual-model regression](../evidence/independent-audit/model-regression/report.json).
 - [User study protocol](USER_STUDY_KIT.md) and
-  [pending participation status](../evidence/readiness-v3/user-study-status.json).
+  [current participation aggregate](../evidence/readiness-v3/user-study-status.json).
 
 Current test source digest: `{tests['source_tree_sha256']}`.
 Reports contain their own timestamps and hashes; older Windows/upgrade evidence
@@ -256,7 +266,8 @@ be guaranteed from synthetic checks while these validation gaps remain.
                 f"[{behavior['checks_passed']}/{behavior['checks_total']} checks passed](../{current}/behavior-checks.json): "
                 'decline without changes, incomplete approval, owner discount limits, residual-risk consent, '
                 'a known hostile supplier message and repeat execution. '
-                'Human validation remains pending.\n')
+                'These scripted checks do not count as human participants. '
+                'Separate supplied survey observations are described in [the survey report](USER_STUDY_RESULTS.md).\n')
     if (ROOT / 'docs/RELEASE_V9.md').is_file() and current == 'evidence/release-v9':
         doc = doc.replace('# Current technical readiness\n',
                           '# Current technical readiness\n\nCurrent local release: [fixes and verification scope](RELEASE_V9.md).\n', 1)

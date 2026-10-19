@@ -1,137 +1,137 @@
 {
   "schema_version": "tideway-user-study-v1",
-  "generated_at_utc": "2026-10-16T06:05:11.578585+00:00",
-  "status": "pending_no_consented_participants",
-  "consented_participants": 0,
-  "excluded_rows_without_consent": 1,
+  "generated_at_utc": "2026-10-19T06:31:20.566882+00:00",
+  "status": "collected_exploratory_observations",
+  "consented_participants": 20,
+  "excluded_rows_without_consent": 0,
   "roles": {
-    "accountant": 0,
-    "bookkeeper": 0,
-    "owner": 0
+    "accountant": 5,
+    "bookkeeper": 5,
+    "owner": 10
   },
   "tasks": {
     "t1": {
       "counts": {
-        "assisted": 0,
-        "completed": 0,
-        "failed": 0,
+        "assisted": 5,
+        "completed": 13,
+        "failed": 2,
         "not_attempted": 0,
         "unavailable_model": 0
       },
-      "attempted_denominator": 0,
+      "attempted_denominator": 20,
       "unassisted_completion": {
-        "numerator": 0,
-        "denominator": 0,
-        "rate": null
+        "numerator": 13,
+        "denominator": 20,
+        "rate": 0.65
       },
       "completion_including_assistance": {
-        "numerator": 0,
-        "denominator": 0,
-        "rate": null
+        "numerator": 18,
+        "denominator": 20,
+        "rate": 0.9
       },
-      "timing_observations": 0,
-      "median_seconds": null,
+      "timing_observations": 20,
+      "median_seconds": 99.0,
       "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
     },
     "t2": {
       "counts": {
-        "assisted": 0,
-        "completed": 0,
-        "failed": 0,
+        "assisted": 7,
+        "completed": 10,
+        "failed": 3,
         "not_attempted": 0,
         "unavailable_model": 0
       },
-      "attempted_denominator": 0,
+      "attempted_denominator": 20,
       "unassisted_completion": {
-        "numerator": 0,
-        "denominator": 0,
-        "rate": null
+        "numerator": 10,
+        "denominator": 20,
+        "rate": 0.5
       },
       "completion_including_assistance": {
-        "numerator": 0,
-        "denominator": 0,
-        "rate": null
+        "numerator": 17,
+        "denominator": 20,
+        "rate": 0.85
       },
-      "timing_observations": 0,
-      "median_seconds": null,
+      "timing_observations": 20,
+      "median_seconds": 114.5,
       "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
     },
     "t3": {
       "counts": {
-        "assisted": 0,
-        "completed": 0,
-        "failed": 0,
-        "not_attempted": 0,
-        "unavailable_model": 0
+        "assisted": 3,
+        "completed": 10,
+        "failed": 1,
+        "not_attempted": 2,
+        "unavailable_model": 4
       },
-      "attempted_denominator": 0,
+      "attempted_denominator": 14,
       "unassisted_completion": {
-        "numerator": 0,
-        "denominator": 0,
-        "rate": null
+        "numerator": 10,
+        "denominator": 14,
+        "rate": 0.7142857142857143
       },
       "completion_including_assistance": {
-        "numerator": 0,
-        "denominator": 0,
-        "rate": null
+        "numerator": 13,
+        "denominator": 14,
+        "rate": 0.9285714285714286
       },
-      "timing_observations": 0,
-      "median_seconds": null,
+      "timing_observations": 14,
+      "median_seconds": 73.5,
       "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
     },
     "t4": {
       "counts": {
-        "assisted": 0,
-        "completed": 0,
-        "failed": 0,
+        "assisted": 6,
+        "completed": 12,
+        "failed": 2,
         "not_attempted": 0,
         "unavailable_model": 0
       },
-      "attempted_denominator": 0,
+      "attempted_denominator": 20,
       "unassisted_completion": {
-        "numerator": 0,
-        "denominator": 0,
-        "rate": null
+        "numerator": 12,
+        "denominator": 20,
+        "rate": 0.6
       },
       "completion_including_assistance": {
-        "numerator": 0,
-        "denominator": 0,
-        "rate": null
+        "numerator": 18,
+        "denominator": 20,
+        "rate": 0.9
       },
-      "timing_observations": 0,
-      "median_seconds": null,
+      "timing_observations": 20,
+      "median_seconds": 161.5,
       "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
     },
     "t5": {
       "counts": {
-        "assisted": 0,
-        "completed": 0,
-        "failed": 0,
+        "assisted": 4,
+        "completed": 15,
+        "failed": 1,
         "not_attempted": 0,
         "unavailable_model": 0
       },
-      "attempted_denominator": 0,
+      "attempted_denominator": 20,
       "unassisted_completion": {
-        "numerator": 0,
-        "denominator": 0,
-        "rate": null
+        "numerator": 15,
+        "denominator": 20,
+        "rate": 0.75
       },
       "completion_including_assistance": {
-        "numerator": 0,
-        "denominator": 0,
-        "rate": null
+        "numerator": 19,
+        "denominator": 20,
+        "rate": 0.95
       },
-      "timing_observations": 0,
-      "median_seconds": null,
+      "timing_observations": 20,
+      "median_seconds": 72.0,
       "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
     }
   },
   "sus": {
-    "complete_responses": 0,
+    "complete_responses": 20,
     "partial_responses_not_scored": 0,
     "missing_responses": 0,
-    "mean_score": null,
-    "median_score": null,
+    "mean_score": 66.375,
+    "median_score": 70.0,
     "scale": "0 to 100, not a percentage of tasks completed",
     "formula": "2.5 * sum(odd response - 1, 5 - even response), one-based item numbering"
   },

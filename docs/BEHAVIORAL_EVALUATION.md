@@ -5,6 +5,11 @@ characters and decisions below are constructed for a backend walkthrough. The
 linked report records actual sandbox checks. No human task-completion rate,
 interview feedback, timing or usability score is claimed.
 
+This scope statement describes the six scripted backend cases below. Separate
+[team-reported field survey results](USER_STUDY_RESULTS.md) now record 20 SME
+participants and 20 security-task participants, with 10 overlapping; those rows
+are not participants in these automated cases.
+
 | Character and task | Required response |
 |---|---|
 | A cautious owner reviews the coming cash gap and decides to wait. | Show the gap and recovery proposals; leave the financial ledger unchanged. |

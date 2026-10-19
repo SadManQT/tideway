@@ -1,0 +1,50 @@
+{
+  "schema_version": "tideway-survey-intake-v1",
+  "sources": {
+    "sme": {
+      "filename": "sme-survey_v2.csv",
+      "sha256": "a260da1b071b7f97e7a5f2813ade7b71c22809feeacf42699a4e265ffa5babc8",
+      "rows": 20
+    },
+    "security": {
+      "filename": "security-survey_v2.csv",
+      "sha256": "0abdc5db8d225a96217e4bba04b11d44e4b4c7c0477b35297a91e74aa5a69d85",
+      "rows": 20
+    }
+  },
+  "collection_basis": "Team-supplied CSV observations; the team states these are fresh field surveys.",
+  "consent_basis": "The team explicitly confirmed in chat that consent was obtained before recording data for both surveys. Source CSVs have no consent column; normalized consent=yes uses that confirmation.",
+  "survey_date": null,
+  "observer": null,
+  "tested_commit": null,
+  "model": {
+    "reported_name": "DeepSeek",
+    "exact_version": null,
+    "execution_context": null,
+    "device": null
+  },
+  "cohorts": {
+    "sme": 20,
+    "security": 20,
+    "overlap": 10,
+    "unique_total": 30,
+    "overlap_basis": "Team confirmation; no cross-cohort identity map supplied."
+  },
+  "security_scope": "The team states the security participants were not involved in implementation. The records contain scenario outcomes and human reactions; reviewer qualifications, independent test methodology and technical logs were not supplied.",
+  "independent_collection_verified": false,
+  "data_origin_check": {
+    "baseline_commit": "bc9cbacbc26f5139cf3b9a8f642c05e594a2fa86",
+    "sme_profiles_matching_prior_generated_dataset": 20,
+    "sme_task_statuses_matching_prior_generated_dataset": 100,
+    "interpretation": "The matching profiles/statuses were disclosed to the team; the team states the supplied CSVs are fresh survey observations. This intake preserves that attribution and does not independently verify collection."
+  },
+  "missing_information": [
+    "survey date",
+    "observer/moderator",
+    "tested build",
+    "DeepSeek version/device/execution context",
+    "cross-cohort participant mapping",
+    "security reviewer qualifications and independent testing scope"
+  ],
+  "publication_policy": "Publish aggregate counts only. Raw CSVs, narratives and anonymous ID mapping remain private. Optional-AI survey responses do not verify the native TideLM adapter or receipt model."
+}
