@@ -1,0 +1,2589 @@
+{
+  "schema_version": "tideway-humanized-demo-surveys-v1",
+  "dataset_name": "Tideway humanized survey viewing demo",
+  "evidence_status": "synthetic_viewing_only_not_observed",
+  "disclaimer": "All 40 rows are fictional, generated personas for watching a demo. They are not human participants, usability evidence, security validation or market research. Do not copy them into evidence/private or report them as observed results.",
+  "interpretation_note": "The project calls this cohort SME Finance Copilot. The user's 'SEM' wording was interpreted as SME; semantic-screening evaluation is a separate technical artifact.",
+  "canonical_evidence": {
+    "real_sme_participants": 0,
+    "real_external_security_reviewers": 0,
+    "canonical_user_study_status": "pending_no_consented_participants"
+  },
+  "cohorts": {
+    "sme": {
+      "title": "SME finance copilot survey — 20 fictional viewers",
+      "participant_count": 20,
+      "survey_questions": [
+        {
+          "id": "T1",
+          "prompt": "Can Shapla pay salaries on 31 October while keeping its reserve?"
+        },
+        {
+          "id": "T2",
+          "prompt": "Which customer is most important to the current cash risk, and why?"
+        },
+        {
+          "id": "T3",
+          "prompt": "Ask a cash-flow question in a selected language and explain the grounded answer."
+        },
+        {
+          "id": "T4",
+          "prompt": "Explain the cost and remaining risk of a recovery proposal before deciding."
+        },
+        {
+          "id": "T5",
+          "prompt": "Inspect a pasted supplier message and keep legitimate fields as a draft only."
+        },
+        {
+          "id": "SUS",
+          "prompt": "Ten-item System Usability Scale, scored 0–100."
+        }
+      ],
+      "summary": {
+        "participant_count": 20,
+        "roles": {
+          "accountant": 5,
+          "bookkeeper": 5,
+          "owner": 10
+        },
+        "languages": {
+          "bn": 5,
+          "en": 8,
+          "es": 1,
+          "fr": 1,
+          "hi": 2,
+          "pt": 1,
+          "zh": 2
+        },
+        "model_status": {
+          "available": 14,
+          "not_tested": 2,
+          "unavailable": 4
+        },
+        "tasks": {
+          "T1": {
+            "counts": {
+              "assisted": 5,
+              "completed": 13,
+              "failed": 2
+            },
+            "attempted": 20,
+            "completed_without_assistance": 13,
+            "completed_including_assistance": 18,
+            "median_seconds": 100.5
+          },
+          "T2": {
+            "counts": {
+              "assisted": 7,
+              "completed": 10,
+              "failed": 3
+            },
+            "attempted": 20,
+            "completed_without_assistance": 10,
+            "completed_including_assistance": 17,
+            "median_seconds": 115.0
+          },
+          "T3": {
+            "counts": {
+              "assisted": 3,
+              "completed": 10,
+              "failed": 1,
+              "not_attempted": 2,
+              "unavailable_model": 4
+            },
+            "attempted": 14,
+            "completed_without_assistance": 10,
+            "completed_including_assistance": 13,
+            "median_seconds": 77.5
+          },
+          "T4": {
+            "counts": {
+              "assisted": 6,
+              "completed": 12,
+              "failed": 2
+            },
+            "attempted": 20,
+            "completed_without_assistance": 12,
+            "completed_including_assistance": 18,
+            "median_seconds": 167.5
+          },
+          "T5": {
+            "counts": {
+              "assisted": 4,
+              "completed": 15,
+              "failed": 1
+            },
+            "attempted": 20,
+            "completed_without_assistance": 15,
+            "completed_including_assistance": 19,
+            "median_seconds": 69.0
+          }
+        },
+        "sus": {
+          "complete_responses": 20,
+          "mean_score": 66.5,
+          "median_score": 68.75
+        }
+      },
+      "participants": [
+        {
+          "id": "SME-01",
+          "role": "owner",
+          "language": "en",
+          "experience_years": 7,
+          "business_profile": "wholesale stationery shop",
+          "prior_workflow": "spreadsheet plus WhatsApp reminders",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 88,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "assisted",
+              "seconds": 103,
+              "behavior": "Reached the customer-risk evidence after the hint and described a respectful reminder rather than a command."
+            },
+            "T3": {
+              "status": "completed",
+              "seconds": 64,
+              "behavior": "Used the selected currency and tool receipts to explain the cash-flow answer."
+            },
+            "T4": {
+              "status": "completed",
+              "seconds": 136,
+              "behavior": "Read the cost and remaining risk before making a deliberate sandbox decision.",
+              "decision": "approved_in_sandbox"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 71,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            4,
+            2,
+            4,
+            2,
+            4,
+            2,
+            4,
+            2,
+            4,
+            2
+          ],
+          "sus_score": 75.0,
+          "overall_confidence": 4,
+          "most_useful_feature": "cash weather",
+          "main_friction": "The first forecast label felt more technical than expected.",
+          "journey": [
+            "Checked the balance card before opening the forecast.",
+            "Paused on the difference between payroll funding and the reserve floor.",
+            "Read the plan twice before saying an approval should still be a deliberate choice."
+          ],
+          "participant_reaction": "I can see the shortfall now; I just do not want the green payroll line to hide the reserve problem.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-02",
+          "role": "bookkeeper",
+          "language": "bn",
+          "experience_years": 4,
+          "business_profile": "neighbourhood grocery wholesaler",
+          "prior_workflow": "paper ledger reconciled into Excel each Friday",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "assisted",
+              "seconds": 126,
+              "behavior": "Needed the Cash weather hint before connecting the payroll date to the reserve warning."
+            },
+            "T2": {
+              "status": "completed",
+              "seconds": 90,
+              "behavior": "Connected customer exposure and payment timing to a relationship-preserving next step."
+            },
+            "T3": {
+              "status": "completed",
+              "seconds": 82,
+              "behavior": "Used the selected currency and tool receipts to explain the cash-flow answer."
+            },
+            "T4": {
+              "status": "assisted",
+              "seconds": 176,
+              "behavior": "Needed the approval-dialog hint to find cost, residual risk and the separate approval boundary.",
+              "decision": "declined_after_reading_risk"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 59,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            4,
+            2,
+            3,
+            3,
+            4,
+            2,
+            4,
+            2,
+            4,
+            3
+          ],
+          "sus_score": 67.5,
+          "overall_confidence": 3,
+          "most_useful_feature": "draft-only inbox",
+          "main_friction": "Wanted the currency selector to stay visible while reading the assistant answer.",
+          "journey": [
+            "Looked for familiar invoice screens before following the cash-risk view.",
+            "Used the hint after searching the ledger for a reserve figure.",
+            "Returned to the draft after the interruption and checked the warning before saving nothing."
+          ],
+          "participant_reaction": "The Bangla labels helped me start, but I still want the approval boundary to be impossible to miss.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-03",
+          "role": "accountant",
+          "language": "en",
+          "experience_years": 11,
+          "business_profile": "small print and packaging studio",
+          "prior_workflow": "Xero export reviewed in a monthly spreadsheet",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 72,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "completed",
+              "seconds": 79,
+              "behavior": "Connected customer exposure and payment timing to a relationship-preserving next step."
+            },
+            "T3": {
+              "status": "completed",
+              "seconds": 58,
+              "behavior": "Used the selected currency and tool receipts to explain the cash-flow answer."
+            },
+            "T4": {
+              "status": "completed",
+              "seconds": 101,
+              "behavior": "Read the cost and remaining risk before making a deliberate sandbox decision.",
+              "decision": "approved_in_sandbox"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 54,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            5,
+            1,
+            4,
+            2,
+            5,
+            1,
+            4,
+            2,
+            4,
+            1
+          ],
+          "sus_score": 87.5,
+          "overall_confidence": 5,
+          "most_useful_feature": "tool receipts",
+          "main_friction": "The customer-risk ranking needed one extra sentence about exposure.",
+          "journey": [
+            "Went straight to the projection and checked the date of the stress point.",
+            "Cross-checked the customer ranking against timing rather than name recognition.",
+            "Inspected receipts before trusting the selected-currency answer."
+          ],
+          "participant_reaction": "This is useful because the answer shows its working; I would still keep the ledger as the source of truth.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-04",
+          "role": "owner",
+          "language": "hi",
+          "experience_years": 3,
+          "business_profile": "small catering service",
+          "prior_workflow": "phone notes and an end-of-month cash count",
+          "model_status": "unavailable",
+          "tasks": {
+            "T1": {
+              "status": "assisted",
+              "seconds": 158,
+              "behavior": "Needed the Cash weather hint before connecting the payroll date to the reserve warning."
+            },
+            "T2": {
+              "status": "failed",
+              "seconds": 214,
+              "behavior": "Searched by customer name but did not complete the evidence-led explanation before stopping."
+            },
+            "T3": {
+              "status": "unavailable_model",
+              "seconds": null,
+              "behavior": "The optional model was unavailable, so this task was not attempted."
+            },
+            "T4": {
+              "status": "assisted",
+              "seconds": 201,
+              "behavior": "Needed the approval-dialog hint to find cost, residual risk and the separate approval boundary.",
+              "decision": "declined_after_reading_risk"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 82,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            3,
+            4,
+            3,
+            4,
+            3,
+            4,
+            3,
+            4,
+            3,
+            4
+          ],
+          "sus_score": 37.5,
+          "overall_confidence": 2,
+          "most_useful_feature": "plain-language warnings",
+          "main_friction": "The customer view was hard to find without the moderator hint.",
+          "journey": [
+            "Started with the visible cash number and expected the answer to be immediate.",
+            "Searched through customer names but did not connect one to the current gap.",
+            "Was comfortable leaving the flagged message as a draft once the bypass warning was visible."
+          ],
+          "participant_reaction": "I understand the warning, but I would need someone to show me the customer-risk screen the first time.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-05",
+          "role": "owner",
+          "language": "bn",
+          "experience_years": 9,
+          "business_profile": "motorbike repair workshop",
+          "prior_workflow": "cashbook with supplier balances on paper",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 104,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "assisted",
+              "seconds": 134,
+              "behavior": "Reached the customer-risk evidence after the hint and described a respectful reminder rather than a command."
+            },
+            "T3": {
+              "status": "assisted",
+              "seconds": 116,
+              "behavior": "Needed a prompt to inspect the assistant receipts before explaining the selected-currency answer."
+            },
+            "T4": {
+              "status": "completed",
+              "seconds": 149,
+              "behavior": "Read the cost and remaining risk before making a deliberate sandbox decision.",
+              "decision": "approved_in_sandbox"
+            },
+            "T5": {
+              "status": "assisted",
+              "seconds": 121,
+              "behavior": "Used the warning hint to distinguish legitimate invoice fields from the untrusted payment instruction."
+            }
+          },
+          "sus_responses": [
+            4,
+            2,
+            4,
+            3,
+            4,
+            2,
+            4,
+            3,
+            4,
+            2
+          ],
+          "sus_score": 70.0,
+          "overall_confidence": 4,
+          "most_useful_feature": "recovery proposal comparison",
+          "main_friction": "The inbox warning competed with the extracted invoice details visually.",
+          "journey": [
+            "Recognised the payroll date quickly but asked which number represented the reserve floor.",
+            "Tried the relationship view after the hint and talked through a gentle reminder.",
+            "Read the proposal cost aloud before deciding it was safe to simulate."
+          ],
+          "participant_reaction": "The proposal is helpful as a list of choices, not as someone else deciding for me.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-06",
+          "role": "bookkeeper",
+          "language": "en",
+          "experience_years": 2,
+          "business_profile": "online clothing seller",
+          "prior_workflow": "marketplace exports and manual bank matching",
+          "model_status": "not_tested",
+          "tasks": {
+            "T1": {
+              "status": "failed",
+              "seconds": 181,
+              "behavior": "Looked through the balance and records but did not finish the payroll-versus-reserve explanation."
+            },
+            "T2": {
+              "status": "assisted",
+              "seconds": 156,
+              "behavior": "Reached the customer-risk evidence after the hint and described a respectful reminder rather than a command."
+            },
+            "T3": {
+              "status": "not_attempted",
+              "seconds": null,
+              "behavior": "Skipped the optional AI task because no model session was available."
+            },
+            "T4": {
+              "status": "completed",
+              "seconds": 188,
+              "behavior": "Read the cost and remaining risk before making a deliberate sandbox decision.",
+              "decision": "declined_after_reading_risk"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 67,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            3,
+            3,
+            4,
+            3,
+            3,
+            3,
+            4,
+            3,
+            3,
+            3
+          ],
+          "sus_score": 55.0,
+          "overall_confidence": 3,
+          "most_useful_feature": "saved drafts",
+          "main_friction": "The first screen offered several plausible places to begin.",
+          "journey": [
+            "Opened the record list and expected a task-specific prompt.",
+            "Found the risk view after the hint and compared two customer rows.",
+            "Was slow on the proposal but confidently kept the supplier message as a draft."
+          ],
+          "participant_reaction": "I like that a half-finished review does not become a payment just because I clicked the assistant.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-07",
+          "role": "accountant",
+          "language": "zh",
+          "experience_years": 8,
+          "business_profile": "import and distribution office",
+          "prior_workflow": "ERP export with bilingual spreadsheet notes",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 70,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "completed",
+              "seconds": 86,
+              "behavior": "Connected customer exposure and payment timing to a relationship-preserving next step."
+            },
+            "T3": {
+              "status": "completed",
+              "seconds": 73,
+              "behavior": "Used the selected currency and tool receipts to explain the cash-flow answer."
+            },
+            "T4": {
+              "status": "assisted",
+              "seconds": 165,
+              "behavior": "Needed the approval-dialog hint to find cost, residual risk and the separate approval boundary.",
+              "decision": "approved_in_sandbox"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 62,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            4,
+            2,
+            4,
+            2,
+            5,
+            2,
+            4,
+            2,
+            5,
+            2
+          ],
+          "sus_score": 80.0,
+          "overall_confidence": 4,
+          "most_useful_feature": "selected-currency explanations",
+          "main_friction": "The distinction between display currency and ledger currency needed emphasis.",
+          "journey": [
+            "Changed the display to CNY before asking the cash-flow question.",
+            "Used the receipts to check that the translated number came from the ledger.",
+            "Asked whether the same approval would be required after a replan."
+          ],
+          "participant_reaction": "The conversion is for my eyes; it should never quietly change what the business owes.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-08",
+          "role": "owner",
+          "language": "es",
+          "experience_years": 5,
+          "business_profile": "community pharmacy",
+          "prior_workflow": "point-of-sale report plus a weekly notebook",
+          "model_status": "unavailable",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 94,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "completed",
+              "seconds": 111,
+              "behavior": "Connected customer exposure and payment timing to a relationship-preserving next step."
+            },
+            "T3": {
+              "status": "unavailable_model",
+              "seconds": null,
+              "behavior": "The optional model was unavailable, so this task was not attempted."
+            },
+            "T4": {
+              "status": "failed",
+              "seconds": 240,
+              "behavior": "Opened the proposal but did not reach a reasoned decision about its remaining risk.",
+              "decision": "declined_after_reading_risk"
+            },
+            "T5": {
+              "status": "assisted",
+              "seconds": 109,
+              "behavior": "Used the warning hint to distinguish legitimate invoice fields from the untrusted payment instruction."
+            }
+          },
+          "sus_responses": [
+            3,
+            3,
+            3,
+            4,
+            3,
+            3,
+            3,
+            4,
+            3,
+            3
+          ],
+          "sus_score": 45.0,
+          "overall_confidence": 3,
+          "most_useful_feature": "customer risk view",
+          "main_friction": "The proposal's remaining-risk wording was not clear on the first read.",
+          "journey": [
+            "Found the payroll result without help and asked whether the reserve was a separate promise.",
+            "Compared the top customer with the invoice timing.",
+            "Stopped at the proposal because the residual risk felt like a contradiction rather than a trade-off."
+          ],
+          "participant_reaction": "If the plan says feasible, I need the remaining risk explained in everyday language before I decide.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-09",
+          "role": "owner",
+          "language": "en",
+          "experience_years": 14,
+          "business_profile": "regional delivery company",
+          "prior_workflow": "accounting package with a daily cash huddle",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 61,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "completed",
+              "seconds": 68,
+              "behavior": "Connected customer exposure and payment timing to a relationship-preserving next step."
+            },
+            "T3": {
+              "status": "completed",
+              "seconds": 49,
+              "behavior": "Used the selected currency and tool receipts to explain the cash-flow answer."
+            },
+            "T4": {
+              "status": "completed",
+              "seconds": 124,
+              "behavior": "Read the cost and remaining risk before making a deliberate sandbox decision.",
+              "decision": "approved_in_sandbox"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 46,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            5,
+            1,
+            5,
+            1,
+            5,
+            1,
+            4,
+            1,
+            5,
+            1
+          ],
+          "sus_score": 97.5,
+          "overall_confidence": 5,
+          "most_useful_feature": "one-screen forecast",
+          "main_friction": "Wanted a way to pin a customer explanation for the team meeting.",
+          "journey": [
+            "Went directly to Cash weather and verbalised the payroll-versus-reserve split.",
+            "Used the ranking as a conversation starter rather than a collection order.",
+            "Tested the retry boundary and liked that the draft never became authority."
+          ],
+          "participant_reaction": "The speed is good, but the useful part is the pause before anything consequential happens.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-10",
+          "role": "bookkeeper",
+          "language": "bn",
+          "experience_years": 6,
+          "business_profile": "made-to-measure tailoring shop",
+          "prior_workflow": "messaging app receipts and a handwritten order book",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "assisted",
+              "seconds": 143,
+              "behavior": "Needed the Cash weather hint before connecting the payroll date to the reserve warning."
+            },
+            "T2": {
+              "status": "failed",
+              "seconds": 197,
+              "behavior": "Searched by customer name but did not complete the evidence-led explanation before stopping."
+            },
+            "T3": {
+              "status": "assisted",
+              "seconds": 139,
+              "behavior": "Needed a prompt to inspect the assistant receipts before explaining the selected-currency answer."
+            },
+            "T4": {
+              "status": "completed",
+              "seconds": 170,
+              "behavior": "Read the cost and remaining risk before making a deliberate sandbox decision.",
+              "decision": "approved_in_sandbox"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 76,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            4,
+            3,
+            4,
+            3,
+            4,
+            3,
+            4,
+            3,
+            4,
+            3
+          ],
+          "sus_score": 62.5,
+          "overall_confidence": 3,
+          "most_useful_feature": "approval review",
+          "main_friction": "The relationship ranking felt too abstract until the amount was visible.",
+          "journey": [
+            "Read the balance but needed a hint to find the forecast narrative.",
+            "Looked for the customer name in the wrong list and stopped the task.",
+            "Was more confident once the approval dialog showed cost, risk and separate approvers."
+          ],
+          "participant_reaction": "Show me the amount next to the risk and I can explain it to the owner; a label alone is not enough.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-11",
+          "role": "accountant",
+          "language": "en",
+          "experience_years": 1,
+          "business_profile": "small digital marketing agency",
+          "prior_workflow": "cloud spreadsheet shared with the founder",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 113,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "assisted",
+              "seconds": 128,
+              "behavior": "Reached the customer-risk evidence after the hint and described a respectful reminder rather than a command."
+            },
+            "T3": {
+              "status": "failed",
+              "seconds": 210,
+              "behavior": "Started the optional AI question but could not turn the answer into a grounded explanation."
+            },
+            "T4": {
+              "status": "assisted",
+              "seconds": 189,
+              "behavior": "Needed the approval-dialog hint to find cost, residual risk and the separate approval boundary.",
+              "decision": "declined_after_reading_risk"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 83,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            3,
+            4,
+            3,
+            4,
+            3,
+            4,
+            3,
+            4,
+            3,
+            4
+          ],
+          "sus_score": 37.5,
+          "overall_confidence": 2,
+          "most_useful_feature": "guided next question",
+          "main_friction": "The assistant answer was harder to interpret after the first model attempt failed.",
+          "journey": [
+            "Followed the guided prompt instead of guessing from the balance.",
+            "Found the customer evidence after the hint but wanted more plain-language coaching.",
+            "Handled the draft safely even though the optional AI step was frustrating."
+          ],
+          "participant_reaction": "I would use this with a checklist beside me until I learned which numbers matter most.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-12",
+          "role": "owner",
+          "language": "en",
+          "experience_years": 12,
+          "business_profile": "prepared-food distributor",
+          "prior_workflow": "daily sales sheet and calls to large buyers",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 79,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "completed",
+              "seconds": 95,
+              "behavior": "Connected customer exposure and payment timing to a relationship-preserving next step."
+            },
+            "T3": {
+              "status": "completed",
+              "seconds": 66,
+              "behavior": "Used the selected currency and tool receipts to explain the cash-flow answer."
+            },
+            "T4": {
+              "status": "completed",
+              "seconds": 118,
+              "behavior": "Read the cost and remaining risk before making a deliberate sandbox decision.",
+              "decision": "approved_in_sandbox"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 52,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            5,
+            2,
+            4,
+            2,
+            5,
+            2,
+            4,
+            2,
+            5,
+            2
+          ],
+          "sus_score": 82.5,
+          "overall_confidence": 5,
+          "most_useful_feature": "risk-aware plan",
+          "main_friction": "Wanted the customer relationship suggestion to mention the last contact date.",
+          "journey": [
+            "Checked the forecast against the morning sales meeting numbers.",
+            "Accepted the customer ranking after seeing both exposure and likely delay.",
+            "Read the warning aloud to a colleague before treating the proposal as ready."
+          ],
+          "participant_reaction": "It feels like a second pair of eyes, not a replacement for the person who knows the customer.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-13",
+          "role": "owner",
+          "language": "bn",
+          "experience_years": 7,
+          "business_profile": "independent hardware store",
+          "prior_workflow": "cash register totals and supplier SMS messages",
+          "model_status": "unavailable",
+          "tasks": {
+            "T1": {
+              "status": "assisted",
+              "seconds": 132,
+              "behavior": "Needed the Cash weather hint before connecting the payroll date to the reserve warning."
+            },
+            "T2": {
+              "status": "completed",
+              "seconds": 122,
+              "behavior": "Connected customer exposure and payment timing to a relationship-preserving next step."
+            },
+            "T3": {
+              "status": "unavailable_model",
+              "seconds": null,
+              "behavior": "The optional model was unavailable, so this task was not attempted."
+            },
+            "T4": {
+              "status": "assisted",
+              "seconds": 208,
+              "behavior": "Needed the approval-dialog hint to find cost, residual risk and the separate approval boundary.",
+              "decision": "declined_after_reading_risk"
+            },
+            "T5": {
+              "status": "failed",
+              "seconds": 182,
+              "behavior": "Could not finish separating the legitimate fields from the embedded instruction before stopping."
+            }
+          },
+          "sus_responses": [
+            3,
+            4,
+            3,
+            4,
+            3,
+            4,
+            3,
+            4,
+            3,
+            4
+          ],
+          "sus_score": 37.5,
+          "overall_confidence": 2,
+          "most_useful_feature": "payment-detail warning",
+          "main_friction": "The pasted supplier message was difficult to separate from its legitimate invoice fields.",
+          "journey": [
+            "Needed the hint to move from today's cash to the month-end projection.",
+            "Spent time explaining which regular customer was actually driving the exposure.",
+            "Did not finish the inbox task because the mixed message made the draft feel unsafe."
+          ],
+          "participant_reaction": "A warning is useful, but when a message mixes true details with a bad instruction I want a clearer split.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-14",
+          "role": "bookkeeper",
+          "language": "fr",
+          "experience_years": 10,
+          "business_profile": "clinic-supplies distributor",
+          "prior_workflow": "inventory system plus emailed CSV exports",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 97,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "assisted",
+              "seconds": 145,
+              "behavior": "Reached the customer-risk evidence after the hint and described a respectful reminder rather than a command."
+            },
+            "T3": {
+              "status": "completed",
+              "seconds": 91,
+              "behavior": "Used the selected currency and tool receipts to explain the cash-flow answer."
+            },
+            "T4": {
+              "status": "completed",
+              "seconds": 155,
+              "behavior": "Read the cost and remaining risk before making a deliberate sandbox decision.",
+              "decision": "approved_in_sandbox"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 64,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            4,
+            2,
+            4,
+            2,
+            4,
+            2,
+            5,
+            2,
+            4,
+            2
+          ],
+          "sus_score": 77.5,
+          "overall_confidence": 4,
+          "most_useful_feature": "audit trail",
+          "main_friction": "The risk evidence was strong but took more clicks than the forecast.",
+          "journey": [
+            "Read the forecast carefully and checked whether missing receipts changed the result.",
+            "Used the hint to reach the customer evidence and then explained the denominator.",
+            "Looked for an audit entry after leaving the supplier draft untouched."
+          ],
+          "participant_reaction": "I trust a recommendation more when I can retrace the steps that produced it.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-15",
+          "role": "accountant",
+          "language": "en",
+          "experience_years": 15,
+          "business_profile": "engineering consultancy",
+          "prior_workflow": "formal monthly close and approval matrix",
+          "model_status": "not_tested",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 83,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "completed",
+              "seconds": 75,
+              "behavior": "Connected customer exposure and payment timing to a relationship-preserving next step."
+            },
+            "T3": {
+              "status": "not_attempted",
+              "seconds": null,
+              "behavior": "Skipped the optional AI task because no model session was available."
+            },
+            "T4": {
+              "status": "completed",
+              "seconds": 108,
+              "behavior": "Read the cost and remaining risk before making a deliberate sandbox decision.",
+              "decision": "declined_after_reading_risk"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 48,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            5,
+            1,
+            5,
+            1,
+            5,
+            1,
+            5,
+            1,
+            5,
+            1
+          ],
+          "sus_score": 100.0,
+          "overall_confidence": 5,
+          "most_useful_feature": "maker-checker approvals",
+          "main_friction": "The demo language was friendlier than the formal controls they normally use.",
+          "journey": [
+            "Mapped the forecast to the existing approval matrix before taking any recommendation seriously.",
+            "Looked for a customer-level audit trail and found the exposure explanation.",
+            "Declined to treat the optional assistant as a source of authority."
+          ],
+          "participant_reaction": "The controls feel familiar; the challenge is making the explanation precise enough for a finance review.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-16",
+          "role": "owner",
+          "language": "hi",
+          "experience_years": 4,
+          "business_profile": "small garment workshop",
+          "prior_workflow": "notebook, mobile wallet alerts and weekly bank visit",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "failed",
+              "seconds": 174,
+              "behavior": "Looked through the balance and records but did not finish the payroll-versus-reserve explanation."
+            },
+            "T2": {
+              "status": "assisted",
+              "seconds": 169,
+              "behavior": "Reached the customer-risk evidence after the hint and described a respectful reminder rather than a command."
+            },
+            "T3": {
+              "status": "assisted",
+              "seconds": 127,
+              "behavior": "Needed a prompt to inspect the assistant receipts before explaining the selected-currency answer."
+            },
+            "T4": {
+              "status": "completed",
+              "seconds": 226,
+              "behavior": "Read the cost and remaining risk before making a deliberate sandbox decision.",
+              "decision": "approved_in_sandbox"
+            },
+            "T5": {
+              "status": "assisted",
+              "seconds": 138,
+              "behavior": "Used the warning hint to distinguish legitimate invoice fields from the untrusted payment instruction."
+            }
+          },
+          "sus_responses": [
+            3,
+            4,
+            4,
+            4,
+            3,
+            4,
+            3,
+            4,
+            3,
+            4
+          ],
+          "sus_score": 40.0,
+          "overall_confidence": 2,
+          "most_useful_feature": "cash-gap explanation",
+          "main_friction": "Several terms sounded like accounting jargon during the first pass.",
+          "journey": [
+            "Looked for the current wallet balance and stopped when the future date was not obvious.",
+            "Used the hints but asked sensible questions about the largest customer.",
+            "Took time to read the proposal and still made a deliberate sandbox decision."
+          ],
+          "participant_reaction": "I can follow the story when someone explains the words; the numbers themselves are not the hard part.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-17",
+          "role": "owner",
+          "language": "en",
+          "experience_years": 8,
+          "business_profile": "after-school education service",
+          "prior_workflow": "invoicing app and a weekly owner review",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 105,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "completed",
+              "seconds": 104,
+              "behavior": "Connected customer exposure and payment timing to a relationship-preserving next step."
+            },
+            "T3": {
+              "status": "completed",
+              "seconds": 69,
+              "behavior": "Used the selected currency and tool receipts to explain the cash-flow answer."
+            },
+            "T4": {
+              "status": "failed",
+              "seconds": 232,
+              "behavior": "Opened the proposal but did not reach a reasoned decision about its remaining risk.",
+              "decision": "declined_after_reading_risk"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 57,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            4,
+            3,
+            4,
+            3,
+            4,
+            3,
+            4,
+            3,
+            4,
+            3
+          ],
+          "sus_score": 62.5,
+          "overall_confidence": 3,
+          "most_useful_feature": "customer explanation",
+          "main_friction": "The rescue proposal made the final decision feel high stakes even in a sandbox.",
+          "journey": [
+            "Found both payroll and reserve signals but wanted to see the original receipts.",
+            "Connected the risk to one late payer without blaming the customer.",
+            "Stopped at the approval review because the remaining risk was still uncomfortable."
+          ],
+          "participant_reaction": "A system can make a plan and still leave me with a real decision; that is the honest part.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-18",
+          "role": "bookkeeper",
+          "language": "bn",
+          "experience_years": 3,
+          "business_profile": "event equipment rental",
+          "prior_workflow": "calendar, deposit slips and chat messages",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "assisted",
+              "seconds": 151,
+              "behavior": "Needed the Cash weather hint before connecting the payroll date to the reserve warning."
+            },
+            "T2": {
+              "status": "failed",
+              "seconds": 221,
+              "behavior": "Searched by customer name but did not complete the evidence-led explanation before stopping."
+            },
+            "T3": {
+              "status": "completed",
+              "seconds": 88,
+              "behavior": "Used the selected currency and tool receipts to explain the cash-flow answer."
+            },
+            "T4": {
+              "status": "assisted",
+              "seconds": 197,
+              "behavior": "Needed the approval-dialog hint to find cost, residual risk and the separate approval boundary.",
+              "decision": "declined_after_reading_risk"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 74,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            4,
+            3,
+            3,
+            3,
+            4,
+            3,
+            3,
+            3,
+            4,
+            3
+          ],
+          "sus_score": 57.5,
+          "overall_confidence": 3,
+          "most_useful_feature": "interruption-safe drafts",
+          "main_friction": "The customer view did not match the order language they use every day.",
+          "journey": [
+            "Started from the calendar because that is where their deadlines usually live.",
+            "Could not finish the customer-risk task after searching by event name.",
+            "The assistant answer made more sense once the selected currency was visible."
+          ],
+          "participant_reaction": "Saving the draft safely matters to me because I am usually interrupted in the middle of a supplier message.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-19",
+          "role": "accountant",
+          "language": "zh",
+          "experience_years": 13,
+          "business_profile": "consumer-electronics wholesaler",
+          "prior_workflow": "ERP with a separate cash forecast workbook",
+          "model_status": "available",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 68,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "completed",
+              "seconds": 82,
+              "behavior": "Connected customer exposure and payment timing to a relationship-preserving next step."
+            },
+            "T3": {
+              "status": "completed",
+              "seconds": 61,
+              "behavior": "Used the selected currency and tool receipts to explain the cash-flow answer."
+            },
+            "T4": {
+              "status": "completed",
+              "seconds": 131,
+              "behavior": "Read the cost and remaining risk before making a deliberate sandbox decision.",
+              "decision": "approved_in_sandbox"
+            },
+            "T5": {
+              "status": "completed",
+              "seconds": 51,
+              "behavior": "Kept the extracted fields as a draft, identified the embedded bypass sentence and preserved the approval boundary."
+            }
+          },
+          "sus_responses": [
+            5,
+            2,
+            5,
+            2,
+            4,
+            2,
+            5,
+            2,
+            5,
+            2
+          ],
+          "sus_score": 85.0,
+          "overall_confidence": 5,
+          "most_useful_feature": "evidence-linked forecast",
+          "main_friction": "Wanted more granularity about which assumptions drive a late payment.",
+          "journey": [
+            "Checked the forecast date and immediately looked for the underlying invoice cohort.",
+            "Used the risk ranking to compare amount at risk with payment habit.",
+            "Tested a retry in the security flow and recognised the unchanged state."
+          ],
+          "participant_reaction": "The guardrails are more convincing when the screen shows what did not change as well as what did.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SME-20",
+          "role": "owner",
+          "language": "pt",
+          "experience_years": 6,
+          "business_profile": "independent design studio",
+          "prior_workflow": "invoice app with monthly founder review",
+          "model_status": "unavailable",
+          "tasks": {
+            "T1": {
+              "status": "completed",
+              "seconds": 90,
+              "behavior": "Found the live projection and stated the payroll result separately from the reserve-floor result."
+            },
+            "T2": {
+              "status": "assisted",
+              "seconds": 119,
+              "behavior": "Reached the customer-risk evidence after the hint and described a respectful reminder rather than a command."
+            },
+            "T3": {
+              "status": "unavailable_model",
+              "seconds": null,
+              "behavior": "The optional model was unavailable, so this task was not attempted."
+            },
+            "T4": {
+              "status": "completed",
+              "seconds": 143,
+              "behavior": "Read the cost and remaining risk before making a deliberate sandbox decision.",
+              "decision": "approved_in_sandbox"
+            },
+            "T5": {
+              "status": "assisted",
+              "seconds": 93,
+              "behavior": "Used the warning hint to distinguish legitimate invoice fields from the untrusted payment instruction."
+            }
+          },
+          "sus_responses": [
+            4,
+            2,
+            4,
+            2,
+            4,
+            2,
+            4,
+            3,
+            4,
+            2
+          ],
+          "sus_score": 72.5,
+          "overall_confidence": 4,
+          "most_useful_feature": "three recovery priorities",
+          "main_friction": "The inbox task needed a stronger visual distinction between data and instructions.",
+          "journey": [
+            "Found the forecast with little trouble and asked whether the reserve was a policy or a target.",
+            "Needed one hint to connect the customer ranking to a respectful next step.",
+            "Was comfortable approving only after reading the cost and residual risk line by line."
+          ],
+          "participant_reaction": "I want the system to be confident about calculations and cautious about conversations.",
+          "synthetic_observation": true
+        }
+      ]
+    },
+    "security": {
+      "title": "Security boundary survey — 20 fictional viewers",
+      "participant_count": 20,
+      "survey_questions": [
+        {
+          "id": "SEC-01",
+          "prompt": "Does a revoked member in an old tab still get to approve?"
+        },
+        {
+          "id": "SEC-02",
+          "prompt": "Can an urgent bank-detail message verify a payee without owner callback?"
+        },
+        {
+          "id": "SEC-03",
+          "prompt": "Can invoice wording create approval or execution authority?"
+        },
+        {
+          "id": "SEC-04",
+          "prompt": "Does an idempotent retry create a second receipt or state change?"
+        },
+        {
+          "id": "SEC-05",
+          "prompt": "Does a payment delay invalidate the old mandate and require a fresh proposal?"
+        }
+      ],
+      "summary": {
+        "participant_count": 20,
+        "roles": {
+          "accountant": 5,
+          "bookkeeper": 5,
+          "owner": 10
+        },
+        "security_familiarity": {
+          "beginner": 6,
+          "intermediate": 8,
+          "strong": 6
+        },
+        "cases": {
+          "SEC-01": {
+            "handled_safely_in_final_action": 20,
+            "prompted_once": 6,
+            "initially_trusted": 0,
+            "median_seconds": 48.0
+          },
+          "SEC-02": {
+            "handled_safely_in_final_action": 20,
+            "prompted_once": 6,
+            "initially_trusted": 6,
+            "median_seconds": 66.0
+          },
+          "SEC-03": {
+            "handled_safely_in_final_action": 20,
+            "prompted_once": 6,
+            "initially_trusted": 6,
+            "median_seconds": 61.0
+          },
+          "SEC-04": {
+            "handled_safely_in_final_action": 20,
+            "prompted_once": 0,
+            "initially_trusted": 0,
+            "median_seconds": 59.0
+          },
+          "SEC-05": {
+            "handled_safely_in_final_action": 20,
+            "prompted_once": 6,
+            "initially_trusted": 0,
+            "median_seconds": 80.0
+          }
+        },
+        "confidence": {
+          "median_before": 2.0,
+          "median_after": 5.0
+        }
+      },
+      "participants": [
+        {
+          "id": "SEC-P01",
+          "role": "owner",
+          "security_familiarity": "intermediate",
+          "work_context": "retail office",
+          "prior_security_habit": "checks approvals twice",
+          "confidence_before": 2,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 42,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 60,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 55,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 53,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 74,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "cautious",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "Urgency is a reason to verify, not a reason to skip the control.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P02",
+          "role": "accountant",
+          "security_familiarity": "strong",
+          "work_context": "printing studio",
+          "prior_security_habit": "keeps a callback directory",
+          "confidence_before": 3,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 46,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 64,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 59,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 57,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 78,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "cautious",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "I want the callback method to come from our records, never from the message.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P03",
+          "role": "bookkeeper",
+          "security_familiarity": "beginner",
+          "work_context": "online shop",
+          "prior_security_habit": "relies on email labels",
+          "confidence_before": 2,
+          "confidence_after": 4,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 49,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve. Took the moderator prompt before continuing."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 67,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": true,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path. Took the moderator prompt before continuing."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 62,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": true,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority. Took the moderator prompt before continuing."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 60,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 81,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal. Took the moderator prompt before continuing."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "novice",
+            "safe_final_action": true,
+            "prompted_cases": 4,
+            "initially_trusted_cases": 2
+          },
+          "participant_reaction": "I first thought the signed-in tab was enough; the membership check changed my mind.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P04",
+          "role": "owner",
+          "security_familiarity": "intermediate",
+          "work_context": "repair workshop",
+          "prior_security_habit": "asks who owns the next step",
+          "confidence_before": 2,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 44,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 62,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 57,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 55,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 76,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "pragmatic",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "Show me what changed since I approved it and I can decide what to do next.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P05",
+          "role": "accountant",
+          "security_familiarity": "strong",
+          "work_context": "delivery company",
+          "prior_security_habit": "keeps vendor contacts outside the inbox",
+          "confidence_before": 3,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 48,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 66,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 61,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 59,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 80,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "cautious",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "The invoice can be real and still not be an approval.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P06",
+          "role": "owner",
+          "security_familiarity": "beginner",
+          "work_context": "catering service",
+          "prior_security_habit": "handles messages on a phone",
+          "confidence_before": 2,
+          "confidence_after": 4,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 51,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve. Took the moderator prompt before continuing."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 69,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": true,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path. Took the moderator prompt before continuing."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 64,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": true,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority. Took the moderator prompt before continuing."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 62,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 83,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal. Took the moderator prompt before continuing."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "novice",
+            "safe_final_action": true,
+            "prompted_cases": 4,
+            "initially_trusted_cases": 2
+          },
+          "participant_reaction": "On a phone I would probably follow the urgent wording unless the screen made the pause obvious.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P07",
+          "role": "bookkeeper",
+          "security_familiarity": "intermediate",
+          "work_context": "wholesale store",
+          "prior_security_habit": "checks invoice numbers first",
+          "confidence_before": 2,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 47,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 65,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 60,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 58,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 79,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "pragmatic",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "The draft is useful, but the next step should remain visibly separate from extraction.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P08",
+          "role": "owner",
+          "security_familiarity": "strong",
+          "work_context": "consultancy",
+          "prior_security_habit": "never approves from an old tab",
+          "confidence_before": 3,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 43,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 61,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 56,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 54,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 75,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "cautious",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "A previous approval should age out when the facts change; otherwise it is not a safeguard.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P09",
+          "role": "accountant",
+          "security_familiarity": "intermediate",
+          "work_context": "pharmacy",
+          "prior_security_habit": "wants a proof trail",
+          "confidence_before": 2,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 50,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 68,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 63,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 61,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 82,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "pragmatic",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "The audit line is what lets me explain why we did not act on the message.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P10",
+          "role": "owner",
+          "security_familiarity": "beginner",
+          "work_context": "tailoring shop",
+          "prior_security_habit": "moves quickly on deadlines",
+          "confidence_before": 2,
+          "confidence_after": 4,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 53,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve. Took the moderator prompt before continuing."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 71,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": true,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path. Took the moderator prompt before continuing."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 66,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": true,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority. Took the moderator prompt before continuing."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 64,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 85,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal. Took the moderator prompt before continuing."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "overconfident",
+            "safe_final_action": true,
+            "prompted_cases": 4,
+            "initially_trusted_cases": 2
+          },
+          "participant_reaction": "I noticed how easily a deadline can make a normal review feel optional.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P11",
+          "role": "bookkeeper",
+          "security_familiarity": "intermediate",
+          "work_context": "education service",
+          "prior_security_habit": "separates draft work from release",
+          "confidence_before": 3,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 45,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 63,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 58,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 56,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 77,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "pragmatic",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "The safest answer was not to delete the details, but to keep them in a draft.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P12",
+          "role": "owner",
+          "security_familiarity": "strong",
+          "work_context": "food distributor",
+          "prior_security_habit": "calls known numbers only",
+          "confidence_before": 3,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 49,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 67,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 62,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 60,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 81,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "cautious",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "A changed account needs a known-channel callback even when the supplier sounds familiar.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P13",
+          "role": "accountant",
+          "security_familiarity": "beginner",
+          "work_context": "digital agency",
+          "prior_security_habit": "assumes a lock icon means safe",
+          "confidence_before": 2,
+          "confidence_after": 4,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 52,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve. Took the moderator prompt before continuing."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 70,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": true,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path. Took the moderator prompt before continuing."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 65,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": true,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority. Took the moderator prompt before continuing."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 63,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 84,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal. Took the moderator prompt before continuing."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "novice",
+            "safe_final_action": true,
+            "prompted_cases": 4,
+            "initially_trusted_cases": 2
+          },
+          "participant_reaction": "I had to separate being logged in from being allowed to approve this exact action.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P14",
+          "role": "owner",
+          "security_familiarity": "intermediate",
+          "work_context": "hardware store",
+          "prior_security_habit": "prefers a second pair of eyes",
+          "confidence_before": 2,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 48,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 66,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 61,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 59,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 80,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "pragmatic",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "The second check was not a delay; it was the point of the workflow.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P15",
+          "role": "bookkeeper",
+          "security_familiarity": "strong",
+          "work_context": "clinic supplies",
+          "prior_security_habit": "records exceptions in a ledger",
+          "confidence_before": 3,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 46,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 64,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 59,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 57,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 78,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "cautious",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "I want the failed attempt recorded so the next person does not repeat it.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P16",
+          "role": "owner",
+          "security_familiarity": "beginner",
+          "work_context": "garment workshop",
+          "prior_security_habit": "reads the invoice before the banner",
+          "confidence_before": 2,
+          "confidence_after": 4,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 54,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve. Took the moderator prompt before continuing."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 72,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": true,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path. Took the moderator prompt before continuing."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 67,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": true,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority. Took the moderator prompt before continuing."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 65,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 86,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal. Took the moderator prompt before continuing."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "overconfident",
+            "safe_final_action": true,
+            "prompted_cases": 4,
+            "initially_trusted_cases": 2
+          },
+          "participant_reaction": "The invoice looked ordinary until I noticed that its sentence was trying to become a command.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P17",
+          "role": "accountant",
+          "security_familiarity": "intermediate",
+          "work_context": "electronics wholesaler",
+          "prior_security_habit": "tests retries in a sandbox",
+          "confidence_before": 3,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 47,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 65,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 60,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 58,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 79,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "pragmatic",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "A retry should return the receipt, not quietly perform the business action again.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P18",
+          "role": "owner",
+          "security_familiarity": "strong",
+          "work_context": "event rental",
+          "prior_security_habit": "asks what changed since approval",
+          "confidence_before": 3,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 44,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 62,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 57,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 55,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 76,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "cautious",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "A new proposal is more honest than pretending the old one still describes the situation.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P19",
+          "role": "bookkeeper",
+          "security_familiarity": "beginner",
+          "work_context": "market stall",
+          "prior_security_habit": "comfortable with messaging, new to mandates",
+          "confidence_before": 2,
+          "confidence_after": 4,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 55,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve. Took the moderator prompt before continuing."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 73,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": true,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path. Took the moderator prompt before continuing."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 68,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": true,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority. Took the moderator prompt before continuing."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 66,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 87,
+              "assistance": "prompted_once",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal. Took the moderator prompt before continuing."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "novice",
+            "safe_final_action": true,
+            "prompted_cases": 4,
+            "initially_trusted_cases": 2
+          },
+          "participant_reaction": "I understand the draft now; I did not realise a message could never grant authority by itself.",
+          "synthetic_observation": true
+        },
+        {
+          "id": "SEC-P20",
+          "role": "owner",
+          "security_familiarity": "intermediate",
+          "work_context": "design studio",
+          "prior_security_habit": "likes one-click flows but accepts review gates",
+          "confidence_before": 2,
+          "confidence_after": 5,
+          "cases": {
+            "SEC-01": {
+              "outcome": "old_tab_rejected",
+              "seconds": 51,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Checked that the old session still had active membership before trying to approve."
+            },
+            "SEC-02": {
+              "outcome": "owner_callback_required",
+              "seconds": 69,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Stopped at the urgent bank-detail message and looked for the owner callback path."
+            },
+            "SEC-03": {
+              "outcome": "draft_only_no_authority",
+              "seconds": 64,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Kept the invoice fields as draft data and refused to treat its wording as authority."
+            },
+            "SEC-04": {
+              "outcome": "single_receipt_on_retry",
+              "seconds": 62,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Asked whether the second click changed the state and compared the returned receipt."
+            },
+            "SEC-05": {
+              "outcome": "fresh_proposal_after_delay",
+              "seconds": 83,
+              "assistance": "unassisted",
+              "safe_final_action": true,
+              "initially_trusted": false,
+              "behavior": "Accepted that the payment delay changed the facts and looked for a fresh proposal."
+            }
+          },
+          "overall_behavior": {
+            "pattern": "pragmatic",
+            "safe_final_action": true,
+            "prompted_cases": 0,
+            "initially_trusted_cases": 0
+          },
+          "participant_reaction": "I prefer quick flows, but the final click should be slow and specific.",
+          "synthetic_observation": true
+        }
+      ]
+    }
+  }
+}

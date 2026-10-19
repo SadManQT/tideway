@@ -1,0 +1,142 @@
+{
+  "schema_version": "tideway-humanized-demo-surveys-v1",
+  "evidence_status": "synthetic_viewing_only_not_observed",
+  "disclaimer": "All 40 rows are fictional, generated personas for watching a demo. They are not human participants, usability evidence, security validation or market research. Do not copy them into evidence/private or report them as observed results.",
+  "cohorts": {
+    "sme": {
+      "participant_count": 20,
+      "roles": {
+        "accountant": 5,
+        "bookkeeper": 5,
+        "owner": 10
+      },
+      "languages": {
+        "bn": 5,
+        "en": 8,
+        "es": 1,
+        "fr": 1,
+        "hi": 2,
+        "pt": 1,
+        "zh": 2
+      },
+      "model_status": {
+        "available": 14,
+        "not_tested": 2,
+        "unavailable": 4
+      },
+      "tasks": {
+        "T1": {
+          "counts": {
+            "assisted": 5,
+            "completed": 13,
+            "failed": 2
+          },
+          "attempted": 20,
+          "completed_without_assistance": 13,
+          "completed_including_assistance": 18,
+          "median_seconds": 100.5
+        },
+        "T2": {
+          "counts": {
+            "assisted": 7,
+            "completed": 10,
+            "failed": 3
+          },
+          "attempted": 20,
+          "completed_without_assistance": 10,
+          "completed_including_assistance": 17,
+          "median_seconds": 115.0
+        },
+        "T3": {
+          "counts": {
+            "assisted": 3,
+            "completed": 10,
+            "failed": 1,
+            "not_attempted": 2,
+            "unavailable_model": 4
+          },
+          "attempted": 14,
+          "completed_without_assistance": 10,
+          "completed_including_assistance": 13,
+          "median_seconds": 77.5
+        },
+        "T4": {
+          "counts": {
+            "assisted": 6,
+            "completed": 12,
+            "failed": 2
+          },
+          "attempted": 20,
+          "completed_without_assistance": 12,
+          "completed_including_assistance": 18,
+          "median_seconds": 167.5
+        },
+        "T5": {
+          "counts": {
+            "assisted": 4,
+            "completed": 15,
+            "failed": 1
+          },
+          "attempted": 20,
+          "completed_without_assistance": 15,
+          "completed_including_assistance": 19,
+          "median_seconds": 69.0
+        }
+      },
+      "sus": {
+        "complete_responses": 20,
+        "mean_score": 66.5,
+        "median_score": 68.75
+      }
+    },
+    "security": {
+      "participant_count": 20,
+      "roles": {
+        "accountant": 5,
+        "bookkeeper": 5,
+        "owner": 10
+      },
+      "security_familiarity": {
+        "beginner": 6,
+        "intermediate": 8,
+        "strong": 6
+      },
+      "cases": {
+        "SEC-01": {
+          "handled_safely_in_final_action": 20,
+          "prompted_once": 6,
+          "initially_trusted": 0,
+          "median_seconds": 48.0
+        },
+        "SEC-02": {
+          "handled_safely_in_final_action": 20,
+          "prompted_once": 6,
+          "initially_trusted": 6,
+          "median_seconds": 66.0
+        },
+        "SEC-03": {
+          "handled_safely_in_final_action": 20,
+          "prompted_once": 6,
+          "initially_trusted": 6,
+          "median_seconds": 61.0
+        },
+        "SEC-04": {
+          "handled_safely_in_final_action": 20,
+          "prompted_once": 0,
+          "initially_trusted": 0,
+          "median_seconds": 59.0
+        },
+        "SEC-05": {
+          "handled_safely_in_final_action": 20,
+          "prompted_once": 6,
+          "initially_trusted": 0,
+          "median_seconds": 80.0
+        }
+      },
+      "confidence": {
+        "median_before": 2.0,
+        "median_after": 5.0
+      }
+    }
+  }
+}

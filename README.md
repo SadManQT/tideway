@@ -10,6 +10,8 @@ Open **Decision lab** after sign-in: [features, boundaries and a judge demonstra
 Previous release: [screening, cash-gap diagnostics and HTTP hardening](docs/RELEASE_V10.md).
 The [behavior-driven evaluation](docs/BEHAVIORAL_EVALUATION.md) contains six scripted sandbox paths; real SME participants remain zero.
 
+For a presentation-only walkthrough, [`demo-data/`](demo-data/README.md) contains 20 fictional SME-finance survey viewers and 20 fictional security-demo viewers with varied humanized behavior. It is explicitly synthetic, never evidence, and does not change the canonical N=0 study status.
+
 Judge/auditor review (17 October): [fixed defects and remaining contest gaps](docs/INDEPENDENT_AUDIT.md). Exact current verification counts and provenance: [readiness index](docs/READINESS_CURRENT.md).
 
 ![Tideway landing page](evidence/screens/00-landing.png)

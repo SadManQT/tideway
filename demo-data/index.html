@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tideway · synthetic survey viewer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #071116;
+      --panel: #0d1b22;
+      --panel-2: #12252e;
+      --line: #24414a;
+      --text: #e9f5f1;
+      --muted: #91aaa9;
+      --teal: #50e1bc;
+      --amber: #f3c86b;
+      --red: #ff8a82;
+      --blue: #8ab8ff;
+      --shadow: 0 18px 45px rgba(0, 0, 0, .24);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: radial-gradient(circle at 0 0, #12333a 0, var(--bg) 40rem); color: var(--text); font: 15px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    a { color: var(--teal); }
+    .shell { width: min(1400px, calc(100% - 36px)); margin: 0 auto; padding: 30px 0 60px; }
+    .eyebrow { color: var(--teal); font: 700 11px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .14em; text-transform: uppercase; }
+    h1, h2, h3 { margin: 0; line-height: 1.15; }
+    h1 { max-width: 820px; font-size: clamp(30px, 5vw, 58px); letter-spacing: -.04em; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 16px; }
+    p { margin: 0; }
+    .hero { display: flex; align-items: end; justify-content: space-between; gap: 26px; margin-bottom: 22px; }
+    .hero-copy { display: grid; gap: 12px; }
+    .hero-copy p { max-width: 780px; color: var(--muted); font-size: 16px; }
+    .badge { padding: 10px 13px; border: 1px solid rgba(80,225,188,.4); border-radius: 999px; color: var(--teal); white-space: nowrap; font: 700 12px ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .notice { margin: 0 0 22px; padding: 14px 16px; border: 1px solid rgba(243,200,107,.5); border-left: 4px solid var(--amber); border-radius: 12px; background: rgba(243,200,107,.08); color: #f8df9e; }
+    .notice strong { color: var(--amber); }
+    .tabs { display: flex; gap: 10px; margin: 18px 0; }
+    .tab { border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--muted); cursor: pointer; padding: 11px 16px; font-weight: 700; }
+    .tab:hover, .tab.active { border-color: var(--teal); background: rgba(80,225,188,.12); color: var(--text); }
+    .summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .metric, .card { border: 1px solid var(--line); border-radius: 15px; background: rgba(13,27,34,.9); box-shadow: var(--shadow); }
+    .metric { min-height: 100px; padding: 15px; }
+    .metric .label { color: var(--muted); font-size: 12px; }
+    .metric .value { margin-top: 7px; color: var(--teal); font-size: 27px; font-weight: 800; }
+    .metric .hint { color: var(--muted); font-size: 12px; }
+    .content { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(340px, .65fr); gap: 18px; align-items: start; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 18px 14px; border-bottom: 1px solid var(--line); }
+    .card-head p { color: var(--muted); font-size: 13px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 740px; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid rgba(36,65,74,.65); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font: 700 11px ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+    td { color: #d8e6e3; font-size: 13px; }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover, tbody tr.selected { background: rgba(80,225,188,.08); }
+    .mono { color: var(--blue); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight: 700; }
+    .pill { display: inline-block; padding: 3px 7px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 11px; }
+    .pill.good { border-color: rgba(80,225,188,.5); color: var(--teal); }
+    .pill.warn { border-color: rgba(243,200,107,.5); color: var(--amber); }
+    .small { color: var(--muted); font-size: 12px; }
+    .detail { position: sticky; top: 18px; min-height: 430px; }
+    .detail-body { display: grid; gap: 17px; padding: 18px; }
+    .detail-meta { display: flex; flex-wrap: wrap; gap: 7px; }
+    .quote { padding: 12px 14px; border-left: 3px solid var(--teal); background: rgba(80,225,188,.07); color: #d9f4ed; font-size: 14px; }
+    .journey { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+    .journey li { padding-left: 20px; position: relative; color: #c0d0ce; font-size: 13px; }
+    .journey li::before { content: ""; position: absolute; left: 2px; top: .58em; width: 7px; height: 7px; border-radius: 50%; background: var(--teal); }
+    .detail-table { min-width: 0; font-size: 12px; }
+    .detail-table th, .detail-table td { padding: 8px 6px; }
+    .empty { padding: 42px 18px; text-align: center; color: var(--muted); }
+    .error { display: none; margin: 30px 0; padding: 18px; border: 1px solid rgba(255,138,130,.6); border-radius: 12px; color: var(--red); }
+    footer { margin-top: 22px; color: var(--muted); font-size: 12px; }
+    @media (max-width: 980px) { .hero { align-items: start; flex-direction: column; } .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } .content { grid-template-columns: 1fr; } .detail { position: static; } }
+    @media (max-width: 520px) { .shell { width: min(100% - 22px, 1400px); padding-top: 20px; } .summary { grid-template-columns: 1fr 1fr; gap: 8px; } .metric { min-height: 88px; padding: 11px; } .metric .value { font-size: 22px; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Tideway · local synthetic viewer</span>
+        <h1>Humanized survey demo data</h1>
+        <p>Two fictional cohorts with varied journeys: 20 SME-finance viewers and 20 security-demo viewers. Select a row to see the kind of hesitation, question and safe stopping point a person might show in a presentation walkthrough.</p>
+      </div>
+      <div class="badge">VIEWING ONLY · NOT EVIDENCE</div>
+    </header>
+
+    <div class="notice"><strong>Important:</strong> these are generated personas, not observed people. The repository's canonical study status remains N=0, and the security cases remain automated synthetic checks. Nothing on this page calls a model, cloud service, bank or remote endpoint.</div>
+    <div id="error" class="error"></div>
+    <nav class="tabs" aria-label="Survey cohorts">
+      <button class="tab active" data-cohort="sme" type="button">SME finance · 20 viewers</button>
+      <button class="tab" data-cohort="security" type="button">Security demo · 20 viewers</button>
+    </nav>
+    <section id="summary" class="summary" aria-live="polite"></section>
+    <section class="content">
+      <section class="card">
+        <div class="card-head"><div><h2 id="cohort-title">SME finance</h2><p id="cohort-subtitle">Synthetic row-level survey preview</p></div><span id="question-count" class="pill"></span></div>
+        <div id="rows" class="table-wrap"></div>
+      </section>
+      <aside id="detail" class="card detail" aria-live="polite"></aside>
+    </section>
+    <footer>Generated by <code>scripts/generate_demo_surveys.py</code>. Use <code>python3 -m http.server 8788 --directory demo-data</code> from the repository root to view it locally.</footer>
+  </main>
+  <script>
+    const state = { data: null, cohort: "sme", selected: null };
+    const $ = (selector) => document.querySelector(selector);
+    const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char]));
+    const label = (value) => String(value).replaceAll("_", " ");
+    const sum = (values) => values.reduce((total, value) => total + Number(value || 0), 0);
+
+    async function load() {
+      try {
+        const response = await fetch("synthetic-surveys.json", { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        state.data = await response.json();
+        render();
+      } catch (error) {
+        const box = $("#error");
+        box.style.display = "block";
+        box.innerHTML = `<strong>Open this page through a local server.</strong><br>${esc(error.message)}<br><br>From the repository root run <code>python3 -m http.server 8788 --directory demo-data</code>, then open <a href="http://127.0.0.1:8788/">http://127.0.0.1:8788/</a>.`;
+      }
+    }
+
+    function render() {
+      const cohort = state.data.cohorts[state.cohort];
+      const participants = cohort.participants;
+      state.selected = state.selected || participants[0].id;
+      $("#cohort-title").textContent = cohort.title;
+      $("#cohort-subtitle").textContent = state.cohort === "sme" ? "Five product tasks plus a complete SUS response" : "Five boundary cases with initial reaction and final safe action";
+      $("#question-count").textContent = `${cohort.survey_questions.length} prompts`;
+      renderSummary(cohort);
+      renderRows(cohort);
+      renderDetail(cohort, participants.find((item) => item.id === state.selected) || participants[0]);
+      document.querySelectorAll(".tab").forEach((button) => button.classList.toggle("active", button.dataset.cohort === state.cohort));
+    }
+
+    function metric(labelText, value, hint) {
+      return `<div class="metric"><div class="label">${esc(labelText)}</div><div class="value">${esc(value)}</div><div class="hint">${esc(hint)}</div></div>`;
+    }
+
+    function renderSummary(cohort) {
+      const summary = cohort.summary;
+      if (state.cohort === "sme") {
+        const taskValues = Object.values(summary.tasks);
+        const assisted = sum(taskValues.map((task) => task.counts.assisted));
+        const failures = sum(taskValues.map((task) => task.counts.failed));
+        $("#summary").innerHTML = [
+          metric("Synthetic viewers", summary.participant_count, "fictional rows"),
+          metric("Median SUS", summary.sus.median_score, "0–100 preview score"),
+          metric("Unassisted completions", sum(taskValues.map((task) => task.completed_without_assistance)), "across five tasks"),
+          metric("Assisted attempts", assisted, "hint used once"),
+          metric("Failed attempts", failures, "not a product claim"),
+        ].join("");
+      } else {
+        const cases = Object.values(summary.cases);
+        $("#summary").innerHTML = [
+          metric("Synthetic viewers", summary.participant_count, "fictional rows"),
+          metric("Median confidence after", summary.confidence.median_after, "1–5 preview rating"),
+          metric("Safe final actions", `${sum(cases.map((item) => item.handled_safely_in_final_action))}/${summary.participant_count * cases.length}`, "across all cases"),
+          metric("Prompted case reviews", sum(cases.map((item) => item.prompted_once)), "moderator nudge"),
+          metric("Initial trust moments", sum(cases.map((item) => item.initially_trusted)), "corrected before final action"),
+        ].join("");
+      }
+    }
+
+    function renderRows(cohort) {
+      const body = cohort.participants.map((participant) => {
+        const selected = participant.id === state.selected ? " selected" : "";
+        if (state.cohort === "sme") {
+          const tasks = Object.values(participant.tasks);
+          const done = tasks.filter((task) => task.status === "completed").length;
+          const assisted = tasks.filter((task) => task.status === "assisted").length;
+          return `<tr class="${selected}" data-id="${esc(participant.id)}"><td class="mono">${esc(participant.id)}</td><td>${esc(participant.role)}<br><span class="small">${esc(participant.language)} · ${esc(participant.business_profile)}</span></td><td><span class="pill good">${done}/5 completed</span><br><span class="small">${assisted} assisted</span></td><td class="mono">${esc(participant.sus_score)}</td><td>${esc(participant.most_useful_feature)}<br><span class="small">${esc(participant.participant_reaction)}</span></td></tr>`;
+        }
+        const prompted = participant.overall_behavior.prompted_cases;
+        const trusted = participant.overall_behavior.initially_trusted_cases;
+        return `<tr class="${selected}" data-id="${esc(participant.id)}"><td class="mono">${esc(participant.id)}</td><td>${esc(participant.role)}<br><span class="small">${esc(participant.work_context)}</span></td><td><span class="pill good">5/5 safe final</span><br><span class="small">${prompted} prompted · ${trusted} initial trust</span></td><td class="mono">${esc(participant.confidence_before)} → ${esc(participant.confidence_after)}</td><td>${esc(participant.prior_security_habit)}<br><span class="small">${esc(participant.participant_reaction)}</span></td></tr>`;
+      }).join("");
+      const head = state.cohort === "sme"
+        ? "<tr><th>ID</th><th>Role / fictional context</th><th>Task path</th><th>SUS</th><th>Feature and reaction</th></tr>"
+        : "<tr><th>ID</th><th>Role / fictional context</th><th>Final handling</th><th>Confidence</th><th>Habit and reaction</th></tr>";
+      $("#rows").innerHTML = `<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
+      $("#rows").querySelectorAll("tbody tr").forEach((row) => row.addEventListener("click", () => { state.selected = row.dataset.id; render(); }));
+    }
+
+    function renderDetail(cohort, participant) {
+      if (state.cohort === "sme") {
+        const taskRows = Object.entries(participant.tasks).map(([taskId, task]) => `<tr><td class="mono">${esc(taskId)}</td><td><span class="pill ${task.status === "completed" ? "good" : task.status === "failed" ? "warn" : ""}">${esc(label(task.status))}</span></td><td>${task.seconds == null ? "—" : `${esc(task.seconds)} s`}</td><td>${esc(task.behavior)}</td></tr>`).join("");
+        $("#detail").innerHTML = `<div class="card-head"><div><h2>${esc(participant.id)}</h2><p>${esc(participant.role)} · ${esc(participant.business_profile)}</p></div><span class="pill good">SUS ${esc(participant.sus_score)}</span></div><div class="detail-body"><div class="detail-meta"><span class="pill">${esc(participant.language)}</span><span class="pill">${esc(participant.experience_years)} years' experience</span><span class="pill">model ${esc(participant.model_status)}</span><span class="pill">confidence ${esc(participant.overall_confidence)}/5</span></div><div><h3>What the viewer said</h3><div class="quote">“${esc(participant.participant_reaction)}”</div></div><div><h3>Journey notes</h3><ul class="journey">${participant.journey.map((item) => `<li>${esc(item)}</li>`).join("")}</ul></div><div><h3>Task responses</h3><div class="table-wrap"><table class="detail-table"><thead><tr><th>Task</th><th>Status</th><th>Time</th><th>Observed path</th></tr></thead><tbody>${taskRows}</tbody></table></div></div><div class="small"><strong>Useful:</strong> ${esc(participant.most_useful_feature)} · <strong>Friction:</strong> ${esc(participant.main_friction)}</div></div>`;
+      } else {
+        const caseRows = Object.entries(participant.cases).map(([caseId, result]) => `<tr><td class="mono">${esc(caseId)}</td><td><span class="pill good">${esc(label(result.outcome))}</span></td><td>${esc(result.seconds)} s</td><td>${esc(result.assistance === "unassisted" ? "no prompt" : "prompted once")}</td><td>${esc(result.behavior)}</td></tr>`).join("");
+        $("#detail").innerHTML = `<div class="card-head"><div><h2>${esc(participant.id)}</h2><p>${esc(participant.role)} · ${esc(participant.work_context)}</p></div><span class="pill good">5/5 safe final</span></div><div class="detail-body"><div class="detail-meta"><span class="pill">${esc(participant.security_familiarity)} familiarity</span><span class="pill">confidence ${esc(participant.confidence_before)} → ${esc(participant.confidence_after)}</span><span class="pill">${esc(participant.overall_behavior.prompted_cases)} prompted</span></div><div><h3>What the viewer said</h3><div class="quote">“${esc(participant.participant_reaction)}”</div></div><div><h3>Security-case responses</h3><div class="table-wrap"><table class="detail-table"><thead><tr><th>Case</th><th>Outcome</th><th>Time</th><th>Help</th><th>Behavior</th></tr></thead><tbody>${caseRows}</tbody></table></div></div><div class="small">The final safe action is a property of this fictional demo path, not a security-validation result.</div></div>`;
+      }
+    }
+
+    document.querySelectorAll(".tab").forEach((button) => button.addEventListener("click", () => { state.cohort = button.dataset.cohort; state.selected = null; render(); }));
+    load();
+  </script>
+</body>
+</html>
