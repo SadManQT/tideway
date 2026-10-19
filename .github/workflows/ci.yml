@@ -98,6 +98,8 @@ jobs:
           echo "PYTHON=$(command -v python)" >> "$GITHUB_ENV"
       - name: Check JavaScript syntax
         run: node scripts/check_javascript.mjs
+      - name: Check customer history, cash and risk explanations
+        run: node scripts/test_decision_review.mjs
       - name: Check exact currency conversion and untouched inputs
         run: node scripts/test_currency.mjs
       - name: Test browser integration with a fixed-output local backend

@@ -10,7 +10,7 @@ import re
 
 from . import bilateral
 from .constraints import check_plan_constraints
-from .domain import MAX_AMOUNT_MINOR, OPEN_INVOICE_STATUSES, ValidationError, valid_date, money_text
+from .domain import MAX_AMOUNT_MINOR, OPEN_INVOICE_STATUSES, SETTLED_INVOICE_STATUSES, ValidationError, valid_date, money_text
 from .projection import project
 from .planner import RISK_TARGET
 from .resilience import digest, integer
@@ -65,6 +65,39 @@ def _spending_room(projection, as_of, spending_date):
             "binding_date": binding["date"], "amount_cap_applies": raw > MAX_AMOUNT_MINOR}
 
 
+def customer_receipts(snapshot, likely, payroll_date):
+    """Explain existing projected receipts using dated, observable history.
+
+    Use projection events (including agreements/promises and after-horizon
+    exclusions), never invent a second expected date or count a proposal as cash.
+    Histories include only payments observed by the current simulation date.
+    """
+    as_of = snapshot["state"]["current_date"]
+    invoices = snapshot["records"]["invoices"]
+    events = {e["id"]: e for e in [*likely["source_references"], *likely.get("excluded", [])]
+              if e["kind"].startswith("invoice")}
+    customers = sorted({r["customer"] for r in invoices if r["status"] in OPEN_INVOICE_STATUSES})
+    rows = []
+    for customer in customers:
+        unpaid = [r for r in invoices if r["customer"] == customer and r["status"] in OPEN_INVOICE_STATUSES]
+        history = [r for r in invoices if r["customer"] == customer and r["status"] in SETTLED_INVOICE_STATUSES
+                   and r.get("paid_date") and r["paid_date"] <= as_of]
+        future = sorted((events[r["id"]] for r in unpaid if r["id"] in events and events[r["id"]]["date"] >= as_of),
+                        key=lambda e: (e["date"], str(e["id"])))
+        next_event = future[0] if future else None
+        rows.append({"customer": customer, "settled_invoices": len(history),
+                     "late_settlements": sum(r["paid_date"] > r["due_date"] for r in history),
+                     "limited_history": len(history) < 3,
+                     "open_amount_minor": sum(r["amount_minor"] for r in unpaid),
+                     "next_receipt": {"id": next_event["id"], "date": next_event["date"],
+                                      "amount_minor": next_event["effect_minor"], "basis": next_event["certainty"],
+                                      "after_payroll": next_event["date"] > payroll_date if payroll_date else None} if next_event else None,
+                     "expected_by_payroll_minor": sum(e["effect_minor"] for e in future if e["date"] <= payroll_date) if payroll_date else None,
+                     "expected_after_payroll_minor": sum(e["effect_minor"] for e in future if e["date"] > payroll_date) if payroll_date else None})
+    rows.sort(key=lambda r: (-(r["expected_after_payroll_minor"] or 0), -r["open_amount_minor"], r["customer"]))
+    return rows
+
+
 def build_report(snapshot, facts, expense_minor=0, expense_date=None):
     integer(expense_minor, "Extra expense", 0, MAX_AMOUNT_MINOR)
     business, records, state = snapshot["business"], snapshot["records"], snapshot["state"]
@@ -117,6 +150,7 @@ def build_report(snapshot, facts, expense_minor=0, expense_date=None):
             "spending_room": {"likely": _spending_room(likely, as_of, date), "without_unpaid_customers": _spending_room(without, as_of, date)},
             "payroll": {"identified": bool(payroll), "next_date": payroll_date,
                         "next_amount_minor": sum(-e["effect_minor"] for e in payroll if e["date"] == payroll_date)},
+            "customer_receipts": customer_receipts(snapshot, likely, payroll_date),
             "dependencies": dependencies, "dependency_coverage": {"customers_total": len(customers), "tested": len(dependencies), "complete": len(customers) <= 10},
             "calendar": calendar, "data_checks": {"quarantined_records": quarantined, "customers_under_three_settlements": thin,
                       "unpaid_invoices": sum(r["status"] in OPEN_INVOICE_STATUSES for r in records["invoices"]), "payroll_identified": bool(payroll)},

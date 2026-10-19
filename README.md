@@ -1,5 +1,6 @@
 # Tideway
 
+Latest upgrade: [clear customer payment/payroll evidence, cost-and-risk review and screening precision](docs/RELEASE_V14.md).
 
 Judge/auditor review (17 October): [fixed defects and remaining contest gaps](docs/INDEPENDENT_AUDIT.md). Exact current verification counts and provenance: [readiness index](docs/READINESS_CURRENT.md).
 

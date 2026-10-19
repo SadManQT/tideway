@@ -1,0 +1,1166 @@
+{
+  "version": "decision-lab-evaluation-v1",
+  "run_at_utc": "2026-10-19T07:38:32.394010+00:00",
+  "source_tree_sha256": "f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c",
+  "source_unchanged": true,
+  "passed": true,
+  "synthetic_businesses": 3,
+  "checks": 18,
+  "results": [
+    {
+      "business_id": "shapla-services",
+      "currency": "BDT",
+      "snapshot_hash": "a6c9e24884f41569b26506a06fe060ca0b44e965d45417a06be1e7a31aff083f",
+      "checks": {
+        "replay_matches": true,
+        "breakpoint_witnesses_hold": true,
+        "complete_customer_coverage": true,
+        "ledger_unchanged": true,
+        "no_saved_proposals": true,
+        "fresh_funding_draws": true
+      },
+      "elapsed_ms": 1228,
+      "analyses": {
+        "reverse": {
+          "version": "resilience-v1",
+          "business_id": "shapla-services",
+          "currency": "BDT",
+          "snapshot_hash": "a6c9e24884f41569b26506a06fe060ca0b44e965d45417a06be1e7a31aff083f",
+          "target_date": "2026-10-31",
+          "plan_id": null,
+          "bundle_id": "recommended",
+          "read_only": true,
+          "executed": false,
+          "kind": "reverse_stress",
+          "baseline": {
+            "scenario": "likely",
+            "currency": "BDT",
+            "opening_date": "2026-10-01",
+            "target_date": "2026-10-31",
+            "end_date": "2026-11-14",
+            "opening_cash_minor": 12000000,
+            "closing_cash_minor": 2280000,
+            "target_closing_cash_minor": 4980000,
+            "minimum_cash_minor": 2280000,
+            "minimum_cash_date": "2026-11-14",
+            "reserve_floor_minor": 2000000,
+            "reserve_shortfall_minor": 0,
+            "first_breach_date": null,
+            "first_negative_date": null,
+            "payroll_at_risk": false,
+            "payroll_outflow_minor": 8000000,
+            "total_inflow_minor": 7980000,
+            "total_outflow_minor": 17700000
+          },
+          "rows": [
+            {
+              "customer": "Nila Traders",
+              "minimum_delay_days": 5,
+              "status": "breakpoint_found",
+              "after": {
+                "scenario": "likely",
+                "currency": "BDT",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 12000000,
+                "closing_cash_minor": 2280000,
+                "target_closing_cash_minor": 3000000,
+                "minimum_cash_minor": 1800000,
+                "minimum_cash_date": "2026-11-03",
+                "reserve_floor_minor": 2000000,
+                "reserve_shortfall_minor": 200000,
+                "first_breach_date": "2026-11-03",
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 8000000,
+                "total_inflow_minor": 7980000,
+                "total_outflow_minor": 17700000
+              },
+              "one_day_less": {
+                "scenario": "likely",
+                "currency": "BDT",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 12000000,
+                "closing_cash_minor": 2280000,
+                "target_closing_cash_minor": 3000000,
+                "minimum_cash_minor": 2280000,
+                "minimum_cash_date": "2026-11-14",
+                "reserve_floor_minor": 2000000,
+                "reserve_shortfall_minor": 0,
+                "first_breach_date": null,
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 8000000,
+                "total_inflow_minor": 7980000,
+                "total_outflow_minor": 17700000
+              },
+              "invoice_ids": [
+                "inv-shapla-nila-oct"
+              ]
+            },
+            {
+              "customer": "Bay Logistics",
+              "minimum_delay_days": 10,
+              "status": "breakpoint_found",
+              "after": {
+                "scenario": "likely",
+                "currency": "BDT",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 12000000,
+                "closing_cash_minor": -3720000,
+                "target_closing_cash_minor": 4980000,
+                "minimum_cash_minor": -3720000,
+                "minimum_cash_date": "2026-11-14",
+                "reserve_floor_minor": 2000000,
+                "reserve_shortfall_minor": 5720000,
+                "first_breach_date": "2026-11-14",
+                "first_negative_date": "2026-11-14",
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 8000000,
+                "total_inflow_minor": 1980000,
+                "total_outflow_minor": 17700000
+              },
+              "one_day_less": {
+                "scenario": "likely",
+                "currency": "BDT",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 12000000,
+                "closing_cash_minor": 2280000,
+                "target_closing_cash_minor": 4980000,
+                "minimum_cash_minor": 2280000,
+                "minimum_cash_date": "2026-11-05",
+                "reserve_floor_minor": 2000000,
+                "reserve_shortfall_minor": 0,
+                "first_breach_date": null,
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 8000000,
+                "total_inflow_minor": 7980000,
+                "total_outflow_minor": 17700000
+              },
+              "invoice_ids": [
+                "inv-shapla-bay-oct"
+              ]
+            }
+          ],
+          "customers_total": 2,
+          "customers_tested": 2,
+          "complete_customer_coverage": true,
+          "projection_evaluations": 17,
+          "elapsed_ms": 2,
+          "scope": "Smallest integer delay for one customer at a time, with all other likely receipts fixed; simultaneous shocks and model error are not covered."
+        },
+        "promises": {
+          "version": "resilience-v1",
+          "business_id": "shapla-services",
+          "currency": "BDT",
+          "snapshot_hash": "a6c9e24884f41569b26506a06fe060ca0b44e965d45417a06be1e7a31aff083f",
+          "target_date": "2026-10-31",
+          "plan_id": null,
+          "bundle_id": "recommended",
+          "read_only": true,
+          "executed": false,
+          "kind": "promise_stress",
+          "agreements_tested": 1,
+          "delay_days": 7,
+          "rows": [
+            {
+              "assumed_failure_bps": 0,
+              "probability_breach": 0.035,
+              "probability_payroll_unfunded": 0.0,
+              "minimum_cash_p10_minor": 2280000,
+              "runs": 1000
+            },
+            {
+              "assumed_failure_bps": 1000,
+              "probability_breach": 0.072,
+              "probability_payroll_unfunded": 0.0,
+              "minimum_cash_p10_minor": 2280000,
+              "runs": 1000
+            },
+            {
+              "assumed_failure_bps": 2500,
+              "probability_breach": 0.132,
+              "probability_payroll_unfunded": 0.0,
+              "minimum_cash_p10_minor": 300000,
+              "runs": 1000
+            },
+            {
+              "assumed_failure_bps": 5000,
+              "probability_breach": 0.248,
+              "probability_payroll_unfunded": 0.0,
+              "minimum_cash_p10_minor": 300000,
+              "runs": 1000
+            },
+            {
+              "assumed_failure_bps": 10000,
+              "probability_breach": 0.432,
+              "probability_payroll_unfunded": 0.0,
+              "minimum_cash_p10_minor": 300000,
+              "runs": 1000
+            }
+          ],
+          "seed": 165247812841143,
+          "failure_rates_are_assumptions": true,
+          "scope": "Assumed late performance of accepted early-payment agreements; correlated within customer, not an observed reliability score or default-loss model. Reminder promises never become collected cash."
+        },
+        "frontier": {
+          "version": "resilience-v1",
+          "business_id": "shapla-services",
+          "currency": "BDT",
+          "snapshot_hash": "a6c9e24884f41569b26506a06fe060ca0b44e965d45417a06be1e7a31aff083f",
+          "target_date": "2026-10-31",
+          "plan_id": null,
+          "bundle_id": "recommended",
+          "read_only": true,
+          "executed": false,
+          "kind": "recovery_frontier",
+          "risk_target": 0.1,
+          "rows": [
+            {
+              "bundle_id": "no-action",
+              "actions": [],
+              "cost_minor": 0,
+              "probability_breach": 1.0,
+              "likely": {
+                "scenario": "likely",
+                "currency": "BDT",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 12000000,
+                "closing_cash_minor": 2300000,
+                "target_closing_cash_minor": -3000000,
+                "minimum_cash_minor": -4200000,
+                "minimum_cash_date": "2026-11-03",
+                "reserve_floor_minor": 2000000,
+                "reserve_shortfall_minor": 6200000,
+                "first_breach_date": "2026-10-31",
+                "first_negative_date": "2026-10-31",
+                "payroll_at_risk": true,
+                "payroll_outflow_minor": 8000000,
+                "total_inflow_minor": 8000000,
+                "total_outflow_minor": 17700000
+              },
+              "additional_opening_cash_minor": 7700000,
+              "conditional_funded_probability_breach": 0.0,
+              "funding_confirmed": false,
+              "selection_seed": 165247812841143,
+              "validation_seed": 160296928803281,
+              "runs_each": 1000,
+              "fresh_approval_required": false,
+              "consents_required": [],
+              "dominated_on_displayed_axes": false
+            },
+            {
+              "bundle_id": "recommended",
+              "actions": [
+                {
+                  "type": "supplier_deferral",
+                  "counterparty": "Rahman Supplies",
+                  "amount_minor": 6000000,
+                  "from_date": "2026-10-31",
+                  "to_date": "2026-11-14"
+                },
+                {
+                  "type": "early_payment_offer",
+                  "counterparty": "Nila Traders",
+                  "amount_minor": 1980000,
+                  "from_date": "2026-11-10",
+                  "to_date": "2026-10-30"
+                }
+              ],
+              "cost_minor": 47616,
+              "probability_breach": 0.035,
+              "likely": {
+                "scenario": "likely",
+                "currency": "BDT",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 12000000,
+                "closing_cash_minor": 2280000,
+                "target_closing_cash_minor": 4980000,
+                "minimum_cash_minor": 2280000,
+                "minimum_cash_date": "2026-11-14",
+                "reserve_floor_minor": 2000000,
+                "reserve_shortfall_minor": 0,
+                "first_breach_date": null,
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 8000000,
+                "total_inflow_minor": 7980000,
+                "total_outflow_minor": 17700000
+              },
+              "additional_opening_cash_minor": 0,
+              "conditional_funded_probability_breach": 0.053,
+              "funding_confirmed": false,
+              "selection_seed": 165247812841143,
+              "validation_seed": 160296928803281,
+              "runs_each": 1000,
+              "fresh_approval_required": true,
+              "consents_required": [
+                "Nila Traders",
+                "Rahman Supplies"
+              ],
+              "dominated_on_displayed_axes": false
+            },
+            {
+              "bundle_id": "alternative-1",
+              "actions": [
+                {
+                  "type": "supplier_deferral",
+                  "counterparty": "Rahman Supplies",
+                  "amount_minor": 6000000,
+                  "from_date": "2026-10-31",
+                  "to_date": "2026-11-14"
+                },
+                {
+                  "type": "supplier_deferral",
+                  "counterparty": "Karim Packaging",
+                  "amount_minor": 600000,
+                  "from_date": "2026-11-03",
+                  "to_date": "2026-11-10"
+                }
+              ],
+              "cost_minor": 28996,
+              "probability_breach": 0.346,
+              "likely": {
+                "scenario": "likely",
+                "currency": "BDT",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 12000000,
+                "closing_cash_minor": 2300000,
+                "target_closing_cash_minor": 3000000,
+                "minimum_cash_minor": 2300000,
+                "minimum_cash_date": "2026-11-14",
+                "reserve_floor_minor": 2000000,
+                "reserve_shortfall_minor": 0,
+                "first_breach_date": null,
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 8000000,
+                "total_inflow_minor": 8000000,
+                "total_outflow_minor": 17700000
+              },
+              "additional_opening_cash_minor": 1700000,
+              "conditional_funded_probability_breach": 0.053,
+              "funding_confirmed": false,
+              "selection_seed": 165247812841143,
+              "validation_seed": 160296928803281,
+              "runs_each": 1000,
+              "fresh_approval_required": true,
+              "consents_required": [
+                "Karim Packaging",
+                "Rahman Supplies"
+              ],
+              "dominated_on_displayed_axes": false
+            },
+            {
+              "bundle_id": "alternative-2",
+              "actions": [
+                {
+                  "type": "early_payment_offer",
+                  "counterparty": "Bay Logistics",
+                  "amount_minor": 5940000,
+                  "from_date": "2026-11-05",
+                  "to_date": "2026-10-30"
+                },
+                {
+                  "type": "early_payment_offer",
+                  "counterparty": "Nila Traders",
+                  "amount_minor": 1980000,
+                  "from_date": "2026-11-10",
+                  "to_date": "2026-10-30"
+                }
+              ],
+              "cost_minor": 80000,
+              "probability_breach": 0.0,
+              "likely": {
+                "scenario": "likely",
+                "currency": "BDT",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 12000000,
+                "closing_cash_minor": 2220000,
+                "target_closing_cash_minor": 4920000,
+                "minimum_cash_minor": 2220000,
+                "minimum_cash_date": "2026-11-05",
+                "reserve_floor_minor": 2000000,
+                "reserve_shortfall_minor": 0,
+                "first_breach_date": null,
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 8000000,
+                "total_inflow_minor": 7920000,
+                "total_outflow_minor": 17700000
+              },
+              "additional_opening_cash_minor": 0,
+              "conditional_funded_probability_breach": 0.0,
+              "funding_confirmed": false,
+              "selection_seed": 165247812841143,
+              "validation_seed": 160296928803281,
+              "runs_each": 1000,
+              "fresh_approval_required": true,
+              "consents_required": [
+                "Bay Logistics",
+                "Nila Traders"
+              ],
+              "dominated_on_displayed_axes": false
+            }
+          ],
+          "scope": "Comparison of available bundles, not a global optimality proof. Extra cash is assumed present at opening without fees or repayment; its availability and timing require confirmation. Fresh draws measure sampling, not calibration."
+        }
+      },
+      "replay": {
+        "version": "decision-replay-v1",
+        "read_only": true,
+        "passed": true,
+        "engine_compatible": true,
+        "authenticated_origin": false,
+        "capsule_sha256": "a769bc6e932843c1c68b05c1eeb0f646e92c3b9faf553d8788270b12ef09ed8d",
+        "actual_projection": {
+          "scenario": "likely",
+          "currency": "BDT",
+          "opening_date": "2026-10-01",
+          "target_date": "2026-10-31",
+          "end_date": "2026-11-14",
+          "opening_cash_minor": 12000000,
+          "closing_cash_minor": 2280000,
+          "target_closing_cash_minor": 4980000,
+          "minimum_cash_minor": 2280000,
+          "minimum_cash_date": "2026-11-14",
+          "reserve_floor_minor": 2000000,
+          "reserve_shortfall_minor": 0,
+          "first_breach_date": null,
+          "first_negative_date": null,
+          "payroll_at_risk": false,
+          "payroll_outflow_minor": 8000000,
+          "total_inflow_minor": 7980000,
+          "total_outflow_minor": 17700000
+        },
+        "actual_simulation": {
+          "seed": 165247812841143,
+          "runs": 1000,
+          "probability_breach": 0.035,
+          "minimum_cash_p10_minor": 2280000,
+          "probability_payroll_unfunded": 0.0
+        },
+        "no_database_writes": true,
+        "scope": "Recomputed deterministic financial outputs. The self-hash is not proof of authorship. No model generation, approval or payment is replayed."
+      }
+    },
+    {
+      "business_id": "lotus-print",
+      "currency": "CNY",
+      "snapshot_hash": "3b02818f99787ac84b9e95b57c19c0f741079d5aceca3061888decdffb7200bf",
+      "checks": {
+        "replay_matches": true,
+        "breakpoint_witnesses_hold": true,
+        "complete_customer_coverage": true,
+        "ledger_unchanged": true,
+        "no_saved_proposals": true,
+        "fresh_funding_draws": true
+      },
+      "elapsed_ms": 1140,
+      "analyses": {
+        "reverse": {
+          "version": "resilience-v1",
+          "business_id": "lotus-print",
+          "currency": "CNY",
+          "snapshot_hash": "3b02818f99787ac84b9e95b57c19c0f741079d5aceca3061888decdffb7200bf",
+          "target_date": "2026-10-31",
+          "plan_id": null,
+          "bundle_id": "recommended",
+          "read_only": true,
+          "executed": false,
+          "kind": "reverse_stress",
+          "baseline": {
+            "scenario": "likely",
+            "currency": "CNY",
+            "opening_date": "2026-10-01",
+            "target_date": "2026-10-31",
+            "end_date": "2026-11-14",
+            "opening_cash_minor": 6000000,
+            "closing_cash_minor": 3400000,
+            "target_closing_cash_minor": 1500000,
+            "minimum_cash_minor": 1500000,
+            "minimum_cash_date": "2026-10-31",
+            "reserve_floor_minor": 1500000,
+            "reserve_shortfall_minor": 0,
+            "first_breach_date": null,
+            "first_negative_date": null,
+            "payroll_at_risk": false,
+            "payroll_outflow_minor": 3200000,
+            "total_inflow_minor": 3800000,
+            "total_outflow_minor": 6400000
+          },
+          "rows": [
+            {
+              "customer": "Bay Area Events",
+              "minimum_delay_days": 10,
+              "status": "breakpoint_found",
+              "after": {
+                "scenario": "likely",
+                "currency": "CNY",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 6000000,
+                "closing_cash_minor": 3400000,
+                "target_closing_cash_minor": 300000,
+                "minimum_cash_minor": 300000,
+                "minimum_cash_date": "2026-10-31",
+                "reserve_floor_minor": 1500000,
+                "reserve_shortfall_minor": 1200000,
+                "first_breach_date": "2026-10-31",
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 3200000,
+                "total_inflow_minor": 3800000,
+                "total_outflow_minor": 6400000
+              },
+              "one_day_less": {
+                "scenario": "likely",
+                "currency": "CNY",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 6000000,
+                "closing_cash_minor": 3400000,
+                "target_closing_cash_minor": 1500000,
+                "minimum_cash_minor": 1500000,
+                "minimum_cash_date": "2026-10-31",
+                "reserve_floor_minor": 1500000,
+                "reserve_shortfall_minor": 0,
+                "first_breach_date": null,
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 3200000,
+                "total_inflow_minor": 3800000,
+                "total_outflow_minor": 6400000
+              },
+              "invoice_ids": [
+                "inv-lotus-events-oct"
+              ]
+            },
+            {
+              "customer": "Harbor Media",
+              "minimum_delay_days": 10,
+              "status": "breakpoint_found",
+              "after": {
+                "scenario": "likely",
+                "currency": "CNY",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 6000000,
+                "closing_cash_minor": 3400000,
+                "target_closing_cash_minor": 1500000,
+                "minimum_cash_minor": 800000,
+                "minimum_cash_date": "2026-11-11",
+                "reserve_floor_minor": 1500000,
+                "reserve_shortfall_minor": 700000,
+                "first_breach_date": "2026-11-11",
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 3200000,
+                "total_inflow_minor": 3800000,
+                "total_outflow_minor": 6400000
+              },
+              "one_day_less": {
+                "scenario": "likely",
+                "currency": "CNY",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 6000000,
+                "closing_cash_minor": 3400000,
+                "target_closing_cash_minor": 1500000,
+                "minimum_cash_minor": 1500000,
+                "minimum_cash_date": "2026-10-31",
+                "reserve_floor_minor": 1500000,
+                "reserve_shortfall_minor": 0,
+                "first_breach_date": null,
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 3200000,
+                "total_inflow_minor": 3800000,
+                "total_outflow_minor": 6400000
+              },
+              "invoice_ids": [
+                "inv-lotus-harbor-oct"
+              ]
+            }
+          ],
+          "customers_total": 2,
+          "customers_tested": 2,
+          "complete_customer_coverage": true,
+          "projection_evaluations": 17,
+          "elapsed_ms": 2,
+          "scope": "Smallest integer delay for one customer at a time, with all other likely receipts fixed; simultaneous shocks and model error are not covered."
+        },
+        "promises": {
+          "version": "resilience-v1",
+          "business_id": "lotus-print",
+          "currency": "CNY",
+          "snapshot_hash": "3b02818f99787ac84b9e95b57c19c0f741079d5aceca3061888decdffb7200bf",
+          "target_date": "2026-10-31",
+          "plan_id": null,
+          "bundle_id": "recommended",
+          "read_only": true,
+          "executed": false,
+          "kind": "promise_stress",
+          "agreements_tested": 0,
+          "delay_days": 7,
+          "rows": [
+            {
+              "assumed_failure_bps": 0,
+              "probability_breach": 0.094,
+              "probability_payroll_unfunded": 0.0,
+              "minimum_cash_p10_minor": 1500000,
+              "runs": 1000
+            },
+            {
+              "assumed_failure_bps": 1000,
+              "probability_breach": 0.094,
+              "probability_payroll_unfunded": 0.0,
+              "minimum_cash_p10_minor": 1500000,
+              "runs": 1000
+            },
+            {
+              "assumed_failure_bps": 2500,
+              "probability_breach": 0.094,
+              "probability_payroll_unfunded": 0.0,
+              "minimum_cash_p10_minor": 1500000,
+              "runs": 1000
+            },
+            {
+              "assumed_failure_bps": 5000,
+              "probability_breach": 0.094,
+              "probability_payroll_unfunded": 0.0,
+              "minimum_cash_p10_minor": 1500000,
+              "runs": 1000
+            },
+            {
+              "assumed_failure_bps": 10000,
+              "probability_breach": 0.094,
+              "probability_payroll_unfunded": 0.0,
+              "minimum_cash_p10_minor": 1500000,
+              "runs": 1000
+            }
+          ],
+          "seed": 27492526099996,
+          "failure_rates_are_assumptions": true,
+          "scope": "Assumed late performance of accepted early-payment agreements; correlated within customer, not an observed reliability score or default-loss model. Reminder promises never become collected cash."
+        },
+        "frontier": {
+          "version": "resilience-v1",
+          "business_id": "lotus-print",
+          "currency": "CNY",
+          "snapshot_hash": "3b02818f99787ac84b9e95b57c19c0f741079d5aceca3061888decdffb7200bf",
+          "target_date": "2026-10-31",
+          "plan_id": null,
+          "bundle_id": "recommended",
+          "read_only": true,
+          "executed": false,
+          "kind": "recovery_frontier",
+          "risk_target": 0.1,
+          "rows": [
+            {
+              "bundle_id": "no-action",
+              "actions": [],
+              "cost_minor": 0,
+              "probability_breach": 0.537,
+              "likely": {
+                "scenario": "likely",
+                "currency": "CNY",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 6000000,
+                "closing_cash_minor": 3400000,
+                "target_closing_cash_minor": 800000,
+                "minimum_cash_minor": 800000,
+                "minimum_cash_date": "2026-10-31",
+                "reserve_floor_minor": 1500000,
+                "reserve_shortfall_minor": 700000,
+                "first_breach_date": "2026-10-31",
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 3200000,
+                "total_inflow_minor": 3800000,
+                "total_outflow_minor": 6400000
+              },
+              "additional_opening_cash_minor": 700000,
+              "conditional_funded_probability_breach": 0.01,
+              "funding_confirmed": false,
+              "selection_seed": 27492526099996,
+              "validation_seed": 65973399459720,
+              "runs_each": 1000,
+              "fresh_approval_required": false,
+              "consents_required": [],
+              "dominated_on_displayed_axes": false
+            },
+            {
+              "bundle_id": "recommended",
+              "actions": [
+                {
+                  "type": "supplier_deferral",
+                  "counterparty": "Pearl River Paper",
+                  "amount_minor": 700000,
+                  "from_date": "2026-10-28",
+                  "to_date": "2026-11-11"
+                }
+              ],
+              "cost_minor": 3221,
+              "probability_breach": 0.094,
+              "likely": {
+                "scenario": "likely",
+                "currency": "CNY",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 6000000,
+                "closing_cash_minor": 3400000,
+                "target_closing_cash_minor": 1500000,
+                "minimum_cash_minor": 1500000,
+                "minimum_cash_date": "2026-10-31",
+                "reserve_floor_minor": 1500000,
+                "reserve_shortfall_minor": 0,
+                "first_breach_date": null,
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 3200000,
+                "total_inflow_minor": 3800000,
+                "total_outflow_minor": 6400000
+              },
+              "additional_opening_cash_minor": 0,
+              "conditional_funded_probability_breach": 0.066,
+              "funding_confirmed": false,
+              "selection_seed": 27492526099996,
+              "validation_seed": 65973399459720,
+              "runs_each": 1000,
+              "fresh_approval_required": true,
+              "consents_required": [
+                "Pearl River Paper"
+              ],
+              "dominated_on_displayed_axes": false
+            },
+            {
+              "bundle_id": "alternative-1",
+              "actions": [
+                {
+                  "type": "supplier_deferral",
+                  "counterparty": "Pearl River Paper",
+                  "amount_minor": 700000,
+                  "from_date": "2026-10-28",
+                  "to_date": "2026-11-04"
+                }
+              ],
+              "cost_minor": 1610,
+              "probability_breach": 0.363,
+              "likely": {
+                "scenario": "likely",
+                "currency": "CNY",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 6000000,
+                "closing_cash_minor": 3400000,
+                "target_closing_cash_minor": 1500000,
+                "minimum_cash_minor": 1500000,
+                "minimum_cash_date": "2026-10-31",
+                "reserve_floor_minor": 1500000,
+                "reserve_shortfall_minor": 0,
+                "first_breach_date": null,
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 3200000,
+                "total_inflow_minor": 3800000,
+                "total_outflow_minor": 6400000
+              },
+              "additional_opening_cash_minor": 700000,
+              "conditional_funded_probability_breach": 0.01,
+              "funding_confirmed": false,
+              "selection_seed": 27492526099996,
+              "validation_seed": 65973399459720,
+              "runs_each": 1000,
+              "fresh_approval_required": true,
+              "consents_required": [
+                "Pearl River Paper"
+              ],
+              "dominated_on_displayed_axes": false
+            },
+            {
+              "bundle_id": "alternative-2",
+              "actions": [
+                {
+                  "type": "early_payment_offer",
+                  "counterparty": "Harbor Media",
+                  "amount_minor": 2574000,
+                  "from_date": "2026-11-02",
+                  "to_date": "2026-10-30"
+                }
+              ],
+              "cost_minor": 26000,
+              "probability_breach": 0.0,
+              "likely": {
+                "scenario": "likely",
+                "currency": "CNY",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 6000000,
+                "closing_cash_minor": 3374000,
+                "target_closing_cash_minor": 3374000,
+                "minimum_cash_minor": 3374000,
+                "minimum_cash_date": "2026-10-31",
+                "reserve_floor_minor": 1500000,
+                "reserve_shortfall_minor": 0,
+                "first_breach_date": null,
+                "first_negative_date": null,
+                "payroll_at_risk": false,
+                "payroll_outflow_minor": 3200000,
+                "total_inflow_minor": 3774000,
+                "total_outflow_minor": 6400000
+              },
+              "additional_opening_cash_minor": 0,
+              "conditional_funded_probability_breach": 0.0,
+              "funding_confirmed": false,
+              "selection_seed": 27492526099996,
+              "validation_seed": 65973399459720,
+              "runs_each": 1000,
+              "fresh_approval_required": true,
+              "consents_required": [
+                "Harbor Media"
+              ],
+              "dominated_on_displayed_axes": false
+            }
+          ],
+          "scope": "Comparison of available bundles, not a global optimality proof. Extra cash is assumed present at opening without fees or repayment; its availability and timing require confirmation. Fresh draws measure sampling, not calibration."
+        }
+      },
+      "replay": {
+        "version": "decision-replay-v1",
+        "read_only": true,
+        "passed": true,
+        "engine_compatible": true,
+        "authenticated_origin": false,
+        "capsule_sha256": "dfbe44f23c2ce672e40d12a1d0301a4e38919725a32f8a42f29287f9fe2310c4",
+        "actual_projection": {
+          "scenario": "likely",
+          "currency": "CNY",
+          "opening_date": "2026-10-01",
+          "target_date": "2026-10-31",
+          "end_date": "2026-11-14",
+          "opening_cash_minor": 6000000,
+          "closing_cash_minor": 3400000,
+          "target_closing_cash_minor": 1500000,
+          "minimum_cash_minor": 1500000,
+          "minimum_cash_date": "2026-10-31",
+          "reserve_floor_minor": 1500000,
+          "reserve_shortfall_minor": 0,
+          "first_breach_date": null,
+          "first_negative_date": null,
+          "payroll_at_risk": false,
+          "payroll_outflow_minor": 3200000,
+          "total_inflow_minor": 3800000,
+          "total_outflow_minor": 6400000
+        },
+        "actual_simulation": {
+          "seed": 27492526099996,
+          "runs": 1000,
+          "probability_breach": 0.094,
+          "minimum_cash_p10_minor": 1500000,
+          "probability_payroll_unfunded": 0.0
+        },
+        "no_database_writes": true,
+        "scope": "Recomputed deterministic financial outputs. The self-hash is not proof of authorship. No model generation, approval or payment is replayed."
+      }
+    },
+    {
+      "business_id": "harbourline-traders",
+      "currency": "SGD",
+      "snapshot_hash": "ee2be77fd13f30668fe037c61660e14b91d88293862e402e4de0daef275f1b1a",
+      "checks": {
+        "replay_matches": true,
+        "breakpoint_witnesses_hold": true,
+        "complete_customer_coverage": true,
+        "ledger_unchanged": true,
+        "no_saved_proposals": true,
+        "fresh_funding_draws": true
+      },
+      "elapsed_ms": 170,
+      "analyses": {
+        "reverse": {
+          "version": "resilience-v1",
+          "business_id": "harbourline-traders",
+          "currency": "SGD",
+          "snapshot_hash": "ee2be77fd13f30668fe037c61660e14b91d88293862e402e4de0daef275f1b1a",
+          "target_date": "2026-10-31",
+          "plan_id": null,
+          "bundle_id": "recommended",
+          "read_only": true,
+          "executed": false,
+          "kind": "reverse_stress",
+          "baseline": {
+            "scenario": "likely",
+            "currency": "SGD",
+            "opening_date": "2026-10-01",
+            "target_date": "2026-10-31",
+            "end_date": "2026-11-14",
+            "opening_cash_minor": 3000000,
+            "closing_cash_minor": -2715000,
+            "target_closing_cash_minor": -2715000,
+            "minimum_cash_minor": -2715000,
+            "minimum_cash_date": "2026-10-31",
+            "reserve_floor_minor": 1500000,
+            "reserve_shortfall_minor": 4215000,
+            "first_breach_date": "2026-10-31",
+            "first_negative_date": "2026-10-31",
+            "payroll_at_risk": true,
+            "payroll_outflow_minor": 2000000,
+            "total_inflow_minor": 1485000,
+            "total_outflow_minor": 7200000
+          },
+          "rows": [
+            {
+              "customer": "Delta Retail",
+              "minimum_delay_days": 0,
+              "status": "already_breaches",
+              "after": {
+                "scenario": "likely",
+                "currency": "SGD",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 3000000,
+                "closing_cash_minor": -2715000,
+                "target_closing_cash_minor": -2715000,
+                "minimum_cash_minor": -2715000,
+                "minimum_cash_date": "2026-10-31",
+                "reserve_floor_minor": 1500000,
+                "reserve_shortfall_minor": 4215000,
+                "first_breach_date": "2026-10-31",
+                "first_negative_date": "2026-10-31",
+                "payroll_at_risk": true,
+                "payroll_outflow_minor": 2000000,
+                "total_inflow_minor": 1485000,
+                "total_outflow_minor": 7200000
+              },
+              "one_day_less": null,
+              "invoice_ids": [
+                "inv-harbour-delta-oct"
+              ]
+            }
+          ],
+          "customers_total": 1,
+          "customers_tested": 1,
+          "complete_customer_coverage": true,
+          "projection_evaluations": 1,
+          "elapsed_ms": 0,
+          "scope": "Smallest integer delay for one customer at a time, with all other likely receipts fixed; simultaneous shocks and model error are not covered."
+        },
+        "promises": {
+          "version": "resilience-v1",
+          "business_id": "harbourline-traders",
+          "currency": "SGD",
+          "snapshot_hash": "ee2be77fd13f30668fe037c61660e14b91d88293862e402e4de0daef275f1b1a",
+          "target_date": "2026-10-31",
+          "plan_id": null,
+          "bundle_id": "recommended",
+          "read_only": true,
+          "executed": false,
+          "kind": "promise_stress",
+          "agreements_tested": 1,
+          "delay_days": 7,
+          "rows": [
+            {
+              "assumed_failure_bps": 0,
+              "probability_breach": 1.0,
+              "probability_payroll_unfunded": 1.0,
+              "minimum_cash_p10_minor": -2715000,
+              "runs": 1000
+            },
+            {
+              "assumed_failure_bps": 1000,
+              "probability_breach": 1.0,
+              "probability_payroll_unfunded": 1.0,
+              "minimum_cash_p10_minor": -2715000,
+              "runs": 1000
+            },
+            {
+              "assumed_failure_bps": 2500,
+              "probability_breach": 1.0,
+              "probability_payroll_unfunded": 1.0,
+              "minimum_cash_p10_minor": -2715000,
+              "runs": 1000
+            },
+            {
+              "assumed_failure_bps": 5000,
+              "probability_breach": 1.0,
+              "probability_payroll_unfunded": 1.0,
+              "minimum_cash_p10_minor": -2715000,
+              "runs": 1000
+            },
+            {
+              "assumed_failure_bps": 10000,
+              "probability_breach": 1.0,
+              "probability_payroll_unfunded": 1.0,
+              "minimum_cash_p10_minor": -2715000,
+              "runs": 1000
+            }
+          ],
+          "seed": 184023317939334,
+          "failure_rates_are_assumptions": true,
+          "scope": "Assumed late performance of accepted early-payment agreements; correlated within customer, not an observed reliability score or default-loss model. Reminder promises never become collected cash."
+        },
+        "frontier": {
+          "version": "resilience-v1",
+          "business_id": "harbourline-traders",
+          "currency": "SGD",
+          "snapshot_hash": "ee2be77fd13f30668fe037c61660e14b91d88293862e402e4de0daef275f1b1a",
+          "target_date": "2026-10-31",
+          "plan_id": null,
+          "bundle_id": "recommended",
+          "read_only": true,
+          "executed": false,
+          "kind": "recovery_frontier",
+          "risk_target": 0.1,
+          "rows": [
+            {
+              "bundle_id": "no-action",
+              "actions": [],
+              "cost_minor": 0,
+              "probability_breach": 1.0,
+              "likely": {
+                "scenario": "likely",
+                "currency": "SGD",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 3000000,
+                "closing_cash_minor": -4200000,
+                "target_closing_cash_minor": -4200000,
+                "minimum_cash_minor": -4200000,
+                "minimum_cash_date": "2026-10-31",
+                "reserve_floor_minor": 1500000,
+                "reserve_shortfall_minor": 5700000,
+                "first_breach_date": "2026-10-25",
+                "first_negative_date": "2026-10-31",
+                "payroll_at_risk": true,
+                "payroll_outflow_minor": 2000000,
+                "total_inflow_minor": 0,
+                "total_outflow_minor": 7200000
+              },
+              "additional_opening_cash_minor": 5700000,
+              "conditional_funded_probability_breach": 0.0,
+              "funding_confirmed": false,
+              "selection_seed": 184023317939334,
+              "validation_seed": 200707516784190,
+              "runs_each": 1000,
+              "fresh_approval_required": false,
+              "consents_required": [],
+              "dominated_on_displayed_axes": false
+            },
+            {
+              "bundle_id": "recommended",
+              "actions": [
+                {
+                  "type": "early_payment_offer",
+                  "counterparty": "Delta Retail",
+                  "amount_minor": 1485000,
+                  "from_date": "2026-11-28",
+                  "to_date": "2026-10-24"
+                }
+              ],
+              "cost_minor": 15000,
+              "probability_breach": 1.0,
+              "likely": {
+                "scenario": "likely",
+                "currency": "SGD",
+                "opening_date": "2026-10-01",
+                "target_date": "2026-10-31",
+                "end_date": "2026-11-14",
+                "opening_cash_minor": 3000000,
+                "closing_cash_minor": -2715000,
+                "target_closing_cash_minor": -2715000,
+                "minimum_cash_minor": -2715000,
+                "minimum_cash_date": "2026-10-31",
+                "reserve_floor_minor": 1500000,
+                "reserve_shortfall_minor": 4215000,
+                "first_breach_date": "2026-10-31",
+                "first_negative_date": "2026-10-31",
+                "payroll_at_risk": true,
+                "payroll_outflow_minor": 2000000,
+                "total_inflow_minor": 1485000,
+                "total_outflow_minor": 7200000
+              },
+              "additional_opening_cash_minor": 4215000,
+              "conditional_funded_probability_breach": 0.0,
+              "funding_confirmed": false,
+              "selection_seed": 184023317939334,
+              "validation_seed": 200707516784190,
+              "runs_each": 1000,
+              "fresh_approval_required": true,
+              "consents_required": [
+                "Delta Retail"
+              ],
+              "dominated_on_displayed_axes": true
+            }
+          ],
+          "scope": "Comparison of available bundles, not a global optimality proof. Extra cash is assumed present at opening without fees or repayment; its availability and timing require confirmation. Fresh draws measure sampling, not calibration."
+        }
+      },
+      "replay": {
+        "version": "decision-replay-v1",
+        "read_only": true,
+        "passed": true,
+        "engine_compatible": true,
+        "authenticated_origin": false,
+        "capsule_sha256": "daced9385d2f9d89c724bbce0db3476a8507dc1db2025802e629b43b00068eb0",
+        "actual_projection": {
+          "scenario": "likely",
+          "currency": "SGD",
+          "opening_date": "2026-10-01",
+          "target_date": "2026-10-31",
+          "end_date": "2026-11-14",
+          "opening_cash_minor": 3000000,
+          "closing_cash_minor": -2715000,
+          "target_closing_cash_minor": -2715000,
+          "minimum_cash_minor": -2715000,
+          "minimum_cash_date": "2026-10-31",
+          "reserve_floor_minor": 1500000,
+          "reserve_shortfall_minor": 4215000,
+          "first_breach_date": "2026-10-31",
+          "first_negative_date": "2026-10-31",
+          "payroll_at_risk": true,
+          "payroll_outflow_minor": 2000000,
+          "total_inflow_minor": 1485000,
+          "total_outflow_minor": 7200000
+        },
+        "actual_simulation": {
+          "seed": 184023317939334,
+          "runs": 1000,
+          "probability_breach": 1.0,
+          "minimum_cash_p10_minor": -2715000,
+          "probability_payroll_unfunded": 1.0
+        },
+        "no_database_writes": true,
+        "scope": "Recomputed deterministic financial outputs. The self-hash is not proof of authorship. No model generation, approval or payment is replayed."
+      }
+    }
+  ],
+  "scope": "Known synthetic engineering checks, not a user study, calibrated prediction accuracy, external review or live-model benchmark."
+}

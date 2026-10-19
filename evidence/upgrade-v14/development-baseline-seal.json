@@ -1,0 +1,10 @@
+{
+  "recorded_at_utc": "2026-10-19T07:16:17.168515+00:00",
+  "fixture_sha256": "d3d9f683a5cc2a50d6d0bccce5684be12dd3a0581740252f6b6cd1ec5ae4d10d",
+  "classifier_files": {
+    "tideway/screening.py": "8e691c5d9113151d68907a33396ecffeb26986ac8fd0454e8161745a578b7906",
+    "tideway/semantic_screening.py": "49f0ac94817e29b059db8c91d172ec57a46bea977f2e6019235b5e8d94a70f32",
+    "tideway/tidelm.py": "84a50f429508c4570de5c430a196d6d74f661b8b192966ce765758b818a744b6"
+  },
+  "scope": "AI-authored source-aware development sample by the implementing maintainer; not independent or blind. Labels fixed before first inference. All runs retained."
+}

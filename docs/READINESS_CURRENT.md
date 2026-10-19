@@ -1,6 +1,6 @@
 # Current technical readiness
 
-Current local release: [consistent selected-currency inputs, text and reports](RELEASE_V13.md). Prior features: [Owner view](OWNER_VIEW.md) and [Decision lab](DECISION_LAB.md).
+Current local release: [customer/payment review and screening precision](RELEASE_V14.md). Currency foundation: [v13](RELEASE_V13.md). Prior features: [Owner view](OWNER_VIEW.md) and [Decision lab](DECISION_LAB.md).
 
 This is the current review index. Tideway remains a synthetic SME finance copilot:
 cash forecasts, recovery proposals, human approval, simulated negotiation and
@@ -42,7 +42,7 @@ Historical upgrade and Windows reports describe earlier source versions.
 
 | Check | Recorded result | Meaning and limit |
 |---|---|---|
-| Latest stored full unit run | 486 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; the report records its own source hash; injected outputs are not model quality |
+| Latest stored full unit run | 497 run; 0 failures; 0 errors; 1 skipped | Python 3.13.7, Windows; the report records its own source hash; injected outputs are not model quality |
 | Additional standard-library run | 252 run; 0 failures; 0 errors; 4 skipped | Python 3.11.16; optional photo tests require Pillow; report records its own source hash |
 | Financial scenarios | 24/24 expected workflows; 9 rescues | 8/9 executed rescues meet the 10% simulated risk target |
 | Shipped TidePay | 7,427 unseen synthetic invoices; MAE 8.5585 days | Heuristic 10.2296; training-only prior 11.7453; no weight changes |
@@ -91,8 +91,8 @@ Use a completed LF checkout: source edits during the run invalidate verification
 
 - [Current test summary](../evidence/test-summary.json) and
   [raw test log](../evidence/test-run.log).
-- [Current scenario report](../evidence/currency-v13/scenarios/report.json),
-  [linked delay receipt](../evidence/currency-v13/payment-delay.json) and
+- [Current scenario report](../evidence/upgrade-v14/scenarios/report.json),
+  [linked delay receipt](../evidence/upgrade-v14/payment-delay.json) and
   [browser workflow](../evidence/screens/browser-verification.json).
 - [Exact shipped prediction evaluation](DEPLOYED_MODEL_EVALUATION.md), with
   raw invoices, shared test IDs, predictions, intervals and calibration bins.
@@ -100,7 +100,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
   native runtime provenance and every first-observation output.
 - [Separate post-fix model regression](../evidence/readiness-v3/blind/model-post-fix-regression.json)
   and [Python 3.11 standard-library run](../evidence/readiness-v3/python311/test-summary.json).
-- [Release stages and PDF hashes](../evidence/currency-v13/release-checks.json).
+- [Release stages and PDF hashes](../evidence/upgrade-v14/release-checks.json).
   `dist/extraction-verification.json` and `dist/SHA256SUMS.txt` prove the actual
   distributed bytes, rather than referring to an earlier ZIP.
 - [Independent judge/auditor report](INDEPENDENT_AUDIT.md), with reproduced
@@ -109,7 +109,7 @@ Use a completed LF checkout: source edits during the run invalidate verification
 - [User study protocol](USER_STUDY_KIT.md) and
   [current participation aggregate](../evidence/readiness-v3/user-study-status.json).
 
-Current test source digest: `ddafe10453c8ae6bb7bf29f27d8dc0eb0c7d0ecca8445269ee3b8f602cc62fe2`.
+Current test source digest: `f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c`.
 Reports contain their own timestamps and hashes; older Windows/upgrade evidence
 is historical and does not attest to the current checkout.
 
@@ -118,7 +118,8 @@ is historical and does not attest to the current checkout.
 Instruction screening has finite coverage. The v5 and v6 first observations below
 are separate authored sets; they cannot be compared as an uncontrolled percentage
 improvement. Optional semantic checks remain advisory and require a local model.
-Real consented SME feedback, current MLX/TideLM planning and receipt-model evaluation,
+Independent verification of the supplied SME observations, usability re-testing,
+current MLX/TideLM planning and receipt-model evaluation,
 external security testing and real-data calibration remain outstanding.
 Partial settlements, reversals and real lender eligibility require separate
 financial design before live integration. Stored hosted run 8 concluded success for commit f60a6752e26723ae6b696a40e52335d15f1e3339.
@@ -177,8 +178,20 @@ Development cases are disclosed v6 regressions. The fresh set is separately AI-a
 
 AI-authored assumed behavior scenarios; real participants: 0. Backend workflow outcomes do not measure human task completion, satisfaction or SUS.
 
-[6/6 checks passed](../evidence/currency-v13/behavior-checks.json): decline without changes, incomplete approval, owner discount limits, residual-risk consent, a known hostile supplier message and repeat execution. These scripted checks do not count as human participants. Separate supplied survey observations are described in [the survey report](USER_STUDY_RESULTS.md).
+[6/6 checks passed](../evidence/upgrade-v14/behavior-checks.json): decline without changes, incomplete approval, owner discount limits, residual-risk consent, a known hostile supplier message and repeat execution. These scripted checks do not count as human participants. Separate supplied survey observations are described in [the survey report](USER_STUDY_RESULTS.md).
 
 ## Currency consistency and related UI audit
 
 The owner-selected currency now applies to editable financial amounts, generated narrative text, trace summaries, approval review, financial cards and human-readable reports. Exact rational conversion preserves the canonical ledger and unchanged rounded inputs. Explicit monetary question tokens are normalized before model/agent calls; ambiguous foreign-unit amounts require a currency code. Signed evidence and settlement documents retain original units. Per-operator preferences and unsaved drafts are preserved; source-aware Inbox review, scoped demo roles and pending lab inputs are corrected. See [conversion checks](../evidence/currency-v13/currency-checks.json), [browser evidence](../evidence/screens/browser-verification.json) and [release notes](RELEASE_V13.md). These are synthetic engineering checks, not live FX or new real-model quality/human usability results. Earlier PDFs and model/container observations retain their original scope.
+
+## Customer decisions and screening precision
+
+Customer cards separate observed late settlements from projected receipt dates and compare those dates with payroll. The same exact proposal cost, cash, reserve and remaining-risk explanation appears on the rescue card and approval dialog. Selected display currency, same-day timing uncertainty, missing history and above-target acknowledgement remain visible. These are engineering improvements; no new human usability score is claimed.
+
+- [screening-baseline](../evidence/upgrade-v14/screening-baseline/report.json): 48 cases; combined attack recall 100.0%; ordinary-benign warning false-positive rate 70.8%; legitimate payment-change recall 100.0%.
+- [screening-revised](../evidence/upgrade-v14/screening-revised/report.json): 48 cases; combined attack recall 100.0%; ordinary-benign warning false-positive rate 0.0%; legitimate payment-change recall 100.0%.
+- [screening-final-known](../evidence/upgrade-v14/screening-final-known/report.json): 120 cases; combined attack recall 96.2%; ordinary-benign warning false-positive rate 0.0%; legitimate payment-change recall 100.0%.
+- [screening-challenge](../evidence/upgrade-v14/screening-challenge/report.json): 48 cases; combined attack recall 93.8%; ordinary-benign warning false-positive rate 0.0%; legitimate payment-change recall 100.0%.
+- [screening-post-fix-known](../evidence/upgrade-v14/screening-post-fix-known/report.json): 168 cases; combined attack recall 100.0%; ordinary-benign warning false-positive rate 0.0%; legitimate payment-change recall 100.0%.
+
+Actual cached Windows Qwen3 compatible inference; same-model paired development and a source-aware AI-authored challenge. Historical misses and all raw outputs are retained. These runs do not verify the native MLX backend or establish population accuracy. See [scope and reproduction](RELEASE_V14.md).

@@ -1,0 +1,14 @@
+{
+  "profile": "qwen3-4b",
+  "model_id": "Qwen3-4B-Instruct-2507-Q4_K_M",
+  "model_url": "https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF/resolve/a06e946bb6b655725eafa393f4a9745d460374c9/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+  "model_revision": "a06e946bb6b655725eafa393f4a9745d460374c9",
+  "model_bytes": 2497281120,
+  "model_sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+  "runtime_release": "b11678",
+  "runtime_archive": "llama-b11678-bin-win-vulkan-x64.zip",
+  "runtime_archive_sha256": "dad3ea8140d26a821ba113ad6e8cad13cc00065f995ce08bf3481c8f041d0e70",
+  "scope": "Optional compatible text model; not the TideLM adapter or a vision model.",
+  "verification_scope": "Helper verified the pinned model/runtime checksums before starting a new owned loopback server on port 8791. No downloads. Windows compatible Qwen3; not native MLX, TideLM adapter or receipt model.",
+  "server_stopped_after_evaluation": true
+}

@@ -27,7 +27,8 @@ def main(argv=None):
     model = read('evidence/readiness-v3/blind/model-first-observation.json')
     screening = read('evidence/readiness-v3/blind/screening-first-observation.json')
     pay = read('evidence/readiness-v3/tidepay/report.json')
-    current = args.evidence_dir or ('evidence/currency-v13' if (ROOT / 'evidence/currency-v13/scenarios/report.json').is_file()
+    current = args.evidence_dir or ('evidence/upgrade-v14' if (ROOT / 'evidence/upgrade-v14/scenarios/report.json').is_file()
+                                  else 'evidence/currency-v13' if (ROOT / 'evidence/currency-v13/scenarios/report.json').is_file()
                                   else 'evidence/owner-view-v12' if (ROOT / 'evidence/owner-view-v12/scenarios/report.json').is_file()
                                   else 'evidence/upgrade-v11' if (ROOT / 'evidence/upgrade-v11/scenarios/report.json').is_file()
                                   else 'evidence/upgrade-v10' if (ROOT / 'evidence/upgrade-v10/scenarios/report.json').is_file()
@@ -179,7 +180,8 @@ is historical and does not attest to the current checkout.
 Instruction screening has finite coverage. The v5 and v6 first observations below
 are separate authored sets; they cannot be compared as an uncontrolled percentage
 improvement. Optional semantic checks remain advisory and require a local model.
-Real consented SME feedback, current MLX/TideLM planning and receipt-model evaluation,
+Independent verification of the supplied SME observations, usability re-testing,
+current MLX/TideLM planning and receipt-model evaluation,
 external security testing and real-data calibration remain outstanding.
 Partial settlements, reversals and real lender eligibility require separate
 financial design before live integration. {ci_status}
@@ -277,7 +279,7 @@ be guaranteed from synthetic checks while these validation gaps remain.
     if current == 'evidence/owner-view-v12':
         doc = doc.replace('# Current technical readiness\n', '# Current technical readiness\n\nCurrent local release: [simple Owner view and goal-led recovery](RELEASE_V12.md). Prior model and decision-lab observations: [v11](RELEASE_V11.md).\n',1)
         doc += ('\n## Owner view and decision lab\n\nThe default Cash weather screen explains spending room under expected receipts and without unpaid customer receipts, tests an isolated one-off expense, links dated cash flows to records, and compares three recovery priorities. English/Bangla Owner labels, factual data checks and a private script-free decision brief reduce the steps needed to understand a proposal. Saved previews remain unapproved; owner limits, protected relationships and retained bilateral assumptions are enforced atomically. See [feature guide](OWNER_VIEW.md), [Owner evaluation](../evidence/owner-view-v12/owner-view.json) and [decision-lab checks](../evidence/owner-view-v12/decision-lab.json). No human usability improvement or new model-quality score is claimed. The earlier PDF deck is retained; this feature guide describes the new interface.\n')
-    if current == 'evidence/currency-v13':
+    if current in ('evidence/currency-v13', 'evidence/upgrade-v14'):
         doc = doc.replace('# Current technical readiness\n','# Current technical readiness\n\nCurrent local release: [consistent selected-currency inputs, text and reports](RELEASE_V13.md). Prior features: [Owner view](OWNER_VIEW.md) and [Decision lab](DECISION_LAB.md).\n',1)
         doc += ('\n## Currency consistency and related UI audit\n\nThe owner-selected currency now applies to editable financial amounts, generated narrative text, trace summaries, approval review, financial cards and human-readable reports. Exact rational conversion preserves the canonical ledger and unchanged rounded inputs. Explicit monetary question tokens are normalized before model/agent calls; ambiguous foreign-unit amounts require a currency code. Signed evidence and settlement documents retain original units. Per-operator preferences and unsaved drafts are preserved; source-aware Inbox review, scoped demo roles and pending lab inputs are corrected. See [conversion checks](../evidence/currency-v13/currency-checks.json), [browser evidence](../evidence/screens/browser-verification.json) and [release notes](RELEASE_V13.md). These are synthetic engineering checks, not live FX or new real-model quality/human usability results. Earlier PDFs and model/container observations retain their original scope.\n')
     if current == 'evidence/upgrade-v10':
@@ -308,6 +310,26 @@ be guaranteed from synthetic checks while these validation gaps remain.
         doc += ('\nHTTP regressions reject duplicate JSON keys and ambiguous body framing, tolerate malformed '
                 'cookies as unauthenticated, share anonymous rate limits across invalid cookie values, and '
                 'bound body reads by a total deadline. These are internal tests, not an external security audit.\n')
+    if current == 'evidence/upgrade-v14':
+        doc = doc.replace('Current local release: [consistent selected-currency inputs, text and reports](RELEASE_V13.md).',
+                          'Current local release: [customer/payment review and screening precision](RELEASE_V14.md). Currency foundation: [v13](RELEASE_V13.md).')
+        doc += ('\n## Customer decisions and screening precision\n\n'
+                'Customer cards separate observed late settlements from projected receipt dates and compare those dates with payroll. '
+                'The same exact proposal cost, cash, reserve and remaining-risk explanation appears on the rescue card and approval dialog. '
+                'Selected display currency, same-day timing uncertainty, missing history and above-target acknowledgement remain visible. '
+                'These are engineering improvements; no new human usability score is claimed.\n\n')
+        for phase in ('screening-baseline','screening-revised','screening-final-known','screening-challenge','screening-post-fix-known'):
+            path = ROOT / current / phase / 'report.json'
+            if path.is_file():
+                r = json.loads(path.read_text(encoding='utf-8'))
+                m = r['metrics']
+                doc += (f"- [{phase}](../{current}/{phase}/report.json): {r['cases']} cases; "
+                        f"combined attack recall {m['combined_attack']['recall']:.1%}; ordinary-benign warning "
+                        f"false-positive rate {m['combined_warning']['false_positive_rate']:.1%}; "
+                        f"legitimate payment-change recall {m['legitimate_payment_review']['recall']:.1%}.\n")
+        doc += ('\nActual cached Windows Qwen3 compatible inference; same-model paired development and a source-aware AI-authored challenge. '
+                'Historical misses and all raw outputs are retained. These runs do not verify the native MLX backend or establish population accuracy. '
+                'See [scope and reproduction](RELEASE_V14.md).\n')
     (ROOT / 'docs/READINESS_CURRENT.md').write_bytes(doc.encode('utf-8'))
     print('Updated docs/READINESS_CURRENT.md from recorded evidence.')
 

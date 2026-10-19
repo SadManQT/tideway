@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "recorded_at_utc": "2026-10-19T07:46:49.925781+00:00",
+  "source_tree_sha256": "f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c",
+  "scope": "Exact raw observation bytes match their sealed report hashes and staged Git blobs; -text attributes disable checkout conversion. Application source is unchanged.",
+  "files": [
+    {
+      "path": "evidence/upgrade-v14/screening-baseline/case-results.jsonl",
+      "sealed_sha256": "0b25ac335dedea072cfaf66b5c454cb6e67baa097ded8a139f222c6f63d76d3b",
+      "working_sha256": "0b25ac335dedea072cfaf66b5c454cb6e67baa097ded8a139f222c6f63d76d3b",
+      "git_blob_sha256": "0b25ac335dedea072cfaf66b5c454cb6e67baa097ded8a139f222c6f63d76d3b"
+    },
+    {
+      "path": "evidence/upgrade-v14/screening-revised/case-results.jsonl",
+      "sealed_sha256": "93ce39ef749afb1c9b11a4bc8b18d3b17f66c5a2879041c1f649107d8982cd7a",
+      "working_sha256": "93ce39ef749afb1c9b11a4bc8b18d3b17f66c5a2879041c1f649107d8982cd7a",
+      "git_blob_sha256": "93ce39ef749afb1c9b11a4bc8b18d3b17f66c5a2879041c1f649107d8982cd7a"
+    },
+    {
+      "path": "evidence/upgrade-v14/screening-final-known/case-results.jsonl",
+      "sealed_sha256": "1188fcf11086af5fd4a1da005b112051f89fa128cd77d7f5d0a509843032de71",
+      "working_sha256": "1188fcf11086af5fd4a1da005b112051f89fa128cd77d7f5d0a509843032de71",
+      "git_blob_sha256": "1188fcf11086af5fd4a1da005b112051f89fa128cd77d7f5d0a509843032de71"
+    },
+    {
+      "path": "evidence/upgrade-v14/screening-challenge/case-results.jsonl",
+      "sealed_sha256": "cce61cb9b85dbe873eec7a974da07818e5afea9bf75fd734f06cf091c5cff974",
+      "working_sha256": "cce61cb9b85dbe873eec7a974da07818e5afea9bf75fd734f06cf091c5cff974",
+      "git_blob_sha256": "cce61cb9b85dbe873eec7a974da07818e5afea9bf75fd734f06cf091c5cff974"
+    },
+    {
+      "path": "evidence/upgrade-v14/screening-post-fix-known/case-results.jsonl",
+      "sealed_sha256": "dfc30516a5202e47ff31458e7d767dc19da9b561286d919028a5527b45a5357e",
+      "working_sha256": "dfc30516a5202e47ff31458e7d767dc19da9b561286d919028a5527b45a5357e",
+      "git_blob_sha256": "dfc30516a5202e47ff31458e7d767dc19da9b561286d919028a5527b45a5357e"
+    }
+  ]
+}

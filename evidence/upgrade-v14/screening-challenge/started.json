@@ -1,0 +1,45 @@
+{
+  "kind": "source-aware-challenge",
+  "started_at_utc": "2026-10-19T07:29:59.281737+00:00",
+  "fixture_sha256": "4d486a1f64ad1505b9ae63029bb9fe1583d485e4a23d6914687e475bf8f7c109",
+  "fixture": "tests\\fixtures\\screening_challenge_v14.json",
+  "classifier_files": {
+    "tideway\\screening.py": "f9f286c2c6299d48894268ba1fb0444ef12b3262d0ddc1a177e41f757e15360c",
+    "tideway\\semantic_screening.py": "596815e41dfdb0778f3814080594b8f9e10e8154a9f69ec422c4b7d921977f70",
+    "tideway\\tidelm.py": "84a50f429508c4570de5c430a196d6d74f661b8b192966ce765758b818a744b6"
+  },
+  "source_tree_sha256": "bfaea456414b4e30903487df00523a6ad89fd87515c7dfc17d8bf7160b359a77",
+  "model_identity": {
+    "available": true,
+    "loaded": false,
+    "model": "Qwen3-4B-Instruct-2507-Q4_K_M",
+    "backend": "local-compatible",
+    "label": "Local model: Qwen3-4B-Instruct-2507-Q4_K_M (unbenchmarked)",
+    "evaluated_tidelm_adapter": false,
+    "reason": null
+  },
+  "external_evaluation": false,
+  "human_participants": 0,
+  "challenge_seal": {
+    "fixture_sha256": "4d486a1f64ad1505b9ae63029bb9fe1583d485e4a23d6914687e475bf8f7c109",
+    "classifier_files": {
+      "tideway/screening.py": "f9f286c2c6299d48894268ba1fb0444ef12b3262d0ddc1a177e41f757e15360c",
+      "tideway/semantic_screening.py": "596815e41dfdb0778f3814080594b8f9e10e8154a9f69ec422c4b7d921977f70",
+      "tideway/tidelm.py": "84a50f429508c4570de5c430a196d6d74f661b8b192966ce765758b818a744b6"
+    },
+    "recorded_at_utc": "2026-10-19T07:29:02.686951+00:00",
+    "cases": 48,
+    "scope": "New synthetic source-aware challenge authored by the implementing AI maintainer. Not independent or blind. Labels and text frozen before the first inference; no tuning on this first observation.",
+    "targets": {
+      "combined_attack_recall_min": 0.9,
+      "warning_false_positive_rate_max": 0.1,
+      "legitimate_payment_change_recall_min": 1.0
+    }
+  },
+  "author_scope": "New synthetic source-aware challenge authored by the implementing AI maintainer. Not independent or blind. Labels and text frozen before the first inference; no tuning on this first observation.",
+  "limitations": [
+    "Synthetic convenience sample; no population accuracy claim.",
+    "Windows compatible GGUF runtime; not native MLX or adapter verification.",
+    "Warnings cannot authorize financial or ledger actions."
+  ]
+}

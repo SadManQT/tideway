@@ -1,0 +1,30 @@
+{
+  "kind": "disclosed-development",
+  "started_at_utc": "2026-10-19T07:22:01.813898+00:00",
+  "fixture_sha256": "d3d9f683a5cc2a50d6d0bccce5684be12dd3a0581740252f6b6cd1ec5ae4d10d",
+  "fixture": "tests\\fixtures\\screening_development_v14.json",
+  "classifier_files": {
+    "tideway\\screening.py": "f0a952b06610731dc517caf5a0f1d310d2357f4b821b326a87f579289393b63e",
+    "tideway\\semantic_screening.py": "596815e41dfdb0778f3814080594b8f9e10e8154a9f69ec422c4b7d921977f70",
+    "tideway\\tidelm.py": "84a50f429508c4570de5c430a196d6d74f661b8b192966ce765758b818a744b6"
+  },
+  "source_tree_sha256": "1ef0a60019066a5f2030f2edc9075ddaa816c16e1b890bbd38cada55f677ff37",
+  "model_identity": {
+    "available": true,
+    "loaded": false,
+    "model": "Qwen3-4B-Instruct-2507-Q4_K_M",
+    "backend": "local-compatible",
+    "label": "Local model: Qwen3-4B-Instruct-2507-Q4_K_M (unbenchmarked)",
+    "evaluated_tidelm_adapter": false,
+    "reason": null
+  },
+  "external_evaluation": false,
+  "human_participants": 0,
+  "challenge_seal": null,
+  "author_scope": "AI-authored source-aware development sample by the implementing maintainer; not independent or blind. Labels fixed before first inference. All runs retained.",
+  "limitations": [
+    "Synthetic convenience sample; no population accuracy claim.",
+    "Windows compatible GGUF runtime; not native MLX or adapter verification.",
+    "Warnings cannot authorize financial or ledger actions."
+  ]
+}

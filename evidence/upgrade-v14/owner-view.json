@@ -1,0 +1,1519 @@
+{
+  "run_at_utc": "2026-10-19T07:38:34.300897+00:00",
+  "source_tree_sha256": "f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c",
+  "source_unchanged": true,
+  "passed": true,
+  "businesses": 3,
+  "checks": 21,
+  "rows": [
+    {
+      "business_id": "shapla-services",
+      "currency": "BDT",
+      "checks": {
+        "same_source": true,
+        "daily_cash_reconciles": true,
+        "expense_cannot_increase_low_cash": true,
+        "three_priority_previews": true,
+        "brief_bound_to_source": true,
+        "ledger_unchanged": true,
+        "no_proposal_or_execution": true
+      },
+      "report_ms": 26.14,
+      "coach_ms": 708.74,
+      "report": {
+        "version": "owner-view-v1",
+        "business_id": "shapla-services",
+        "business_name": "Shapla Services",
+        "currency": "BDT",
+        "snapshot_hash": "a6c9e24884f41569b26506a06fe060ca0b44e965d45417a06be1e7a31aff083f",
+        "target_date": "2026-10-31",
+        "as_of": "2026-10-01",
+        "end_date": "2026-11-14",
+        "read_only": true,
+        "executed": false,
+        "status": "payroll_unfunded",
+        "reserve_floor_minor": 2000000,
+        "likely": {
+          "available": true,
+          "minimum_cash_minor": -4200000,
+          "minimum_cash_date": "2026-11-03",
+          "reserve_shortfall_minor": 6200000,
+          "payroll_unfunded": true
+        },
+        "after_expense": {
+          "available": true,
+          "minimum_cash_minor": -4200000,
+          "minimum_cash_date": "2026-11-03",
+          "reserve_shortfall_minor": 6200000,
+          "payroll_unfunded": true
+        },
+        "expense": {
+          "amount_minor": 0,
+          "date": "2026-10-01"
+        },
+        "spending_room": {
+          "likely": {
+            "available": true,
+            "ceiling_minor": 0,
+            "reason": "existing_shortfall",
+            "binding_date": "2026-11-03",
+            "amount_cap_applies": false
+          },
+          "without_unpaid_customers": {
+            "available": true,
+            "ceiling_minor": 0,
+            "reason": "existing_shortfall",
+            "binding_date": "2026-11-05",
+            "amount_cap_applies": false
+          }
+        },
+        "payroll": {
+          "identified": true,
+          "next_date": "2026-10-31",
+          "next_amount_minor": 8000000
+        },
+        "customer_receipts": [
+          {
+            "customer": "Bay Logistics",
+            "settled_invoices": 6,
+            "late_settlements": 3,
+            "limited_history": false,
+            "open_amount_minor": 6000000,
+            "next_receipt": {
+              "id": "inv-shapla-bay-oct",
+              "date": "2026-11-05",
+              "amount_minor": 6000000,
+              "basis": "expected",
+              "after_payroll": true
+            },
+            "expected_by_payroll_minor": 0,
+            "expected_after_payroll_minor": 6000000
+          },
+          {
+            "customer": "Nila Traders",
+            "settled_invoices": 5,
+            "late_settlements": 5,
+            "limited_history": false,
+            "open_amount_minor": 2000000,
+            "next_receipt": {
+              "id": "inv-shapla-nila-oct",
+              "date": "2026-11-10",
+              "amount_minor": 2000000,
+              "basis": "expected",
+              "after_payroll": true
+            },
+            "expected_by_payroll_minor": 0,
+            "expected_after_payroll_minor": 2000000
+          }
+        ],
+        "dependencies": [
+          {
+            "customer": "Bay Logistics",
+            "impact_on_lowest_cash_minor": 1500000,
+            "without_customer": {
+              "available": true,
+              "minimum_cash_minor": -5700000,
+              "minimum_cash_date": "2026-11-05",
+              "reserve_shortfall_minor": 7700000,
+              "payroll_unfunded": true
+            }
+          },
+          {
+            "customer": "Nila Traders",
+            "impact_on_lowest_cash_minor": 0,
+            "without_customer": {
+              "available": true,
+              "minimum_cash_minor": -4200000,
+              "minimum_cash_date": "2026-11-03",
+              "reserve_shortfall_minor": 6200000,
+              "payroll_unfunded": true
+            }
+          }
+        ],
+        "dependency_coverage": {
+          "customers_total": 2,
+          "tested": 2,
+          "complete": true
+        },
+        "calendar": [
+          {
+            "date": "2026-10-31",
+            "opening_cash_minor": 12000000,
+            "inflow_minor": 0,
+            "outflow_minor": 15000000,
+            "closing_cash_minor": -3000000,
+            "sources": [
+              {
+                "kind": "bill",
+                "id": "bill-shapla-rahman-oct",
+                "party": "Rahman Supplies",
+                "effect_minor": -7000000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              },
+              {
+                "kind": "transaction",
+                "id": "txn-shapla-payroll-oct",
+                "party": "Payroll",
+                "effect_minor": -8000000,
+                "payroll": true,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 2,
+            "sources_complete": true,
+            "below_reserve": true
+          },
+          {
+            "date": "2026-11-03",
+            "opening_cash_minor": -3000000,
+            "inflow_minor": 0,
+            "outflow_minor": 1200000,
+            "closing_cash_minor": -4200000,
+            "sources": [
+              {
+                "kind": "bill",
+                "id": "bill-shapla-karim-nov",
+                "party": "Karim Packaging",
+                "effect_minor": -1200000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": true
+          },
+          {
+            "date": "2026-11-05",
+            "opening_cash_minor": -4200000,
+            "inflow_minor": 6000000,
+            "outflow_minor": 1500000,
+            "closing_cash_minor": 300000,
+            "sources": [
+              {
+                "kind": "transaction",
+                "id": "txn-shapla-rent-nov",
+                "party": "Rent",
+                "effect_minor": -1500000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              },
+              {
+                "kind": "invoice",
+                "id": "inv-shapla-bay-oct",
+                "party": "Bay Logistics",
+                "effect_minor": 6000000,
+                "payroll": false,
+                "basis": "expected_receipt"
+              }
+            ],
+            "source_count": 2,
+            "sources_complete": true,
+            "below_reserve": true
+          },
+          {
+            "date": "2026-11-10",
+            "opening_cash_minor": 300000,
+            "inflow_minor": 2000000,
+            "outflow_minor": 0,
+            "closing_cash_minor": 2300000,
+            "sources": [
+              {
+                "kind": "invoice",
+                "id": "inv-shapla-nila-oct",
+                "party": "Nila Traders",
+                "effect_minor": 2000000,
+                "payroll": false,
+                "basis": "expected_receipt"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": false
+          }
+        ],
+        "data_checks": {
+          "quarantined_records": 0,
+          "customers_under_three_settlements": [],
+          "unpaid_invoices": 2,
+          "payroll_identified": true
+        },
+        "proposal_counted_as_cash": false,
+        "scope": "Daily closing cash from the simulation date through target plus look-ahead; scheduled ledger, not a bank balance or intraday guarantee. Unpaid customer receipts and accepted agreements are assumptions. Spending room is not approval; fees and funding costs are not added automatically. Customer-removal impacts are separate scenarios and cannot be added together."
+      },
+      "expense": {
+        "version": "owner-view-v1",
+        "business_id": "shapla-services",
+        "business_name": "Shapla Services",
+        "currency": "BDT",
+        "snapshot_hash": "a6c9e24884f41569b26506a06fe060ca0b44e965d45417a06be1e7a31aff083f",
+        "target_date": "2026-10-31",
+        "as_of": "2026-10-01",
+        "end_date": "2026-11-14",
+        "read_only": true,
+        "executed": false,
+        "status": "payroll_unfunded",
+        "reserve_floor_minor": 2000000,
+        "likely": {
+          "available": true,
+          "minimum_cash_minor": -4200000,
+          "minimum_cash_date": "2026-11-03",
+          "reserve_shortfall_minor": 6200000,
+          "payroll_unfunded": true
+        },
+        "after_expense": {
+          "available": true,
+          "minimum_cash_minor": -4323456,
+          "minimum_cash_date": "2026-11-03",
+          "reserve_shortfall_minor": 6323456,
+          "payroll_unfunded": true
+        },
+        "expense": {
+          "amount_minor": 123456,
+          "date": "2026-10-01"
+        },
+        "spending_room": {
+          "likely": {
+            "available": true,
+            "ceiling_minor": 0,
+            "reason": "existing_shortfall",
+            "binding_date": "2026-11-03",
+            "amount_cap_applies": false
+          },
+          "without_unpaid_customers": {
+            "available": true,
+            "ceiling_minor": 0,
+            "reason": "existing_shortfall",
+            "binding_date": "2026-11-05",
+            "amount_cap_applies": false
+          }
+        },
+        "payroll": {
+          "identified": true,
+          "next_date": "2026-10-31",
+          "next_amount_minor": 8000000
+        },
+        "customer_receipts": [
+          {
+            "customer": "Bay Logistics",
+            "settled_invoices": 6,
+            "late_settlements": 3,
+            "limited_history": false,
+            "open_amount_minor": 6000000,
+            "next_receipt": {
+              "id": "inv-shapla-bay-oct",
+              "date": "2026-11-05",
+              "amount_minor": 6000000,
+              "basis": "expected",
+              "after_payroll": true
+            },
+            "expected_by_payroll_minor": 0,
+            "expected_after_payroll_minor": 6000000
+          },
+          {
+            "customer": "Nila Traders",
+            "settled_invoices": 5,
+            "late_settlements": 5,
+            "limited_history": false,
+            "open_amount_minor": 2000000,
+            "next_receipt": {
+              "id": "inv-shapla-nila-oct",
+              "date": "2026-11-10",
+              "amount_minor": 2000000,
+              "basis": "expected",
+              "after_payroll": true
+            },
+            "expected_by_payroll_minor": 0,
+            "expected_after_payroll_minor": 2000000
+          }
+        ],
+        "dependencies": [
+          {
+            "customer": "Bay Logistics",
+            "impact_on_lowest_cash_minor": 1500000,
+            "without_customer": {
+              "available": true,
+              "minimum_cash_minor": -5700000,
+              "minimum_cash_date": "2026-11-05",
+              "reserve_shortfall_minor": 7700000,
+              "payroll_unfunded": true
+            }
+          },
+          {
+            "customer": "Nila Traders",
+            "impact_on_lowest_cash_minor": 0,
+            "without_customer": {
+              "available": true,
+              "minimum_cash_minor": -4200000,
+              "minimum_cash_date": "2026-11-03",
+              "reserve_shortfall_minor": 6200000,
+              "payroll_unfunded": true
+            }
+          }
+        ],
+        "dependency_coverage": {
+          "customers_total": 2,
+          "tested": 2,
+          "complete": true
+        },
+        "calendar": [
+          {
+            "date": "2026-10-31",
+            "opening_cash_minor": 12000000,
+            "inflow_minor": 0,
+            "outflow_minor": 15000000,
+            "closing_cash_minor": -3000000,
+            "sources": [
+              {
+                "kind": "bill",
+                "id": "bill-shapla-rahman-oct",
+                "party": "Rahman Supplies",
+                "effect_minor": -7000000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              },
+              {
+                "kind": "transaction",
+                "id": "txn-shapla-payroll-oct",
+                "party": "Payroll",
+                "effect_minor": -8000000,
+                "payroll": true,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 2,
+            "sources_complete": true,
+            "below_reserve": true
+          },
+          {
+            "date": "2026-11-03",
+            "opening_cash_minor": -3000000,
+            "inflow_minor": 0,
+            "outflow_minor": 1200000,
+            "closing_cash_minor": -4200000,
+            "sources": [
+              {
+                "kind": "bill",
+                "id": "bill-shapla-karim-nov",
+                "party": "Karim Packaging",
+                "effect_minor": -1200000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": true
+          },
+          {
+            "date": "2026-11-05",
+            "opening_cash_minor": -4200000,
+            "inflow_minor": 6000000,
+            "outflow_minor": 1500000,
+            "closing_cash_minor": 300000,
+            "sources": [
+              {
+                "kind": "transaction",
+                "id": "txn-shapla-rent-nov",
+                "party": "Rent",
+                "effect_minor": -1500000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              },
+              {
+                "kind": "invoice",
+                "id": "inv-shapla-bay-oct",
+                "party": "Bay Logistics",
+                "effect_minor": 6000000,
+                "payroll": false,
+                "basis": "expected_receipt"
+              }
+            ],
+            "source_count": 2,
+            "sources_complete": true,
+            "below_reserve": true
+          },
+          {
+            "date": "2026-11-10",
+            "opening_cash_minor": 300000,
+            "inflow_minor": 2000000,
+            "outflow_minor": 0,
+            "closing_cash_minor": 2300000,
+            "sources": [
+              {
+                "kind": "invoice",
+                "id": "inv-shapla-nila-oct",
+                "party": "Nila Traders",
+                "effect_minor": 2000000,
+                "payroll": false,
+                "basis": "expected_receipt"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": false
+          }
+        ],
+        "data_checks": {
+          "quarantined_records": 0,
+          "customers_under_three_settlements": [],
+          "unpaid_invoices": 2,
+          "payroll_identified": true
+        },
+        "proposal_counted_as_cash": false,
+        "scope": "Daily closing cash from the simulation date through target plus look-ahead; scheduled ledger, not a bank balance or intraday guarantee. Unpaid customer receipts and accepted agreements are assumptions. Spending room is not approval; fees and funding costs are not added automatically. Customer-removal impacts are separate scenarios and cannot be added together."
+      },
+      "comparison": {
+        "read_only": true,
+        "executed": false,
+        "business_id": "shapla-services",
+        "snapshot_hash": "a6c9e24884f41569b26506a06fe060ca0b44e965d45417a06be1e7a31aff083f",
+        "target_date": "2026-10-31",
+        "criteria": {
+          "max_discount_bps": 300,
+          "protected_counterparties": [],
+          "current_max_discount_bps": 300,
+          "bilateral_assumptions": []
+        },
+        "options": [
+          {
+            "priority": "lowest_cost",
+            "option_id": "886ada05997c3fb1331a011f583220e3649255f331db2b69a083b6437cd3461a",
+            "status": "proposal_available",
+            "cost_minor": 47616,
+            "risk": 0.0408,
+            "actions": [
+              {
+                "type": "supplier_deferral",
+                "counterparty": "Rahman Supplies",
+                "amount_minor": 6000000,
+                "to_date": "2026-11-14"
+              },
+              {
+                "type": "early_payment_offer",
+                "counterparty": "Nila Traders",
+                "amount_minor": 1980000,
+                "to_date": "2026-10-30"
+              }
+            ],
+            "asks": 2,
+            "lowest_cash_minor": 2280000,
+            "risk_target_met": true
+          },
+          {
+            "priority": "fewest_asks",
+            "option_id": "6f165dc01a503b3a6152a33abfaea8f3a415b74121130cb171da7912f7dc87df",
+            "status": "proposal_available",
+            "cost_minor": 47616,
+            "risk": 0.0408,
+            "actions": [
+              {
+                "type": "supplier_deferral",
+                "counterparty": "Rahman Supplies",
+                "amount_minor": 6000000,
+                "to_date": "2026-11-14"
+              },
+              {
+                "type": "early_payment_offer",
+                "counterparty": "Nila Traders",
+                "amount_minor": 1980000,
+                "to_date": "2026-10-30"
+              }
+            ],
+            "asks": 2,
+            "lowest_cash_minor": 2280000,
+            "risk_target_met": true
+          },
+          {
+            "priority": "lowest_risk",
+            "option_id": "5c890d26b27b2dbe4277ff77d07a4be75d381781a37bbb587d08b0c183578794",
+            "status": "proposal_available",
+            "cost_minor": 80000,
+            "risk": 0.0,
+            "actions": [
+              {
+                "type": "early_payment_offer",
+                "counterparty": "Bay Logistics",
+                "amount_minor": 5940000,
+                "to_date": "2026-10-30"
+              },
+              {
+                "type": "early_payment_offer",
+                "counterparty": "Nila Traders",
+                "amount_minor": 1980000,
+                "to_date": "2026-10-30"
+              }
+            ],
+            "asks": 2,
+            "lowest_cash_minor": 2220000,
+            "risk_target_met": true
+          }
+        ],
+        "scope": "Bounded planner priorities, not a global optimality guarantee. Equal choices are possible. Protected relationships and current discount limits remain binding. Every saved proposal needs fresh human approval and exact counterparty consent."
+      }
+    },
+    {
+      "business_id": "lotus-print",
+      "currency": "CNY",
+      "checks": {
+        "same_source": true,
+        "daily_cash_reconciles": true,
+        "expense_cannot_increase_low_cash": true,
+        "three_priority_previews": true,
+        "brief_bound_to_source": true,
+        "ledger_unchanged": true,
+        "no_proposal_or_execution": true
+      },
+      "report_ms": 22.13,
+      "coach_ms": 567.82,
+      "report": {
+        "version": "owner-view-v1",
+        "business_id": "lotus-print",
+        "business_name": "Lotus Print Studio",
+        "currency": "CNY",
+        "snapshot_hash": "3b02818f99787ac84b9e95b57c19c0f741079d5aceca3061888decdffb7200bf",
+        "target_date": "2026-10-31",
+        "as_of": "2026-10-01",
+        "end_date": "2026-11-14",
+        "read_only": true,
+        "executed": false,
+        "status": "buffer_shortfall",
+        "reserve_floor_minor": 1500000,
+        "likely": {
+          "available": true,
+          "minimum_cash_minor": 800000,
+          "minimum_cash_date": "2026-10-31",
+          "reserve_shortfall_minor": 700000,
+          "payroll_unfunded": false
+        },
+        "after_expense": {
+          "available": true,
+          "minimum_cash_minor": 800000,
+          "minimum_cash_date": "2026-10-31",
+          "reserve_shortfall_minor": 700000,
+          "payroll_unfunded": false
+        },
+        "expense": {
+          "amount_minor": 0,
+          "date": "2026-10-01"
+        },
+        "spending_room": {
+          "likely": {
+            "available": true,
+            "ceiling_minor": 0,
+            "reason": "existing_shortfall",
+            "binding_date": "2026-10-31",
+            "amount_cap_applies": false
+          },
+          "without_unpaid_customers": {
+            "available": true,
+            "ceiling_minor": 0,
+            "reason": "existing_shortfall",
+            "binding_date": "2026-10-31",
+            "amount_cap_applies": false
+          }
+        },
+        "payroll": {
+          "identified": true,
+          "next_date": "2026-10-30",
+          "next_amount_minor": 3200000
+        },
+        "customer_receipts": [
+          {
+            "customer": "Harbor Media",
+            "settled_invoices": 4,
+            "late_settlements": 4,
+            "limited_history": false,
+            "open_amount_minor": 2600000,
+            "next_receipt": {
+              "id": "inv-lotus-harbor-oct",
+              "date": "2026-11-02",
+              "amount_minor": 2600000,
+              "basis": "expected",
+              "after_payroll": true
+            },
+            "expected_by_payroll_minor": 0,
+            "expected_after_payroll_minor": 2600000
+          },
+          {
+            "customer": "Bay Area Events",
+            "settled_invoices": 3,
+            "late_settlements": 1,
+            "limited_history": false,
+            "open_amount_minor": 1200000,
+            "next_receipt": {
+              "id": "inv-lotus-events-oct",
+              "date": "2026-10-22",
+              "amount_minor": 1200000,
+              "basis": "expected",
+              "after_payroll": false
+            },
+            "expected_by_payroll_minor": 1200000,
+            "expected_after_payroll_minor": 0
+          }
+        ],
+        "dependencies": [
+          {
+            "customer": "Bay Area Events",
+            "impact_on_lowest_cash_minor": 1200000,
+            "without_customer": {
+              "available": true,
+              "minimum_cash_minor": -400000,
+              "minimum_cash_date": "2026-10-31",
+              "reserve_shortfall_minor": 1900000,
+              "payroll_unfunded": false
+            }
+          },
+          {
+            "customer": "Harbor Media",
+            "impact_on_lowest_cash_minor": 0,
+            "without_customer": {
+              "available": true,
+              "minimum_cash_minor": 800000,
+              "minimum_cash_date": "2026-10-31",
+              "reserve_shortfall_minor": 700000,
+              "payroll_unfunded": false
+            }
+          }
+        ],
+        "dependency_coverage": {
+          "customers_total": 2,
+          "tested": 2,
+          "complete": true
+        },
+        "calendar": [
+          {
+            "date": "2026-10-22",
+            "opening_cash_minor": 6000000,
+            "inflow_minor": 1200000,
+            "outflow_minor": 0,
+            "closing_cash_minor": 7200000,
+            "sources": [
+              {
+                "kind": "invoice",
+                "id": "inv-lotus-events-oct",
+                "party": "Bay Area Events",
+                "effect_minor": 1200000,
+                "payroll": false,
+                "basis": "expected_receipt"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": false
+          },
+          {
+            "date": "2026-10-28",
+            "opening_cash_minor": 7200000,
+            "inflow_minor": 0,
+            "outflow_minor": 1400000,
+            "closing_cash_minor": 5800000,
+            "sources": [
+              {
+                "kind": "bill",
+                "id": "bill-lotus-pearl-oct",
+                "party": "Pearl River Paper",
+                "effect_minor": -1400000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": false
+          },
+          {
+            "date": "2026-10-30",
+            "opening_cash_minor": 5800000,
+            "inflow_minor": 0,
+            "outflow_minor": 3200000,
+            "closing_cash_minor": 2600000,
+            "sources": [
+              {
+                "kind": "transaction",
+                "id": "txn-lotus-payroll-oct",
+                "party": "Payroll",
+                "effect_minor": -3200000,
+                "payroll": true,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": false
+          },
+          {
+            "date": "2026-10-31",
+            "opening_cash_minor": 2600000,
+            "inflow_minor": 0,
+            "outflow_minor": 1800000,
+            "closing_cash_minor": 800000,
+            "sources": [
+              {
+                "kind": "transaction",
+                "id": "txn-lotus-rent-oct",
+                "party": "Rent",
+                "effect_minor": -1800000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": true
+          },
+          {
+            "date": "2026-11-02",
+            "opening_cash_minor": 800000,
+            "inflow_minor": 2600000,
+            "outflow_minor": 0,
+            "closing_cash_minor": 3400000,
+            "sources": [
+              {
+                "kind": "invoice",
+                "id": "inv-lotus-harbor-oct",
+                "party": "Harbor Media",
+                "effect_minor": 2600000,
+                "payroll": false,
+                "basis": "expected_receipt"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": false
+          }
+        ],
+        "data_checks": {
+          "quarantined_records": 0,
+          "customers_under_three_settlements": [],
+          "unpaid_invoices": 2,
+          "payroll_identified": true
+        },
+        "proposal_counted_as_cash": false,
+        "scope": "Daily closing cash from the simulation date through target plus look-ahead; scheduled ledger, not a bank balance or intraday guarantee. Unpaid customer receipts and accepted agreements are assumptions. Spending room is not approval; fees and funding costs are not added automatically. Customer-removal impacts are separate scenarios and cannot be added together."
+      },
+      "expense": {
+        "version": "owner-view-v1",
+        "business_id": "lotus-print",
+        "business_name": "Lotus Print Studio",
+        "currency": "CNY",
+        "snapshot_hash": "3b02818f99787ac84b9e95b57c19c0f741079d5aceca3061888decdffb7200bf",
+        "target_date": "2026-10-31",
+        "as_of": "2026-10-01",
+        "end_date": "2026-11-14",
+        "read_only": true,
+        "executed": false,
+        "status": "buffer_shortfall",
+        "reserve_floor_minor": 1500000,
+        "likely": {
+          "available": true,
+          "minimum_cash_minor": 800000,
+          "minimum_cash_date": "2026-10-31",
+          "reserve_shortfall_minor": 700000,
+          "payroll_unfunded": false
+        },
+        "after_expense": {
+          "available": true,
+          "minimum_cash_minor": 676544,
+          "minimum_cash_date": "2026-10-31",
+          "reserve_shortfall_minor": 823456,
+          "payroll_unfunded": false
+        },
+        "expense": {
+          "amount_minor": 123456,
+          "date": "2026-10-01"
+        },
+        "spending_room": {
+          "likely": {
+            "available": true,
+            "ceiling_minor": 0,
+            "reason": "existing_shortfall",
+            "binding_date": "2026-10-31",
+            "amount_cap_applies": false
+          },
+          "without_unpaid_customers": {
+            "available": true,
+            "ceiling_minor": 0,
+            "reason": "existing_shortfall",
+            "binding_date": "2026-10-31",
+            "amount_cap_applies": false
+          }
+        },
+        "payroll": {
+          "identified": true,
+          "next_date": "2026-10-30",
+          "next_amount_minor": 3200000
+        },
+        "customer_receipts": [
+          {
+            "customer": "Harbor Media",
+            "settled_invoices": 4,
+            "late_settlements": 4,
+            "limited_history": false,
+            "open_amount_minor": 2600000,
+            "next_receipt": {
+              "id": "inv-lotus-harbor-oct",
+              "date": "2026-11-02",
+              "amount_minor": 2600000,
+              "basis": "expected",
+              "after_payroll": true
+            },
+            "expected_by_payroll_minor": 0,
+            "expected_after_payroll_minor": 2600000
+          },
+          {
+            "customer": "Bay Area Events",
+            "settled_invoices": 3,
+            "late_settlements": 1,
+            "limited_history": false,
+            "open_amount_minor": 1200000,
+            "next_receipt": {
+              "id": "inv-lotus-events-oct",
+              "date": "2026-10-22",
+              "amount_minor": 1200000,
+              "basis": "expected",
+              "after_payroll": false
+            },
+            "expected_by_payroll_minor": 1200000,
+            "expected_after_payroll_minor": 0
+          }
+        ],
+        "dependencies": [
+          {
+            "customer": "Bay Area Events",
+            "impact_on_lowest_cash_minor": 1200000,
+            "without_customer": {
+              "available": true,
+              "minimum_cash_minor": -400000,
+              "minimum_cash_date": "2026-10-31",
+              "reserve_shortfall_minor": 1900000,
+              "payroll_unfunded": false
+            }
+          },
+          {
+            "customer": "Harbor Media",
+            "impact_on_lowest_cash_minor": 0,
+            "without_customer": {
+              "available": true,
+              "minimum_cash_minor": 800000,
+              "minimum_cash_date": "2026-10-31",
+              "reserve_shortfall_minor": 700000,
+              "payroll_unfunded": false
+            }
+          }
+        ],
+        "dependency_coverage": {
+          "customers_total": 2,
+          "tested": 2,
+          "complete": true
+        },
+        "calendar": [
+          {
+            "date": "2026-10-22",
+            "opening_cash_minor": 6000000,
+            "inflow_minor": 1200000,
+            "outflow_minor": 0,
+            "closing_cash_minor": 7200000,
+            "sources": [
+              {
+                "kind": "invoice",
+                "id": "inv-lotus-events-oct",
+                "party": "Bay Area Events",
+                "effect_minor": 1200000,
+                "payroll": false,
+                "basis": "expected_receipt"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": false
+          },
+          {
+            "date": "2026-10-28",
+            "opening_cash_minor": 7200000,
+            "inflow_minor": 0,
+            "outflow_minor": 1400000,
+            "closing_cash_minor": 5800000,
+            "sources": [
+              {
+                "kind": "bill",
+                "id": "bill-lotus-pearl-oct",
+                "party": "Pearl River Paper",
+                "effect_minor": -1400000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": false
+          },
+          {
+            "date": "2026-10-30",
+            "opening_cash_minor": 5800000,
+            "inflow_minor": 0,
+            "outflow_minor": 3200000,
+            "closing_cash_minor": 2600000,
+            "sources": [
+              {
+                "kind": "transaction",
+                "id": "txn-lotus-payroll-oct",
+                "party": "Payroll",
+                "effect_minor": -3200000,
+                "payroll": true,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": false
+          },
+          {
+            "date": "2026-10-31",
+            "opening_cash_minor": 2600000,
+            "inflow_minor": 0,
+            "outflow_minor": 1800000,
+            "closing_cash_minor": 800000,
+            "sources": [
+              {
+                "kind": "transaction",
+                "id": "txn-lotus-rent-oct",
+                "party": "Rent",
+                "effect_minor": -1800000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": true
+          },
+          {
+            "date": "2026-11-02",
+            "opening_cash_minor": 800000,
+            "inflow_minor": 2600000,
+            "outflow_minor": 0,
+            "closing_cash_minor": 3400000,
+            "sources": [
+              {
+                "kind": "invoice",
+                "id": "inv-lotus-harbor-oct",
+                "party": "Harbor Media",
+                "effect_minor": 2600000,
+                "payroll": false,
+                "basis": "expected_receipt"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": false
+          }
+        ],
+        "data_checks": {
+          "quarantined_records": 0,
+          "customers_under_three_settlements": [],
+          "unpaid_invoices": 2,
+          "payroll_identified": true
+        },
+        "proposal_counted_as_cash": false,
+        "scope": "Daily closing cash from the simulation date through target plus look-ahead; scheduled ledger, not a bank balance or intraday guarantee. Unpaid customer receipts and accepted agreements are assumptions. Spending room is not approval; fees and funding costs are not added automatically. Customer-removal impacts are separate scenarios and cannot be added together."
+      },
+      "comparison": {
+        "read_only": true,
+        "executed": false,
+        "business_id": "lotus-print",
+        "snapshot_hash": "3b02818f99787ac84b9e95b57c19c0f741079d5aceca3061888decdffb7200bf",
+        "target_date": "2026-10-31",
+        "criteria": {
+          "max_discount_bps": 300,
+          "protected_counterparties": [],
+          "current_max_discount_bps": 300,
+          "bilateral_assumptions": []
+        },
+        "options": [
+          {
+            "priority": "lowest_cost",
+            "option_id": "3c0d53a2842f6016d4dc86e1bcfac952d1ab9bae4dc7e7537cbe134c0fb7996d",
+            "status": "proposal_available",
+            "cost_minor": 3221,
+            "risk": 0.0658,
+            "actions": [
+              {
+                "type": "supplier_deferral",
+                "counterparty": "Pearl River Paper",
+                "amount_minor": 700000,
+                "to_date": "2026-11-11"
+              }
+            ],
+            "asks": 1,
+            "lowest_cash_minor": 1500000,
+            "risk_target_met": true
+          },
+          {
+            "priority": "fewest_asks",
+            "option_id": "d205b791989af1e032be758a538b6bd7e1888f6019a02637a2a868509577826a",
+            "status": "proposal_available",
+            "cost_minor": 3221,
+            "risk": 0.0658,
+            "actions": [
+              {
+                "type": "supplier_deferral",
+                "counterparty": "Pearl River Paper",
+                "amount_minor": 700000,
+                "to_date": "2026-11-11"
+              }
+            ],
+            "asks": 1,
+            "lowest_cash_minor": 1500000,
+            "risk_target_met": true
+          },
+          {
+            "priority": "lowest_risk",
+            "option_id": "1b80572ba5696748cd4e215cca2448cc04faeeda944963893a0949751d1008ff",
+            "status": "proposal_available",
+            "cost_minor": 26000,
+            "risk": 0.0,
+            "actions": [
+              {
+                "type": "early_payment_offer",
+                "counterparty": "Harbor Media",
+                "amount_minor": 2574000,
+                "to_date": "2026-10-30"
+              }
+            ],
+            "asks": 1,
+            "lowest_cash_minor": 3374000,
+            "risk_target_met": true
+          }
+        ],
+        "scope": "Bounded planner priorities, not a global optimality guarantee. Equal choices are possible. Protected relationships and current discount limits remain binding. Every saved proposal needs fresh human approval and exact counterparty consent."
+      }
+    },
+    {
+      "business_id": "harbourline-traders",
+      "currency": "SGD",
+      "checks": {
+        "same_source": true,
+        "daily_cash_reconciles": true,
+        "expense_cannot_increase_low_cash": true,
+        "three_priority_previews": true,
+        "brief_bound_to_source": true,
+        "ledger_unchanged": true,
+        "no_proposal_or_execution": true
+      },
+      "report_ms": 16.8,
+      "coach_ms": 31.52,
+      "report": {
+        "version": "owner-view-v1",
+        "business_id": "harbourline-traders",
+        "business_name": "Harbourline Traders",
+        "currency": "SGD",
+        "snapshot_hash": "ee2be77fd13f30668fe037c61660e14b91d88293862e402e4de0daef275f1b1a",
+        "target_date": "2026-10-31",
+        "as_of": "2026-10-01",
+        "end_date": "2026-11-14",
+        "read_only": true,
+        "executed": false,
+        "status": "payroll_unfunded",
+        "reserve_floor_minor": 1500000,
+        "likely": {
+          "available": true,
+          "minimum_cash_minor": -4200000,
+          "minimum_cash_date": "2026-10-31",
+          "reserve_shortfall_minor": 5700000,
+          "payroll_unfunded": true
+        },
+        "after_expense": {
+          "available": true,
+          "minimum_cash_minor": -4200000,
+          "minimum_cash_date": "2026-10-31",
+          "reserve_shortfall_minor": 5700000,
+          "payroll_unfunded": true
+        },
+        "expense": {
+          "amount_minor": 0,
+          "date": "2026-10-01"
+        },
+        "spending_room": {
+          "likely": {
+            "available": true,
+            "ceiling_minor": 0,
+            "reason": "existing_shortfall",
+            "binding_date": "2026-10-31",
+            "amount_cap_applies": false
+          },
+          "without_unpaid_customers": {
+            "available": true,
+            "ceiling_minor": 0,
+            "reason": "existing_shortfall",
+            "binding_date": "2026-10-31",
+            "amount_cap_applies": false
+          }
+        },
+        "payroll": {
+          "identified": true,
+          "next_date": "2026-10-31",
+          "next_amount_minor": 2000000
+        },
+        "customer_receipts": [
+          {
+            "customer": "Delta Retail",
+            "settled_invoices": 2,
+            "late_settlements": 2,
+            "limited_history": true,
+            "open_amount_minor": 1500000,
+            "next_receipt": {
+              "id": "inv-harbour-delta-oct",
+              "date": "2026-11-28",
+              "amount_minor": 1500000,
+              "basis": "expected",
+              "after_payroll": true
+            },
+            "expected_by_payroll_minor": 0,
+            "expected_after_payroll_minor": 1500000
+          }
+        ],
+        "dependencies": [
+          {
+            "customer": "Delta Retail",
+            "impact_on_lowest_cash_minor": 0,
+            "without_customer": {
+              "available": true,
+              "minimum_cash_minor": -4200000,
+              "minimum_cash_date": "2026-10-31",
+              "reserve_shortfall_minor": 5700000,
+              "payroll_unfunded": true
+            }
+          }
+        ],
+        "dependency_coverage": {
+          "customers_total": 1,
+          "tested": 1,
+          "complete": true
+        },
+        "calendar": [
+          {
+            "date": "2026-10-25",
+            "opening_cash_minor": 3000000,
+            "inflow_minor": 0,
+            "outflow_minor": 1800000,
+            "closing_cash_minor": 1200000,
+            "sources": [
+              {
+                "kind": "bill",
+                "id": "bill-harbour-straits-oct",
+                "party": "Straits Steel",
+                "effect_minor": -1800000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": true
+          },
+          {
+            "date": "2026-10-27",
+            "opening_cash_minor": 1200000,
+            "inflow_minor": 0,
+            "outflow_minor": 900000,
+            "closing_cash_minor": 300000,
+            "sources": [
+              {
+                "kind": "bill",
+                "id": "bill-harbour-lookalike-oct",
+                "party": "Straits Stee1",
+                "effect_minor": -900000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": true
+          },
+          {
+            "date": "2026-10-31",
+            "opening_cash_minor": 300000,
+            "inflow_minor": 0,
+            "outflow_minor": 4500000,
+            "closing_cash_minor": -4200000,
+            "sources": [
+              {
+                "kind": "bill",
+                "id": "bill-harbour-wholesale-oct",
+                "party": "Harbour Wholesale",
+                "effect_minor": -2500000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              },
+              {
+                "kind": "transaction",
+                "id": "txn-harbour-payroll-oct",
+                "party": "Payroll",
+                "effect_minor": -2000000,
+                "payroll": true,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 2,
+            "sources_complete": true,
+            "below_reserve": true
+          }
+        ],
+        "data_checks": {
+          "quarantined_records": 2,
+          "customers_under_three_settlements": [
+            "Delta Retail"
+          ],
+          "unpaid_invoices": 1,
+          "payroll_identified": true
+        },
+        "proposal_counted_as_cash": false,
+        "scope": "Daily closing cash from the simulation date through target plus look-ahead; scheduled ledger, not a bank balance or intraday guarantee. Unpaid customer receipts and accepted agreements are assumptions. Spending room is not approval; fees and funding costs are not added automatically. Customer-removal impacts are separate scenarios and cannot be added together."
+      },
+      "expense": {
+        "version": "owner-view-v1",
+        "business_id": "harbourline-traders",
+        "business_name": "Harbourline Traders",
+        "currency": "SGD",
+        "snapshot_hash": "ee2be77fd13f30668fe037c61660e14b91d88293862e402e4de0daef275f1b1a",
+        "target_date": "2026-10-31",
+        "as_of": "2026-10-01",
+        "end_date": "2026-11-14",
+        "read_only": true,
+        "executed": false,
+        "status": "payroll_unfunded",
+        "reserve_floor_minor": 1500000,
+        "likely": {
+          "available": true,
+          "minimum_cash_minor": -4200000,
+          "minimum_cash_date": "2026-10-31",
+          "reserve_shortfall_minor": 5700000,
+          "payroll_unfunded": true
+        },
+        "after_expense": {
+          "available": true,
+          "minimum_cash_minor": -4323456,
+          "minimum_cash_date": "2026-10-31",
+          "reserve_shortfall_minor": 5823456,
+          "payroll_unfunded": true
+        },
+        "expense": {
+          "amount_minor": 123456,
+          "date": "2026-10-01"
+        },
+        "spending_room": {
+          "likely": {
+            "available": true,
+            "ceiling_minor": 0,
+            "reason": "existing_shortfall",
+            "binding_date": "2026-10-31",
+            "amount_cap_applies": false
+          },
+          "without_unpaid_customers": {
+            "available": true,
+            "ceiling_minor": 0,
+            "reason": "existing_shortfall",
+            "binding_date": "2026-10-31",
+            "amount_cap_applies": false
+          }
+        },
+        "payroll": {
+          "identified": true,
+          "next_date": "2026-10-31",
+          "next_amount_minor": 2000000
+        },
+        "customer_receipts": [
+          {
+            "customer": "Delta Retail",
+            "settled_invoices": 2,
+            "late_settlements": 2,
+            "limited_history": true,
+            "open_amount_minor": 1500000,
+            "next_receipt": {
+              "id": "inv-harbour-delta-oct",
+              "date": "2026-11-28",
+              "amount_minor": 1500000,
+              "basis": "expected",
+              "after_payroll": true
+            },
+            "expected_by_payroll_minor": 0,
+            "expected_after_payroll_minor": 1500000
+          }
+        ],
+        "dependencies": [
+          {
+            "customer": "Delta Retail",
+            "impact_on_lowest_cash_minor": 0,
+            "without_customer": {
+              "available": true,
+              "minimum_cash_minor": -4200000,
+              "minimum_cash_date": "2026-10-31",
+              "reserve_shortfall_minor": 5700000,
+              "payroll_unfunded": true
+            }
+          }
+        ],
+        "dependency_coverage": {
+          "customers_total": 1,
+          "tested": 1,
+          "complete": true
+        },
+        "calendar": [
+          {
+            "date": "2026-10-25",
+            "opening_cash_minor": 3000000,
+            "inflow_minor": 0,
+            "outflow_minor": 1800000,
+            "closing_cash_minor": 1200000,
+            "sources": [
+              {
+                "kind": "bill",
+                "id": "bill-harbour-straits-oct",
+                "party": "Straits Steel",
+                "effect_minor": -1800000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": true
+          },
+          {
+            "date": "2026-10-27",
+            "opening_cash_minor": 1200000,
+            "inflow_minor": 0,
+            "outflow_minor": 900000,
+            "closing_cash_minor": 300000,
+            "sources": [
+              {
+                "kind": "bill",
+                "id": "bill-harbour-lookalike-oct",
+                "party": "Straits Stee1",
+                "effect_minor": -900000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 1,
+            "sources_complete": true,
+            "below_reserve": true
+          },
+          {
+            "date": "2026-10-31",
+            "opening_cash_minor": 300000,
+            "inflow_minor": 0,
+            "outflow_minor": 4500000,
+            "closing_cash_minor": -4200000,
+            "sources": [
+              {
+                "kind": "bill",
+                "id": "bill-harbour-wholesale-oct",
+                "party": "Harbour Wholesale",
+                "effect_minor": -2500000,
+                "payroll": false,
+                "basis": "ledger_schedule"
+              },
+              {
+                "kind": "transaction",
+                "id": "txn-harbour-payroll-oct",
+                "party": "Payroll",
+                "effect_minor": -2000000,
+                "payroll": true,
+                "basis": "ledger_schedule"
+              }
+            ],
+            "source_count": 2,
+            "sources_complete": true,
+            "below_reserve": true
+          }
+        ],
+        "data_checks": {
+          "quarantined_records": 2,
+          "customers_under_three_settlements": [
+            "Delta Retail"
+          ],
+          "unpaid_invoices": 1,
+          "payroll_identified": true
+        },
+        "proposal_counted_as_cash": false,
+        "scope": "Daily closing cash from the simulation date through target plus look-ahead; scheduled ledger, not a bank balance or intraday guarantee. Unpaid customer receipts and accepted agreements are assumptions. Spending room is not approval; fees and funding costs are not added automatically. Customer-removal impacts are separate scenarios and cannot be added together."
+      },
+      "comparison": {
+        "read_only": true,
+        "executed": false,
+        "business_id": "harbourline-traders",
+        "snapshot_hash": "ee2be77fd13f30668fe037c61660e14b91d88293862e402e4de0daef275f1b1a",
+        "target_date": "2026-10-31",
+        "criteria": {
+          "max_discount_bps": 200,
+          "protected_counterparties": [],
+          "current_max_discount_bps": 200,
+          "bilateral_assumptions": []
+        },
+        "options": [
+          {
+            "priority": "lowest_cost",
+            "option_id": "5c243c62c54b01865ecf10238cfbecd6ff4d24843a644a0ba988d1682a8bdca3",
+            "status": "infeasible",
+            "cost_minor": 15000,
+            "risk": 1.0,
+            "actions": [
+              {
+                "type": "early_payment_offer",
+                "counterparty": "Delta Retail",
+                "amount_minor": 1485000,
+                "to_date": "2026-10-24"
+              }
+            ],
+            "asks": 1,
+            "lowest_cash_minor": -2715000,
+            "risk_target_met": false
+          },
+          {
+            "priority": "fewest_asks",
+            "option_id": "2623b06c2f86392004d44ade3c39ed73d1fe35c0c67e2e64daa9a0ecbe680df0",
+            "status": "infeasible",
+            "cost_minor": 15000,
+            "risk": 1.0,
+            "actions": [
+              {
+                "type": "early_payment_offer",
+                "counterparty": "Delta Retail",
+                "amount_minor": 1485000,
+                "to_date": "2026-10-24"
+              }
+            ],
+            "asks": 1,
+            "lowest_cash_minor": -2715000,
+            "risk_target_met": false
+          },
+          {
+            "priority": "lowest_risk",
+            "option_id": "7a58947b1da9e0e7f0e107328d0efe917485f8a2a166eeb92ce571b1816fe1d4",
+            "status": "infeasible",
+            "cost_minor": 15000,
+            "risk": 1.0,
+            "actions": [
+              {
+                "type": "early_payment_offer",
+                "counterparty": "Delta Retail",
+                "amount_minor": 1485000,
+                "to_date": "2026-10-24"
+              }
+            ],
+            "asks": 1,
+            "lowest_cash_minor": -2715000,
+            "risk_target_met": false
+          }
+        ],
+        "scope": "Bounded planner priorities, not a global optimality guarantee. Equal choices are possible. Protected relationships and current discount limits remain binding. Every saved proposal needs fresh human approval and exact counterparty consent."
+      }
+    }
+  ],
+  "real_participants": 0,
+  "scope": "Disclosed synthetic engineering checks and single-run timings, not human usability evidence, a load benchmark, real-model verification or a guarantee."
+}

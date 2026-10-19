@@ -23,7 +23,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--checks-only', action='store_true', help='Core tests, syntax and sandbox checks; no browser/PDF/package')
     parser.add_argument('--reuse-pdfs', action='store_true', help='Use existing visually reviewed PDFs; still repeat all other checks')
-    parser.add_argument('--evidence-dir', default='evidence/currency-v13', help='Current release evidence; historical observations are retained')
+    parser.add_argument('--evidence-dir', default='evidence/upgrade-v14', help='Current release evidence; historical observations are retained')
     args = parser.parse_args()
     issues = line_ending_issues()
     if issues:
@@ -48,6 +48,7 @@ def main():
     python = [sys.executable] + (['-S'] if sys.flags.no_site else [])
     run('Python compile', python + ['-m', 'compileall', '-q', 'run.py', 'tideway', 'scripts', 'tests'])
     run('JavaScript syntax', ['node', 'scripts/check_javascript.mjs'])
+    run('Decision-review financial explanations', ['node', 'scripts/test_decision_review.mjs'])
     run('Exact currency conversion and unchanged-input round-trips', ['node','scripts/test_currency.mjs','--out',str(out / 'currency-checks.json')])
     run('Unit suite', python + ['scripts/verify_submission.py'])
     run('Sandbox task and attack scorecard', python + ['scripts/evaluate.py'])

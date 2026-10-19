@@ -668,6 +668,7 @@ function renderOverview() {
         <div><span>Monthly expense run rate</span><strong>${money(k.monthly_expense_run_rate_minor)}</strong></div>
       </div></div>
   </section>
+  ${window.TidewayReview.customers(d.owner_view)}
   <section class="card section-gap"><div class="card-head"><div><h3>Customer payment behaviour</h3><p>Lateness = paid date − due date. Thin histories borrow from the business-wide average (credibility weighting), so one lucky payment never makes a customer look perfect.</p></div></div>
     <div class="table-wrap"><table><thead><tr><th>Customer</th><th>Grade</th><th class="num">Settled</th><th class="num">Expected delay</th><th class="num">P80 delay</th><th class="num">Own-history weight</th><th class="num">Open balance</th><th>Why</th></tr></thead><tbody>
     ${customers.length ? "" : `<p class="muted">No customer history yet. Add invoices to see who pays late.</p>`}
@@ -864,6 +865,7 @@ function bundleCard(plan, bundle, index) {
     <div class="bundle-head"><div><span class="eyebrow">${esc(bundle.feasible ? label : counter ? "Counter-offer (not safe)" : "Best partial option (not safe)")}</span><h3>${bundle.actions.map((action) => esc(action.counterparty)).join(" + ") || "No actions"}</h3></div>
       <div class="row">${bundle.feasible ? `<span class="pill ok">Holds the reserve</span>` : `<span class="pill storm">Shortfall remains</span>`}${isNum(bundle.futures_short_of_20_after) ? `<span class="pill ${bundle.risk_target_met ? "ok" : "unsettled"}">${esc(bundle.futures_short_of_20_after)} of 20 futures short</span>` : ""}${bundle.dual_approval_required ? `<span class="pill violet">Two approvers</span>` : ""}${button}</div></div>
     <div class="bundle-body">
+      ${window.TidewayReview.bundle(plan, bundle)}
       ${residualRiskHtml(plan, bundle)}
       ${bilateralTermsHtml(bundle)}
       <div class="compare"><div><span>Economic cost</span><strong>${money(bundle.economic_cost_minor)}</strong></div><div><span>Exposure</span><strong>${money(bundle.exposure_minor)}</strong></div>${isNum(after.minimum_cash_minor) ? `<div><span>Lowest likely cash after</span><strong>${money(after.minimum_cash_minor)}</strong></div>` : `<div><span>Reserve shortfall after</span><strong>${money(bundle.remaining_shortfall_minor)}</strong></div>`}<div><span>Counterparties to agree</span><strong>${esc(bundle.counterparties)}</strong></div></div>
@@ -1485,7 +1487,7 @@ function openApprove(planId, bundleId) {
   const lines = bundle.actions.map((action) => `<div class="line"><span>${esc(action.counterparty)} · ${action.type === "supplier_deferral" ? `move ${nat(action.amount_minor)} to ${esc(day(action.to_date))}` : `${esc(action.discount_bps / 100)}% off, pay ${nat(action.amount_minor)} by ${esc(day(action.to_date))}`}</span><b>${nat(action.economic_cost_minor)}</b></div>`);
   lines.push(`<div class="line"><span>Total exposure</span><b>${nat(bundle.exposure_minor)}</b></div>`);
   lines.push(`<div class="line"><span>Simulated futures still short after</span><b>${esc(bundle.futures_short_of_20_after ?? "—")} of 20</b></div>`);
-  $("#approve-summary").innerHTML = lines.join("") + residualRiskHtml(plan, bundle) + bilateralTermsHtml(bundle) + `<p class="small muted">You approve these exact terms. Any change to the records, policy, payee, amount or dates voids this approval before execution. ${bundle.dual_approval_required ? "This exceeds the dual-approval threshold: a second person, including the owner, must approve too." : ""}</p>`;
+  $("#approve-summary").innerHTML = window.TidewayReview.bundle(plan, bundle) + lines.join("") + residualRiskHtml(plan, bundle) + bilateralTermsHtml(bundle) + `<p class="small muted">You approve these exact terms. Any change to the records, policy, payee, amount or dates voids this approval before execution. ${bundle.dual_approval_required ? "This exceeds the dual-approval threshold: a second person, including the owner, must approve too." : ""}</p>`;
   if(displayCurrency()!==currency()) {
     const original=bundle.actions.map(a=>`<p>${esc(a.counterparty)}: ${money(a.amount_minor,currency(),{native:true})} · ${esc(a.to_date)}</p>`).join('');
     $("#approve-summary").insertAdjacentHTML('beforeend',`<details><summary>Original settlement terms (${esc(currency())}; immutable signing units)</summary>${original}<p>Exposure ${money(bundle.exposure_minor,currency(),{native:true})}. This view conversion does not create an FX trade.</p></details>`);

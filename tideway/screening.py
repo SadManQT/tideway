@@ -32,8 +32,9 @@ INJECTION_PATTERNS = (
     ("forged_authority", re.compile(rf"\b(?:treat|accept|regard|use|count|consider)\b.{{0,45}}\b(?:chat|message|email|note|text|invoice|stamp|attachment)\b.{{0,55}}\b{_AUTHORITY_TERMS}\b|\b(?:pretend|assume|fabricate|falsify|invent)\b.{{0,60}}\b{_CONTROL_TERMS}\b.{{0,35}}\b(?:passed|complete|completed|done|satisfied|cleared|obtained|granted)\b", re.I)),
     ("control_bypass", re.compile(rf"\b(?:no|without)\s+(?:further\s+|human\s+|owner\s+|manual\s+|additional\s+){{0,3}}{_AUTHORITY_TERMS}\b.{{0,30}}\b(?:needed|required|necessary)\b|\b{_AUTHORITY_TERMS}\b.{{0,20}}\b(?:is|are)\s+(?:unnecessary|optional)\b", re.I)),
     ("payment_redirect", re.compile(r"\b(?:redirect|reroute|divert)\b.{0,60}\b(?:payment|invoice|funds|money|beneficiary|settlement)\b|\b(?:payment|invoice|funds|money)\b.{0,35}\b(?:redirect|reroute|divert)\b", re.I)),
-    ("payment_redirect", re.compile(rf"\b(?:replace|substitute|swap|switch|change|amend|route)\b.{{0,65}}\b{_FINANCIAL_TARGET}\b.{{0,65}}\b(?:to|with|for|instead|rather\s+than)\b.{{0,65}}\b(?:account|wallet|beneficiary|bank|coordinates|destination|attachment|below|provide|listed)\b", re.I)),
+    ("payment_redirect", re.compile(rf"\b(?:replace|substitute|swap|switch|change|amend|route)\b.{{0,65}}\b{_FINANCIAL_TARGET}\b.{{0,65}}\b(?:to|with|for)\b.{{0,30}}\b(?:my|personal|private|unverified|attacker)\b.{{0,25}}\b(?:account|wallet|beneficiary|bank|destination)\b", re.I)),
     ("payment_redirect", re.compile(r"\b(?:use|pay|send|route|select)\b.{0,55}\b(?:wallet|account|beneficiary|destination)\b.{0,60}\b(?:instead\s+of|rather\s+than|in\s+place\s+of)\b.{0,60}\b(?:registered|recorded|verified|established|existing|usual)\b", re.I)),
+    ("payment_redirect", re.compile(r"\b(?:substitute|swap|replace)\b.{0,25}\b(?:my|personal|private|unverified)\b.{0,30}\b(?:bank\s+(?:details|coordinates)|account|wallet|beneficiary)\b.{0,25}\b(?:for|instead\s+of|in\s+place\s+of)\b.{0,25}\b(?:registered|verified|recorded|existing|usual)\b", re.I)),
     ("data_exfiltration", re.compile(rf"\b(?:upload|export|post|transmit|send|copy|forward|fetch|email|mail)\b.{{0,100}}\b{_SENSITIVE_DATA}\b.{{0,100}}{_EXTERNAL_DESTINATION}|\b(?:fetch|visit|open)\b.{{0,100}}https?://.{{0,100}}\b{_SENSITIVE_DATA}\b", re.I)),
     ("concealed_action", re.compile(r"\b(?:hide|conceal|suppress)\b.{0,55}\b(?:payments?|transfers?|disbursements?|execution|owner|user|reviewers?)\b|\b(?:do\s+not|don't|never)\s+(?:show|tell|notify|inform|alert)\b.{0,65}\b(?:owner|user|reviewers?|approvers?)\b.{0,100}\b(?:approve|pay|payment|transfer|transmit|disbursement|execute)\b|\b(?:approve|execute|transmit|pay|release)\b.{0,65}\b(?:silently|secretly|quietly|in\s+secret)\b", re.I)),
     ("audit_tampering", re.compile(r"\b(?:delete|erase|clear|remove|purge|disable|rewrite)\b.{0,45}\b(?:audit\s+(?:trail|logs?|records?)|execution\s+logs?|transaction\s+logs?)\b", re.I)),
@@ -79,6 +80,8 @@ INJECTION_PATTERNS += (
     ("payment_redirect", re.compile(r"(?:替换|更换|改用|改成).{0,15}(?:我的|私人|未验证).{0,10}(?:收款人|账户|账号|钱包)|(?:已验证|登记|原有).{0,15}(?:账户|账号).{0,20}(?:替换|换成|改用|改成|代替)|(?:不要|不用).{0,10}(?:已验证|登记|原有).{0,10}(?:账户|账号)")),
     ("data_exfiltration", re.compile(r"(?:上传|发送|导出|复制|转发).{0,25}(?:客户数据|客户记录|工资记录|密码|密钥|令牌|所有发票).{0,35}(?:https?://|邮箱|外部|服务器)")),
     ("data_exfiltration", re.compile(rf"(?:ग्राहक\S*|कर्मचार\S*).{{0,65}}(?:नाम|पते|मोबाइल|फोन|वेतन|सूची).{{0,100}}{_EXTERNAL_DESTINATION}.{{0,30}}(?:भेज|निर्यात|अपलोड)|(?:भेज|निर्यात|अपलोड).{{0,50}}(?:ग्राहक\S*|कर्मचार\S*).{{0,100}}{_EXTERNAL_DESTINATION}", re.I)),
+    ("data_exfiltration", re.compile(rf"(?:গ্রাহক\S*|কর্মচারী\S*).{{0,70}}(?:নাম|ঠিকানা|ফোন|মোবাইল|তালিকা).{{0,120}}{_EXTERNAL_DESTINATION}.{{0,30}}পাঠা(?:ন|ও|বেন)(?!\s*না(?:\s|[।.!?]|$))|পাঠা(?:ন|ও)(?!\s*না(?:\s|[।.!?]|$)).{{0,50}}(?:গ্রাহক\S*|কর্মচারী\S*).{{0,120}}{_EXTERNAL_DESTINATION}", re.I)),
+    ("forged_authority", re.compile(r"(?:संदेश|टिप्पणी|ईमेल|नोट).{0,55}(?:मंजूरी|अनुमोदन|हस्ताक्षर).{0,20}(?:मान\s*(?:लो|लें|लिये)|समझो)|(?:हटाकर|मिटाकर).{0,75}(?:अनुमोदित|स्वीकृत).{0,20}दिखा")),
     ("control_bypass", re.compile(r"\b(?:sin|sans|tanpa)\s+(?:la\s+|les\s+|aucune\s+)?(?:aprobaci[oó]n|autorizaci[oó]n|approbation|autorisation|persetujuan|izin)\b|\b(?:desactiva|elimina|suprime|d[eé]sactivez|supprimez|nonaktifkan|hapus)\b.{0,35}\b(?:controles?|validaci[oó]n|approbation|v[eé]rification|persetujuan|keamanan)\b", re.I)),
     ("forged_authority", re.compile(r"\b(?:considera|considere|consid[eé]rez|anggap|perlakukan)\b.{0,40}\b(?:mensaje|correo|message|courriel|pesan|email)\b.{0,40}\b(?:firma|autorizaci[oó]n|consentimiento|signature|autorisation|persetujuan|tanda\s+tangan)\b", re.I)),
     ("control_bypass", re.compile(r"(?:تجاوز|تخطى|تخطّي|عطّل|عطل|إلغاء|الغاء).{0,25}(?:الموافقة|موافقة|التفويض|التحقق|الأمان|الامان)|(?:بدون|دون).{0,15}(?:موافقة|تفويض|توقيع)")),
@@ -202,6 +205,25 @@ def _negated_at(value, start, end):
     return False
 
 
+_NONPAYMENT_ACCOUNT = re.compile(
+    r"\baccount\s+(?:managers?|administrators?|admins?|balances?|statements?|logins?)\b"
+    r"|\b(?:gestor[ae]?|responsable|administrateur)\s+de\s+(?:cuentas?|compte)\b"
+    r"|\b(?:manajer|pengelola|admin)\s+akun\b"
+    r"|账户(?:管理员|管理者|经理|余额)|ব্যাংক\s+ছুটি(?:র)?|बैंक\s+(?:अवकाश|छुट्टी)|مدير\s+الحساب",
+    re.I)
+_UNCHANGED_DESTINATION = re.compile(
+    r"\b(?:bank\s+(?:account|details)|payment\s+details|account\s+(?:number|details)|iban)\s+"
+    r"(?:(?:has|have)\s+not\s+changed|(?:is|are)\s+unchanged|remains?\s+(?:unchanged|the\s+same))\b", re.I)
+
+
+def _payment_context(value):
+    # Mask only the matched non-payment noun/predicate. Other destination-change
+    # requests in the same clause still warn; attack patterns see the original.
+    for pattern in (_NONPAYMENT_ACCOUNT, _UNCHANGED_DESTINATION):
+        value = pattern.sub(lambda m: " " * len(m.group()), value)
+    return value
+
+
 def scan_text(*values) -> list[str]:
     """Contextual warning signals; never a source of action authority.
 
@@ -218,10 +240,12 @@ def scan_text(*values) -> list[str]:
         scanned = _mask_rejected_questions(_mask_reported_quotes(value))
         local = []
         for clause in _CLAUSE_BOUNDARY.split(scanned):
+            payment_clause = _payment_context(clause)
             for name, pattern in INJECTION_PATTERNS:
                 if name == "role_marker":
                     continue  # Contextual gating below also covers multilingual headings.
-                if any(not _negated_at(clause, match.start(), match.end()) for match in pattern.finditer(clause)):
+                source = payment_clause if name in PAYMENT_REVIEW_FLAGS else clause
+                if any(not _negated_at(source, match.start(), match.end()) for match in pattern.finditer(source)):
                     if name not in local:
                         local.append(name)
         attack = any(name not in PAYMENT_REVIEW_FLAGS for name in local)

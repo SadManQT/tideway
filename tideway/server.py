@@ -26,6 +26,7 @@ from .vision import TideVision, TideVisionUnavailable
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = {"/": "index.html", "/index.html": "index.html", "/styles.css": "styles.css", "/app.js": "app.js",
           "/decision-lab.js": "decision-lab.js",
+          "/decision-review.js": "decision-review.js",
           "/owner-view.js": "owner-view.js", "/currency.js": "currency.js",
           "/quick-start.js": "quick-start.js",
           "/favicon.svg": "favicon.svg",

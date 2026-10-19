@@ -9,3 +9,7 @@
 *.webm binary
 *.zip binary
 *.sqlite3 binary
+
+# Hashed first-observation bytes must survive Git checkout unchanged.
+evidence/upgrade-v14/**/case-results.jsonl -text whitespace=trailing-space,space-before-tab,cr-at-eol
+evidence/upgrade-v14/baseline-runtime/* -text whitespace=-blank-at-eof

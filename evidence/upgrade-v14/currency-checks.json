@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "run_at": "2026-10-19T07:34:49.996Z",
+  "source_tree_sha256": "f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c",
+  "currencies": 29,
+  "currency_pairs": 841,
+  "canonical_roundtrip_cases": 5046,
+  "scope": "Exact illustrative arithmetic, draft preservation and presentation checks; no live FX quote, trade, model-quality score or human study."
+}

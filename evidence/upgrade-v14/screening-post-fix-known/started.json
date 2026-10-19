@@ -1,0 +1,30 @@
+{
+  "kind": "disclosed-development",
+  "started_at_utc": "2026-10-19T07:32:26.068922+00:00",
+  "fixture_sha256": "dd144c0a3c1377a968ae22483b29dbf0ce24ce3c9fd6b214c9c4254d6493f31e",
+  "fixture": "tests\\fixtures\\screening_regression_v14.json",
+  "classifier_files": {
+    "tideway\\screening.py": "adac801e21ec50497a2baf07158c5188e921ba8c24947d336c752f1e9bd5ecbd",
+    "tideway\\semantic_screening.py": "e22f314f96e621550ed8e7cec63a1b9e53cbb3ef17977d8cde7179de63ab2882",
+    "tideway\\tidelm.py": "84a50f429508c4570de5c430a196d6d74f661b8b192966ce765758b818a744b6"
+  },
+  "source_tree_sha256": "f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c",
+  "model_identity": {
+    "available": true,
+    "loaded": false,
+    "model": "Qwen3-4B-Instruct-2507-Q4_K_M",
+    "backend": "local-compatible",
+    "label": "Local model: Qwen3-4B-Instruct-2507-Q4_K_M (unbenchmarked)",
+    "evaluated_tidelm_adapter": false,
+    "reason": null
+  },
+  "external_evaluation": false,
+  "human_participants": 0,
+  "challenge_seal": null,
+  "author_scope": "All 168 disclosed v14 development and first-challenge cases. Post-fix regression, not unseen evaluation. Original first observations preserved.",
+  "limitations": [
+    "Synthetic convenience sample; no population accuracy claim.",
+    "Windows compatible GGUF runtime; not native MLX or adapter verification.",
+    "Warnings cannot authorize financial or ledger actions."
+  ]
+}

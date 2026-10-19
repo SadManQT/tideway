@@ -828,4 +828,20 @@ main.view-enter .brief.storm .weather-badge { animation: tw-pop .6s var(--ease-s
 .owner-option ul { padding-left:18px; }.owner-option .button { margin-top:auto; white-space:normal; }
 .owner-view p,.owner-view h2,.owner-view h3,.owner-view h4 { overflow-wrap:anywhere; }
 .owner-view[lang=bn] { line-height:1.75; }
+.receipt-review { padding:20px 0; border-bottom:1px solid var(--line,#cbd3e5); overflow-wrap:anywhere; }
+.receipt-review .row.between { align-items:flex-start; }
+.receipt-review h4 { font-size:18px; }
+.review-facts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin:18px 0; }
+.review-facts>div { min-width:0; }
+.review-facts dt { font-size:13px; color:var(--muted); }
+.review-facts dd { font-weight:700; margin:6px 0 0; overflow-wrap:anywhere; }
+.review-summary { background:var(--paper-soft,#f3f5fc); border:1px solid var(--line,#cbd3e5); border-radius:12px; padding:20px; margin-bottom:20px; overflow-wrap:anywhere; }
+.review-summary h4 { font-size:18px; }
+.review-risk { margin:16px 0; }
+.approve-summary .review-summary { padding:12px; margin-bottom:4px; }
+.approve-summary .review-summary h4 { font-size:15px; }
+.approve-summary .review-facts { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:12px 0; }
+.approve-summary .review-facts dt { font-size:12px; }
+.approve-summary .review-facts dd { font-size:13px; }
+@media(max-width:560px) { .review-facts { grid-template-columns:minmax(0,1fr); } .receipt-review .button { white-space:normal; } }
 @media(max-width:900px) { .owner-options,.owner-results { grid-template-columns:minmax(0,1fr); } }

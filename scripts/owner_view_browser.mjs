@@ -8,6 +8,11 @@ export async function checkOwnerView({evaluate,click,until,view,viewport,shot,ph
   const input = (name,value) => evaluate(`(()=>{const el=document.querySelector('[data-owner-field=${name}]');el.value=${JSON.stringify(value)};el.dispatchEvent(new Event('input',{bubbles:true}));})()`);
   if (!await evaluate("!!document.querySelector('.owner-view') && !state.ownerDetailed")) throw new Error('Simple Owner view is missing');
   const initial = await evaluate('state.dashboard.snapshot_hash');
+  if (!await evaluate("document.querySelector('.customer-review')?.textContent.includes('Will customer payments arrive before payroll?') && state.dashboard.owner_view.customer_receipts.every(r=>document.querySelector('.customer-review').textContent.includes(r.customer))")) throw new Error('Customer history/payroll explanation is missing');
+  const historyCustomer = await evaluate("document.querySelector('[data-action=owner-history]').dataset.customer");
+  await click('[data-action=owner-history]');
+  if (!await evaluate(`state.view==='records' && state.recordFilter==='invoice' && state.recordQuery===${JSON.stringify(historyCustomer)}`)) throw new Error('Customer payment history link failed');
+  await view('overview');
   await shot('40-owner-simple');
   await click('[data-action=owner-language]');
   if (!await evaluate("document.querySelector('.owner-view').lang==='bn' && document.querySelector('.owner-head').textContent.includes('সিদ্ধান্ত')")) throw new Error('Bengali Owner view failed');
@@ -22,6 +27,7 @@ export async function checkOwnerView({evaluate,click,until,view,viewport,shot,ph
   await evaluate("(()=>{window.fetch=window.__ownerFetch;delete window.__ownerFetch;document.querySelector('.owner-timeline').closest('details').open=true;})()");
   await evaluate("(()=>{const el=document.querySelector('#display-currency');el.value='USD';el.dispatchEvent(new Event('change',{bubbles:true}));})()");
   if (!await evaluate("document.querySelector('.owner-results').textContent.includes('USD') && document.querySelector('[data-owner-field=amount]').value==='10.12' && moneyDraft(document.querySelector('[data-owner-field=amount]')).minor===123456")) throw new Error('Selected-currency expense or exact underlying value is wrong');
+  if (!await evaluate("document.querySelector('.customer-review').textContent.includes('USD') && !document.querySelector('.customer-review').textContent.includes('BDT')")) throw new Error('Customer receipt explanation ignored selected currency');
   await evaluate("(()=>{const el=document.querySelector('#display-currency');el.value='';el.dispatchEvent(new Event('change',{bubbles:true}));})()");
   await evaluate("document.querySelector('.owner-timeline').closest('details').open=true");
   const source = await evaluate("document.querySelector('[data-action=owner-source]').dataset.id");
@@ -46,6 +52,13 @@ export async function checkOwnerView({evaluate,click,until,view,viewport,shot,ph
   await click('[data-action=owner-propose][data-priority=lowest_cost]');
   await until("state.view==='rescue' && !state.busy",'Fresh coach proposal',240);
   if (!await evaluate("state.dashboard.plan?.status==='pending' && !state.dashboard.plan.approvals.length && !state.dashboard.mandates.length")) throw new Error('Coach bypassed the normal approval boundary');
+  if (!await evaluate("(()=>{const b=state.dashboard.plan.bundles[0], el=document.querySelector('.bundle .review-summary');return el && el.querySelector('[data-review-value=cost]').textContent===money(b.economic_cost_minor) && el.querySelector('[data-review-value=cash]').textContent===money(b.after.minimum_cash_minor) && el.querySelector('[data-review-value=reserve]').textContent===money(b.after.reserve_floor_minor);})()")) throw new Error('Rescue cost/cash summary differs from stored proposal');
+  await click('.bundle [data-action=approve]');
+  if (!await evaluate("document.querySelector('#approve-dialog').open && document.querySelector('#approve-summary .review-summary')?.textContent.includes('Exposure is the amount affected') && !state.dashboard.plan.approvals.length")) throw new Error('Approval review summary is absent or approved automatically');
+  await shot('45-approval-decision-review');
+  await viewport(375,812,true);await phoneCheck('Cost and remaining-risk approval','#approve-dialog');await shot('46-approval-decision-mobile');
+  await click('#approve-form [data-close=approve-dialog]');await viewport(1440,900);
+  if (!await evaluate(`state.dashboard.snapshot_hash===${JSON.stringify(initial)} && !state.dashboard.plan.approvals.length && !state.dashboard.mandates.length`)) throw new Error('Opening or cancelling decision review changed authority or cash');
   await loginAs('guest','0000');await reload();
   if (await evaluate('state.ownerDetailed')) await click('[data-action=owner-simple]');
   await click('[data-action=owner-coach]');await idle();
