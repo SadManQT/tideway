@@ -328,7 +328,7 @@
   "collection_independently_verified": false,
   "metadata_followup": {
     "file": "session-metadata.json",
-    "sha256": "f54b291027f2ee678398df4a1a36b2f85aa74ddf0b147c4340669f82742148c5",
+    "sha256": "56355336716849464eb30d512def62bc5fc9028727e07a5b535dbe2d67ccf5e4",
     "initial_analysis_sha256": "0daef55a6103df71a4e01a82d8c2cd66735698f516a26ddacead7fb875a75d23",
     "scope": "Later team-reported metadata and corrected English; source CSV bytes and calculated observations are unchanged."
   },
@@ -341,7 +341,7 @@
     "current_runtime_artifacts": "verification/runtime-provenance.json",
     "related_application_tree": "verification/source-lineage.json",
     "historical_session_binding_verified": false,
-    "scope": "Current desktop artifact integrity is verified. The user identified historical survey commit 9dbe495, which exists and predates v14. Survey laptop browser version, runtime invocation logs and local code edits remain unverified."
+    "scope": "Current desktop artifact integrity is verified. The user identified survey commit 9dbe495 and laptop Edge 155.0.4283.45; the desktop capture remains Edge 155.0.4283.62. Survey runtime invocation logs and local code edits remain unverified."
   },
   "device_context_clarification": {
     "basis": "The user clarified that the survey was conducted on a laptop and current development/audit work is on a desktop PC.",
@@ -356,5 +356,11 @@
     "file": "reported-build.json",
     "sha256": "833231d7d9266dfe9dbb8b7c0069ec318645bf971dd19f5d44fad82a8671a9ab"
   },
-  "covers_v14_ui_upgrade": false
+  "covers_v14_ui_upgrade": false,
+  "reported_survey_browser": {
+    "name": "Microsoft Edge",
+    "version": "155.0.4283.45",
+    "device": "survey laptop",
+    "basis": "User report"
+  }
 }

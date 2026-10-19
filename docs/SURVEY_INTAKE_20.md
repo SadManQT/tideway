@@ -21,7 +21,7 @@ records its source, outstanding artifacts and scope.
 | Assistance | One fixed hint after 60 seconds stuck |
 | Failed and skipped tasks | Retained |
 | Device | Survey: Windows laptop, Intel Core i5, 16 GB RAM. The team explicitly clarified that current development/audit work is on a separate desktop PC |
-| OS and browser | Windows 11; Microsoft Edge. Historical survey-laptop version is unbound; current audit-machine version is captured separately below |
+| OS and browser | Windows 11; Microsoft Edge 155.0.4283.45 on the survey laptop, supplied by the user. The separate desktop capture is Edge 155.0.4283.62 |
 | Language and currency | Bangla or English, recorded per participant; BDT; selected-currency check included |
 | AI model | Qwen3-4B-Instruct-2507, Q4_K_M |
 | Runtime | llama.cpp b11678; local, inside Tideway through a loopback server |
@@ -64,9 +64,9 @@ has committed application snapshot digest
 It was calculated directly from Git blobs and does not assume absent local edits.
 This audit closes supplied-export linkage and current artifact measurement.
 The separate laptop and desktop explain the hardware difference. This audit
-records the user-identified checkout but cannot recover the laptop's historical
-browser version, local edits, model invocations or absent observation sheets
-from the desktop measurements.
+records the user-identified checkout and laptop browser version. It cannot
+recover local edits, model invocations or absent observation sheets from the
+desktop measurements.
 
 With the original private intake present, verify the capture using:
 

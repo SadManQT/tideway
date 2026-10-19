@@ -68,8 +68,9 @@ source exports, 40 row fingerprints, the reported overlap references, cached
 model/runtime hashes and related application trees. Current Edge 155.0.4283.62
 was measured on the desktop PC. The team confirmed that the survey used a
 separate laptop, explaining the hardware difference. The reported historical
-commit is resolved and its committed source is hashed; laptop browser/runtime
-invocations and local working-tree changes remain unverified.
+commit is resolved and its committed source is hashed. The user supplied laptop
+Edge version 155.0.4283.45; session runtime invocations and local working-tree
+changes remain unverified.
 
 The prediction cohort contains 80 new synthetic SMEs, four seeds and 7,427
 invoices after the shipped model's historical training period. No fresh labels

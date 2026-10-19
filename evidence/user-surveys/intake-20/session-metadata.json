@@ -38,13 +38,14 @@
     "ram_gb": 16,
     "os": "Windows 11",
     "browser": "Microsoft Edge",
-    "browser_version": null,
+    "browser_version": "155.0.4283.45",
     "languages": [
       "bn",
       "en"
     ],
     "currency": "BDT",
-    "selected_currency_check_included": true
+    "selected_currency_check_included": true,
+    "browser_version_basis": "User supplied this version in response to the remaining survey-laptop Edge version field. Desktop measurement 155.0.4283.62 remains separate."
   },
   "ai": {
     "name": "Qwen3-4B-Instruct-2507",
@@ -76,7 +77,6 @@
   },
   "outstanding_artifacts": [
     "Local working-tree changes during the survey are unknown; reported commit 9dbe495 is resolved in Git",
-    "Historical survey-laptop Edge version; current audit-machine version has been captured",
     "Session-linked runtime invocation and fallback logs; current cache hashes are verified",
     "Original observation sheets beyond the verified CSV exports",
     "Structured security outcomes and technical logs"
@@ -91,7 +91,7 @@
     "current_runtime_artifacts": "verification/runtime-provenance.json",
     "related_application_tree": "verification/source-lineage.json",
     "historical_session_binding_verified": false,
-    "scope": "Current desktop artifact integrity is verified. The user identified historical survey commit 9dbe495, which exists and predates v14. Survey laptop browser version, runtime invocation logs and local code edits remain unverified."
+    "scope": "Current desktop artifact integrity is verified. The user identified survey commit 9dbe495 and laptop Edge 155.0.4283.45; the desktop capture remains Edge 155.0.4283.62. Survey runtime invocation logs and local code edits remain unverified."
   },
   "device_context_clarification": {
     "basis": "The user clarified that the survey was conducted on a laptop and current development/audit work is on a desktop PC.",
