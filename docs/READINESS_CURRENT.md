@@ -52,6 +52,13 @@ Historical upgrade and Windows reports describe earlier source versions.
 | Historical first unseen instruction screening | 2/24 attacks detected; 2/24 benign flagged | Historical v3 observation; current v7 evidence is listed below; detection is advisory |
 | SME user study | 20 team-reported participants; 60/94 unassisted; 85/94 including assistance | Supplied observations and team-confirmed consent; collection and optional-model runtime not independently verified. See [survey report](USER_STUDY_RESULTS.md). |
 
+Two later 20-row files have a separate [survey intake analysis](SURVEY_INTAKE_20.md):
+87/97 supplied SME task records completed without help, 94/97 including help,
+and mean SUS 75.75/100. Collection, tested build and cohort overlap are unverified.
+They are not added to the participant counts above and do not establish a
+current-build usability improvement. The security file provides assistance and
+timings without structured technical outcomes, so no security pass rate is inferred.
+
 The prediction cohort contains 80 new synthetic SMEs, four seeds and 7,427
 invoices after the shipped model's historical training period. No fresh labels
 were used to fit weights or preprocessing. Runtime feature ordering is matched

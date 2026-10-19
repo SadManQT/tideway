@@ -1,0 +1,323 @@
+{
+  "schema_version": "tideway-survey-intake-analysis-v1",
+  "classification": "supplied_records_collection_unverified",
+  "sources": {
+    "sme": {
+      "filename": "sme-survey-20.csv",
+      "sha256": "c03c5de70709ada7bb8e9c268c31971f16d153b9b4975d78f3b9f4f8c95bedef",
+      "rows": 20,
+      "columns": [
+        "participant_id",
+        "role",
+        "language",
+        "consent",
+        "model_status",
+        "t1_status",
+        "t1_seconds",
+        "t2_status",
+        "t2_seconds",
+        "t3_status",
+        "t3_seconds",
+        "t4_status",
+        "t4_seconds",
+        "t5_status",
+        "t5_seconds",
+        "sus1",
+        "sus2",
+        "sus3",
+        "sus4",
+        "sus5",
+        "sus6",
+        "sus7",
+        "sus8",
+        "sus9",
+        "sus10"
+      ]
+    },
+    "security": {
+      "filename": "security-survey-20.csv",
+      "sha256": "09d4ed2f042b5b61355cba077902d0bf296e07a55a3aa8de31ada9b4f2ff8f02",
+      "rows": 20,
+      "columns": [
+        "participant_id",
+        "role",
+        "security_familiarity",
+        "confidence_before",
+        "confidence_after",
+        "sec01_assistance",
+        "sec01_seconds",
+        "sec02_assistance",
+        "sec02_seconds",
+        "sec03_assistance",
+        "sec03_seconds",
+        "sec04_assistance",
+        "sec04_seconds",
+        "sec05_assistance",
+        "sec05_seconds",
+        "observed_behavior"
+      ]
+    }
+  },
+  "analysis_source_tree_sha256": "f2ee85f656329ef4d0db2f01ec625373dc8e6284dfb5da3f340bf08b93cd741c",
+  "analysis_source_is_tested_build": false,
+  "survey_date": null,
+  "moderator": null,
+  "tested_commit": null,
+  "ai_model": {
+    "name": null,
+    "version": null,
+    "device": null,
+    "execution_context": null
+  },
+  "cohorts": {
+    "sme_records": 20,
+    "security_records": 20,
+    "overlap": null,
+    "unique_people": null,
+    "overlap_with_earlier_intake": null,
+    "merged_into_existing_study": false
+  },
+  "source_revision_note": "An earlier read in this intake showed SME consent=demo and security column example_behavior. The later supplied snapshots preserved here instead contain SME consent=YES and security column observed_behavior. The earlier bytes were not archived and their hashes are unknown. Changed labels alone do not establish collection provenance.",
+  "normalization": [
+    "SME consent YES is lowercased to yes in a temporary analysis copy only; archived source bytes are unchanged.",
+    "Security narratives and participant-level values are not exported publicly.",
+    "No missing dates, model details, security outcomes or cohort overlap are inferred."
+  ],
+  "sme": {
+    "schema_version": "tideway-user-study-v1",
+    "excluded_rows_without_consent": 0,
+    "roles": {
+      "accountant": 4,
+      "bookkeeper": 8,
+      "owner": 8
+    },
+    "tasks": {
+      "t1": {
+        "counts": {
+          "assisted": 1,
+          "completed": 19,
+          "failed": 0,
+          "not_attempted": 0,
+          "unavailable_model": 0
+        },
+        "attempted_denominator": 20,
+        "unassisted_completion": {
+          "numerator": 19,
+          "denominator": 20,
+          "rate": 0.95
+        },
+        "completion_including_assistance": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1.0
+        },
+        "timing_observations": 20,
+        "median_seconds": 96.5,
+        "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
+      },
+      "t2": {
+        "counts": {
+          "assisted": 2,
+          "completed": 17,
+          "failed": 1,
+          "not_attempted": 0,
+          "unavailable_model": 0
+        },
+        "attempted_denominator": 20,
+        "unassisted_completion": {
+          "numerator": 17,
+          "denominator": 20,
+          "rate": 0.85
+        },
+        "completion_including_assistance": {
+          "numerator": 19,
+          "denominator": 20,
+          "rate": 0.95
+        },
+        "timing_observations": 20,
+        "median_seconds": 92.0,
+        "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
+      },
+      "t3": {
+        "counts": {
+          "assisted": 1,
+          "completed": 16,
+          "failed": 0,
+          "not_attempted": 1,
+          "unavailable_model": 2
+        },
+        "attempted_denominator": 17,
+        "unassisted_completion": {
+          "numerator": 16,
+          "denominator": 17,
+          "rate": 0.9411764705882353
+        },
+        "completion_including_assistance": {
+          "numerator": 17,
+          "denominator": 17,
+          "rate": 1.0
+        },
+        "timing_observations": 17,
+        "median_seconds": 107.0,
+        "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
+      },
+      "t4": {
+        "counts": {
+          "assisted": 2,
+          "completed": 16,
+          "failed": 2,
+          "not_attempted": 0,
+          "unavailable_model": 0
+        },
+        "attempted_denominator": 20,
+        "unassisted_completion": {
+          "numerator": 16,
+          "denominator": 20,
+          "rate": 0.8
+        },
+        "completion_including_assistance": {
+          "numerator": 18,
+          "denominator": 20,
+          "rate": 0.9
+        },
+        "timing_observations": 20,
+        "median_seconds": 119.0,
+        "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
+      },
+      "t5": {
+        "counts": {
+          "assisted": 1,
+          "completed": 19,
+          "failed": 0,
+          "not_attempted": 0,
+          "unavailable_model": 0
+        },
+        "attempted_denominator": 20,
+        "unassisted_completion": {
+          "numerator": 19,
+          "denominator": 20,
+          "rate": 0.95
+        },
+        "completion_including_assistance": {
+          "numerator": 20,
+          "denominator": 20,
+          "rate": 1.0
+        },
+        "timing_observations": 20,
+        "median_seconds": 67.5,
+        "timing_note": "Median across observed attempted-task timings, including failures; missing timings are excluded, not replaced by zero."
+      }
+    },
+    "sus": {
+      "complete_responses": 20,
+      "partial_responses_not_scored": 0,
+      "missing_responses": 0,
+      "mean_score": 75.75,
+      "median_score": 76.25,
+      "scale": "0 to 100, not a percentage of tasks completed",
+      "formula": "2.5 * sum(odd response - 1, 5 - even response), one-based item numbering"
+    },
+    "limitations": [
+      "Descriptive calculations of supplied records; no new field session or verified participant count is established by this import.",
+      "Small convenience samples support exploratory feedback only, not representative usability or market-fit claims.",
+      "Unattempted and unavailable-model tasks are excluded from attempted-task denominators and reported separately.",
+      "Only complete ten-item SUS responses are scored; partial or missing responses produce no fabricated score.",
+      "Public output contains aggregates only: no participant IDs, raw rows, response items, free text, contact details or input paths."
+    ],
+    "status": "supplied_records_collection_unverified",
+    "consented_records": 20,
+    "consent_basis": "The supplied consent cell says YES; case is normalized only for analysis. This does not independently verify consent or collection.",
+    "source_sha256": "c03c5de70709ada7bb8e9c268c31971f16d153b9b4975d78f3b9f4f8c95bedef",
+    "overall": {
+      "attempted_tasks": 97,
+      "unassisted": 87,
+      "including_assistance": 94,
+      "unassisted_rate": 0.8969072164948454,
+      "including_assistance_rate": 0.9690721649484536
+    }
+  },
+  "security": {
+    "schema_version": "tideway-supplied-security-assistance-v1",
+    "status": "supplied_records_collection_unverified",
+    "record_count": 20,
+    "source_sha256": "09d4ed2f042b5b61355cba077902d0bf296e07a55a3aa8de31ada9b4f2ff8f02",
+    "roles": {
+      "accountant": 4,
+      "bookkeeper": 7,
+      "owner": 9
+    },
+    "security_familiarity": {
+      "basic": 9,
+      "beginner": 6,
+      "intermediate": 5
+    },
+    "consent_basis": "No consent column or session-specific confirmation accompanies this file; earlier survey consent is not assumed to cover this intake.",
+    "cases": {
+      "sec01": {
+        "records": 20,
+        "assistance": {
+          "prompted_once": 1,
+          "unassisted": 19
+        },
+        "measured_times": 20,
+        "median_seconds": 45.0,
+        "technical_outcome": null,
+        "technical_pass_rate": null
+      },
+      "sec02": {
+        "records": 20,
+        "assistance": {
+          "prompted_once": 2,
+          "unassisted": 18
+        },
+        "measured_times": 20,
+        "median_seconds": 62.5,
+        "technical_outcome": null,
+        "technical_pass_rate": null
+      },
+      "sec03": {
+        "records": 20,
+        "assistance": {
+          "prompted_once": 1,
+          "unassisted": 19
+        },
+        "measured_times": 20,
+        "median_seconds": 62.0,
+        "technical_outcome": null,
+        "technical_pass_rate": null
+      },
+      "sec04": {
+        "records": 20,
+        "assistance": {
+          "prompted_once": 1,
+          "unassisted": 19
+        },
+        "measured_times": 20,
+        "median_seconds": 53.5,
+        "technical_outcome": null,
+        "technical_pass_rate": null
+      },
+      "sec05": {
+        "records": 20,
+        "assistance": {
+          "prompted_once": 1,
+          "unassisted": 19
+        },
+        "measured_times": 20,
+        "median_seconds": 90.5,
+        "technical_outcome": null,
+        "technical_pass_rate": null
+      }
+    },
+    "confidence": {
+      "scale": "1 to 5, supplied self-report values",
+      "mean_before": 2.75,
+      "mean_after": 4,
+      "increased": 18,
+      "unchanged": 2,
+      "decreased": 0
+    },
+    "scope": "Assistance and timing records only. Explicit system outcomes, technical pass/fail fields, raw attack logs and reviewer qualifications were not supplied. No security pass rate or independent penetration-test claim can be calculated."
+  },
+  "interpretation": "This intake is separate from the earlier team-reported study. Counts describe rows in the supplied files, not independently verified new people, a verified current-build retest, or causal evidence of improvement."
+}

@@ -103,3 +103,12 @@ The [SME aggregate](../evidence/readiness-v3/user-study-status.json),
 [security aggregate](../evidence/user-surveys/security-summary.json) and
 [provenance](../evidence/user-surveys/provenance.json) retain the denominators and
 source basis. Public artifacts exclude raw narratives and the anonymous mapping.
+
+## Additional supplied records
+
+Two later files, `sme-survey-20.csv` and `security-survey-20.csv`, have a
+[separate intake report](SURVEY_INTAKE_20.md) and
+[aggregate analysis](../evidence/user-surveys/intake-20/analysis.json).
+Their session metadata, tested build and cohort overlap are unknown. Their rows
+are not merged into this report or counted as verified new participants. The
+original observations, source hashes and limitations above remain unchanged.
