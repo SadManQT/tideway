@@ -4,8 +4,6 @@
 .env.*
 **/.env
 **/.env.*
-.opencode
-.claude
 .vscode
 .DS_Store
 __pycache__

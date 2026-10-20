@@ -3,7 +3,7 @@ data/
 __pycache__/
 *.pyc
 evidence/private/
-.opencode/
+.DS_Store
 *.zip
 
 # Presentation dependency caches and intermediate production files.

@@ -425,10 +425,17 @@ class Agent:
         customers = {row["customer"] for row in snapshot["records"]["invoices"]}
         named = next((c for c in sorted(customers, key=len, reverse=True) if c.casefold() in text), None)
         small = conversation.classify(message)
+        lang = i18n.detect(message)
+        # Questions in Chinese, Spanish, French, Portuguese, Indonesian, Hinglish or Banglish: the same tools as
+        # the English rules below, answered in the question's language.  Names come only from the ledger.
+        kind, details = (None, {}) if small else conversation.intent(message, sorted(customers), lang)
         topic, focus = None, named
         if small:
             answer = conversation.small_talk(small, conversation.situation(self.app, business_id, target_date), name,
-                                             i18n.detect(message))
+                                             lang)
+        elif kind:
+            answer, topic, focus = self._localized(kind, details, business_id, target_date, target, snapshot, lang,
+                                                   role, actor, trace)
         elif re.search(r"\b(approve|execute|transfer|wire|send money|pay (the )?(supplier|bill|now|them)|release)\b", text):
             answer = ("I can't approve, execute or move money; that is deliberate. I can build a proposal. A person must "
                       "review it, enter their PIN and approve. Above the dual-approval threshold a second person must approve too.")
@@ -523,12 +530,87 @@ class Agent:
             answer = (f"Scheduled lowest cash is {money_text(projections['base']['minimum_cash_minor'], currency)}; based on "
                       f"customers' habits it is {money_text(likely['minimum_cash_minor'], currency)} on {human_date(likely['minimum_cash_date'])}.")
         else:
-            answer = conversation.not_understood(conversation.situation(self.app, business_id, target_date))
+            answer = conversation.not_understood(conversation.situation(self.app, business_id, target_date), lang)
         self.store.audit(business_id, "agent.answer", actor, "agent_read", {"mode": "local", "tools": [item["tool"] for item in trace]})
         follow = conversation.suggestions(conversation.situation(self.app, business_id, target_date), topic, focus,
-                                          exclude=(message.strip(),))
+                                          exclude=(message.strip(),), lang=lang)
         return {"text": answer, "mode": "local", "mode_label": "Deterministic assistant (no model inference)",
-                "model_called": False, "trace": trace, "unverified_numbers": [], "suggestions": follow}
+                "model_called": False, "trace": trace, "unverified_numbers": [], "suggestions": follow, "lang": lang}
+
+    def _localized(self, kind, details, business_id, target_date, target, snapshot, lang, role, actor, trace):
+        """(answer, topic, focus) for a recognised non-English question, from the tools the English rules use."""
+        currency, t = snapshot["business"]["currency"], i18n.t
+        customers = sorted({row["customer"] for row in snapshot["records"]["invoices"]})
+        joiner, stop = ("\uff1b", "\u3002") if lang == "zh" else ("; ", ".")
+        if kind == "unknown_customer":
+            return t(lang, "no_customer", names=", ".join(customers[:20]) or "-"), None, None
+        if kind == "refuse":
+            return t(lang, "refuse_money"), None, None
+        if kind == "whatif":
+            delays = {copilot.resolve_name(who, customers): days for who, days in details["delays"].items()}
+            result = self.app.what_if(business_id, target, {"customer_delays": delays})
+            trace.append({"tool": "what_if", "permission": "agent_read"})
+            baseline = summary(self.app.analysis(business_id, target_date)["projections"]["likely"])
+            who, days = next(iter(delays.items()))
+            label = f"If {who} pays {days} days later than expected" if len(delays) == 1 else None
+            return conversation.whatif_text(result["projection"], baseline, currency, lang, label=label), "whatif", who
+        if kind == "payroll":
+            projections = self.tool("project_cash", business_id, target, actor, trace)
+            risk = self.tool("simulate_risk", business_id, target, actor, trace)
+            return copilot.reply_from_results([{"tool": "project_cash", "result": projections["base"]},
+                                               {"tool": "simulate_risk", "result": risk}], currency, lang), "payroll", None
+        if kind == "risk":
+            risk = self.tool("simulate_risk", business_id, target, actor, trace)
+            return copilot.reply_from_results([{"tool": "simulate_risk", "result": risk}], currency, lang), "risk", None
+        if kind in ("forecast", "stress"):
+            projections = self.tool("project_cash", business_id, target, actor, trace)
+            scenarios = ("stress",) if kind == "stress" else ("base", "likely")
+            return copilot.reply_from_results([{"tool": "project_cash", "result": projections[scenario]}
+                                               for scenario in scenarios], currency, lang), "forecast", None
+        if kind == "network":
+            network = self.app.network(business_id, target_date)
+            trace.append({"tool": "counterparty_risk", "permission": "agent_read"})
+            result = {"customers": network["customers"][:3], "suppliers": network["suppliers"],
+                      "end_date": network["baseline"]["end_date"]}
+            return copilot.reply_from_results([{"tool": "counterparty_risk", "result": result}], currency, lang), "receivables", None
+        if kind == "late":
+            profiles = self.tool("profile_customers", business_id, target, actor, trace)
+            ranked = sorted(profiles["customers"], key=lambda item: -item["open_exposure_minor"])
+            parts = [t(lang, "customer", who=item["customer"], grade=item["grade"], late=_delay(item),
+                       open=money_text(item["open_exposure_minor"], currency)) for item in ranked if item["open_exposure_minor"]]
+            return (joiner.join(parts) + stop if parts else t(lang, "network_empty")), "receivables", None
+        if kind == "customer":
+            who = copilot.resolve_name(details["customer"], customers)
+            report = copilot.customer_report(self.app, business_id, who)
+            trace.append({"tool": "customer_report", "permission": "agent_read"})
+            return copilot.reply_from_results([{"tool": "customer_report", "result": report}], currency, lang), "customer", who
+        if kind == "credit":
+            who = copilot.resolve_name(details["customer"], customers)
+            check = copilot.credit_check(self.app, business_id, who, details["amount"], details["days"], target_date, lang)
+            trace.append({"tool": "credit_check", "permission": "agent_read"})
+            return copilot.reply_from_results([{"tool": "credit_check", "result": check}], currency, lang), "credit", who
+        if kind == "security":
+            self.tool("check_security", business_id, target, actor, trace)
+            derived = self.store.derived(snapshot)
+            result = {"agent_paused": snapshot["policy"]["agent_paused"],
+                      "blocked": [{"bill_id": item["bill_id"], "payee": item["payee"], "kind": "changed_account"}
+                                  for item in derived["payees"]["flagged"]] +
+                                 [{"bill_id": item["bill_id"], "payee": item["payee"], "kind": "lookalike",
+                                   "similar_to": item["similar_to"]} for item in derived["payees"]["lookalikes"]],
+                      "quarantined_records": sum(bool(row.get("risk_flags")) for rows in snapshot["records"].values()
+                                                 for row in rows)}
+            return copilot.reply_from_results([{"tool": "security_check", "result": result}], currency, lang), "security", None
+        if kind == "explain":
+            return conversation.explain_choice(self.store.latest_plan(business_id, target), currency, lang), "plan", None
+        if kind == "plan":
+            if role not in PLANNER_ROLES:
+                return t(lang, "viewer"), None, None
+            plan = self.tool("compare_plans", business_id, target, actor, trace)
+            row = self.store.latest_plan(business_id, target)
+            text = (conversation.plan_summary(row, currency, lang) if row and row.get("plan_id") == plan["plan_id"]
+                    else plan["explanation"])
+            return text, "plan", None
+        return conversation.not_understood(conversation.situation(self.app, business_id, target_date), lang), None, None
 
     def _llm(self, business_id, target_date, message, history, actor, role="owner"):
         allowed = TOOL_NAMES if role in PLANNER_ROLES else tuple(name for name in TOOL_NAMES if name != "compare_plans")

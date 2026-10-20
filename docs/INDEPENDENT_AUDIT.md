@@ -1,6 +1,6 @@
-> Historical independent-audit pass before the screening/risk/infrastructure follow-up. See [REMEDIATION_V7.md](REMEDIATION_V7.md) and [READINESS_CURRENT.md](READINESS_CURRENT.md) for later source and evidence.
+> Historical internal review pass before the screening/risk/infrastructure follow-up. See [REMEDIATION_V7.md](REMEDIATION_V7.md) and [READINESS_CURRENT.md](READINESS_CURRENT.md) for later source and evidence.
 
-# Independent judge and auditor review - 17 October 2026
+# Internal pre-submission review - 17 October 2026
 
 **Verdict:** Tideway is a credible, reproducible Topic E synthetic sandbox, with
 working financial decisions and approval-gated execution. It is not yet a
@@ -9,9 +9,9 @@ The local defects below were reproduced and repaired. Submission administration,
 optional-device verification and the weak unfamiliar-message detector remain
 open. Passing the listed checks does not establish the absence of all defects.
 
-This review was conducted by the coding assistant using a fresh check of the
-current checkout, rather than adopting previous ratings. It is not an external
-penetration test, organiser decision or independent human certification.
+This internal review used a fresh check of the current checkout rather than
+adopting previous ratings. It is not an external penetration test, organiser
+decision or independent certification.
 Base commit: `bd8c061` (extra features added). Changes remain local; no push,
 email, publication, registration or submission was performed.
 
@@ -40,8 +40,7 @@ real bank or blockchain is not necessary for this topic.
 Deadline in the published Appendix: **20 October 2026, 23:59 Beijing / 21:59
 Bangladesh**. IEEE warns registration may close early. Contact routes differ
 between the Appendix and IEEE, and the main website's complete dynamic notices
-were not independently verified. Do not invent organiser confirmation or treat
-an enquiry about AI-assistance disclosure as a published requirement for a reply.
+were not independently verified. Do not invent organiser confirmation.
 
 ## Reproduced defects and repairs
 

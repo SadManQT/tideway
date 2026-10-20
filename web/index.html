@@ -8,12 +8,16 @@
   <title>Tideway: approval-gated cash-flow rescue</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/helper.css">
   <script src="/quick-start.js" defer></script>
   <script src="/currency.js" defer></script>
   <script src="/decision-lab.js" defer></script>
+  <script src="/treasury.js" defer></script>
+  <script src="/portfolio.js" defer></script>
   <script src="/decision-review.js" defer></script>
   <script src="/owner-view.js" defer></script>
   <script src="/app.js" defer></script>
+  <script src="/helper.js" defer></script>
 </head>
 <body>
   <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -22,6 +26,7 @@
     <symbol id="i-rescue" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/><path d="m6.3 6.3 3.2 3.2m5 5 3.2 3.2m0-11.4-3.2 3.2m-5 5-3.2 3.2"/></symbol>
     <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></symbol>
     <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10m4 0h2M4 17h4m4 0h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></symbol>
+    <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5M4.5 10v8m5-8v8m5-8v8m5-8v8M3 20h18"/></symbol>
     <symbol id="i-records" viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></symbol>
     <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21z"/><path d="M4 5.5v15M8 7h8M8 11h8"/></symbol>
     <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8.5 11.5 2.5 2.5 4.5-4.5"/></symbol>
@@ -39,6 +44,7 @@
     <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12 20 4l-6 16-3-7z"/></symbol>
     <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M4 13 6.5 5h11L20 13v6H4z"/><path d="M4 13h5l1 2h4l1-2h5"/></symbol>
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.3 6.2L21 12l-6.7 2.8L12 21l-2.3-6.2L3 12l6.7-2.8z"/></symbol>
+    <symbol id="i-radar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><path d="M12 12 18.4 5.6"/><circle cx="15.5" cy="9" r="1"/></symbol>
   </svg>
 
   <div id="login" class="landing" hidden>
@@ -169,6 +175,8 @@
         <button class="nav-item" data-view="inbox"><svg class="icon"><use href="#i-inbox"/></svg><span>Inbox</span></button>
         <button class="nav-item" data-view="whatif"><svg class="icon"><use href="#i-sliders"/></svg><span>What-if</span></button>
         <button class="nav-item" data-view="lab"><svg class="icon"><use href="#i-sliders"/></svg><span>Decision lab</span></button>
+        <button class="nav-item" data-view="treasury"><svg class="icon"><use href="#i-bank"/></svg><span>Treasury</span></button>
+        <button class="nav-item" data-view="portfolio"><svg class="icon"><use href="#i-radar"/></svg><span>Portfolio radar</span></button>
         <button class="nav-item" data-view="records"><svg class="icon"><use href="#i-records"/></svg><span>Records</span></button>
         <button class="nav-item" data-view="team"><svg class="icon"><use href="#i-user"/></svg><span>Team</span></button>
         <button class="nav-item" data-view="security"><svg class="icon"><use href="#i-shield"/></svg><span>Security centre</span></button>

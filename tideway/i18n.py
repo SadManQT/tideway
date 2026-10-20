@@ -43,7 +43,9 @@ _WORDS["en"] += (" ekta banao bad dao ke er beshi na jhuki kom hok keno ei baki 
                  "pore khoroch korle dite parbo beton obostha ki hobe koto shomoymoto kagoj shobaike reminder ek ko mat poochho "
                  "se zyada nahi yeh kyun ka maal din udhaar du kya hai kitna agar kare to bhejo abhi karta pe hoga kharch karu "
                  "paisa sab kaun chahiye kam salary staff customer customers plan e")
-_WORDS["es"] += " que pague"
+_WORDS["es"] += " que pague retraso"
+_WORDS["pt"] += " atrasado atrasada"
+_WORDS["id"] += " terlambat"
 _WORDS = {lang: set(words.split()) for lang, words in _WORDS.items()}
 _MARKS = {"es": "ñ¿¡", "pt": "ãõ", "fr": "èàùâîûœ"}
 
@@ -194,6 +196,17 @@ M = {
                "fr": "Les lecteurs peuvent consulter prévisions et rapports, mais seuls le propriétaire ou le comptable peuvent demander des plans ou des relances.",
                "pt": "Visualizadores podem ler previsões e relatórios, mas só o dono ou o contador podem pedir planos ou lembretes.",
                "id": "Peninjau dapat membaca proyeksi dan laporan, tetapi hanya pemilik atau akuntan yang dapat meminta rencana atau pengingat."},
+    "no_customer": {"en": "I couldn't match a customer in that question to this business's ledger, so I won't guess. "
+                          "Use the ledger spelling: {names}.",
+                    "zh": "问题中的客户与本企业账本不符，我不会猜测。请使用账本中的名称：{names}。",
+                    "es": "No encontré a ese cliente en el libro de esta empresa, así que no voy a adivinar. "
+                          "Usa el nombre como figura en el libro: {names}.",
+                    "fr": "Je ne trouve pas ce client dans le registre de cette entreprise, je ne devine donc pas. "
+                          "Utilisez le nom tel qu'il figure au registre : {names}.",
+                    "pt": "Não encontrei esse cliente no livro desta empresa, então não vou adivinhar. "
+                          "Use o nome como está no livro: {names}.",
+                    "id": "Saya tidak menemukan pelanggan itu di buku besar bisnis ini, jadi saya tidak menebak. "
+                          "Gunakan ejaan di buku besar: {names}."},
     "unsafe": {"en": "I couldn't do that safely: {reason}", "zh": "我无法安全地完成：{reason}",
                "es": "No pude hacerlo de forma segura: {reason}", "fr": "Je n'ai pas pu le faire en toute sécurité : {reason}",
                "pt": "Não consegui fazer isso com segurança: {reason}", "id": "Saya tidak bisa melakukannya dengan aman: {reason}"},

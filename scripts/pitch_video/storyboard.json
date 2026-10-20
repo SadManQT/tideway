@@ -1,0 +1,352 @@
+{
+  "_about": "Tideway pitch video storyboard. Scenes play in order. kind=slide renders slide.html; kind=app drives the live app. 'setup' steps run before recording starts; 'steps' are recorded. A step's 'at' (0-1) delays it until that fraction of the scene's narration. 'requires' is a CSS selector that must exist (checked after setup) or the scene is skipped when 'optional' is true. 'enabled': false skips a scene entirely. Narration must stay true to README/docs.",
+  "title": "Tideway: AI as a financial participant, with people in charge",
+  "voice": "en-US-AndrewNeural",
+  "rate": "+4%",
+  "max_seconds": 295,
+  "timing": {"fps":30,"lead":0.35,"tail":0.55,"xfade":0.5,"width":1280,"height":720,"scale":1.5},
+  "scenes": [
+    {
+      "id": "hook",
+      "kind": "slide",
+      "narration": "A profitable small business can still run out of cash. Payroll is due at the end of the month, but the customer payment that should cover it arrives weeks late. Most owners only see that gap when it is already too late to act.",
+      "slide": {
+        "layout": "hero",
+        "kicker": "FinTechathon 2026 · Topic E · SME Finance Copilot",
+        "title": "Profitable on paper.|Short on payroll day.",
+        "subtitle": "Customers pay late, bills do not wait, and the cash gap stays invisible until it hits.",
+        "chips": ["Payroll due 31 Oct","Invoice paid 3 weeks late","Reserve breached"]
+      }
+    },
+    {
+      "id": "one-line",
+      "kind": "slide",
+      "narration": "Tideway makes AI a financial participant, with hard limits. The agent can read, analyse and propose, but never approve or execute. People approve with a PIN, under a signed, scoped mandate. Everything runs in a synthetic sandbox, with no real money.",
+      "slide": {
+        "layout": "cards",
+        "kicker": "Tideway in one line",
+        "title": "An AI that proposes.|People who decide.",
+        "items": [
+          {"tag":"Agent","h":"Reads, analyses, proposes","p":"Projects cash, simulates risk, searches recovery options and negotiates with simulated counterparties."},
+          {"tag":"Human","h":"Approves with a PIN","p":"Maker-checker approval. Large amounts need two people, including the owner."},
+          {"tag":"Mandate","h":"Signed, scoped, expiring","p":"HMAC-signed and bound to the exact actions. Executed once in the sandbox, then read back."}
+        ],
+        "footnote": "Synthetic sandbox: fictional businesses, no real money, no bank, lender, supplier or customer connected."
+      }
+    },
+    {
+      "id": "landing",
+      "kind": "app",
+      "setup": [
+        {"do":"navigate","url":"/","ready":"document.querySelectorAll('[data-action=demo-login]').length===3"},
+        {"do":"storage","key":"tideway.help.v1","value":"off"},
+        {"do":"eval","js":"window.scrollTo(0,0),true"},
+        {"do":"pause","ms":600}
+      ],
+      "narration": "This is the live prototype. From the landing page, one click signs us in as Nadia, the owner of Shapla Services, a fictional services business in Bangladesh.",
+      "steps": [
+        {"do":"pause","ms":1500},
+        {"do":"scroll","selector":"#demo","block":"center","at":0.25},
+        {"do":"highlight","selector":"[data-action=demo-login][data-id=nadia]","ms":1600,"at":0.55},
+        {"do":"click","selector":"[data-action=demo-login][data-id=nadia]","highlight":false},
+        {"do":"wait","for":"!!document.querySelector('#view .owner-view, #view .metric') && !state.busy"},
+        {"do":"eval","js":"(()=>{const t=document.querySelector('[data-quick-start-toggle]');if(t&&t.getAttribute('aria-expanded')==='true')t.click();return true;})()"}
+      ]
+    },
+    {
+      "id": "cash-weather",
+      "kind": "app",
+      "setup": [
+        {"do":"eval","js":"(()=>{const t=document.querySelector('[data-quick-start-toggle]');if(t&&t.getAttribute('aria-expanded')==='true')t.click();return true;})()"},
+        {"do":"view","name":"overview"},
+        {"do":"eval","js":"(()=>{const b=document.querySelector('[data-action=owner-detailed]');if(b)b.click();return true;})()"},
+        {"do":"wait","for":"!state.busy && !!document.querySelector('#view .metric')"},
+        {"do":"scroll","selector":"#view .metric","block":"center"},
+        {"do":"pause","ms":400}
+      ],
+      "narration": "Cash weather projects every receipt and bill under scheduled, likely and stress scenarios, with a fourteen-day look-ahead. Cash breaches the reserve on payroll day, and the seeded risk simulation finds a breach in every run. TidePay, our payment-timing model, shows why: these customers usually pay late.",
+      "steps": [
+        {"do":"pause","ms":500},
+        {"do":"scroll","by":620,"at":0.3},
+        {"do":"scroll","by":620,"at":0.62},
+        {"do":"pause","ms":600}
+      ]
+    },
+    {
+      "id": "ask",
+      "kind": "app",
+      "setup": [
+        {"do":"view","name":"assistant"}
+      ],
+      "narration": "Owners can simply ask. Greet Tideway in Chinese, and it replies in Chinese with a cash briefing built from its own tools. Ask it to pay a supplier, and it refuses: there is no payment tool. With TideLM, our on-device model, full questions work in eight languages.",
+      "steps": [
+        {"do":"pause","ms":600},
+        {"do":"type","selector":"#chat-input","text":"你好","cps":4},
+        {"do":"submit","selector":"#chat-form"},
+        {"do":"wait","for":"!state.busy && state.chat.length>=2 && !state.chat.some(i=>i.pending)","timeout":60000},
+        {"do":"type","selector":"#chat-input","text":"Approve the plan and pay the supplier","cps":26,"at":0.42},
+        {"do":"submit","selector":"#chat-form"},
+        {"do":"wait","for":"!state.busy && state.chat.length>=4 && !state.chat.some(i=>i.pending)","timeout":60000}
+      ]
+    },
+    {
+      "id": "rescue-propose",
+      "kind": "app",
+      "setup": [
+        {"do":"view","name":"rescue"}
+      ],
+      "narration": "The rescue agent simulates risk and searches every bounded combination of supplier deferrals, early-payment discounts and reminders, logging each step with its permission tier. It proposes a bundle, with the remaining risk shown, but cannot approve it.",
+      "steps": [
+        {"do":"pause","ms":600},
+        {"do":"click","selector":"[data-action=run-agent]"},
+        {"do":"wait","for":"!!document.querySelector('.timeline') && !!document.querySelector('[data-action=approve]')","timeout":60000},
+        {"do":"pause","ms":800},
+        {"do":"scroll","selector":".timeline","block":"start","offset":20,"at":0.35},
+        {"do":"scroll","selector":"[data-action=approve]","block":"center","at":0.7}
+      ]
+    },
+    {
+      "id": "rescue-approve",
+      "kind": "app",
+      "narration": "Nadia reviews exactly what she is approving, types the total exposure, and steps up with her PIN. Because the amount is large, a second person must approve too.",
+      "steps": [
+        {"do":"click","selector":"[data-action=approve]"},
+        {"do":"wait","for":"document.querySelector('#approve-dialog').open"},
+        {"do":"pause","ms":1200},
+        {"do":"eval","js":"(()=>{const m=document.querySelector('#approve-summary').textContent.match(/Total exposure\\s*(BDT\\s?[\\d,]+)/);window.__pvAmount=m?m[1]:'';return true;})()"},
+        {"do":"eval","js":"(async()=>{const el=document.querySelector('#confirm-amount');el.focus();el.value='';for(const ch of window.__pvAmount){el.value+=ch;el.dispatchEvent(new Event('input',{bubbles:true}));await new Promise(r=>setTimeout(r,90));}return true;})()","at":0.3},
+        {"do":"type","selector":"#approve-pin","text":"2468","cps":5},
+        {"do":"eval","js":"(()=>{const l=document.querySelector('#approve-risk-label');if(l&&!l.hidden){const c=document.querySelector('#approve-risk-ack');if(!c.checked)c.click();}return true;})()"},
+        {"do":"pause","ms":3600},
+        {"do":"eval","js":"document.querySelector('#approve-form').requestSubmit(),true"},
+        {"do":"wait","for":"!document.querySelector('#approve-dialog').open"},
+        {"do":"pause","ms":600}
+      ]
+    },
+    {
+      "id": "rescue-execute",
+      "kind": "app",
+      "setup": [
+        {"do":"login","id":"imran","pin":"1357"},
+        {"do":"eval","js":"(async()=>{const d=state.dashboard;const plan=d.plan;const approved=new Set((plan.approvals||[]).map(a=>a.bundle_id));const bundle=plan.bundles.find(b=>approved.has(b.bundle_id))||plan.bundles.find(b=>b.feasible);const ack=bundle.probability_breach_after>plan.risk_target?{acknowledged:true,plan_id:plan.plan_id,plan_hash:plan.plan_hash,bundle_id:bundle.bundle_id,probability_breach_after:bundle.probability_breach_after,risk_target:plan.risk_target}:null;const c=await(await fetch('/api/config')).json();const r=await fetch('/api/plan/approve',{method:'POST',headers:{'Content-Type':'application/json','X-Tideway-Token':c.csrf_token},body:JSON.stringify({business_id:state.businessId,plan_id:plan.plan_id,bundle_id:bundle.bundle_id,pin:'1357',review_ms:9000,confirm_amount_minor:bundle.exposure_minor,risk_acknowledgement:ack})});const a=await r.json();if(!r.ok)throw new Error(a.error);return a.status;})()"},
+        {"do":"login","id":"nadia","pin":"2468"},
+        {"do":"view","name":"rescue"},
+        {"do":"wait","for":"!!document.querySelector('[data-action=negotiate], [data-action=execute]')"},
+        {"do":"scroll","selector":"[data-action=negotiate], [data-action=execute]","block":"center"}
+      ],
+      "narration": "After Imran, the accountant, gives the second approval, Tideway issues an HMAC-signed mandate bound to these exact actions. Simulated counterparties agree, and the mandate executes once in the sandbox, verified by read-back.",
+      "steps": [
+        {"do":"pause","ms":900},
+        {"do":"click","selector":"[data-action=negotiate]","optional":true,"at":0.25},
+        {"do":"wait","for":"!!document.querySelector('[data-action=execute]')","timeout":60000},
+        {"do":"scroll","selector":"[data-action=execute]","block":"center"},
+        {"do":"click","selector":"[data-action=execute]","at":0.6},
+        {"do":"wait","for":"!!document.querySelector('.receipt')","timeout":60000},
+        {"do":"scroll","selector":".receipt","block":"start","offset":20}
+      ]
+    },
+    {
+      "id": "quarantine",
+      "kind": "app",
+      "setup": [
+        {"do":"eval","js":"(()=>{const s=document.querySelector(\"#business-select\");s.value=\"harbourline-traders\";s.dispatchEvent(new Event(\"change\",{bubbles:true}));return true;})()"},
+        {"do":"wait","for":"document.querySelector(\"#eyebrow\").textContent.includes(\"Harbourline\") && !state.busy","timeout":30000},
+        {"do":"view","name":"records"},
+        {"do":"eval","js":"(()=>{const s=document.querySelector(\"#record-filter\");s.value=\"flagged\";s.dispatchEvent(new Event(\"change\",{bubbles:true}));return true;})()"},
+        {"do":"wait","for":"!!document.querySelector(\"tr.flagged\")"},
+        {"do":"scroll","selector":"#record-filter","block":"start","offset":30}
+      ],
+      "narration": "Message text never carries authority. Harbourline Traders, a fictional wholesaler, has a poisoned bill whose text tries to give instructions, a changed bank account and a look-alike payee. Tideway quarantines the text as data and blocks every action on those bills.",
+      "steps": [
+        {"do":"pause","ms":900},
+        {"do":"highlight","selector":"tr.flagged","ms":2200,"at":0.25},
+        {"do":"highlight","selector":"tr.flagged .tag.bad","ms":2000,"at":0.6}
+      ]
+    },
+    {
+      "id": "help-layer",
+      "kind": "app",
+      "setup": [
+        {"do":"eval","js":"(()=>{const s=document.querySelector(\"#business-select\");s.value=\"shapla-services\";s.dispatchEvent(new Event(\"change\",{bubbles:true}));return true;})()"},
+        {"do":"wait","for":"document.querySelector(\"#eyebrow\").textContent.includes(\"Shapla\") && !state.busy","timeout":30000},
+        {"do":"storage","key":"tideway.help.v1","value":"on"},
+        {"do":"reload"},
+        {"do":"view","name":"overview"},
+        {"do":"eval","js":"(()=>{const b=document.querySelector('[data-action=owner-simple]');if(b)b.click();return true;})()"},
+        {"do":"wait","for":"!state.busy"},
+        {"do":"pause","ms":500}
+      ],
+      "requires": "[data-help-tool=tour]",
+      "optional": true,
+      "narration": "Every page also explains itself in plain words. A short tour walks through the app, and financial terms carry a plain-English explanation, so anyone in the company can use it.",
+      "steps": [
+        {"do":"highlight","selector":"#tw-page-help","ms":1600},
+        {"do":"click","selector":"[data-help-tool=tour]","at":0.2},
+        {"do":"wait","for":"!!document.querySelector('#tw-tour')"},
+        {"do":"pause","ms":1600},
+        {"do":"click","selector":"#tw-tour [data-tour=next]"},
+        {"do":"pause","ms":1600},
+        {"do":"click","selector":"#tw-tour [data-tour=end]","highlight":false,"at":0.6},
+        {"do":"hover","selector":"#view .tw-term","click":true},
+        {"do":"pause","ms":1200}
+      ]
+    },
+    {
+      "id": "security",
+      "kind": "app",
+      "setup": [
+        {"do":"storage","key":"tideway.help.v1","value":"off"},
+        {"do":"reload"},
+        {"do":"view","name":"security"},
+        {"do":"click","selector":"[data-action=selftest]","highlight":false},
+        {"do":"wait","for":"!!document.querySelector(\".scorecard\") && !state.busy","timeout":120000},
+        {"do":"eval","js":"window.scrollTo(0,0),true"}
+      ],
+      "narration": "The security centre runs a self-test of five tasks and twenty-five attacks, assuming a hijacked model and a rubber-stamp human. Every attack in the scorecard is blocked, and a kill switch can pause the agent instantly.",
+      "steps": [
+        {"do":"pause","ms":700},
+        {"do":"scroll","selector":".scorecard","block":"start","offset":150,"at":0.15},
+        {"do":"highlight","selector":".scorecard","ms":2200,"at":0.35},
+        {"do":"scroll","by":420,"at":0.7}
+      ]
+    },
+    {
+      "id": "evidence",
+      "kind": "app",
+      "setup": [
+        {"do":"view","name":"evidence"}
+      ],
+      "narration": "Every step lands in a hash-chained audit log with a separately keyed witness. The tamper drill edits a safe copy, and verification breaks at the exact entry that changed. Tamper-evident, not tamper-proof.",
+      "steps": [
+        {"do":"pause","ms":900},
+        {"do":"click","selector":"[data-action=drill]","at":0.3},
+        {"do":"wait","for":"document.body.textContent.includes('verification breaks at entry')","timeout":30000},
+        {"do":"eval","js":"(()=>{const w=document.evaluate(\"//*[contains(text(),'verification breaks at entry')]\",document,null,9,null).singleNodeValue;if(w)w.scrollIntoView({block:'center',behavior:'smooth'});return true;})()"}
+      ]
+    },
+    {
+      "id": "decision-lab",
+      "kind": "app",
+      "setup": [
+        {"do":"view","name":"lab"}
+      ],
+      "narration": "The decision lab stress-tests a plan before anyone acts. Here it finds the smallest customer delay that breaks the plan, with a one-day-less witness. Lab tools only read and compare; they never approve or execute.",
+      "steps": [
+        {"do":"pause","ms":700},
+        {"do":"click","selector":"[data-action=lab-reverse]"},
+        {"do":"wait","for":"!document.querySelector('.lab-tabs button:disabled') && document.querySelector('.lab-panel').textContent.includes('one-day-less')","timeout":60000},
+        {"do":"scroll","selector":".lab-panel table, .lab-panel","block":"start","offset":40,"at":0.45}
+      ]
+    },
+    {
+      "id": "treasury",
+      "kind": "app",
+      "optional": true,
+      "requires": "[data-view=treasury]",
+      "setup": [
+        {"do":"view","name":"treasury"},
+        {"do":"wait","for":"!state.busy && !!document.querySelector(\"[data-action=treasury-tab]\") && !document.querySelector(\"[data-action=treasury-tab]:disabled\")","timeout":60000}
+      ],
+      "narration": "The treasury view adds a thirteen-week cash flow that reconciles exactly with the daily projection, a working-capital health score with every formula shown, a payment-integrity scan for duplicate or split bills and changed payee details, and a signed, expiring credit passport for lenders.",
+      "steps": [
+        {"do":"pause","ms":800},
+        {"do":"click","selector":"[data-action=treasury-scenario][data-scenario=likely]","optional":true,"at":0.12},
+        {"do":"click","selector":"[data-action=treasury-tab][data-tab=health]","at":0.3},
+        {"do":"wait","for":"!document.querySelector(\"[data-action=treasury-tab]:disabled\")","timeout":60000},
+        {"do":"click","selector":"[data-action=treasury-tab][data-tab=scan]","at":0.55},
+        {"do":"wait","for":"!document.querySelector(\"[data-action=treasury-tab]:disabled\")","timeout":60000},
+        {"do":"click","selector":"[data-action=treasury-tab][data-tab=passport]","at":0.78},
+        {"do":"wait","for":"!document.querySelector(\"[data-action=treasury-tab]:disabled\")","timeout":60000}
+      ]
+    },
+    {
+      "id": "portfolio",
+      "kind": "app",
+      "optional": true,
+      "requires": "[data-view=portfolio]",
+      "setup": [
+        {"do":"view","name":"portfolio"},
+        {"do":"wait","for":"!!document.querySelector(\"[data-action=portfolio-apply]\") && !document.querySelector(\"[data-action=portfolio-apply]:disabled\")","timeout":90000}
+      ],
+      "narration": "For banks and large companies that finance small suppliers, the portfolio radar gives early warning across sixty seeded synthetic businesses. A shock slider re-runs the stress, and on this synthetic portfolio the backtest ranks risk better than a scheduled-only projection.",
+      "steps": [
+        {"do":"pause","ms":900},
+        {"do":"eval","js":"(async()=>{const el=document.querySelector(\"[data-portfolio-field=shockDays]\");for(let v=Number(el.value)||0;v<=20;v+=5){el.value=v;el.dispatchEvent(new Event(\"input\",{bubbles:true}));await new Promise(r=>setTimeout(r,250));}el.dispatchEvent(new Event(\"change\",{bubbles:true}));return true;})()","at":0.3},
+        {"do":"click","selector":"[data-action=portfolio-apply]"},
+        {"do":"wait","for":"!!document.querySelector(\"[data-action=portfolio-apply]\") && !document.querySelector(\"[data-action=portfolio-apply]:disabled\")","timeout":90000},
+        {"do":"scroll","selector":".pf-backtest","block":"center","at":0.62},
+        {"do":"highlight","selector":".pf-backtest","ms":2000}
+      ]
+    },
+    {
+      "id": "own-ai",
+      "kind": "slide",
+      "narration": "Tideway’s AI is its own. TidePay, trained with simulated federated learning, predicts payment lateness: on 7,427 unseen synthetic invoices, its average error is 8.56 days, versus 10.23 for a history heuristic. TideLM, our LoRA adapter on Qwen3, reaches 96.7 percent exact tool plans on its synthetic test set, up from 26.7.",
+      "slide": {
+        "layout": "stats",
+        "kicker": "Tideway's own AI · synthetic evaluations",
+        "title": "Trained here. Bounded by design.",
+        "stats": [
+          {"label":"TidePay · payment timing","value":"MAE 8.56 days","note":"vs 10.23 history heuristic, on 7,427 unseen synthetic invoices. Simulated federated training (FedAvg) across 40 synthetic SMEs."},
+          {"label":"TideLM · multilingual tool plans","value":"96.7% exact plans","note":"up from 26.7% before fine-tuning; LoRA on Qwen3-4B, held-out synthetic test set, eight languages."}
+        ],
+        "footnote": "Scores apply to the listed synthetic test sets only, not real-world accuracy. Models read and propose; they cannot approve or execute."
+      }
+    },
+    {
+      "id": "own-ai-gpu",
+      "kind": "slide",
+      "enabled": false,
+      "_note": "Placeholder: enable and edit once on-device NVIDIA GPU training evidence is documented in README/docs.",
+      "narration": "We also trained part of the stack on a local NVIDIA GPU, so data never leaves the machine. Edit this line to state exactly what was trained and its documented result.",
+      "slide": {
+        "layout": "cards",
+        "kicker": "On-device training",
+        "title": "Trained on a local NVIDIA GPU",
+        "items": [
+          {"tag":"GPU","h":"Placeholder","p":"Replace with the documented model, data and result."}
+        ]
+      }
+    },
+    {
+      "id": "security-honesty",
+      "kind": "slide",
+      "narration": "Security lives in deterministic code, not in the model: PIN step-up, two-person approval, signed single-use mandates and payee-change blocks. And the limits are disclosed: screening misses some unfamiliar attacks, so permissions never depend on it, and no real money moves.",
+      "slide": {
+        "layout": "cards",
+        "kicker": "Security and honesty",
+        "title": "Controls in code. Limits in the open.",
+        "items": [
+          {"tag":"Enforced","h":"Approval and mandates","p":"PIN step-up, two people for large amounts, HMAC-signed single-use mandates, idempotent execution."},
+          {"tag":"Enforced","h":"Fraud blocks and kill switch","p":"Changed bank details and look-alike payees block the bill. Repeated denials trip a circuit breaker."},
+          {"tag":"Disclosed","h":"Known limits","p":"Screening misses some unfamiliar attacks. Federation and counterparties are simulated. No real money moves."}
+        ],
+        "footnote": "Passing tests establish results for their listed cases, not complete security."
+      }
+    },
+    {
+      "id": "team",
+      "kind": "slide",
+      "narration": "Tideway is built by The Last BrainCell, a team from Bangladesh University of Engineering and Technology.",
+      "slide": {
+        "layout": "team",
+        "kicker": "Team",
+        "title": "The Last BrainCell",
+        "subtitle": "Bangladesh University of Engineering and Technology (BUET)",
+        "people": ["Nafis Mohtasim Ramim","Shaharia Rahman Santo","Md. Atik Khan","Md. Ashraf Hossain Chowdhury","Khandaker Shadman Sakib Siddiquee", "Md Adib Raian"]
+      }
+    },
+    {
+      "id": "close",
+      "kind": "slide",
+      "narration": "Tideway sees the cash gap coming, proposes the rescue, and leaves the decision with people. Thank you.",
+      "min_seconds": 7,
+      "slide": {
+        "layout": "hero",
+        "kicker": "Tideway",
+        "title": "See the gap.|Propose the rescue.|*People decide.*",
+        "chips": ["python run.py","Synthetic sandbox","Approval-gated by design"]
+      }
+    }
+  ]
+}

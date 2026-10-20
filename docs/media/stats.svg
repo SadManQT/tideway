@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" width="1200" height="200" role="img" aria-label="Tideway by the numbers">
+  <defs>
+    <style>
+      .t { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+      .tile { opacity: 0; animation: up .8s cubic-bezier(.22,1,.36,1) forwards; }
+      .s1 { animation-delay: .1s } .s2 { animation-delay: .3s } .s3 { animation-delay: .5s } .s4 { animation-delay: .7s } .s5 { animation-delay: .9s }
+      @keyframes up { from { opacity: 0; transform: translateY(18px) } to { opacity: 1; transform: none } }
+      .shine { animation: shine 5s ease-in-out 1.5s infinite; }
+      @keyframes shine { 0% { transform: translateX(-200px) } 50%, 100% { transform: translateX(1400px) } }
+    </style>
+    <linearGradient id="sh" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".09"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  </defs>
+  <rect width="1200" height="200" rx="18" fill="#0b2a45"/>
+  <rect x="40" y="0" width="1120" height="4" fill="#d4a72c"/>
+  <g class="t" text-anchor="middle">
+    <g class="tile s1"><text x="152" y="98" fill="#5cc2c6" font-size="44" font-weight="800">557</text><text x="152" y="128" fill="#cfe2ea" font-size="14">automated tests passing</text></g>
+    <g class="tile s2"><text x="376" y="98" fill="#5cc2c6" font-size="44" font-weight="800">25/25</text><text x="376" y="128" fill="#cfe2ea" font-size="14">simulated attacks blocked</text></g>
+    <g class="tile s3"><text x="600" y="98" fill="#5cc2c6" font-size="44" font-weight="800">92.7%</text><text x="600" y="128" fill="#cfe2ea" font-size="14">exact AI tool plans (GPU-trained)</text></g>
+    <g class="tile s4"><text x="824" y="98" fill="#5cc2c6" font-size="44" font-weight="800">0.971</text><text x="824" y="128" fill="#cfe2ea" font-size="14">early-warning AUC for lenders</text></g>
+    <g class="tile s5"><text x="1048" y="98" fill="#d4a72c" font-size="44" font-weight="800">0</text><text x="1048" y="128" fill="#cfe2ea" font-size="14">AI tools that can move money</text></g>
+    <text x="600" y="176" fill="#7f97aa" font-size="12">Measured in the synthetic sandbox · methods and raw results in docs/ and evidence/</text>
+  </g>
+  <line x1="264" y1="60" x2="264" y2="140" stroke="#1f4d6e"/><line x1="488" y1="60" x2="488" y2="140" stroke="#1f4d6e"/>
+  <line x1="712" y1="60" x2="712" y2="140" stroke="#1f4d6e"/><line x1="936" y1="60" x2="936" y2="140" stroke="#1f4d6e"/>
+  <rect class="shine" x="0" y="0" width="200" height="200" fill="url(#sh)"/>
+</svg>

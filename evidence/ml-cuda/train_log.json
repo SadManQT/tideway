@@ -1,0 +1,290 @@
+{
+ "what": "TideLM LoRA trained with PyTorch/PEFT on CUDA",
+ "base_model": "C:\\Users\\Administrator\\hf-cache\\Qwen3-1.7B",
+ "base_model_hf_id": "Qwen/Qwen3-1.7B",
+ "base_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+ "config": {
+  "model": "C:\\Users\\Administrator\\hf-cache\\Qwen3-1.7B",
+  "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "data": "C:\\Users\\Administrator\\Desktop\\tideway\\data\\tidelm",
+  "out": "C:\\Users\\Administrator\\tideway-models\\tidelm-cuda-adapter",
+  "iters": 450,
+  "batch_size": 4,
+  "lr": 0.0001,
+  "rank": 16,
+  "scale": 20.0,
+  "dropout": 0.05,
+  "num_layers": 16,
+  "max_seq": 1024,
+  "seed": 11,
+  "clip": 1.0,
+  "steps_per_report": 25,
+  "steps_per_eval": 150,
+  "val_examples": 100,
+  "max_minutes": 40.0
+ },
+ "lora": {
+  "rank": 16,
+  "lora_alpha": 320.0,
+  "scaling": 20.0,
+  "dropout": 0.05,
+  "target_modules": [
+   "q_proj",
+   "k_proj",
+   "v_proj",
+   "o_proj",
+   "gate_proj",
+   "up_proj",
+   "down_proj"
+  ],
+  "layers": [
+   12,
+   27
+  ],
+  "num_hidden_layers": 28
+ },
+ "differences_from_mlx_yaml": [
+  "bf16 base weights (the MLX run used a 4-bit 4B model)",
+  "different base: Qwen3-1.7B (MLX: Qwen3-4B-Instruct-2507)",
+  "gradient-norm clipping at 1.0 (mlx_lm default: none)",
+  "validation loss on a fixed seeded sample of 100 valid examples"
+ ],
+ "trainable_params": 9961472,
+ "total_params": 1730536448,
+ "data_sha256": {
+  "train.jsonl": "79482bdd3d4e660e1abda4acbbbc1741447a0c8bd54fa170992b247f492418b6",
+  "valid.jsonl": "f0b6a35502f2fe214dfecf9f839609671828ff49b1c17b0a63fd9fa739a65b17",
+  "test.jsonl": "19fe40c616afbd14be0bfb642838d5400022120036c617fb3e1a55ef81d188d2"
+ },
+ "n_train_examples": 5040,
+ "n_train_truncated": 0,
+ "n_valid_used": 100,
+ "valid_indices_sample_head": [
+  0,
+  4,
+  5,
+  7,
+  8,
+  15,
+  26,
+  30,
+  34,
+  36
+ ],
+ "examples_seen": 1800,
+ "epochs_equivalent": 0.357,
+ "load_seconds": 7.8,
+ "reports": [
+  {
+   "iter": 25,
+   "train_loss": 0.1406,
+   "grad_norm": 2.1957,
+   "answer_tokens": 7087,
+   "seconds": 25.7,
+   "elapsed_min": 0.43,
+   "peak_vram_gb": 5.1
+  },
+  {
+   "iter": 50,
+   "train_loss": 0.0587,
+   "grad_norm": 0.6115,
+   "answer_tokens": 5975,
+   "seconds": 22.8,
+   "elapsed_min": 0.81,
+   "peak_vram_gb": 5.1
+  },
+  {
+   "iter": 75,
+   "train_loss": 0.0424,
+   "grad_norm": 8.2946,
+   "answer_tokens": 6922,
+   "seconds": 29.8,
+   "elapsed_min": 1.31,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 100,
+   "train_loss": 0.0261,
+   "grad_norm": 0.6737,
+   "answer_tokens": 7502,
+   "seconds": 23.1,
+   "elapsed_min": 1.69,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 125,
+   "train_loss": 0.0311,
+   "grad_norm": 1.0607,
+   "answer_tokens": 6133,
+   "seconds": 23.0,
+   "elapsed_min": 2.07,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 150,
+   "train_loss": 0.0264,
+   "grad_norm": 1.6129,
+   "answer_tokens": 6178,
+   "seconds": 22.7,
+   "elapsed_min": 2.45,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 175,
+   "train_loss": 0.0122,
+   "grad_norm": 0.0038,
+   "answer_tokens": 6494,
+   "seconds": 29.7,
+   "elapsed_min": 2.95,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 200,
+   "train_loss": 0.0039,
+   "grad_norm": 0.2251,
+   "answer_tokens": 5424,
+   "seconds": 21.9,
+   "elapsed_min": 3.31,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 225,
+   "train_loss": 0.0106,
+   "grad_norm": 8.057,
+   "answer_tokens": 7295,
+   "seconds": 23.3,
+   "elapsed_min": 3.7,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 250,
+   "train_loss": 0.0063,
+   "grad_norm": 0.8534,
+   "answer_tokens": 6193,
+   "seconds": 22.3,
+   "elapsed_min": 4.07,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 275,
+   "train_loss": 0.0078,
+   "grad_norm": 0.0949,
+   "answer_tokens": 7194,
+   "seconds": 22.7,
+   "elapsed_min": 4.45,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 300,
+   "train_loss": 0.0085,
+   "grad_norm": 2.2513,
+   "answer_tokens": 5601,
+   "seconds": 22.8,
+   "elapsed_min": 4.83,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 325,
+   "train_loss": 0.0284,
+   "grad_norm": 0.0855,
+   "answer_tokens": 6944,
+   "seconds": 30.2,
+   "elapsed_min": 5.34,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 350,
+   "train_loss": 0.0171,
+   "grad_norm": 1.4144,
+   "answer_tokens": 4671,
+   "seconds": 22.0,
+   "elapsed_min": 5.7,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 375,
+   "train_loss": 0.0186,
+   "grad_norm": 2.3531,
+   "answer_tokens": 6574,
+   "seconds": 22.7,
+   "elapsed_min": 6.08,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 400,
+   "train_loss": 0.0113,
+   "grad_norm": 3.4948,
+   "answer_tokens": 6867,
+   "seconds": 22.4,
+   "elapsed_min": 6.45,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 425,
+   "train_loss": 0.0183,
+   "grad_norm": 0.0454,
+   "answer_tokens": 7465,
+   "seconds": 22.9,
+   "elapsed_min": 6.83,
+   "peak_vram_gb": 5.2
+  },
+  {
+   "iter": 450,
+   "train_loss": 0.0082,
+   "grad_norm": 0.0362,
+   "answer_tokens": 6047,
+   "seconds": 22.2,
+   "elapsed_min": 7.2,
+   "peak_vram_gb": 5.2
+  }
+ ],
+ "validation": [
+  {
+   "iter": 0,
+   "val_loss": 0.4651
+  },
+  {
+   "iter": 150,
+   "val_loss": 0.0105
+  },
+  {
+   "iter": 300,
+   "val_loss": 0.0101
+  },
+  {
+   "iter": 450,
+   "val_loss": 0.0085
+  }
+ ],
+ "environment": {
+  "python": "3.11.9",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "torch": "2.6.0+cu124",
+  "torch_cuda": "12.4",
+  "cudnn": 90100,
+  "cuda_available": true,
+  "transformers": "5.20.2",
+  "peft": "0.21.2",
+  "accelerate": "1.15.0",
+  "safetensors": "0.8.0",
+  "tokenizers": "0.23.3",
+  "huggingface_hub": "2.2.0",
+  "gpu": "NVIDIA GeForce RTX 3060 Ti",
+  "gpu_total_memory_gb": 8.0,
+  "gpu_compute_capability": "8.6",
+  "bf16_supported": true,
+  "nvidia_driver": "591.44"
+ },
+ "iters_completed": 450,
+ "stopped_early": null,
+ "train_seconds": 438.9,
+ "train_minutes": 7.32,
+ "total_wall_seconds": 462.9,
+ "peak_vram_gb": 5.2,
+ "adapter_dir": "C:\\Users\\Administrator\\tideway-models\\tidelm-cuda-adapter",
+ "adapter_sha256": {
+  "adapter_config.json": "404fb5dd2a2ef3ea8a660eb83117639b05168d8fd8f6f225056ddc40ec8b2fc3",
+  "adapter_model.safetensors": "c6b097d7f2ceb9fcd03b2c953f59fafb7c4ca29c110889293eb7a0abeb0dfb43",
+  "README.md": "80ec3ec59513ed0d8cef4c82d9b3012f2b5ccf84d30583b3036f94a2bd5c06d2"
+ }
+}

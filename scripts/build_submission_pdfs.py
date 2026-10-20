@@ -25,18 +25,18 @@ CHROME = os.environ.get("CHROME") or next((p for p in (
 
 DOC_CSS = """
 @page { size: A4; margin: 16mm 15mm; }
-body { font: 10.5pt/1.5 -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; color: #14221f; }
-h1 { font-size: 22pt; color: #0f3d36; border-bottom: 3px solid #1f8a70; padding-bottom: 6px; }
-h2 { font-size: 14pt; color: #0f3d36; margin-top: 20px; break-after: avoid; }
+body { font: 10.5pt/1.55 'Segoe UI', -apple-system, Helvetica, Arial, sans-serif; color: #1b1f3a; }
+h1 { font-size: 22pt; font-weight: 700; letter-spacing: -.01em; color: #0e1348; border-bottom: 2px solid #5b2fd6; padding-bottom: 8px; }
+h2 { font-size: 13.5pt; font-weight: 650; color: #0e1348; margin-top: 22px; break-after: avoid; }
 h3 { font-size: 11.5pt; break-after: avoid; }
 table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 9pt; }
-th, td { border: 1px solid #c7d6d1; padding: 4px 6px; text-align: left; vertical-align: top; }
-th { background: #e6f2ee; } tr { break-inside: avoid; }
+th, td { border-bottom: 1px solid #e3e6f0; padding: 5px 7px; text-align: left; vertical-align: top; }
+th { background: #f4f2fd; color: #0e1348; font-weight: 600; } tr { break-inside: avoid; }
 table.compact { break-inside: avoid; } thead { display: table-header-group; }
 body { overflow-wrap: anywhere; }
-code { font: 9pt ui-monospace, Menlo, monospace; background: #eef4f2; padding: 0 3px; border-radius: 3px; }
-pre { background: #eef4f2; padding: 8px; font-size: 8.5pt; white-space: pre-wrap; break-inside: avoid; }
-pre code { background: none; } blockquote { border-left: 4px solid #1f8a70; margin: 8px 0; padding: 2px 10px; color: #35504a; }
+code { font: 9pt ui-monospace, Consolas, Menlo, monospace; background: #f3f4f8; padding: 0 3px; border-radius: 3px; }
+pre { background: #f3f4f8; padding: 8px; font-size: 8.5pt; white-space: pre-wrap; break-inside: avoid; }
+pre code { background: none; } blockquote { border-left: 3px solid #5b2fd6; margin: 8px 0; padding: 2px 10px; color: #3b4170; }
 li { break-inside: avoid; } p { orphans: 3; widows: 3; }
 """
 
@@ -148,6 +148,47 @@ def _test_count():
     return report.get("tests_run", "see test report for")
 
 
+def _v15_slides(pct):
+    """V15 additions; each slide appears only when its evidence file exists."""
+    added = []
+    radar = _json("evidence/portfolio/portfolio-report.json") or {}
+    if radar.get("backtest_pooled"):
+        summary, pooled = radar["portfolio_summary"], radar["backtest_pooled"]["metrics"]
+        ours, sched, ratio = pooled["radar"], pooled["baseline_scheduled_projection"], pooled["baseline_cash_to_payroll"]
+        added.append({"title": "Portfolio radar for lenders", "subtitle": "Early warning across many SMEs, not just one",
+                      "table": [("Backtest (synthetic)", "AUC", "Brier", "Red recall"),
+                                ("Portfolio radar", f"{ours['auc']:.3f}", f"{ours['brier']:.3f}", pct(ours["red_recall"])),
+                                ("Scheduled projection", f"{sched['auc']:.3f}", f"{sched['brier']:.3f}", pct(sched["red_recall"])),
+                                ("Cash ÷ payroll", f"{ratio['auc']:.3f}", "—", "—")],
+                      "bullets": [f"{summary['smes']} seeded synthetic SMEs: {summary['tiers']['red']} red, {summary['tiers']['amber']} amber, "
+                                  f"{summary['tiers']['green']} green; shock stress shows tier migration",
+                                  f"Backtest on {pooled['n']} SMEs with independent realised futures; same generator as TidePay, so results are flattered",
+                                  "Never reads tenant workspaces; advisory text only, never a credit decision"],
+                      "image": "31-portfolio-radar.png"})
+    treasury = _json("evidence/treasury/treasury-report.json") or {}
+    if treasury.get("summary"):
+        s = treasury["summary"]
+        scores = ", ".join(f"{name.split('-')[0].title()} {score}" for name, score in s["health_scores"].items())
+        added.append({"title": "Treasury hub", "subtitle": "What a bank asks for, generated from the ledger",
+                      "bullets": [f"13-week cash flow: {'all' if s['all_reconcile'] else 'NOT all'} {s['businesses']} businesses reconcile exactly with the daily projection; CSV export",
+                                  f"Working-capital health score, every formula and weight shown ({scores})",
+                                  "Payment-integrity scan: duplicates, split-under-threshold, outliers, changed payees; advisory only",
+                                  f"Signed, expiring credit passport; tamper, expiry and wrong-business checks {'pass' if s['passport_checks_passed'] else 'FAIL'}"],
+                      "image": "30-treasury.png"})
+    cuda = _json("evidence/ml-cuda/tidelm_cuda_eval.json") or {}
+    if cuda:
+        added.append({"title": "TideLM, retrained on a gaming GPU", "subtitle": "Windows + NVIDIA RTX 3060 Ti, held-out synthetic test",
+                      "bullets": ["LoRA fine-tune of a smaller Qwen3 base with PyTorch/PEFT; adapter stays on the device",
+                                  "Base vs fine-tuned measured on the same unseen-name test subset (see docs/TIDELM_CUDA.md)",
+                                  "Served through the existing loopback-only local-model path; validators unchanged"]})
+    added.append({"title": "Anyone in the company can use it", "subtitle": "Every page explains itself in plain words",
+                  "bullets": ["\"What is this page?\" card: purpose, three steps, who it is for, what is safe",
+                              "Tap any finance term (reserve floor, mandate, DSO...) for a one-line explanation",
+                              "One-minute guided tour, larger-text mode; the help layer has no API or money authority"],
+                  "image": "32-plain-language-help.png"})
+    return added
+
+
 def slides():
     """The deck, with every number read from the evidence files at build time (never typed by hand)."""
     tidepay = (_json("evidence/upgrade-v1/tidepay/report.json") or {}).get("results", {})
@@ -227,7 +268,8 @@ def slides():
                      "python3 -m tideway.selftest · python3 -m unittest discover -s tests"]},
         {"title": "Honest limits, clear next steps", "subtitle": "What we have not done yet",
          "bullets": ["Synthetic data and simulated counterparties; demo-grade PINs and keys",
-                     "No user study or external penetration test yet",
+                     "Team-reported usability study (20 SME + 20 security-task participants); collection not independently verified",
+                     "No external penetration test or real-bank pilot yet",
                      "Next: consented SME pilots, new unseen screening checks and independent security review"]},
     ]
     scenario_dir = next((folder for folder in ("evidence/upgrade-v11", "evidence/upgrade-v10", "evidence/release-v9", "evidence/completion-v8", "evidence/remediation-v7", "evidence/readiness-v5", "evidence/readiness-v3", "evidence/upgrade-v1")
@@ -277,7 +319,7 @@ def slides():
                                     f"Likely minimum BDT {before['minimum_cash_minor']/100:,.0f} to {after['minimum_cash_minor']/100:,.0f}",
                                     "Old mandate refused; new proposal replaces supplier deferral with early-payment offers",
                                     "Bay counters at 1.5%; fresh approvals, consent, execute once and verify",
-                                    "Runbook: docs/PAYMENT_DELAY_RUNBOOK.md; no video recorded"]})
+                                    "Runbook: docs/PAYMENT_DELAY_RUNBOOK.md"]})
     lab = _json("evidence/upgrade-v11/decision-lab.json") or {}
     if lab.get("passed"):
         deck.append({"title": "Challenge before acting", "subtitle": "Stress the rescue; protect both sides",
@@ -285,6 +327,9 @@ def slides():
                                  "Compare recovery cost/risk; extra cash stays conditional and unconfirmed",
                                  "Owner-authorised events invalidate old mandates; fresh proposals need approval",
                                  "Synthetic buyer/supplier cash paths, private financial replay and cloud payload inspection"]})
+    limits_at = next((i for i, s in enumerate(deck) if s["title"].startswith("Honest limits")), len(deck))
+    for slide in reversed(_v15_slides(pct)):
+        deck.insert(limits_at, slide)
     team = _json("submission-team.public.json") or {}
     if team.get("team_name"):
         deck[0]["bullets"].append(team["team_name"])
@@ -312,20 +357,21 @@ def _crop(path: Path, work: Path):
 
 SLIDE_CSS = """
 @page { size: 13.333in 7.5in; margin: 0; }
-* { box-sizing: border-box; } body { margin: 0; font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; }
-section { width: 13.333in; height: 7.5in; padding: .6in .8in; background: #0f3d36; color: #fff; page-break-after: always;
-  position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr; align-content: start; }
-section.with-image { grid-template-columns: 4.6in 1fr; column-gap: .4in; }
-.tag { color: #9fe3c9; font-weight: 700; letter-spacing: .12em; font-size: 12pt; }
-h1 { font-size: 34pt; margin: .25in 0 .05in; line-height: 1.1; } h2 { font-size: 17pt; font-weight: 400; color: #b8e8d6; margin: 0 0 .3in; }
-li { font-size: 17pt; line-height: 1.4; margin-bottom: .1in; } ul { padding-left: .28in; margin: 0; }
-.shot { align-self: center; } .shot img { width: 100%; max-height: 6.1in; object-fit: contain; object-position: top;
-  border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,.45); background: #fff; }
-table { border-collapse: collapse; margin: 0 0 .3in; font-size: 16pt; }
-td { padding: .08in .25in; border-bottom: 1px solid rgba(255,255,255,.18); } tr:first-child td { color: #9fe3c9; font-weight: 700; }
-td:last-child { color: #7ff0c4; font-weight: 700; }
-.n { position: absolute; right: .6in; bottom: .3in; color: #8fc4b2; font-size: 10pt; }
-section.first h1 { font-size: 66pt; } section.first h2 { font-size: 30pt; color: #fff; font-weight: 700; }
+* { box-sizing: border-box; } body { margin: 0; font-family: 'Segoe UI', -apple-system, Helvetica, Arial, sans-serif; }
+section { width: 13.333in; height: 7.5in; padding: .7in .9in; background: #ffffff; color: #0e1348; page-break-after: always;
+  position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr; align-content: start; border-top: .12in solid #5b2fd6; }
+section.with-image { grid-template-columns: 5in 1fr; column-gap: .5in; }
+.tag { color: #5b2fd6; font-weight: 700; letter-spacing: .14em; font-size: 11pt; }
+h1 { font-size: 32pt; font-weight: 700; letter-spacing: -.01em; margin: .2in 0 .06in; line-height: 1.1; } h2 { font-size: 16pt; font-weight: 400; color: #555c8f; margin: 0 0 .32in; }
+li { font-size: 16pt; line-height: 1.45; margin-bottom: .1in; color: #1b1f3a; } ul { padding-left: .28in; margin: 0; } li::marker { color: #5b2fd6; }
+.shot { align-self: center; } .shot img { width: 100%; max-height: 6in; object-fit: contain; object-position: top;
+  border-radius: 12px; border: 1px solid #dde1f0; box-shadow: 0 12px 32px rgba(14,19,72,.12); background: #fff; }
+table { border-collapse: collapse; margin: 0 0 .3in; font-size: 15pt; }
+td { padding: .08in .25in .08in 0; border-bottom: 1px solid #e3e6f0; } tr:first-child td { color: #5b2fd6; font-weight: 700; }
+td:last-child { color: #0e1348; font-weight: 700; }
+.n { position: absolute; right: .7in; bottom: .35in; color: #7c82ad; font-size: 10pt; }
+section.first { background: #0e1348; color: #fff; border-top: none; } section.first .tag { color: #cfe94b; }
+section.first h1 { font-size: 66pt; color: #fff; } section.first h2 { font-size: 28pt; color: #cfe94b; font-weight: 700; } section.first li { color: #e8eaf8; }
 """
 
 

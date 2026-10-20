@@ -173,7 +173,7 @@ window.TidewayOwner = (() => {
     const cap = Math.min(state.dashboard.policy.max_discount_bps, state.dashboard.plan?.owner_constraints?.max_discount_bps ?? state.dashboard.policy.max_discount_bps);
     const bound = x => x.available ? amountText(x.ceiling_minor) : '—';
     const source = x => button('source', `${x.party} · ${x.id}`, `data-kind="${esc(x.kind)}" data-id="${esc(x.id)}" title="${esc(t.source)}"`);
-    return `<div class="owner-view" lang="${language}"><fieldset class="owner-controls" aria-label="Owner decisions" ${pending?'disabled':''}><div class="owner-toolbar"><span class="pill">${esc(t.simple)}</span><div class="row">${button('language',t.language,'aria-label="Switch Owner view language"')}${button('detailed',t.detailed)}</div></div>
+    return `<div class="owner-view" lang="${language}"><fieldset class="owner-controls" aria-label="Owner decisions" ${pending?'disabled':''}><div class="owner-toolbar"><span class="pill">${esc(t.simple)}</span><div class="row">${button('detailed',t.detailed)}</div></div>
       ${onboardingHtml(state.dashboard)}
       <section class="card owner-head"><span class="eyebrow">${esc(t.title)}</span><h2>${esc(t.statuses[r.status])}</h2><p>${esc(t.asof)} ${esc(day(r.as_of,true))} · ${esc(t.through)} ${esc(day(r.end_date,true))}</p><div class="row section-gap">${button('brief',t.private)}<span class="pill">${esc(t.readonly)}</span></div></section>
       ${(state.dashboard.warnings||[]).filter(x=>x.severity==='critical').slice(0,2).map(x=>`<div class="alert critical section-gap"><div><strong>${esc(x.title)}</strong><p>${esc(moneyProse(x.detail))}</p><button class="button small ghost" data-view="${['reserve_breach','payroll_at_risk'].includes(x.code)?'rescue':'security'}">${['reserve_breach','payroll_at_risk'].includes(x.code)?(language==='bn'?'সমাধানের প্রস্তাব দেখুন':'Review recovery'):(language==='bn'?'নিরাপত্তা যাচাই করুন':'Review security')}</button></div></div>`).join('')}
@@ -192,7 +192,7 @@ window.TidewayOwner = (() => {
     if (name === 'detailed') {state.ownerDetailed=true;renderApp();return;}
     if (name === 'simple') {state.ownerDetailed=false;renderApp();return;}
     if (pending || state.busy) return;
-    if (name === 'language') {language=language==='en'?'bn':'en';renderApp();return;}
+    if (name === 'language') {language='en';renderApp();return;}
     if (name === 'source') {state.recordFilter=data.kind;state.recordQuery=data.id;state.view='records';renderApp();return;}
     if (name === 'history') {state.recordFilter='invoice';state.recordQuery=data.customer;state.view='records';renderApp();return;}
     const origin = key, serial = epoch;

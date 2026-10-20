@@ -1,0 +1,1001 @@
+{
+  "version": "treasury-evaluation-v1",
+  "generated_at": "2026-10-20T10:57:58+00:00",
+  "source_commit": "47e9279f1ad8f1d5706602ba8939c4035f6826f4",
+  "working_tree_note": "Run on the working tree; uncommitted changes may be present.",
+  "python": "3.11.9",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "data": "Synthetic demo fixtures in an in-memory database. No real business, bank or lender data.",
+  "health_weights": {
+    "collection_speed": 15,
+    "overdue_share": 15,
+    "concentration": 15,
+    "runway": 15,
+    "reserve_coverage": 20,
+    "breach_risk": 20
+  },
+  "businesses": [
+    {
+      "business_id": "shapla-services",
+      "currency": "BDT",
+      "as_of": "2026-10-01",
+      "snapshot_hash": "a6c9e24884f41569b26506a06fe060ca0b44e965d45417a06be1e7a31aff083f",
+      "twcf": {
+        "start_date": "2026-10-01",
+        "end_date": "2026-12-30",
+        "reserve_floor_minor": 2000000,
+        "scenarios": {
+          "scheduled": {
+            "opening_cash_minor": 12000000,
+            "receipts_minor": 8000000,
+            "disbursements_minor": 17700000,
+            "supplier_bills_minor": 8200000,
+            "payroll_minor": 8000000,
+            "other_disbursements_minor": 1500000,
+            "net_flow_minor": -9700000,
+            "closing_cash_minor": 2300000,
+            "lowest_cash_minor": -1000000,
+            "lowest_cash_date": "2026-10-31",
+            "lowest_week": 5,
+            "weeks_below_reserve": [
+              5
+            ],
+            "first_week_below_reserve": 5,
+            "first_breach_date": "2026-10-31",
+            "payroll_at_risk": true,
+            "beyond_horizon_receipts_minor": 0,
+            "beyond_horizon_disbursements_minor": 0,
+            "reconciliation": {
+              "engine": "tideway.projection.project (same function as the dashboard)",
+              "engine_closing_cash_minor": 2300000,
+              "twcf_closing_cash_minor": 2300000,
+              "engine_minimum_cash_minor": -1000000,
+              "twcf_minimum_cash_minor": -1000000,
+              "opening_plus_net_minor": 2300000,
+              "matches": true
+            }
+          },
+          "likely": {
+            "opening_cash_minor": 12000000,
+            "receipts_minor": 8000000,
+            "disbursements_minor": 17700000,
+            "supplier_bills_minor": 8200000,
+            "payroll_minor": 8000000,
+            "other_disbursements_minor": 1500000,
+            "net_flow_minor": -9700000,
+            "closing_cash_minor": 2300000,
+            "lowest_cash_minor": -4200000,
+            "lowest_cash_date": "2026-11-03",
+            "lowest_week": 5,
+            "weeks_below_reserve": [
+              5,
+              6
+            ],
+            "first_week_below_reserve": 5,
+            "first_breach_date": "2026-10-31",
+            "payroll_at_risk": true,
+            "beyond_horizon_receipts_minor": 0,
+            "beyond_horizon_disbursements_minor": 0,
+            "reconciliation": {
+              "engine": "tideway.projection.project (same function as the dashboard)",
+              "engine_closing_cash_minor": 2300000,
+              "twcf_closing_cash_minor": 2300000,
+              "engine_minimum_cash_minor": -4200000,
+              "twcf_minimum_cash_minor": -4200000,
+              "opening_plus_net_minor": 2300000,
+              "matches": true
+            }
+          },
+          "stress": {
+            "opening_cash_minor": 12000000,
+            "receipts_minor": 8000000,
+            "disbursements_minor": 17700000,
+            "supplier_bills_minor": 8200000,
+            "payroll_minor": 8000000,
+            "other_disbursements_minor": 1500000,
+            "net_flow_minor": -9700000,
+            "closing_cash_minor": 2300000,
+            "lowest_cash_minor": -5700000,
+            "lowest_cash_date": "2026-11-05",
+            "lowest_week": 6,
+            "weeks_below_reserve": [
+              5,
+              6,
+              7
+            ],
+            "first_week_below_reserve": 5,
+            "first_breach_date": "2026-10-31",
+            "payroll_at_risk": true,
+            "beyond_horizon_receipts_minor": 0,
+            "beyond_horizon_disbursements_minor": 0,
+            "reconciliation": {
+              "engine": "tideway.projection.project (same function as the dashboard)",
+              "engine_closing_cash_minor": 2300000,
+              "twcf_closing_cash_minor": 2300000,
+              "engine_minimum_cash_minor": -5700000,
+              "twcf_minimum_cash_minor": -5700000,
+              "opening_plus_net_minor": 2300000,
+              "matches": true
+            }
+          }
+        }
+      },
+      "health": {
+        "score": 41,
+        "band": "Weak",
+        "components": [
+          {
+            "id": "collection_speed",
+            "value": 33.8,
+            "score": 87,
+            "weight": 15,
+            "points": 13.1
+          },
+          {
+            "id": "overdue_share",
+            "value": 0.0,
+            "score": 100,
+            "weight": 15,
+            "points": 15.0
+          },
+          {
+            "id": "concentration",
+            "value": 6250,
+            "score": 47,
+            "weight": 15,
+            "points": 7.0
+          },
+          {
+            "id": "runway",
+            "value": 37.9,
+            "score": 42,
+            "weight": 15,
+            "points": 6.3
+          },
+          {
+            "id": "reserve_coverage",
+            "value": -2.1,
+            "score": 0,
+            "weight": 20,
+            "points": 0.0
+          },
+          {
+            "id": "breach_risk",
+            "value": 1.0,
+            "score": 0,
+            "weight": 20,
+            "points": 0.0
+          }
+        ],
+        "suggestions": [
+          {
+            "component": "breach_risk",
+            "max_gain_points": 20.0
+          },
+          {
+            "component": "reserve_coverage",
+            "max_gain_points": 20.0
+          },
+          {
+            "component": "runway",
+            "max_gain_points": 8.7
+          }
+        ],
+        "simulation_runs": 1000,
+        "simulation_seed": 95526171108673
+      },
+      "scan": {
+        "bills_scanned": 6,
+        "threshold_minor": 4000000,
+        "ledger_findings": [],
+        "synthetic_sample": {
+          "bills": 26,
+          "planted_anomalies": 6,
+          "clean_bills": 17,
+          "true_positives": 6,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "clean_bills_flagged": []
+        },
+        "synthetic_labels": [
+          {
+            "rule": "duplicate_bill",
+            "bill_ids": [
+              "syn-003",
+              "syn-004"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "split_below_threshold",
+            "bill_ids": [
+              "syn-006",
+              "syn-007",
+              "syn-008"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "amount_outlier",
+            "bill_ids": [
+              "syn-015"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "bank_details_changed",
+            "bill_ids": [
+              "syn-018"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "lookalike_payee",
+            "bill_ids": [
+              "syn-019"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "round_amount",
+            "bill_ids": [
+              "syn-023"
+            ],
+            "detected": true
+          }
+        ]
+      },
+      "passport": {
+        "fields": [
+          "as_of",
+          "audit",
+          "breach_risk",
+          "business",
+          "expires_at",
+          "health",
+          "issued_at",
+          "issuer",
+          "limitations",
+          "passport_id",
+          "signature",
+          "signature_alg",
+          "snapshot_hash",
+          "twcf",
+          "type",
+          "version"
+        ],
+        "health_score": 41,
+        "expires_at_minus_issued_days": 30,
+        "verify_original": {
+          "valid": true,
+          "reason": "valid",
+          "issuance_logged": true
+        },
+        "verify_tampered_closing_cash": {
+          "valid": false,
+          "reason": "signature_mismatch"
+        },
+        "verify_wrong_business": {
+          "valid": false,
+          "reason": "wrong_business"
+        },
+        "verify_after_expiry": {
+          "valid": false,
+          "reason": "expired"
+        },
+        "verify_as_mandate": false
+      },
+      "deterministic_repeat": true,
+      "timings": {
+        "twcf": {
+          "median_ms": 2.02,
+          "max_ms": 5.88,
+          "runs": 5
+        },
+        "health_with_1000_run_monte_carlo": {
+          "median_ms": 48.39,
+          "max_ms": 54.67,
+          "runs": 5
+        },
+        "scan_ledger": {
+          "median_ms": 1.18,
+          "max_ms": 1.52,
+          "runs": 5
+        },
+        "scan_with_synthetic_sample": {
+          "median_ms": 2.86,
+          "max_ms": 3.21,
+          "runs": 5
+        },
+        "passport_issue": {
+          "median_ms": 44.66,
+          "max_ms": 44.66,
+          "runs": 1
+        },
+        "passport_verify": {
+          "median_ms": 0.92,
+          "max_ms": 1.04,
+          "runs": 5
+        }
+      }
+    },
+    {
+      "business_id": "lotus-print",
+      "currency": "CNY",
+      "as_of": "2026-10-01",
+      "snapshot_hash": "3b02818f99787ac84b9e95b57c19c0f741079d5aceca3061888decdffb7200bf",
+      "twcf": {
+        "start_date": "2026-10-01",
+        "end_date": "2026-12-30",
+        "reserve_floor_minor": 1500000,
+        "scenarios": {
+          "scheduled": {
+            "opening_cash_minor": 6000000,
+            "receipts_minor": 3800000,
+            "disbursements_minor": 6400000,
+            "supplier_bills_minor": 1400000,
+            "payroll_minor": 3200000,
+            "other_disbursements_minor": 1800000,
+            "net_flow_minor": -2600000,
+            "closing_cash_minor": 3400000,
+            "lowest_cash_minor": 3400000,
+            "lowest_cash_date": "2026-10-31",
+            "lowest_week": 5,
+            "weeks_below_reserve": [],
+            "first_week_below_reserve": null,
+            "first_breach_date": null,
+            "payroll_at_risk": false,
+            "beyond_horizon_receipts_minor": 0,
+            "beyond_horizon_disbursements_minor": 0,
+            "reconciliation": {
+              "engine": "tideway.projection.project (same function as the dashboard)",
+              "engine_closing_cash_minor": 3400000,
+              "twcf_closing_cash_minor": 3400000,
+              "engine_minimum_cash_minor": 3400000,
+              "twcf_minimum_cash_minor": 3400000,
+              "opening_plus_net_minor": 3400000,
+              "matches": true
+            }
+          },
+          "likely": {
+            "opening_cash_minor": 6000000,
+            "receipts_minor": 3800000,
+            "disbursements_minor": 6400000,
+            "supplier_bills_minor": 1400000,
+            "payroll_minor": 3200000,
+            "other_disbursements_minor": 1800000,
+            "net_flow_minor": -2600000,
+            "closing_cash_minor": 3400000,
+            "lowest_cash_minor": 800000,
+            "lowest_cash_date": "2026-10-31",
+            "lowest_week": 5,
+            "weeks_below_reserve": [
+              5
+            ],
+            "first_week_below_reserve": 5,
+            "first_breach_date": "2026-10-31",
+            "payroll_at_risk": false,
+            "beyond_horizon_receipts_minor": 0,
+            "beyond_horizon_disbursements_minor": 0,
+            "reconciliation": {
+              "engine": "tideway.projection.project (same function as the dashboard)",
+              "engine_closing_cash_minor": 3400000,
+              "twcf_closing_cash_minor": 3400000,
+              "engine_minimum_cash_minor": 800000,
+              "twcf_minimum_cash_minor": 800000,
+              "opening_plus_net_minor": 3400000,
+              "matches": true
+            }
+          },
+          "stress": {
+            "opening_cash_minor": 6000000,
+            "receipts_minor": 3800000,
+            "disbursements_minor": 6400000,
+            "supplier_bills_minor": 1400000,
+            "payroll_minor": 3200000,
+            "other_disbursements_minor": 1800000,
+            "net_flow_minor": -2600000,
+            "closing_cash_minor": 3400000,
+            "lowest_cash_minor": 800000,
+            "lowest_cash_date": "2026-10-31",
+            "lowest_week": 5,
+            "weeks_below_reserve": [
+              5,
+              6
+            ],
+            "first_week_below_reserve": 5,
+            "first_breach_date": "2026-10-31",
+            "payroll_at_risk": false,
+            "beyond_horizon_receipts_minor": 0,
+            "beyond_horizon_disbursements_minor": 0,
+            "reconciliation": {
+              "engine": "tideway.projection.project (same function as the dashboard)",
+              "engine_closing_cash_minor": 3400000,
+              "twcf_closing_cash_minor": 3400000,
+              "engine_minimum_cash_minor": 800000,
+              "twcf_minimum_cash_minor": 800000,
+              "opening_plus_net_minor": 3400000,
+              "matches": true
+            }
+          }
+        }
+      },
+      "health": {
+        "score": 58,
+        "band": "Watch",
+        "components": [
+          {
+            "id": "collection_speed",
+            "value": 35.6,
+            "score": 81,
+            "weight": 15,
+            "points": 12.2
+          },
+          {
+            "id": "overdue_share",
+            "value": 0.0,
+            "score": 100,
+            "weight": 15,
+            "points": 15.0
+          },
+          {
+            "id": "concentration",
+            "value": 5679,
+            "score": 54,
+            "weight": 15,
+            "points": 8.1
+          },
+          {
+            "id": "runway",
+            "value": 47.4,
+            "score": 53,
+            "weight": 15,
+            "points": 8.0
+          },
+          {
+            "id": "reserve_coverage",
+            "value": 0.53,
+            "score": 27,
+            "weight": 20,
+            "points": 5.4
+          },
+          {
+            "id": "breach_risk",
+            "value": 0.537,
+            "score": 46,
+            "weight": 20,
+            "points": 9.2
+          }
+        ],
+        "suggestions": [
+          {
+            "component": "reserve_coverage",
+            "max_gain_points": 14.6
+          },
+          {
+            "component": "breach_risk",
+            "max_gain_points": 10.8
+          },
+          {
+            "component": "runway",
+            "max_gain_points": 7.0
+          }
+        ],
+        "simulation_runs": 1000,
+        "simulation_seed": 156326100097083
+      },
+      "scan": {
+        "bills_scanned": 3,
+        "threshold_minor": 2500000,
+        "ledger_findings": [],
+        "synthetic_sample": {
+          "bills": 26,
+          "planted_anomalies": 6,
+          "clean_bills": 17,
+          "true_positives": 6,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "clean_bills_flagged": []
+        },
+        "synthetic_labels": [
+          {
+            "rule": "duplicate_bill",
+            "bill_ids": [
+              "syn-003",
+              "syn-004"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "split_below_threshold",
+            "bill_ids": [
+              "syn-006",
+              "syn-007",
+              "syn-008"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "amount_outlier",
+            "bill_ids": [
+              "syn-015"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "bank_details_changed",
+            "bill_ids": [
+              "syn-018"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "lookalike_payee",
+            "bill_ids": [
+              "syn-019"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "round_amount",
+            "bill_ids": [
+              "syn-023"
+            ],
+            "detected": true
+          }
+        ]
+      },
+      "passport": {
+        "fields": [
+          "as_of",
+          "audit",
+          "breach_risk",
+          "business",
+          "expires_at",
+          "health",
+          "issued_at",
+          "issuer",
+          "limitations",
+          "passport_id",
+          "signature",
+          "signature_alg",
+          "snapshot_hash",
+          "twcf",
+          "type",
+          "version"
+        ],
+        "health_score": 58,
+        "expires_at_minus_issued_days": 30,
+        "verify_original": {
+          "valid": true,
+          "reason": "valid",
+          "issuance_logged": true
+        },
+        "verify_tampered_closing_cash": {
+          "valid": false,
+          "reason": "signature_mismatch"
+        },
+        "verify_wrong_business": {
+          "valid": false,
+          "reason": "wrong_business"
+        },
+        "verify_after_expiry": {
+          "valid": false,
+          "reason": "expired"
+        },
+        "verify_as_mandate": false
+      },
+      "deterministic_repeat": true,
+      "timings": {
+        "twcf": {
+          "median_ms": 1.68,
+          "max_ms": 1.74,
+          "runs": 5
+        },
+        "health_with_1000_run_monte_carlo": {
+          "median_ms": 42.06,
+          "max_ms": 42.67,
+          "runs": 5
+        },
+        "scan_ledger": {
+          "median_ms": 0.94,
+          "max_ms": 1.22,
+          "runs": 5
+        },
+        "scan_with_synthetic_sample": {
+          "median_ms": 2.66,
+          "max_ms": 2.79,
+          "runs": 5
+        },
+        "passport_issue": {
+          "median_ms": 41.97,
+          "max_ms": 41.97,
+          "runs": 1
+        },
+        "passport_verify": {
+          "median_ms": 0.79,
+          "max_ms": 0.93,
+          "runs": 5
+        }
+      }
+    },
+    {
+      "business_id": "harbourline-traders",
+      "currency": "SGD",
+      "as_of": "2026-10-01",
+      "snapshot_hash": "ee2be77fd13f30668fe037c61660e14b91d88293862e402e4de0daef275f1b1a",
+      "twcf": {
+        "start_date": "2026-10-01",
+        "end_date": "2026-12-30",
+        "reserve_floor_minor": 1500000,
+        "scenarios": {
+          "scheduled": {
+            "opening_cash_minor": 3000000,
+            "receipts_minor": 1500000,
+            "disbursements_minor": 7200000,
+            "supplier_bills_minor": 5200000,
+            "payroll_minor": 2000000,
+            "other_disbursements_minor": 0,
+            "net_flow_minor": -5700000,
+            "closing_cash_minor": -2700000,
+            "lowest_cash_minor": -2700000,
+            "lowest_cash_date": "2026-10-31",
+            "lowest_week": 5,
+            "weeks_below_reserve": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13
+            ],
+            "first_week_below_reserve": 4,
+            "first_breach_date": "2026-10-25",
+            "payroll_at_risk": true,
+            "beyond_horizon_receipts_minor": 0,
+            "beyond_horizon_disbursements_minor": 0,
+            "reconciliation": {
+              "engine": "tideway.projection.project (same function as the dashboard)",
+              "engine_closing_cash_minor": -2700000,
+              "twcf_closing_cash_minor": -2700000,
+              "engine_minimum_cash_minor": -2700000,
+              "twcf_minimum_cash_minor": -2700000,
+              "opening_plus_net_minor": -2700000,
+              "matches": true
+            }
+          },
+          "likely": {
+            "opening_cash_minor": 3000000,
+            "receipts_minor": 1500000,
+            "disbursements_minor": 7200000,
+            "supplier_bills_minor": 5200000,
+            "payroll_minor": 2000000,
+            "other_disbursements_minor": 0,
+            "net_flow_minor": -5700000,
+            "closing_cash_minor": -2700000,
+            "lowest_cash_minor": -4200000,
+            "lowest_cash_date": "2026-10-31",
+            "lowest_week": 5,
+            "weeks_below_reserve": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13
+            ],
+            "first_week_below_reserve": 4,
+            "first_breach_date": "2026-10-25",
+            "payroll_at_risk": true,
+            "beyond_horizon_receipts_minor": 0,
+            "beyond_horizon_disbursements_minor": 0,
+            "reconciliation": {
+              "engine": "tideway.projection.project (same function as the dashboard)",
+              "engine_closing_cash_minor": -2700000,
+              "twcf_closing_cash_minor": -2700000,
+              "engine_minimum_cash_minor": -4200000,
+              "twcf_minimum_cash_minor": -4200000,
+              "opening_plus_net_minor": -2700000,
+              "matches": true
+            }
+          },
+          "stress": {
+            "opening_cash_minor": 3000000,
+            "receipts_minor": 1500000,
+            "disbursements_minor": 7200000,
+            "supplier_bills_minor": 5200000,
+            "payroll_minor": 2000000,
+            "other_disbursements_minor": 0,
+            "net_flow_minor": -5700000,
+            "closing_cash_minor": -2700000,
+            "lowest_cash_minor": -4200000,
+            "lowest_cash_date": "2026-10-31",
+            "lowest_week": 5,
+            "weeks_below_reserve": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13
+            ],
+            "first_week_below_reserve": 4,
+            "first_breach_date": "2026-10-25",
+            "payroll_at_risk": true,
+            "beyond_horizon_receipts_minor": 0,
+            "beyond_horizon_disbursements_minor": 0,
+            "reconciliation": {
+              "engine": "tideway.projection.project (same function as the dashboard)",
+              "engine_closing_cash_minor": -2700000,
+              "twcf_closing_cash_minor": -2700000,
+              "engine_minimum_cash_minor": -4200000,
+              "twcf_minimum_cash_minor": -4200000,
+              "opening_plus_net_minor": -2700000,
+              "matches": true
+            }
+          }
+        }
+      },
+      "health": {
+        "score": 26,
+        "band": "Weak",
+        "components": [
+          {
+            "id": "collection_speed",
+            "value": 51.7,
+            "score": 28,
+            "weight": 15,
+            "points": 4.2
+          },
+          {
+            "id": "overdue_share",
+            "value": 0.0,
+            "score": 100,
+            "weight": 15,
+            "points": 15.0
+          },
+          {
+            "id": "concentration",
+            "value": 10000,
+            "score": 0,
+            "weight": 15,
+            "points": 0.0
+          },
+          {
+            "id": "runway",
+            "value": 37.9,
+            "score": 42,
+            "weight": 15,
+            "points": 6.3
+          },
+          {
+            "id": "reserve_coverage",
+            "value": -2.8,
+            "score": 0,
+            "weight": 20,
+            "points": 0.0
+          },
+          {
+            "id": "breach_risk",
+            "value": 1.0,
+            "score": 0,
+            "weight": 20,
+            "points": 0.0
+          }
+        ],
+        "suggestions": [
+          {
+            "component": "breach_risk",
+            "max_gain_points": 20.0
+          },
+          {
+            "component": "reserve_coverage",
+            "max_gain_points": 20.0
+          },
+          {
+            "component": "concentration",
+            "max_gain_points": 15.0
+          }
+        ],
+        "simulation_runs": 1000,
+        "simulation_seed": 80541090435883
+      },
+      "scan": {
+        "bills_scanned": 6,
+        "threshold_minor": 1500000,
+        "ledger_findings": [
+          {
+            "finding_id": "PI-ee5bf9de5b",
+            "rule": "bank_details_changed",
+            "severity": "high",
+            "bill_ids": [
+              "bill-harbour-straits-oct"
+            ]
+          },
+          {
+            "finding_id": "PI-86523af33d",
+            "rule": "lookalike_payee",
+            "severity": "high",
+            "bill_ids": [
+              "bill-harbour-lookalike-oct"
+            ]
+          }
+        ],
+        "synthetic_sample": {
+          "bills": 26,
+          "planted_anomalies": 6,
+          "clean_bills": 17,
+          "true_positives": 6,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "clean_bills_flagged": []
+        },
+        "synthetic_labels": [
+          {
+            "rule": "duplicate_bill",
+            "bill_ids": [
+              "syn-003",
+              "syn-004"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "split_below_threshold",
+            "bill_ids": [
+              "syn-006",
+              "syn-007",
+              "syn-008"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "amount_outlier",
+            "bill_ids": [
+              "syn-015"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "bank_details_changed",
+            "bill_ids": [
+              "syn-018"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "lookalike_payee",
+            "bill_ids": [
+              "syn-019"
+            ],
+            "detected": true
+          },
+          {
+            "rule": "round_amount",
+            "bill_ids": [
+              "syn-023"
+            ],
+            "detected": true
+          }
+        ]
+      },
+      "passport": {
+        "fields": [
+          "as_of",
+          "audit",
+          "breach_risk",
+          "business",
+          "expires_at",
+          "health",
+          "issued_at",
+          "issuer",
+          "limitations",
+          "passport_id",
+          "signature",
+          "signature_alg",
+          "snapshot_hash",
+          "twcf",
+          "type",
+          "version"
+        ],
+        "health_score": 26,
+        "expires_at_minus_issued_days": 30,
+        "verify_original": {
+          "valid": true,
+          "reason": "valid",
+          "issuance_logged": true
+        },
+        "verify_tampered_closing_cash": {
+          "valid": false,
+          "reason": "signature_mismatch"
+        },
+        "verify_wrong_business": {
+          "valid": false,
+          "reason": "wrong_business"
+        },
+        "verify_after_expiry": {
+          "valid": false,
+          "reason": "expired"
+        },
+        "verify_as_mandate": false
+      },
+      "deterministic_repeat": true,
+      "timings": {
+        "twcf": {
+          "median_ms": 1.61,
+          "max_ms": 1.65,
+          "runs": 5
+        },
+        "health_with_1000_run_monte_carlo": {
+          "median_ms": 33.56,
+          "max_ms": 33.69,
+          "runs": 5
+        },
+        "scan_ledger": {
+          "median_ms": 0.89,
+          "max_ms": 1.09,
+          "runs": 5
+        },
+        "scan_with_synthetic_sample": {
+          "median_ms": 2.91,
+          "max_ms": 2.99,
+          "runs": 5
+        },
+        "passport_issue": {
+          "median_ms": 33.71,
+          "max_ms": 33.71,
+          "runs": 1
+        },
+        "passport_verify": {
+          "median_ms": 0.77,
+          "max_ms": 0.85,
+          "runs": 5
+        }
+      }
+    }
+  ],
+  "summary": {
+    "businesses": 3,
+    "all_reconcile": true,
+    "all_deterministic": true,
+    "health_scores": {
+      "shapla-services": 41,
+      "lotus-print": 58,
+      "harbourline-traders": 26
+    },
+    "ledger_findings": {
+      "shapla-services": 0,
+      "lotus-print": 0,
+      "harbourline-traders": 2
+    },
+    "synthetic_recall": {
+      "shapla-services": 1.0,
+      "lotus-print": 1.0,
+      "harbourline-traders": 1.0
+    },
+    "synthetic_precision": {
+      "shapla-services": 1.0,
+      "lotus-print": 1.0,
+      "harbourline-traders": 1.0
+    },
+    "passport_checks_passed": true,
+    "caveat": "Synthetic fixtures and a synthetic labelled sample written alongside the rules: these results check implementation behaviour, not real-world accuracy."
+  }
+}

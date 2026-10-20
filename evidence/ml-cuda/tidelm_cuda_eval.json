@@ -1,0 +1,291 @@
+{
+ "backend": "cuda-transformers",
+ "model": "C:\\Users\\Administrator\\hf-cache\\Qwen3-1.7B",
+ "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+ "adapter": "C:\\Users\\Administrator\\tideway-models\\tidelm-cuda-adapter",
+ "adapter_sha256": {
+  "adapter_config.json": "404fb5dd2a2ef3ea8a660eb83117639b05168d8fd8f6f225056ddc40ec8b2fc3",
+  "adapter_model.safetensors": "c6b097d7f2ceb9fcd03b2c953f59fafb7c4ca29c110889293eb7a0abeb0dfb43",
+  "README.md": "80ec3ec59513ed0d8cef4c82d9b3012f2b5ccf84d30583b3036f94a2bd5c06d2"
+ },
+ "merged_lora": true,
+ "test_set": "data\\tidelm",
+ "data_sha256": {
+  "train.jsonl": "79482bdd3d4e660e1abda4acbbbc1741447a0c8bd54fa170992b247f492418b6",
+  "valid.jsonl": "f0b6a35502f2fe214dfecf9f839609671828ff49b1c17b0a63fd9fa739a65b17",
+  "test.jsonl": "19fe40c616afbd14be0bfb642838d5400022120036c617fb3e1a55ef81d188d2"
+ },
+ "subset": {
+  "limit": null,
+  "indices": "all"
+ },
+ "decoding": {
+  "greedy": true,
+  "max_new_tokens": 400,
+  "batch_size": 16,
+  "padding": "left",
+  "enable_thinking": false
+ },
+ "n_plan": 300,
+ "n_extract": 200,
+ "plan": {
+  "valid_json": 0.9933,
+  "intent_accuracy": 0.9467,
+  "tool_accuracy": 0.9567,
+  "exact_plan_accuracy": 0.9267,
+  "app_parser_accepts": 0.9933
+ },
+ "extract": {
+  "valid_json": 1.0,
+  "record_precision": 0.9828,
+  "record_recall": 0.993,
+  "record_f1": 0.9879,
+  "field_accuracy": 0.9951,
+  "injection_flag_accuracy": 1.0
+ },
+ "median_batched_seconds_per_example": 0.247,
+ "generation_seconds": 207.4,
+ "load_seconds": 12.8,
+ "mean_new_tokens": 68.5,
+ "environment": {
+  "python": "3.11.9",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "torch": "2.6.0+cu124",
+  "torch_cuda": "12.4",
+  "cudnn": 90100,
+  "cuda_available": true,
+  "transformers": "5.20.2",
+  "peft": "0.21.2",
+  "accelerate": "1.15.0",
+  "safetensors": "0.8.0",
+  "tokenizers": "0.23.3",
+  "huggingface_hub": "2.2.0",
+  "gpu": "NVIDIA GeForce RTX 3060 Ti",
+  "gpu_total_memory_gb": 8.0,
+  "gpu_compute_capability": "8.6",
+  "bf16_supported": true,
+  "nvidia_driver": "591.44"
+ },
+ "sample_failures": [
+  {
+   "input": "Falcon Kitchen jod taka na dey?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Falcon Kitchen"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"forecast\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"stress\"}}]}"
+  },
+  {
+   "input": "dhoro Cedar Holdings default korlo",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Cedar Holdings"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"Cedar Holdings\": 30}, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+  },
+  {
+   "input": "ke shobcheye deri kore taka dey?",
+   "expected": {
+    "intent": "customer_insight",
+    "calls": [
+     {
+      "tool": "customer_report",
+      "args": {
+       "customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"forecast\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"stress\"}}]}"
+  },
+  {
+   "input": "¿Y si gasto 60000 en una máquina el 2026-10-18?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": {
+        "amount": 60000,
+        "date": "2026-10-18"
+       },
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"machine\": 60000, \"date\": \"2026-10-18\"}, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+  },
+  {
+   "input": "what if we lose the payment from Cedar Tbk",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Cedar Tbk"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"forecast\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"stress\"}}]}"
+  },
+  {
+   "input": "Kestrel Holdings jodi 7 din pore taka dey?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {
+        "Kestrel Holdings": 7
+       },
+       "extra_expense": null,
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"forecast\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"stress\"}}]}"
+  },
+  {
+   "input": "如果2026-10-31花120000买新设备会怎样？",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": {
+        "amount": 120000,
+        "date": "2026-10-31"
+       },
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"2026-10-31\": 120000}, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+  },
+  {
+   "input": "is mahine alary de paunga?",
+   "expected": {
+    "intent": "payroll_check",
+    "calls": [
+     {
+      "tool": "project_cash",
+      "args": {
+       "scenario": "likely"
+      }
+     },
+     {
+      "tool": "simulate_risk",
+      "args": {}
+     }
+    ]
+   },
+   "got": "{\"intent\": \"customer_insight\", \"calls\": [{\"tool\": \"customer_report\", \"args\": {\"customer\": null}}]}"
+  },
+  {
+   "input": "2026-11-11 ko 2500 kharch karu to kya hoga?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": {
+        "amount": 2500,
+        "date": "2026-11-11"
+       },
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"2026-11-11\": 2500}, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+  },
+  {
+   "input": "agar Falcon Tbk paisa na e to?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Falcon Tbk"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"risk_check\", \"calls\": [{\"tool\": \"simulate_risk\", \"args\": {}}]}"
+  },
+  {
+   "input": "E se eu gastar 12000 em 2026-10-06?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": {
+        "amount": 12000,
+        "date": "2026-10-06"
+       },
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"2026-10-06\": 12000}, \"extra_expense\": null, \"drop_invoice_customer\": null}}]}"
+  },
+  {
+   "input": "what happens if Banyan Tbk is 15 days late",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {
+        "Banyan Tbk": 15
+       },
+       "extra_expense": null,
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"forecast\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"stress\"}}]}"
+  }
+ ]
+}

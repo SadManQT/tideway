@@ -135,7 +135,7 @@ main { min-width: 0; margin-left: 248px; }
 .lab-panel { min-width: 0; }
 .lab-panel .field, .lab-panel select, .lab-panel input, .lab-panel textarea { min-width: 0; max-width: 100%; }
 .lab-panel textarea { width: 100%; min-height: 92px; }
-.lab-json { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 480px; overflow: auto; padding: 16px; background: var(--paper, #f7f9fd); border: 1px solid #dce1ec; border-radius: 10px; font-size: 12px; }
+.lab-json { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 480px; overflow: auto; padding: 16px; background: var(--paper, #f7f9fd); color: #0e1348; border: 1px solid #dce1ec; border-radius: 10px; font-size: 12px; }
 .lab-hash { overflow-wrap: anywhere; }
 .lab-panel details summary { cursor: pointer; font-weight: 700; }
 .pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 99px; color: var(--ink-2); background: #eef3f6; font-size: 11px; font-weight: 700; white-space: nowrap; }
@@ -845,3 +845,78 @@ main.view-enter .brief.storm .weather-badge { animation: tw-pop .6s var(--ease-s
 .approve-summary .review-facts dd { font-size:13px; }
 @media(max-width:560px) { .review-facts { grid-template-columns:minmax(0,1fr); } .receipt-review .button { white-space:normal; } }
 @media(max-width:900px) { .owner-options,.owner-results { grid-template-columns:minmax(0,1fr); } }
+
+/* ===== Portfolio radar (web/portfolio.js) — appended block; synthetic lender view ===== */
+.pf .pf-kpis .metric .value { font-size: 22px; }
+.pf .pf-amber { color: var(--unsettled); }
+.pf .pf-ccy { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 15px; line-height: 1.35; }
+.pf .pf-sub { display: block; margin-top: 2px; white-space: normal; }
+.pf .pf-sort { padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 700; cursor: pointer; }
+.pf th[aria-sort] .pf-sort { color: var(--ink); }
+.pf .pf-bar { display: inline-block; width: 64px; height: 6px; margin-right: 8px; vertical-align: middle; }
+.pf .pf-track { fill: #eef3f6; }
+.pf .pf-fill { fill: var(--clear); }
+.pf .pf-bar.amber .pf-fill { fill: var(--unsettled); }
+.pf .pf-bar.red .pf-fill { fill: var(--storm); }
+.pf .pf-arrow { color: var(--muted); font-weight: 400; }
+.pf .pf-table td { vertical-align: middle; }
+.pf .pf-intervention { min-width: 220px; max-width: 340px; font-size: 12px; color: var(--ink-2); }
+.pf .pf-heat td.pf-cell { text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pf .pf-heat td.pf-h-red { background: rgba(180, 35, 24, var(--heat)); }
+.pf .pf-heat td.pf-h-amber { background: rgba(181, 71, 8, var(--heat)); }
+.pf .pf-heat td.pf-h-green { background: rgba(6, 118, 71, var(--heat)); }
+.pf .pf-heat td.pf-hot { color: #fff; }
+.pf .pf-l0 { --heat: 0; } .pf .pf-l1 { --heat: .14; } .pf .pf-l2 { --heat: .28; } .pf .pf-l3 { --heat: .42; } .pf .pf-l4 { --heat: .56; } .pf .pf-l5 { --heat: .7; } .pf .pf-l6 { --heat: .86; }
+.pf .pf-newly { margin: 8px 0 0; padding: 0; list-style: none; }
+.pf .pf-newly li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; padding: 7px 0; border-bottom: 1px solid #eef3f5; }
+.pf .pf-shock input[type="range"] { width: 100%; accent-color: var(--violet); }
+.pf .pf-shock output { color: var(--violet); }
+.pf .pf-backtest td.pf-win { color: var(--clear); font-weight: 750; }
+.pf .pf-heat th, .pf .pf-heat td { padding: 7px 8px; }
+.pf .pf-heat th.num { text-align: center; }
+.pf .pf-table td:nth-child(2) { min-width: 170px; }
+.pf td.num .pf-sub { white-space: nowrap; }
+/* ===== end Portfolio radar ===== */
+
+/* ===== Treasury hub ===== */
+.tw-panel h3 { margin: 0 0 4px; }
+.tw-scenarios { margin: 0; }
+.tw-table table { font-size: 12px; }
+.tw-table th .tw-date { display: block; color: var(--faint); font-size: 10px; font-weight: 600; }
+.tw-table td:first-child, .tw-table th:first-child { position: sticky; left: 0; z-index: 1; background: var(--white); white-space: nowrap; }
+.tw-table tr.tw-strong td { font-weight: 750; }
+.tw-table tr.tw-sub td { font-weight: 700; border-top: 1px solid var(--line); }
+.tw-table tr.tw-indent td:first-child { padding-left: 22px; color: var(--ink-2); }
+.tw-table tr.tw-muted td { color: var(--muted); }
+.tw-table th.tw-below, .tw-table td.tw-below { background: var(--storm-soft); }
+.tw-table th.tw-below { color: var(--storm); }
+.tw-health-head { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 22px; align-items: center; }
+.tw-gauge { width: 150px; height: 150px; display: block; }
+.tw-gauge-track { fill: none; stroke: var(--line); stroke-width: 12; }
+.tw-gauge-fill { fill: none; stroke-width: 12; stroke-linecap: round; }
+.tw-gauge-fill.good, .tw-bar-fill.good { stroke: var(--clear); fill: var(--clear); }
+.tw-gauge-fill.watch, .tw-bar-fill.watch { stroke: var(--unsettled); fill: var(--unsettled); }
+.tw-gauge-fill.weak, .tw-bar-fill.weak { stroke: var(--storm); fill: var(--storm); }
+.tw-gauge-fill.good, .tw-gauge-fill.watch, .tw-gauge-fill.weak { fill: none; }
+.tw-gauge-score { fill: var(--ink); font-family: var(--display, inherit); font-size: 34px; font-weight: 800; }
+.tw-gauge-label { fill: var(--muted); font-size: 10px; font-weight: 700; }
+.tw-bar { width: 110px; height: 8px; vertical-align: middle; }
+.tw-bar-track { fill: var(--line); }
+.tw-score-cell { white-space: nowrap; }
+.tw-score-num { display: inline-block; min-width: 28px; margin-left: 8px; font-weight: 750; font-variant-numeric: tabular-nums; }
+.tw-formula { max-width: 46ch; margin-top: 3px; font-family: var(--mono, ui-monospace, monospace); font-size: 10.5px; }
+.tw-tips { display: grid; gap: 10px; margin: 8px 0 0; padding: 0; list-style: none; }
+.tw-tip { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: start; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--white); }
+.tw-tip p { margin: 4px 0 0; }
+.tw-tip-no { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--white); background: var(--teal); font-weight: 800; }
+.tw-finding { margin-top: 10px; }
+.tw-finding p { margin: 0; }
+.tw-toggle { margin-top: 10px; font-weight: 600; }
+.tw-synthetic { padding: 16px; border: 1px dashed var(--violet); border-radius: var(--radius); background: var(--violet-soft); }
+.tw-passport { padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--white); box-shadow: var(--shadow); }
+.tw-drill code { overflow-wrap: anywhere; }
+@media (max-width: 720px) {
+  .tw-health-head { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
+  .tw-formula { max-width: none; }
+}
+/* ===== end Treasury hub ===== */

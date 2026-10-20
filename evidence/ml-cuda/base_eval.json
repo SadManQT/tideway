@@ -1,0 +1,260 @@
+{
+ "backend": "cuda-transformers",
+ "model": "C:\\Users\\Administrator\\hf-cache\\Qwen3-1.7B",
+ "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+ "adapter": null,
+ "adapter_sha256": null,
+ "merged_lora": false,
+ "test_set": "data\\tidelm",
+ "data_sha256": {
+  "train.jsonl": "79482bdd3d4e660e1abda4acbbbc1741447a0c8bd54fa170992b247f492418b6",
+  "valid.jsonl": "f0b6a35502f2fe214dfecf9f839609671828ff49b1c17b0a63fd9fa739a65b17",
+  "test.jsonl": "19fe40c616afbd14be0bfb642838d5400022120036c617fb3e1a55ef81d188d2"
+ },
+ "subset": {
+  "limit": null,
+  "indices": "all"
+ },
+ "decoding": {
+  "greedy": true,
+  "max_new_tokens": 400,
+  "batch_size": 16,
+  "padding": "left",
+  "enable_thinking": false
+ },
+ "n_plan": 300,
+ "n_extract": 200,
+ "plan": {
+  "valid_json": 1.0,
+  "intent_accuracy": 0.1333,
+  "tool_accuracy": 0.3733,
+  "exact_plan_accuracy": 0.2133,
+  "app_parser_accepts": 1.0
+ },
+ "extract": {
+  "valid_json": 0.775,
+  "record_precision": 0.3623,
+  "record_recall": 0.2613,
+  "record_f1": 0.3036,
+  "field_accuracy": 0.6747,
+  "injection_flag_accuracy": 0.62
+ },
+ "median_batched_seconds_per_example": 0.373,
+ "generation_seconds": 287.1,
+ "load_seconds": 14.8,
+ "mean_new_tokens": 71.9,
+ "environment": {
+  "python": "3.11.9",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "torch": "2.6.0+cu124",
+  "torch_cuda": "12.4",
+  "cudnn": 90100,
+  "cuda_available": true,
+  "transformers": "5.20.2",
+  "peft": "0.21.2",
+  "accelerate": "1.15.0",
+  "safetensors": "0.8.0",
+  "tokenizers": "0.23.3",
+  "huggingface_hub": "2.2.0",
+  "gpu": "NVIDIA GeForce RTX 3060 Ti",
+  "gpu_total_memory_gb": 8.0,
+  "gpu_compute_capability": "8.6",
+  "bf16_supported": true,
+  "nvidia_driver": "591.44"
+ },
+ "sample_failures": [
+  {
+   "input": "Find me a rescue plan, as safe as possible",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_risk"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"find_rescue_plan\", \"calls\": [{\"tool\": \"rescue_plan\", \"args\": {\"safe_as_possible\": true}}]}"
+  },
+  {
+   "input": "最坏情况是什么？",
+   "expected": {
+    "intent": "forecast",
+    "calls": [
+     {
+      "tool": "project_cash",
+      "args": {
+       "scenario": "stress"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"reverse_stress\", \"args\": {}}]}"
+  },
+  {
+   "input": "Falcon Kitchen jod taka na dey?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Falcon Kitchen"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"request_payment\", \"calls\": [{\"tool\": \"simulate_risk\", \"args\": {\"customer\": \"Falcon Kitchen\"}}]}"
+  },
+  {
+   "input": "fix th cash gap without involving Falcon Ceramics",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [
+        "Falcon Ceramics"
+       ],
+       "max_discount_pct": null,
+       "prefer": "lowest_cost"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"fix th cash gap\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"base\"}}]}"
+  },
+  {
+   "input": "How risky is this month?",
+   "expected": {
+    "intent": "risk_check",
+    "calls": [
+     {
+      "tool": "simulate_risk",
+      "args": {}
+     }
+    ]
+   },
+   "got": "{\"intent\": \"risk_assessment\", \"calls\": [{\"tool\": \"project_cash\", \"args\": {\"scenario\": \"base\"}}]}"
+  },
+  {
+   "input": "asume Quartz Optics defaults",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Quartz Optics"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"assume\", \"calls\": [{\"tool\": \"counterparty_risk\", \"args\": {\"customer\": \"Quartz Optics\"}}]}"
+  },
+  {
+   "input": "ekta plan banao, jhuki jeno kom thake",
+   "expected": {
+    "intent": "rescue_plan",
+    "calls": [
+     {
+      "tool": "propose_plan",
+      "args": {
+       "exclude_counterparties": [],
+       "max_discount_pct": null,
+       "prefer": "lowest_risk"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [], \"max_discount_pct\": null, \"prefer\": \"lowest_cost\"}}]}"
+  },
+  {
+   "input": "dhoro Cedar Holdings default korlo",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": null,
+       "drop_invoice_customer": "Cedar Holdings"
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"default\", \"calls\": [{\"tool\": \"counterparty_risk\", \"args\": {\"customer\": \"Cedar Holdings\", \"reason\": \"default\"}}]}"
+  },
+  {
+   "input": "did any supplier hange bank details?",
+   "expected": {
+    "intent": "security_check",
+    "calls": [
+     {
+      "tool": "security_check",
+      "args": {}
+     }
+    ]
+   },
+   "got": "{\"intent\": \"check_supplier_bank_details\", \"calls\": []}"
+  },
+  {
+   "input": "yeh plan kyun?",
+   "expected": {
+    "intent": "explain",
+    "calls": [
+     {
+      "tool": "explain_plan",
+      "args": {}
+     }
+    ]
+   },
+   "got": "{\"intent\": \"plan\", \"calls\": [{\"tool\": \"propose_plan\", \"args\": {\"exclude_counterparties\": [], \"max_discount_pct\": null, \"prefer\": \"lowest_cost\"}}]}"
+  },
+  {
+   "input": "ke shobcheye deri kore taka dey?",
+   "expected": {
+    "intent": "customer_insight",
+    "calls": [
+     {
+      "tool": "customer_report",
+      "args": {
+       "customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"ask_for_money\", \"calls\": [{\"tool\": \"refuse\", \"args\": {\"reason\": \"out_of_scope\"}}]}"
+  },
+  {
+   "input": "¿Y si gasto 60000 en una máquina el 2026-10-18?",
+   "expected": {
+    "intent": "what_if",
+    "calls": [
+     {
+      "tool": "what_if",
+      "args": {
+       "customer_delays": {},
+       "extra_expense": {
+        "amount": 60000,
+        "date": "2026-10-18"
+       },
+       "drop_invoice_customer": null
+      }
+     }
+    ]
+   },
+   "got": "{\"intent\": \"what_if\", \"calls\": [{\"tool\": \"what_if\", \"args\": {\"customer_delays\": {\"name\": \"customer\", \"days\": 18}, \"extra_expense\": {\"amount\": 60000, \"date\": \"2026-10-18\"}}}]}"
+  }
+ ]
+}

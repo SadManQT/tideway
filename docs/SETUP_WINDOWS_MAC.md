@@ -176,9 +176,8 @@ The [current readiness index](READINESS_CURRENT.md) links exact-artifact predict
 results and the first sealed actual Mac model run (28/32, four retained misses).
 The optional compatible model remains distinct from historical MLX adapter scores.
 
-The product does not serve the team's personal preparation guide. Team members
-can open `personal-prep/project-guide/guide.html` directly from Finder or Explorer;
-the guide works locally and is excluded from submission packages.
+The product does not serve any personal preparation material, and none is part of
+the repository or submission packages.
 
 ## Optional local semantic screening
 

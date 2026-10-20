@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from verify_submission import source_digest  # noqa: E402
 
-EXCLUDED_ROOTS = {".git", ".aws", ".agents", ".codex", ".claude", ".opencode", ".vscode",
+EXCLUDED_ROOTS = {".git", ".aws", ".vscode",
                   ".venv", "venv", "node_modules", "data", "models", "tmp", "dist", "demo", "personal-prep"}
 RELEASE_FOLDERS = {"tideway", "web", "scripts", "tests", "docs", "slides", "evidence", "licenses", "examples"}
 RELEASE_CONFIG_FILES = {".github/workflows/ci.yml"}
@@ -41,6 +41,8 @@ def allowed_source(name):
     if name in RELEASE_CONFIG_FILES:
         return True
     if p.parts[0] not in RELEASE_FOLDERS and name not in RELEASE_ROOT_FILES:
+        return False
+    if any(part.startswith(".") for part in p.parts[:-1]):  # hidden tool/config folders are never released
         return False
     if any(part.casefold() in PRIVATE_COMPONENTS for part in p.parts) or p.suffix.casefold() in PRIVATE_SUFFIXES:
         return False

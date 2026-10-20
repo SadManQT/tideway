@@ -23,6 +23,7 @@ Bangladesh University of Engineering and Technology (BUET).
 - Md. Atik Khan
 - Md. Ashraf Hossain Chowdhury
 - Khandaker Shadman Sakib Siddiquee
+- Md Adib Raian
 
 Roles and team leader: awaiting the team's confirmation.
 
@@ -57,7 +58,7 @@ Open **Decision lab** for reverse stress, assumed agreement lateness, recovery c
 |---|---|
 | Architecture, algorithm and security design | `docs/architecture.pdf`, `docs/TECHNICAL_DOCUMENTATION.md` |
 | Presentation (10-minute maximum) | `slides/pitch.pdf`, `docs/PITCH_SCRIPT.md` |
-| Demo video, within 5 minutes | Deferred by the team; recording is not included in this package |
+| Demo video, within 5 minutes | Narrated 4:40 video, submitted alongside this package; rebuild with `scripts/pitch_video/build.py` |
 | Source, setup and tests | `source/` in the ZIP; root README, run.py and tests in the working copy |
 | Permission tiers and known risks | `docs/security-assessment.pdf`, `docs/SECURITY_SELF_ASSESSMENT.md` |
 | Sandbox execution evidence | `evidence/results.csv`, `run-log.jsonl`, `verification-summary.json`, `screens/` |
@@ -67,7 +68,7 @@ Open **Decision lab** for reverse stress, assumed agreement lateness, recovery c
 ## Team-controlled final steps
 
 The supplied roster is included. Confirm the team leader and actual roles, eligibility,
-registration acknowledgement, submission route and reviewer access. Keep the supplied public names/institution in tracked `submission-team.public.json`; roles and leader stay blank until confirmed. Private administrative facts belong in ignored `submission-team.json` and are never copied into the source archive. Follow any organiser requirement for truthful AI-assistance disclosure.
+registration acknowledgement, submission route and reviewer access. Keep the supplied public names/institution in tracked `submission-team.public.json`; roles and leader stay blank until confirmed. Private administrative facts belong in ignored `submission-team.json` and are never copied into the source archive.
 No roles, nationality, registration or consent have been invented.
 
 ## Published instructions rechecked on 17 October 2026
@@ -76,7 +77,7 @@ Registration and submission deadline: 20 October 2026, 23:59 Beijing time,
 which is 21:59 Bangladesh time. English is the submission language. The published
 rubric assigns 40% task completion, 30% security/compliance and 30% innovation/
 interaction. Sandbox evidence is accepted for non-on-chain topics. Video is
-listed as optional but also named under execution evidence; the team has explicitly deferred the recording. Add it before final submission or obtain written organiser clarification.
+listed as optional but also named under execution evidence; the team recorded a narrated 4:40 demo video.
 
 - [Competition rules](https://www.its.ac.id/international/wp-content/uploads/sites/66/2026/10/PBCSF-Appendix-2-Problem-Description-and-Competition-Rules-for-International-Track.pdf)
 - [IEEE track instructions](https://www.ieee-cis-singapore.org/2026-fintechathon)
@@ -124,7 +125,7 @@ web fonts/images, refreshes browser/PDF evidence, builds the ZIP and verifies
 fresh extraction. The full command needs Node 22+ and Chrome/Edge; `--checks-only`
 runs core checks. No weights are downloaded and nothing is pushed or submitted.
 Historical defects and verification scope are in `docs/INDEPENDENT_AUDIT.md`
-and `docs/COMPLETION_V8.md`; this is the coding assistant's review.
+and `docs/COMPLETION_V8.md`; this is an internal review, not an external audit.
 
 ## Owner constraints and residual risk
 

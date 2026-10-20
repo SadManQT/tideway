@@ -1,0 +1,96 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Tideway Security Report</title>
+<link rel="stylesheet" href="lean.css"><style>@page { size: A4; margin: 0; }</style></head><body>
+
+<section class="page cover">
+  <div class="kicker">SECURITY REPORT</div><i></i>
+  <h1>Tideway</h1>
+  <p class="tag">An AI that can read, analyse and propose,<br>but can never approve or move money.</p>
+  <div class="meta"><b>FINTECHATHON 2026 | TOPIC E</b>The Last BrainCell, BUET, Bangladesh<br>github.com/SadManQT/tideway</div>
+  <svg class="waves" viewBox="0 0 800 220" preserveAspectRatio="none"><path fill="#12506d" d="M0 60 C120 20 240 100 400 60 S680 20 800 60 V220 H0Z"/><path fill="#1a6a80" d="M0 105 C140 70 260 140 420 105 S690 70 800 105 V220 H0Z"/><path fill="#1f8a96" d="M0 150 C130 120 270 185 430 150 S700 120 800 150 V220 H0Z"/><path fill="#0b2a45" d="M0 195 C150 175 280 215 440 195 S700 175 800 195 V220 H0Z"/></svg>
+  <p class="fine">Synthetic sandbox only. No real money, bank, lender, supplier or customer is connected.</p>
+</section>
+
+<section class="page">
+  <div class="runhead"><b>TIDEWAY</b>Security Report</div>
+  <div class="sec"><span class="num">01</span><div><h1>Security model</h1><p>Authority lives in code, never in the model</p></div></div>
+  <div class="rule"><i></i><em></em></div>
+  <p class="lead">Tideway assumes the AI can be hijacked and the human can be careless. Money can only move through a PIN-approved, signed, scoped and expiring mandate.</p>
+  <div class="stats"><div class="stat"><b>30/30</b><span>self-test cases passed</span></div><div class="stat"><b>25/25</b><span>simulated attacks blocked</span></div><div class="stat"><b>551</b><span>automated tests passing</span></div><div class="stat"><b>0</b><span>money-moving AI tools</span></div></div>
+  <h2>Permission tiers</h2>
+  <table><tr><th>Tier</th><th>Who</th><th>What it allows</th></tr>
+    <tr><td>Read</td><td>Agent, all members</td><td>Forecasts, risk, records, evidence. Changes nothing.</td></tr>
+    <tr><td>Propose</td><td>Agent, owner, accountant</td><td>Builds recovery bundles with risk before and after. Cannot approve.</td></tr>
+    <tr><td>Approve</td><td>Owner, accountant (people only)</td><td>PIN step-up. Large plans need two people, one the owner, plus a typed exposure amount.</td></tr>
+    <tr><td>Execute</td><td>Signed mandate only</td><td>One idempotent sandbox execution, state hashes before and after, read-back check.</td></tr>
+    <tr><td>Administer</td><td>Owner</td><td>Policy, team, kill-switch resume (with a reason), payee verification.</td></tr></table>
+  <div class="callout"><small>THE GOLDEN RULE</small><p>No text, message or model output can approve or execute a payment. Moving money is never delegated.</p></div>
+  <h2>Tenant and session protection</h2>
+  <ul class="dots"><li>Membership and role checked on every request; businesses never see each other.</li>
+    <li>Loopback-only server, strict Content-Security-Policy, CSRF token, strict JSON field allow-lists.</li>
+    <li>Rate limits on requests and logins; PINs stored as salted hashes.</li></ul>
+  <div class="pno">2</div>
+</section>
+
+<section class="page">
+  <div class="runhead"><b>TIDEWAY</b>Security Report</div>
+  <div class="sec"><span class="num">02</span><div><h1>Controls</h1><p>From proposal to receipt, with proof</p></div></div>
+  <div class="rule"><i></i><em></em></div>
+  <div class="flow">
+    <div><b><i>1</i>Propose</b><span>Agent builds bundles and shows the remaining risk. It has no approve tool.</span></div>
+    <div><b><i>2</i>Approve</b><span>PIN step-up. Large plans need two people, one the owner.</span></div>
+    <div><b><i>3</i>Mandate</b><span>HMAC-signed, bound to exact actions, snapshot and policy; expires.</span></div>
+    <div><b><i>4</i>Execute</b><span>Once only. Before and after hashes, read-back verification.</span></div></div>
+  <h2>Runtime safeguards</h2>
+  <ol class="steps">
+    <li><div><b>Kill switch</b><span>Pauses planning and execution instantly. Only the owner can resume, with a reason.</span></div></li>
+    <li><div><b>Circuit breaker</b><span>Repeated security denials pause the agent automatically.</span></div></li>
+    <li><div><b>Payee fraud check</b><span>Changed bank details or look-alike names block every action on the bill until verified by callback.</span></div></li>
+    <li><div><b>Separation of duties</b><span>Whoever verified a payee cannot be the only approver of payments to it.</span></div></li>
+    <li><div><b>Injection screening</b><span>Hidden characters stripped, eight languages screened, suspicious text quarantined as data.</span></div></li>
+    <li><div><b>Autonomy dial</b><span>Advise, Propose or Delegate. Delegate only sends zero-cash reminders, capped per day.</span></div></li></ol>
+  <h2>Privacy for the optional cloud model</h2>
+  <ul class="dots"><li>Off by default; the on-device path is the default.</li>
+    <li>Per-message consent, pseudonymised names, no free text from records.</li>
+    <li>Every number in an answer is checked against tool output; a privacy inspector shows the exact payload first.</li></ul>
+  <div class="pno">3</div>
+</section>
+
+<section class="page">
+  <div class="runhead"><b>TIDEWAY</b>Security Report</div>
+  <div class="sec"><span class="num">03</span><div><h1>Proof and audit</h1><p>Every action leaves tamper-evident evidence</p></div></div>
+  <div class="rule"><i></i><em></em></div>
+  <div class="cards">
+    <div class="card"><small>AUDIT CHAIN</small><b>Hash-chained log + witness</b><p>Each entry is chained to the previous one and checkpointed by a separately keyed witness. Edits, deletions and truncation are detected.</p></div>
+    <div class="card"><small>LIVE DRILL</small><b>One-click tamper drill</b><p>Edits a safe copy and shows verification breaking at the exact entry that changed.</p></div>
+    <div class="card"><small>CREDIT PASSPORT</small><b>Public-key signed lender summary</b><p>Ed25519 signature any lender can verify offline with the issuer's public key, plus an issuer HMAC. 30-day expiry; issuing needs a PIN and is audited.</p></div>
+    <div class="card"><small>ISOLATION</small><b>Lender radar never sees tenants</b><p>The portfolio radar runs on its own synthetic portfolio and does not import the store; a test enforces it.</p></div></div>
+  <h2>Threats and mitigations</h2>
+  <table><tr><th>Threat</th><th>Mitigation</th></tr>
+    <tr><td>Hijacked AI model</td><td>Plan validator: known read/propose tools only, typed arguments, names resolved against the ledger. Forbidden tools trip the circuit breaker.</td></tr>
+    <tr><td>Prompt injection in messages</td><td>Text is quarantined as data and never gains authority. Inbox output is a draft until a person confirms.</td></tr>
+    <tr><td>Payment redirection fraud</td><td>Changed account or look-alike payee blocks the bill; callback verification and separation of duties.</td></tr>
+    <tr><td>Replay or tampered mandate</td><td>Signed, single-use, expiring mandates bound to snapshot and actions; idempotent execution.</td></tr>
+    <tr><td>Cross-tenant access</td><td>Membership and role re-checked on every request and every consequential action.</td></tr>
+    <tr><td>Log tampering</td><td>Hash chain plus independent witness checkpoint; truncation detected.</td></tr></table>
+  <div class="pno">4</div>
+</section>
+
+<section class="page">
+  <div class="runhead"><b>TIDEWAY</b>Security Report</div>
+  <div class="sec"><span class="num">04</span><div><h1>Verification and scope</h1><p>What was measured, and what is not claimed</p></div></div>
+  <div class="rule"><i></i><em></em></div>
+  <table><tr><th>Check</th><th>Result</th></tr>
+    <tr><td>Self-test scorecard</td><td>30 of 30 cases: 5 tasks completed, 25 attacks blocked, assuming a hijacked model.</td></tr>
+    <tr><td>Automated test suite</td><td>551 tests passed, 4 skipped (Windows, Python 3.11.9).</td></tr>
+    <tr><td>Judge flow, end to end</td><td>Login, three businesses, propose, two-person approval, execute with read-back, audit drill and all exports passed; no server errors.</td></tr>
+    <tr><td>Treasury evidence</td><td>13-week cash flow reconciles exactly with the projection for all three businesses; passport tamper, expiry and wrong-business checks pass.</td></tr>
+    <tr><td>Passport signatures</td><td>Ed25519 matches the RFC 8032 test vector; edits and attacker re-signing are rejected (6 tests).</td></tr>
+    <tr><td>Help layer</td><td>Tested to make no network calls and hold no approval or execution authority.</td></tr></table>
+  <h2>Scope</h2>
+  <ul class="dots"><li>Synthetic sandbox: fictional businesses and simulated counterparties; no real money moves.</li>
+    <li>Demo-grade PINs and keys: the passport signing key is derived from the instance key, with no HSM or revocation list yet.</li>
+    <li>Message screening can miss unfamiliar attacks, so safety rests on permissions, not on detection.</li></ul>
+  <div class="callout"><small>DESIGN PRINCIPLE</small><p>Detection helps, but permissions decide. Even a fully compromised model cannot approve, sign or execute.</p></div>
+  <div class="pno">5</div>
+</section>
+</body></html>

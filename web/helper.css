@@ -1,0 +1,41 @@
+/* Plain-language help layer (web/helper.js). Presentation only. */
+.tw-help-tools { display: inline-flex; gap: 6px; align-items: center; }
+.tw-help-tools .button[aria-pressed="true"] { background: var(--teal-soft); }
+
+.tw-page-help { margin: 0 0 16px; padding: 14px 16px; border: 2px solid var(--edge, var(--ink)); border-radius: var(--radius); background: var(--white); box-shadow: var(--shadow); }
+.tw-page-help[hidden] { display: none; }
+.tw-help-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start; }
+.tw-help-badge { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; color: var(--white); background: var(--teal); font-weight: 800; font-size: 15px; }
+.tw-help-lead { font-size: 14px; line-height: 1.5; }
+.tw-help-lead strong { margin-right: 4px; }
+.tw-help-body { margin: 10px 0 0 40px; }
+.tw-help-body ol { margin: 0 0 10px; padding-left: 18px; display: grid; gap: 4px; }
+.tw-help-body li { font-size: 13.5px; }
+.tw-help-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.tw-chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 99px; background: var(--blue-soft); color: var(--ink-2, var(--ink)); font-size: 12px; font-weight: 600; text-transform: none; }
+.tw-chip.tw-safe { background: var(--clear-soft, #e6f6ee); color: var(--clear, #067647); }
+
+.tw-term { border-bottom: 2px dotted var(--teal); cursor: help; border-radius: 2px; }
+.tw-term:hover, .tw-term:focus-visible { background: var(--teal-soft); outline: none; }
+.tw-pop { position: absolute; z-index: 1000; display: grid; gap: 4px; padding: 10px 12px; border: 2px solid var(--edge, var(--ink)); border-radius: 12px; background: var(--white); box-shadow: var(--shadow); font-size: 13px; line-height: 1.45; pointer-events: none; }
+.tw-pop[hidden] { display: none; }
+.tw-pop strong { font-size: 13px; }
+
+.tw-tour { position: fixed; z-index: 1001; width: 320px; padding: 16px; border: 2px solid var(--edge, var(--ink)); border-radius: var(--radius); background: var(--white); box-shadow: var(--shadow); }
+.tw-tour h3 { margin: 4px 0 6px; font-size: 17px; }
+.tw-tour p { margin: 0 0 12px; font-size: 14px; }
+.tw-tour-actions { display: flex; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+.tw-tour-actions span { display: inline-flex; gap: 6px; }
+.tw-tour-target { outline: 3px solid var(--teal) !important; outline-offset: 2px; border-radius: 10px; animation: tw-pulse 1.4s ease-in-out infinite; }
+@keyframes tw-pulse { 50% { outline-color: var(--violet, var(--teal)); } }
+@media (prefers-reduced-motion: reduce) { .tw-tour-target { animation: none; } }
+
+html.tw-large .shell main, html.tw-large .shell .sidebar { zoom: 1.12; }
+
+@media (max-width: 720px) {
+  .tw-help-head { grid-template-columns: auto minmax(0, 1fr); }
+  .tw-help-head .button { grid-column: 1 / -1; justify-self: start; }
+  .tw-help-body { margin-left: 0; }
+  .tw-tour { left: 12px !important; right: 12px; width: auto; top: auto !important; bottom: 12px; }
+  .tw-help-tools { flex-wrap: wrap; }
+}

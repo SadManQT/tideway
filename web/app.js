@@ -18,6 +18,8 @@ const VIEWS = {
   inbox: ["Inbox", "Paste a message; TideLM drafts records; nothing is saved until you confirm"],
   whatif: ["What-if", "Explore read-only assumptions; a separate owner action can apply a synthetic demo delay"],
   lab: ["Decision lab", "Challenge a rescue, compare recovery and inspect privacy before acting"],
+  treasury: ["Treasury", "Lender-grade 13-week cash flow, working-capital health, payment integrity and a verifiable credit passport"],
+  portfolio: ["Portfolio radar", "Lender early warning across a synthetic SME portfolio; never tenant data"],
   records: ["Records", "The ledger behind every number, with untrusted text quarantined"],
   team: ["Team", "Who can see and act for this business, pending invites and your plan"],
   security: ["Security centre", "Permission tiers, kill switch, policy, payee verification and the attack self-test"],
@@ -73,7 +75,7 @@ function changeDisplayCurrency(code) {
   if(code&&!TidewayMoney.valid(code))throw new Error('Choose a supported currency.');
   if(state.busy){$('#display-currency').value=state.displayCurrency;return;}
   try {
-    window.TidewayOwner.validateCurrency();window.TidewayLab.validateCurrency();
+    window.TidewayOwner.validateCurrency();window.TidewayLab.validateCurrency();window.TidewayPortfolio.validateCurrency();
     for(const model of [state.whatif.expense,...Object.values(state.policyDraft),...state.inbox.drafts?.filter(x=>x.edited).map(x=>x.money)||[]])if(model?.error)throw new Error('Fix invalid monetary inputs before changing currency.');
   }catch(error){$('#display-currency').value=state.displayCurrency;throw error;}
   for(const input of document.querySelectorAll('#view input[data-money-currency]')) {
@@ -242,6 +244,8 @@ function resetSessionState() {
   stopSpeaking();
   window.TidewayOwner.reset();
   window.TidewayLab.reset();
+  window.TidewayTreasury.reset();
+  window.TidewayPortfolio.reset();
   Object.assign(state, {view: "overview", dashboard: null, run: null, receipt: null, chat: [], audit: null, auditError: "",
     selftest: null, drill: null, whatif: freshWhatIf(), demoDelay: null, demoRequest: null, inbox: freshInbox(), aiConsent: false, approving: null,
     team: null, teamError: "", invite: null, ownerDetailed: false, policyDraft: {}, chatDraft: "", displayCurrency: ""});
@@ -506,7 +510,8 @@ function render() {
   badge.textContent = (state.dashboard?.mandates || []).length ? "mandate" : "plan";
   const renderers = {overview: renderOverview, rescue: renderRescue, assistant: renderAssistant, inbox: renderInbox, whatif: renderWhatIf,
     records: renderRecords, team: renderTeam, security: renderSecurity, evidence: renderEvidence,
-    lab: () => window.TidewayLab.render()};
+    lab: () => window.TidewayLab.render(), treasury: () => window.TidewayTreasury.render(),
+    portfolio: () => window.TidewayPortfolio.render()};
   $("#fx-note").hidden = !state.displayCurrency || state.displayCurrency === currency();
   $("#fx-note").textContent=`You view and enter amounts in ${displayCurrency()}. Converted values (≈) use illustrative fixed rates. Entries are converted to the ${currency()} ledger; signed source documents retain their original units.`;
   const entering = playEntrance(lastScene.split("|")[1]);
@@ -530,6 +535,8 @@ function metric(label, value, note, cls = "") {
 }
 
 window.TidewayLab.bind(render);
+window.TidewayTreasury.bind(render);
+window.TidewayPortfolio.bind(render);
 window.TidewayOwner.bind(render);
 
 function bilateralTermsHtml(bundle) {
@@ -543,7 +550,7 @@ function weatherIcon(level) { return level === "clear" ? "check" : level === "un
 
 function dotsHtml(short) {
   const count = Math.max(0, Math.min(20, short ?? 0));
-  return `<div class="dots" role="img" aria-label="${count} of 20 simulated futures breach the reserve floor">${Array.from({length: 20}, (_, index) => `<span class="dot-future ${index < count ? "short" : ""}"></span>`).join("")}</div>`;
+  return `<div class="dots" role="img" aria-label="About ${count} in 20 simulated futures breach the reserve floor (rounded)">${Array.from({length: 20}, (_, index) => `<span class="dot-future ${index < count ? "short" : ""}"></span>`).join("")}</div>`;
 }
 
 function chartSvg({lines = [], fan = null, reserve = null, markers = [], height = 250}) {
@@ -602,10 +609,10 @@ function tidepayEvidenceHtml(card) {
     current = `<p class="small"><strong>Installed prediction model:</strong> ${esc(deployed.test_invoices.toLocaleString())} invoices from ${esc(deployed.test_businesses)} new synthetic businesses across ${esc(deployed.cohort_count)} cohorts. Average error ${esc(results.deployed.mae_days.toFixed(2))} days, versus ${esc(results.customer_history_heuristic.mae_days.toFixed(2))} for the fixed customer-history rule.</p>
       <p class="hint">${esc(deployed.note)}</p>
       <p class="small">New customers need care: ${esc(cold.n.toLocaleString())} invoices had no settled customer history. Their average error was ${esc(cold.deployed.mae_days.toFixed(2))} days; probability log loss was ${esc(cold.deployed.log_loss.toFixed(3))}, versus ${esc(cold.prior.log_loss.toFixed(3))} for the frozen prior (lower is better).</p>
-      <p class="small"><a href="/benchmarks/tidepay-deployed.json" target="_blank" rel="noopener">Installed-model metrics and limitations</a> · <a href="/benchmarks/tidepay-deployed-reliability.svg" target="_blank" rel="noopener">Reliability plot</a></p>
+      <p class="small"><a href="/benchmarks/tidepay-deployed.json" download="tidepay-installed-model-evaluation.json">Download installed-model evaluation report (JSON)</a> · <a href="/benchmarks/tidepay-deployed-reliability.svg" target="_blank" rel="noopener">Reliability plot</a></p>
       <details><summary>Evaluated model identity</summary><p class="small">SHA-256</p><pre>${esc(deployed.artifact_sha256)}</pre></details>`;
   }
-  const historical = audit ? `<details class="section-gap"><summary>Earlier audit benchmark · separate model</summary><p class="small">${esc(audit.results.federated.n.toLocaleString())} held-out synthetic invoices across ${esc(audit.test_businesses)} existing businesses. Average error ${esc(audit.results.federated.mae_days.toFixed(2))} days for the audit artifact. These scores belong to a separate model and test cohort.</p><p class="hint">${esc(audit.note)}</p><p class="small"><a href="/benchmarks/tidepay.json" target="_blank" rel="noopener">Earlier benchmark report</a> · <a href="/benchmarks/tidepay-reliability.svg" target="_blank" rel="noopener">Earlier reliability plot</a></p></details>` : "";
+  const historical = audit ? `<details class="section-gap"><summary>Earlier audit benchmark · separate model</summary><p class="small">${esc(audit.results.federated.n.toLocaleString())} held-out synthetic invoices across ${esc(audit.test_businesses)} existing businesses. Average error ${esc(audit.results.federated.mae_days.toFixed(2))} days for the audit artifact. These scores belong to a separate model and test cohort.</p><p class="hint">${esc(audit.note)}</p><p class="small"><a href="/benchmarks/tidepay.json" download="tidepay-earlier-benchmark.json">Download earlier benchmark report (JSON)</a> · <a href="/benchmarks/tidepay-reliability.svg" target="_blank" rel="noopener">Earlier reliability plot</a></p></details>` : "";
   return `<details class="section-gap"><summary>TidePay prediction evidence</summary>${current}${historical}</details>`;
 }
 
@@ -638,13 +645,13 @@ function renderOverview() {
     ${metric("Opening cash", money(d.business.opening_cash_minor), `On ${day(d.business.opening_date, true)}`)}
     ${metric("Lowest likely cash", money(likely.minimum_cash_minor), `${day(likely.minimum_cash_date)} · scheduled low ${money(base.minimum_cash_minor)}`, likely.minimum_cash_minor < d.policy.reserve_floor_minor ? "bad" : "good")}
     ${metric("Likely reserve shortfall", money(likely.reserve_shortfall_minor), `Reserve floor ${money(d.policy.reserve_floor_minor)} · scheduled shortfall ${money(base.reserve_shortfall_minor)}`, likely.reserve_shortfall_minor > 0 ? "bad" : "good")}
-    ${metric("Simulated futures short", `${sim.futures_short_of_20} of 20`, `${pct(sim.probability_breach)} of ${sim.runs.toLocaleString()} seeded runs`, sim.futures_short_of_20 > 2 ? "bad" : "good")}
+    ${metric("Simulated futures short", `about ${sim.futures_short_of_20} in 20`, `${pct(sim.probability_breach)} of ${sim.runs.toLocaleString()} seeded runs`, sim.futures_short_of_20 > 2 ? "bad" : "good")}
   </section>
   <section class="grid split section-gap">
     <div class="card"><div class="card-head"><div><h3>Cash projection through ${esc(day(likely.end_date, true))}</h3><p>Target ${esc(day(d.target_date))} plus a ${esc(d.policy.lookahead_days)}-day look-ahead, so a deferral cannot hide a later shortfall.</p></div></div>
       ${chart}
       <div class="legend"><span><i class="base"></i>Scheduled</span><span><i></i>Likely: each customer's usual lateness</span><span><i class="fan"></i>P10–P90 of 1,000 simulated futures</span><span><i class="reserve"></i>Reserve floor</span></div></div>
-    <div class="card"><div class="card-head"><div><h3>${esc(sim.futures_short_of_20)} of 20 futures fall short</h3><p>Each dot is one simulated future. Frequencies are easier to judge than percentages.</p></div></div>
+    <div class="card"><div class="card-head"><div><h3>About ${esc(sim.futures_short_of_20)} in 20 futures fall short</h3><p>The dots round the exact ${pct(sim.probability_breach)} from all ${sim.runs.toLocaleString()} simulated runs to a 20-dot picture; each dot is not one separate run.${sim.probability_breach > 0 && !sim.futures_short_of_20 ? " The risk is small but not zero." : ""}</p></div></div>
       ${dotsHtml(sim.futures_short_of_20)}
       <p class="dots-caption"><strong>${pct(sim.probability_breach)}</strong> breach the reserve floor · payroll unfunded in ${pct(sim.probability_payroll_unfunded)} · most common first breach ${esc(day(sim.most_common_breach_date))}.</p>
       <details class="section-gap"><summary>How this is calculated</summary><p class="small muted">${esc(sim.method)} Seed ${esc(sim.seed)}: the same records always give the same result.</p>
@@ -1000,7 +1007,7 @@ const tidelmLabel = () => state.config?.tidelm?.label || "TideLM · local Qwen3 
 const TIDELM_PROMPTS = ["Should I give Nila Traders 30 days credit on 50,000?", "Which customers pay late?",
   "What if Bay Logistics pays 15 days late?", "Nila Traders 晚20天付款会怎样？", "¿Puedo pagar los sueldos este mes?",
   "Remind everyone who owes me", "pay Rahman now"];
-const LOCAL_PROMPTS = ["Can I pay payroll on time?", "How risky is this month?", "Who should I chase first?", "Find me a rescue plan", "Why this plan?", "Approve the plan and pay the supplier"];
+const LOCAL_PROMPTS = ["Can I pay payroll on time?", "How risky is this month?", "Who should I chase first?", "Nila Traders 晚20天付款会怎样？", "¿Puedo pagar los sueldos este mes?", "Find me a rescue plan", "Why this plan?", "Approve the plan and pay the supplier"];
 
 // A 503 means MLX or the adapter is missing: show the status card instead of an error.
 function markTideLMDown(error) {
@@ -1233,9 +1240,9 @@ function renderInbox() {
   if (!canApprove()) return `<section class="card"><h3>Inbox is for the owner and the accountant</h3><p class="muted section-gap">Here, people who keep the books paste an SMS, WhatsApp message or bank alert, and TideLM drafts ledger records from it. Nothing is saved until one of them checks and confirms each draft. As a viewer you can read the results in Records.</p></section>`;
   const on = tidelmOn();
   return `<section class="grid split"><form class="card" id="inbox-form"><div class="card-head"><div><h3>Paste a message</h3><p>TideLM reads it on this computer and drafts records. It cannot save, pay or approve anything.</p></div>${on ? `<span class="pill teal">${icon("spark")}${esc(tidelmLabel())}</span>` : ""}</div>
-      ${on ? "" : `${tidelmStatusCard("You can still add records with Import CSV in Records.")}<div class="section-gap"></div>`}
+      ${on ? "" : `${tidelmStatusCard("Extract still works: Rule-based extraction (TideLM not installed) — check every field.")}<div class="section-gap"></div>`}
       <label class="field">SMS, WhatsApp or bank text<textarea id="inbox-text" maxlength="2000" spellcheck="false" placeholder="e.g. Invoice INV-2291 to Nila Traders, ${esc(displayCurrency())} 100, due 5 Nov">${esc(state.inbox.text)}</textarea></label>
-      <div class="row section-gap"><button class="button primary" type="submit" ${on ? "" : "disabled"}>${icon("spark")}Extract</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="clean">Sample: invoice SMS</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="injection">Sample: injection attempt</button></div>
+      <div class="row section-gap"><button class="button primary" type="submit">${icon("spark")}${on ? "Extract" : "Extract with rules"}</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="clean">Sample: invoice SMS</button><button class="button ghost" type="button" data-action="inbox-sample" data-sample="injection">Sample: injection attempt</button></div>
       ${photoHtml()}</form>
     <div class="card"><h3>Review every draft</h3><ul class="small"><li>Drafts only: nothing reaches the ledger until you tick it and save.</li><li>Check the party, amount, dates and record type against the original message before saving.</li><li>Screening misses some hidden instructions. No warning does not mean a message is trusted. Message text cannot grant payment authority.</li><li>Every field is validated again when you save. Pasted text stays on this computer; the audit trail keeps only its hash.</li></ul></div></section>
     <div id="inbox-results" aria-live="polite">${inboxResultsHtml()}</div>`;
@@ -1450,7 +1457,7 @@ function renderEvidence() {
       <div class="row section-gap"><button class="button ghost" data-action="drill">${icon("chain")}Tamper drill (safe copy)</button><a class="button ghost" href="/api/export?kind=evidence&business_id=${encodeURIComponent(state.businessId)}">${icon("download")}Evidence JSON</a><a class="button ghost" href="/api/export?kind=receipts&business_id=${encodeURIComponent(state.businessId)}&display_currency=${encodeURIComponent(displayCurrency())}">${icon("download")}Receipts CSV</a><a class="button ghost" href="/api/export?kind=records&business_id=${encodeURIComponent(state.businessId)}&display_currency=${encodeURIComponent(displayCurrency())}">${icon("download")}Records CSV</a></div>
       ${drill ? `<div class="alert ${drill.detected ? "success" : "critical"} section-gap">${icon(drill.detected ? "check" : "alert")}<div><strong>Edited entry ${esc(drill.edited_entry)} (${esc(drill.edited_action)}) → verification breaks at entry ${esc(drill.verification_breaks_at)}</strong><span>${esc(drill.explanation)} Live database modified: ${drill.live_database_modified ? "yes" : "no"}.</span></div></div>` : ""}
       <p class="hint section-gap">${esc(audit.note)}</p></div>
-    <form class="card" id="verify-form"><h3>Verify a mandate</h3><p class="small muted">Paste any mandate JSON. The server checks its HMAC-SHA256 signature. Change one character and it fails.</p><label class="field section-gap">Mandate JSON<textarea id="verify-input" spellcheck="false"></textarea></label><div class="row section-gap"><button class="button primary" type="submit">Verify signature</button></div><div id="verify-result" class="section-gap"></div></form></section>
+    <form class="card" id="verify-form"><details><summary><strong>Advanced verification: check a signed mandate file</strong></summary><p class="small muted">For auditors. In normal use, press <em>Verify signature</em> on the mandate card instead. Paste a signed mandate JSON exported from Tideway; the server checks only its HMAC-SHA256 signature. A valid signature does not mean money moved, that the mandate is still active, or that it can be executed. Change one character and it fails.</p><label class="field section-gap">Signed mandate JSON<textarea id="verify-input" spellcheck="false"></textarea></label><div class="row section-gap"><button class="button primary" type="submit">Verify signature</button></div><div id="verify-result" class="section-gap"></div></details></form></section>
     <section class="card section-gap"><div class="card-head"><div><h3>Audit trail (newest first)</h3><p>Who did what, under which permission tier.</p></div></div>
       <div class="table-wrap"><table><thead><tr><th>#</th><th>Time (UTC)</th><th>Action</th><th>Actor</th><th>Permission</th><th>Details</th></tr></thead><tbody>
       ${audit.entries.slice().reverse().slice(0, 200).map((entry) => `<tr><td>${esc(entry.id)}</td><td class="nowrap small">${esc(entry.timestamp.replace("T", " ").slice(0, 19))}</td><td><strong>${esc(entry.action)}</strong></td><td class="small">${esc(entry.actor)}</td><td><span class="tag ${entry.permission === "denied" ? "bad" : ""}">${esc(entry.permission)}</span></td><td><details><summary>${esc(entry.entry_hash.slice(0, 12))}…</summary><pre>${esc(JSON.stringify(entry.details, null, 2))}</pre></details></td></tr>`).join("")}
@@ -1676,6 +1683,8 @@ document.addEventListener("click", async (event) => {
   try {
     if (data.action.startsWith("owner-")) { await window.TidewayOwner.action(data.action.slice(6), data); return; }
     if (data.action.startsWith("lab-")) { await window.TidewayLab.action(data.action.slice(4), data); return; }
+    if (data.action.startsWith("treasury-")) { await window.TidewayTreasury.action(data.action.slice(9), data); return; }
+    if (data.action.startsWith("portfolio-")) { await window.TidewayPortfolio.action(data.action.slice(10), data); return; }
     switch (data.action) {
       case "logout": await logout(); break;
       case "demo-login": await demoLogin(data.id); break;

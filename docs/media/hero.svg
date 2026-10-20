@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 430" width="1200" height="430" role="img" aria-label="Tideway: sees the cash gap coming, plans the rescue, lets people decide">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#061a2b"/><stop offset="1" stop-color="#0f3a5c"/></linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5cc2c6" stop-opacity="0"/><stop offset=".5" stop-color="#5cc2c6" stop-opacity=".35"/><stop offset="1" stop-color="#5cc2c6" stop-opacity="0"/></linearGradient>
+    <style>
+      .t { font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; }
+      .in { opacity: 0; animation: up .9s cubic-bezier(.22,1,.36,1) forwards; }
+      .d1 { animation-delay: .1s } .d2 { animation-delay: .35s } .d3 { animation-delay: .6s } .d4 { animation-delay: .9s } .d5 { animation-delay: 1.15s }
+      @keyframes up { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: none } }
+      .wave { animation: drift 10s ease-in-out infinite alternate; }
+      .wave.b { animation-duration: 7.5s; animation-direction: alternate-reverse; }
+      .wave.c { animation-duration: 12s; }
+      @keyframes drift { from { transform: translateX(0) } to { transform: translateX(-140px) } }
+      .draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.6s ease-out forwards; }
+      .red { animation-delay: .8s } .teal { animation-delay: 2.7s; animation-duration: 1.4s }
+      @keyframes draw { to { stroke-dashoffset: 0 } }
+      .late { opacity: 0; animation: show .5s ease-out forwards; }
+      .l1 { animation-delay: 2.2s } .l2 { animation-delay: 4.0s }
+      @keyframes show { to { opacity: 1 } }
+      .ping { transform-box: fill-box; transform-origin: center; animation: ping 1.8s ease-out 2.3s infinite; opacity: 0; }
+      @keyframes ping { 0% { opacity: .9; transform: scale(.6) } 100% { opacity: 0; transform: scale(2.6) } }
+      .sweep { animation: sweep 6s ease-in-out 1s infinite; }
+      @keyframes sweep { 0% { transform: translateX(-300px) } 60%, 100% { transform: translateX(1300px) } }
+    </style>
+  </defs>
+  <rect width="1200" height="430" fill="url(#bg)"/>
+  <rect class="sweep" x="0" y="0" width="240" height="430" fill="url(#glow)" opacity=".5"/>
+
+  <g class="t">
+    <text class="in d1" x="80" y="88" fill="#5cc2c6" font-size="14" font-weight="700" letter-spacing="3">FINTECHATHON 2026 · TOPIC E · SME FINANCE COPILOT</text>
+    <rect class="in d1" x="80" y="102" width="72" height="3" fill="#d4a72c"/>
+    <text class="in d2" x="74" y="192" fill="#ffffff" font-size="92" font-weight="800" letter-spacing="-2">Tideway</text>
+    <text class="in d3" x="80" y="240" fill="#cfe2ea" font-size="25" font-weight="300">Sees the cash gap coming. Plans the rescue.</text>
+    <text class="in d3" x="80" y="274" fill="#cfe2ea" font-size="25" font-weight="300">Lets <tspan fill="#ffffff" font-weight="600">people</tspan> decide.</text>
+    <g class="in d4" font-size="13" font-weight="600">
+      <rect x="80" y="296" width="132" height="30" rx="15" fill="#1f8a96"/><text x="146" y="316" fill="#fff" text-anchor="middle">On-device AI</text>
+      <rect x="222" y="296" width="164" height="30" rx="15" fill="none" stroke="#5cc2c6"/><text x="304" y="316" fill="#cfe2ea" text-anchor="middle">Human-approved only</text>
+      <rect x="396" y="296" width="176" height="30" rx="15" fill="none" stroke="#d4a72c"/><text x="484" y="316" fill="#f3dfa6" text-anchor="middle">Signed &amp; tamper-evident</text>
+    </g>
+  </g>
+
+  <!-- the story in one chart: cash dips below the reserve, the approved rescue keeps it above -->
+  <g class="t" transform="translate(690 70)">
+    <rect width="440" height="250" rx="16" fill="#0b2a45" stroke="#1f4d6e"/>
+    <text x="22" y="34" fill="#9fb4c4" font-size="12" font-weight="700" letter-spacing="2">PAYROLL-DAY CASH FORECAST</text>
+    <line x1="22" y1="150" x2="418" y2="150" stroke="#d4a72c" stroke-width="2" stroke-dasharray="7 6"/>
+    <text x="22" y="142" fill="#d4a72c" font-size="11" font-weight="600">reserve floor</text>
+    <path class="draw red" pathLength="1" d="M22 92 C 90 96, 130 120, 170 150 S 230 215, 262 212 S 330 150, 418 112" fill="none" stroke="#e5675c" stroke-width="4" stroke-linecap="round"/>
+    <circle class="ping" cx="262" cy="212" r="9" fill="#e5675c"/>
+    <circle class="late l1" cx="262" cy="212" r="6" fill="#e5675c"/>
+    <text class="late l1" x="272" y="236" fill="#f2a29a" font-size="12" font-weight="600">gap on payroll day</text>
+    <path class="draw teal" pathLength="1" d="M22 92 C 90 96, 140 112, 180 122 S 250 132, 290 124 S 360 100, 418 84" fill="none" stroke="#5cc2c6" stroke-width="4" stroke-linecap="round"/>
+    <text class="late l2" x="418" y="72" fill="#5cc2c6" font-size="12" font-weight="700" text-anchor="end">after the approved rescue</text>
+  </g>
+
+  <g transform="translate(0 340)">
+    <path class="wave" fill="#12506d" d="M0 20 C150 -10 300 50 450 20 S750 -10 900 20 S1200 50 1350 20 V100 H0Z"/>
+    <path class="wave b" fill="#1a6a80" d="M0 45 C160 20 320 75 480 45 S800 20 960 45 S1280 70 1440 45 V100 H0Z"/>
+    <path class="wave c" fill="#1f8a96" d="M0 70 C140 50 300 95 450 70 S760 50 910 70 S1210 92 1360 70 V100 H0Z"/>
+  </g>
+</svg>

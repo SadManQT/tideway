@@ -22,6 +22,6 @@ the financial calculations and permission checks run in deterministic tools.
 | 5:35-6:35 | Security: approval/PIN/dual approval/mandate/hash/version/idempotency remain deterministic controls. Pattern screening has measured misses and false positives; do not claim complete fraud protection. |
 | 6:35-7:35 | Evidence: 24 genuinely distinct synthetic conditions, split dev/held out, separated no-action/rescue/infeasible/blocked outcomes; latency, screening and current test counts come from reports. |
 | 7:35-8:15 | Decision lab: breaking-point witness, assumed agreement stress and fresh conditional funding draws; synthetic supplier/buyer payroll-safe quote, private replay and privacy preview. Show one interaction and leave the rest for questions. Core needs only Python stdlib. |
-| 8:15-9:00 | Limits/team: simulated federation/counterparties, no real money, no user study or external audit. Confirmed five-member BUET roster; leader/roles and administrative eligibility/registration remain unconfirmed. |
+| 8:15-9:00 | Limits/team: simulated federation/counterparties, no real money, a team-reported usability study whose collection is not independently verified, and no external audit. Confirmed five-member BUET roster; leader/roles and administrative eligibility/registration remain unconfirmed. |
 
 If a model times out, say so and use the labelled fallback. If execution is refused, explain the boundary; do not call it a successful payment. Submission route and video ambiguity are team-controlled administrative items, not technical claims.

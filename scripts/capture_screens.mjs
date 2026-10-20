@@ -420,6 +420,21 @@ try {
   await until("document.body.textContent.includes('verification breaks at entry')", "tamper drill");
   await shot("09-evidence-tamper-drill");
 
+  // V15: treasury hub, lender portfolio radar and the plain-language help layer.
+  await view("treasury");
+  await until("!!document.querySelector('[data-action=treasury-scenario]')", "treasury 13-week cash flow", 200);
+  await sleep(400);
+  await shot("30-treasury", false);
+  await view("portfolio");
+  await until("!!document.querySelector('.pf table')", "portfolio radar", 200);
+  await sleep(400);
+  await shot("31-portfolio-radar", false);
+  await view("overview");
+  await click('[data-help-tool="tour"]');
+  await until("!!document.querySelector('#tw-tour')", "help tour");
+  await shot("32-plain-language-help", false);
+  await click('[data-tour="end"]');
+
   // International business with a schedule that looks fine.
   await evaluate(`(() => { const select = document.querySelector('#business-select'); select.value = 'lotus-print'; select.dispatchEvent(new Event('change', {bubbles: true})); return true; })()`);
   await until("document.querySelector('#eyebrow').textContent.includes('Lotus')", "Lotus loaded");

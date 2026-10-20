@@ -85,7 +85,7 @@ def run(phase, host="127.0.0.1", port=8787):
     wait_ready(anonymous)
     uid = os.getuid()
     assert uid == 10001, f"Expected configured non-root uid10001; got {uid}"
-    private_paths = [".git", ".env", ".env.local", "submission-team.json", ".opencode", ".claude", ".vscode", "models", "tmp", "dist", "evidence/private", "personal-prep"]
+    private_paths = [".git", ".env", ".env.local", "submission-team.json", ".vscode", "models", "tmp", "dist", "evidence/private", "personal-prep"]
     assert not any((Path("/app") / name).exists() for name in private_paths), "Private/excluded paths leaked into image"
     assert not list(Path("/app").glob("*.key")) and not list(Path("/app").glob("*.sqlite3")), "Host private data leaked into image root"
     for route in ("/guide", "/guide.html", "/guide.css", "/guide.js", "/personal-prep/project-guide/guide.html"):

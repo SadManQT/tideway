@@ -25,10 +25,11 @@ from .vision import TideVision, TideVisionUnavailable
 
 ROOT = Path(__file__).resolve().parent.parent
 STATIC = {"/": "index.html", "/index.html": "index.html", "/styles.css": "styles.css", "/app.js": "app.js",
-          "/decision-lab.js": "decision-lab.js",
+          "/decision-lab.js": "decision-lab.js", "/treasury.js": "treasury.js", "/portfolio.js": "portfolio.js",
           "/decision-review.js": "decision-review.js",
           "/owner-view.js": "owner-view.js", "/currency.js": "currency.js",
           "/quick-start.js": "quick-start.js",
+          "/helper.js": "helper.js", "/helper.css": "helper.css",
           "/favicon.svg": "favicon.svg",
           "/fonts/space-grotesk.woff2": "fonts/space-grotesk.woff2", "/fonts/unbounded.woff2": "fonts/unbounded.woff2",
           "/fonts/jetbrains-mono.woff2": "fonts/jetbrains-mono.woff2", "/img/hero.webp": "img/hero.webp",
@@ -74,6 +75,8 @@ class Application:
         self.lab_enabled = os.environ.get("TIDEWAY_DECISION_LAB", "1").strip() != "0"
         from .owner_view import OwnerView
         self.owner_view = OwnerView(self.tideway)
+        from .treasury import Treasury
+        self.treasury = Treasury(self.tideway)
 
     # ---- helpers ---------------------------------------------------------------
 
@@ -135,6 +138,10 @@ class Application:
         if path == "/api/session":
             return {"operator": operator}
         self.require(operator)
+        if path == "/api/portfolio/radar":
+            # Lender view over its own seeded synthetic portfolio; it never reads tenant workspaces.
+            from .portfolio import radar_from_query
+            return radar_from_query(query)
         business_id = validate_business_id(one("business_id", ""))
         operator = self.scoped(operator, business_id)
         if path == "/api/team":
@@ -174,6 +181,32 @@ class Application:
                     f"tideway-{business_id}-bank-pack.html")
         if kind == "iso20022":
             return self.tideway.iso20022(business_id), "application/xml", f"tideway-{business_id}-pain001-draft.xml"
+        if kind == "twcf":
+            from .treasury import SCENARIOS
+            plan = self.treasury.twcf(business_id)
+            names = query.get("scenario", ["all"])[0]
+            if names != "all" and names not in SCENARIOS:
+                raise ValidationError("scenario must be all, scheduled, likely or stress.")
+            selected = list(SCENARIOS) if names == "all" else [names]
+            customers = sorted({item["customer"] for name in selected
+                                for item in plan["scenarios"][name]["totals"]["receipts_by_customer"]})
+            stream = io.StringIO(newline="")
+            writer = csv.writer(stream)
+            writer.writerow(["scenario", "week", "week_start", "week_end", "currency", "opening_cash_minor"]
+                            + [f"receipts_from:{csv_cell(name)}" for name in customers]
+                            + ["other_receipts_minor", "receipts_minor", "supplier_bills_minor", "payroll_minor",
+                               "other_disbursements_minor", "disbursements_minor", "net_flow_minor", "closing_cash_minor",
+                               "lowest_cash_minor", "lowest_cash_date", "reserve_floor_minor", "below_reserve"])
+            for name in selected:
+                for week in plan["scenarios"][name]["weeks"]:
+                    by_customer = {item["customer"]: item["amount_minor"] for item in week["receipts_by_customer"]}
+                    writer.writerow([name, week["week"], week["start_date"], week["end_date"], plan["currency"], week["opening_cash_minor"]]
+                                    + [by_customer.get(customer, 0) for customer in customers]
+                                    + [week["other_receipts_minor"], week["receipts_minor"], week["supplier_bills_minor"],
+                                       week["payroll_minor"], week["other_disbursements_minor"], week["disbursements_minor"],
+                                       week["net_flow_minor"], week["closing_cash_minor"], week["lowest_cash_minor"],
+                                       week["lowest_cash_date"], week["reserve_floor_minor"], str(week["below_reserve"]).lower()])
+            return "﻿" + stream.getvalue(), "text/csv", f"tideway-{business_id}-13-week-cash-flow.csv"
         stream = io.StringIO(newline="")
         writer = csv.writer(stream)
         if kind == "records":
@@ -318,6 +351,30 @@ class Application:
                     return self.lab.bilateral_propose(business_id, body.get("target_date"), body["bill_id"], body["supplier_ledger"], body["quote_id"], body["expected_snapshot"], actor, body.get("plan_id"))
                 self.fields(body, allowed, ("business_id", "bill_id", "supplier_ledger"))
                 return self.lab.bilateral_quotes(business_id, body.get("target_date"), body["bill_id"], body["supplier_ledger"], body.get("plan_id"))
+            raise LookupError(path)
+        if path.startswith("/api/treasury/"):
+            # Read-only analysis for every member; passport issuance needs owner/accountant plus a PIN step-up.
+            if not business_id:
+                raise ValidationError("business_id is required.")
+            if path == "/api/treasury/twcf":
+                self.fields(body, ("business_id",), ("business_id",))
+                return self.treasury.twcf(business_id)
+            if path == "/api/treasury/health":
+                self.fields(body, ("business_id",), ("business_id",))
+                return self.treasury.health(business_id)
+            if path == "/api/treasury/scan":
+                self.fields(body, ("business_id", "synthetic_sample"), ("business_id",))
+                return self.treasury.scan(business_id, body.get("synthetic_sample", False))
+            if path == "/api/treasury/passport/issue":
+                self.fields(body, ("business_id", "pin"), ("business_id", "pin"))
+                self.require(operator, "owner", "accountant")
+                if not isinstance(body["pin"], str):
+                    raise ValidationError("PIN must be text.")
+                self.store.verify_pin(operator["id"], body["pin"])
+                return self.treasury.issue_passport(business_id, operator, actor)
+            if path == "/api/treasury/passport/verify":
+                self.fields(body, ("business_id", "passport"), ("business_id", "passport"))
+                return self.treasury.verify_passport(business_id, body["passport"])
             raise LookupError(path)
         if path == "/api/feedback":
             self.fields(body, ("business_id", "mode", "helpful", "question", "comment"), ("business_id", "mode", "helpful", "question"))

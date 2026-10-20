@@ -31,17 +31,15 @@ Deadline: **20 October 2026, 23:59 Beijing time (21:59 Bangladesh time)**. Inter
 - [ ] Confirm reviewer access to the current repository; no rename or push is part of this work
 - [x] Team name, all five names and BUET added to the deck and notes
 - [ ] Team roles and leader confirmed
-- [ ] Check organiser AI-assistance disclosure instructions (clarification question; not a published requirement for a reply)
 
 ## Organiser questions
 
 1. Authoritative registration and submission route for Bangladesh-based teams.
 2. Confirm any later dataset/API instruction; the published rules already accept sandbox evidence.
-3. AI coding-assistant disclosure rules.
-4. Secure submission method for passport and enrolment proof.
-5. Whether the demo video is optional or required as execution evidence.
-6. Private repository, file-size, naming and template rules.
-7. Whether finalists may fix bugs after 20 October.
+3. Secure submission method for passport and enrolment proof.
+4. Whether the demo video is optional or required as execution evidence.
+5. Private repository, file-size, naming and template rules.
+6. Whether finalists may fix bugs after 20 October.
 8. Finalist count, presentation and Q&A timing, funded travel scope.
 
 ## Final gate

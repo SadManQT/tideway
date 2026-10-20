@@ -1,0 +1,924 @@
+{
+  "synthetic": true,
+  "label": "SYNTHETIC PORTFOLIO: fictional SMEs generated from a seed. Not tenant data, not a credit decision.",
+  "generated_at_utc": "2026-10-20T10:57:23Z",
+  "environment": {
+    "python": "3.11.9",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "processor": "AMD64 Family 23 Model 113 Stepping 0, AuthenticAMD"
+  },
+  "config": {
+    "version": "tideway-portfolio-radar-v1",
+    "default_seed": 2026,
+    "smes": 60,
+    "runs_per_sme": 400,
+    "opening_date": "2026-10-01",
+    "horizon_days": 60,
+    "thresholds": {
+      "amber_at_least": 0.15,
+      "at_risk_window_probability": 0.15,
+      "at_risk_windows_days": [
+        14,
+        30
+      ],
+      "red_at_least": 0.5
+    },
+    "markets": [
+      {
+        "country": "BD",
+        "currency": "BDT"
+      },
+      {
+        "country": "CN",
+        "currency": "CNY"
+      },
+      {
+        "country": "SG",
+        "currency": "SGD"
+      },
+      {
+        "country": "IN",
+        "currency": "INR"
+      }
+    ],
+    "sectors": [
+      "services",
+      "wholesale",
+      "retail",
+      "manufacturing",
+      "print"
+    ],
+    "max_shock_days": 60,
+    "unexpected_expense_chance_in_realised_futures": 0.15
+  },
+  "timings": {
+    "repeats": 3,
+    "smes": 60,
+    "runs_per_sme": 400,
+    "target": "whole radar call under 3,000 ms on the build PC",
+    "cold_baseline_radar": {
+      "median_ms": 1621.9,
+      "max_ms": 1646.4,
+      "samples_ms": [
+        1621.9,
+        1455.3,
+        1646.4
+      ]
+    },
+    "cold_radar_with_all_sector_shock_including_baseline": {
+      "median_ms": 2615.4,
+      "max_ms": 2661.8,
+      "samples_ms": [
+        2483.3,
+        2615.4,
+        2661.8
+      ]
+    },
+    "sector_shock_with_baseline_cached": {
+      "median_ms": 190.1,
+      "max_ms": 199.9,
+      "samples_ms": [
+        190.1,
+        199.9,
+        186.7
+      ]
+    },
+    "shock_with_baseline_cached": {
+      "median_ms": 847.4,
+      "max_ms": 900.3,
+      "samples_ms": [
+        847.4,
+        813.4,
+        900.3
+      ]
+    },
+    "repeated_identical_call_cached": {
+      "median_ms": 0.8,
+      "max_ms": 0.9,
+      "samples_ms": [
+        0.9,
+        0.6,
+        0.8
+      ]
+    }
+  },
+  "portfolio_summary": {
+    "at_risk_within_14d": 9,
+    "at_risk_within_30d": 17,
+    "currency_tier": {
+      "BDT": {
+        "amber": 2,
+        "green": 17,
+        "red": 2
+      },
+      "CNY": {
+        "amber": 3,
+        "green": 4,
+        "red": 4
+      },
+      "INR": {
+        "amber": 3,
+        "green": 8,
+        "red": 4
+      },
+      "SGD": {
+        "amber": 2,
+        "green": 7,
+        "red": 4
+      }
+    },
+    "expected_shortfall_by_currency_minor": {
+      "BDT": 252151444,
+      "CNY": 6098882,
+      "INR": 136476900,
+      "SGD": 2528017
+    },
+    "mean_breach_probability": 0.2689,
+    "sector_tier": {
+      "manufacturing": {
+        "amber": 1,
+        "green": 13,
+        "red": 3
+      },
+      "print": {
+        "amber": 3,
+        "green": 4,
+        "red": 3
+      },
+      "retail": {
+        "amber": 2,
+        "green": 8,
+        "red": 3
+      },
+      "services": {
+        "amber": 3,
+        "green": 6,
+        "red": 3
+      },
+      "wholesale": {
+        "amber": 1,
+        "green": 5,
+        "red": 2
+      }
+    },
+    "smes": 60,
+    "tiers": {
+      "amber": 10,
+      "green": 36,
+      "red": 14
+    }
+  },
+  "top_10": [
+    {
+      "rank": 1,
+      "sme_id": "pf-sme-030",
+      "name": "Indigo Cleaning Co",
+      "sector": "services",
+      "currency": "SGD",
+      "breach_probability": 1.0,
+      "p_breach_14d": 0.06,
+      "days_to_breach": 24,
+      "tier": "red",
+      "driver": "Scheduled outflows",
+      "intervention": "rm_review_structural"
+    },
+    {
+      "rank": 2,
+      "sme_id": "pf-sme-020",
+      "name": "Jade Lane Works",
+      "sector": "manufacturing",
+      "currency": "BDT",
+      "breach_probability": 1.0,
+      "p_breach_14d": 0.9525,
+      "days_to_breach": 4,
+      "tier": "red",
+      "driver": "Scheduled outflows",
+      "intervention": "rm_call_urgent"
+    },
+    {
+      "rank": 3,
+      "sme_id": "pf-sme-044",
+      "name": "Banyan Works",
+      "sector": "manufacturing",
+      "currency": "BDT",
+      "breach_probability": 1.0,
+      "p_breach_14d": 1.0,
+      "days_to_breach": 9,
+      "tier": "red",
+      "driver": "Scheduled outflows",
+      "intervention": "rm_call_urgent"
+    },
+    {
+      "rank": 4,
+      "sme_id": "pf-sme-004",
+      "name": "Tamarind Press",
+      "sector": "print",
+      "currency": "INR",
+      "breach_probability": 1.0,
+      "p_breach_14d": 0.0,
+      "days_to_breach": 24,
+      "tier": "red",
+      "driver": "Scheduled outflows",
+      "intervention": "rm_review_structural"
+    },
+    {
+      "rank": 5,
+      "sme_id": "pf-sme-048",
+      "name": "Kampong Retail",
+      "sector": "retail",
+      "currency": "INR",
+      "breach_probability": 1.0,
+      "p_breach_14d": 0.0,
+      "days_to_breach": 55,
+      "tier": "red",
+      "driver": "Scheduled outflows",
+      "intervention": "rm_review_structural"
+    },
+    {
+      "rank": 6,
+      "sme_id": "pf-sme-002",
+      "name": "Indigo Works",
+      "sector": "manufacturing",
+      "currency": "CNY",
+      "breach_probability": 0.9975,
+      "p_breach_14d": 0.0,
+      "days_to_breach": 60,
+      "tier": "red",
+      "driver": "Quayside Ports",
+      "intervention": "mock_invoice_financing"
+    },
+    {
+      "rank": 7,
+      "sme_id": "pf-sme-025",
+      "name": "Surma Cleaning Co",
+      "sector": "services",
+      "currency": "INR",
+      "breach_probability": 0.905,
+      "p_breach_14d": 0.5275,
+      "days_to_breach": 4,
+      "tier": "red",
+      "driver": "Juniper Pharma",
+      "intervention": "rm_call"
+    },
+    {
+      "rank": 8,
+      "sme_id": "pf-sme-059",
+      "name": "Lotusbridge Trading",
+      "sector": "wholesale",
+      "currency": "CNY",
+      "breach_probability": 0.89,
+      "p_breach_14d": 0.57,
+      "days_to_breach": 4,
+      "tier": "red",
+      "driver": "Maple Garments",
+      "intervention": "rm_call"
+    },
+    {
+      "rank": 9,
+      "sme_id": "pf-sme-012",
+      "name": "Indigo Consulting",
+      "sector": "services",
+      "currency": "CNY",
+      "breach_probability": 0.8825,
+      "p_breach_14d": 0.0,
+      "days_to_breach": 55,
+      "tier": "red",
+      "driver": "Willow Agro",
+      "intervention": "mock_invoice_financing"
+    },
+    {
+      "rank": 10,
+      "sme_id": "pf-sme-041",
+      "name": "Banyan Packaging Print",
+      "sector": "print",
+      "currency": "SGD",
+      "breach_probability": 0.825,
+      "p_breach_14d": 0.745,
+      "days_to_breach": 5,
+      "tier": "red",
+      "driver": "Evergreen Schools",
+      "intervention": "rm_call"
+    }
+  ],
+  "shock_migration": [
+    {
+      "shock": {
+        "sector": "all",
+        "customer_delay_days": 5
+      },
+      "migration_before_to_after": {
+        "amber": {
+          "amber": 2,
+          "green": 0,
+          "red": 8
+        },
+        "green": {
+          "amber": 8,
+          "green": 27,
+          "red": 1
+        },
+        "red": {
+          "amber": 0,
+          "green": 0,
+          "red": 14
+        }
+      },
+      "newly_at_risk": 17,
+      "newly_at_risk_ids": [
+        "pf-sme-032",
+        "pf-sme-060",
+        "pf-sme-050",
+        "pf-sme-046",
+        "pf-sme-049",
+        "pf-sme-052",
+        "pf-sme-037",
+        "pf-sme-026",
+        "pf-sme-043",
+        "pf-sme-029",
+        "pf-sme-005",
+        "pf-sme-058",
+        "pf-sme-040",
+        "pf-sme-033",
+        "pf-sme-045",
+        "pf-sme-009",
+        "pf-sme-014"
+      ],
+      "tiers_before": {
+        "amber": 10,
+        "green": 36,
+        "red": 14
+      },
+      "tiers_after": {
+        "amber": 10,
+        "green": 27,
+        "red": 23
+      },
+      "mean_breach_probability_before": 0.2689,
+      "mean_breach_probability_after": 0.3885,
+      "expected_shortfall_after_by_currency_minor": {
+        "BDT": 356702568,
+        "CNY": 12197380,
+        "INR": 213844702,
+        "SGD": 3298719
+      }
+    },
+    {
+      "shock": {
+        "sector": "all",
+        "customer_delay_days": 15
+      },
+      "migration_before_to_after": {
+        "amber": {
+          "amber": 0,
+          "green": 0,
+          "red": 10
+        },
+        "green": {
+          "amber": 9,
+          "green": 12,
+          "red": 15
+        },
+        "red": {
+          "amber": 0,
+          "green": 0,
+          "red": 14
+        }
+      },
+      "newly_at_risk": 34,
+      "newly_at_risk_ids": [
+        "pf-sme-005",
+        "pf-sme-009",
+        "pf-sme-010",
+        "pf-sme-011",
+        "pf-sme-016",
+        "pf-sme-029",
+        "pf-sme-032",
+        "pf-sme-033",
+        "pf-sme-036",
+        "pf-sme-037",
+        "pf-sme-043",
+        "pf-sme-046",
+        "pf-sme-050",
+        "pf-sme-052",
+        "pf-sme-058",
+        "pf-sme-060",
+        "pf-sme-049",
+        "pf-sme-028",
+        "pf-sme-045",
+        "pf-sme-026",
+        "pf-sme-053",
+        "pf-sme-018",
+        "pf-sme-006",
+        "pf-sme-039",
+        "pf-sme-035",
+        "pf-sme-008",
+        "pf-sme-040",
+        "pf-sme-014",
+        "pf-sme-001",
+        "pf-sme-021",
+        "pf-sme-031",
+        "pf-sme-003",
+        "pf-sme-056",
+        "pf-sme-042"
+      ],
+      "tiers_before": {
+        "amber": 10,
+        "green": 36,
+        "red": 14
+      },
+      "tiers_after": {
+        "amber": 9,
+        "green": 12,
+        "red": 39
+      },
+      "mean_breach_probability_before": 0.2689,
+      "mean_breach_probability_after": 0.682,
+      "expected_shortfall_after_by_currency_minor": {
+        "BDT": 733194469,
+        "CNY": 29344352,
+        "INR": 450877157,
+        "SGD": 7043042
+      }
+    },
+    {
+      "shock": {
+        "sector": "all",
+        "customer_delay_days": 30
+      },
+      "migration_before_to_after": {
+        "amber": {
+          "amber": 0,
+          "green": 0,
+          "red": 10
+        },
+        "green": {
+          "amber": 0,
+          "green": 2,
+          "red": 34
+        },
+        "red": {
+          "amber": 0,
+          "green": 0,
+          "red": 14
+        }
+      },
+      "newly_at_risk": 44,
+      "newly_at_risk_ids": [
+        "pf-sme-001",
+        "pf-sme-003",
+        "pf-sme-005",
+        "pf-sme-006",
+        "pf-sme-008",
+        "pf-sme-009",
+        "pf-sme-010",
+        "pf-sme-011",
+        "pf-sme-013",
+        "pf-sme-014",
+        "pf-sme-016",
+        "pf-sme-018",
+        "pf-sme-021",
+        "pf-sme-022",
+        "pf-sme-023",
+        "pf-sme-024",
+        "pf-sme-026",
+        "pf-sme-028",
+        "pf-sme-029",
+        "pf-sme-031",
+        "pf-sme-032",
+        "pf-sme-033",
+        "pf-sme-035",
+        "pf-sme-036",
+        "pf-sme-037",
+        "pf-sme-039",
+        "pf-sme-040",
+        "pf-sme-043",
+        "pf-sme-045",
+        "pf-sme-046",
+        "pf-sme-049",
+        "pf-sme-050",
+        "pf-sme-051",
+        "pf-sme-052",
+        "pf-sme-053",
+        "pf-sme-054",
+        "pf-sme-058",
+        "pf-sme-060",
+        "pf-sme-056",
+        "pf-sme-015",
+        "pf-sme-055",
+        "pf-sme-038",
+        "pf-sme-042",
+        "pf-sme-034"
+      ],
+      "tiers_before": {
+        "amber": 10,
+        "green": 36,
+        "red": 14
+      },
+      "tiers_after": {
+        "amber": 0,
+        "green": 2,
+        "red": 58
+      },
+      "mean_breach_probability_before": 0.2689,
+      "mean_breach_probability_after": 0.9501,
+      "expected_shortfall_after_by_currency_minor": {
+        "BDT": 1897342067,
+        "CNY": 56982131,
+        "INR": 867117059,
+        "SGD": 15555597
+      }
+    },
+    {
+      "shock": {
+        "sector": "retail",
+        "customer_delay_days": 30
+      },
+      "migration_before_to_after": {
+        "amber": {
+          "amber": 8,
+          "green": 0,
+          "red": 2
+        },
+        "green": {
+          "amber": 0,
+          "green": 29,
+          "red": 7
+        },
+        "red": {
+          "amber": 0,
+          "green": 0,
+          "red": 14
+        }
+      },
+      "newly_at_risk": 9,
+      "newly_at_risk_ids": [
+        "pf-sme-006",
+        "pf-sme-011",
+        "pf-sme-018",
+        "pf-sme-023",
+        "pf-sme-033",
+        "pf-sme-052",
+        "pf-sme-060",
+        "pf-sme-015",
+        "pf-sme-038"
+      ],
+      "tiers_before": {
+        "amber": 10,
+        "green": 36,
+        "red": 14
+      },
+      "tiers_after": {
+        "amber": 8,
+        "green": 29,
+        "red": 23
+      },
+      "mean_breach_probability_before": 0.2689,
+      "mean_breach_probability_after": 0.4175,
+      "expected_shortfall_after_by_currency_minor": {
+        "BDT": 493651047,
+        "CNY": 17613532,
+        "INR": 159524630,
+        "SGD": 5485291
+      }
+    },
+    {
+      "shock": {
+        "sector": "manufacturing",
+        "customer_delay_days": 30
+      },
+      "migration_before_to_after": {
+        "amber": {
+          "amber": 9,
+          "green": 0,
+          "red": 1
+        },
+        "green": {
+          "amber": 0,
+          "green": 23,
+          "red": 13
+        },
+        "red": {
+          "amber": 0,
+          "green": 0,
+          "red": 14
+        }
+      },
+      "newly_at_risk": 14,
+      "newly_at_risk_ids": [
+        "pf-sme-009",
+        "pf-sme-014",
+        "pf-sme-021",
+        "pf-sme-024",
+        "pf-sme-028",
+        "pf-sme-029",
+        "pf-sme-031",
+        "pf-sme-035",
+        "pf-sme-036",
+        "pf-sme-049",
+        "pf-sme-051",
+        "pf-sme-054",
+        "pf-sme-056",
+        "pf-sme-042"
+      ],
+      "tiers_before": {
+        "amber": 10,
+        "green": 36,
+        "red": 14
+      },
+      "tiers_after": {
+        "amber": 9,
+        "green": 23,
+        "red": 28
+      },
+      "mean_breach_probability_before": 0.2689,
+      "mean_breach_probability_after": 0.4843,
+      "expected_shortfall_after_by_currency_minor": {
+        "BDT": 893997705,
+        "CNY": 12280346,
+        "INR": 320760975,
+        "SGD": 8402101
+      }
+    }
+  ],
+  "monte_carlo_run_stability": {
+    "default_runs": 400,
+    "reference_runs": 2000,
+    "mean_abs_probability_difference": 0.0085,
+    "max_abs_probability_difference": 0.0445,
+    "tier_agreement": 0.9833,
+    "tiers_default_runs": {
+      "amber": 10,
+      "green": 36,
+      "red": 14
+    },
+    "tiers_reference_runs": {
+      "amber": 9,
+      "green": 36,
+      "red": 15
+    }
+  },
+  "backtest_default_portfolio": {
+    "baseline_cash_to_payroll": {
+      "auc": 0.7275
+    },
+    "baseline_scheduled_projection": {
+      "auc": 0.9008,
+      "brier": 0.2167,
+      "flagged": 5,
+      "red_precision": 1.0,
+      "red_recall": 0.2778,
+      "true_positives": 5
+    },
+    "breached": 18,
+    "brier_climatology": 0.21,
+    "conditioned_draw_fallbacks": 0,
+    "n": 60,
+    "outcome_seed": 2130989295,
+    "prevalence": 0.3,
+    "radar": {
+      "auc": 0.9511,
+      "brier": 0.0813,
+      "flagged": 14,
+      "red_precision": 0.8571,
+      "red_recall": 0.6667,
+      "true_positives": 12
+    }
+  },
+  "backtest_pooled": {
+    "portfolio_seeds": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "smes": 600,
+    "method": "For every SME one realised 60-day future is drawn from the generative payment process (customer personality, invoice size, month-end, terms, trend and tail delays) with an independent seed, plus a 15% chance of an unexpected expense the radar cannot see. A breach is any day below the reserve floor. The radar's breach probability is scored with ROC AUC and Brier score and its red tier with precision/recall, against (a) the deterministic scheduled projection (every invoice paid on its due date; score = reserve minus scheduled minimum cash, per month of payroll; red = scheduled breach) and (b) the opening cash-to-payroll ratio. Synthetic, in-distribution for TidePay: not real-world validation.",
+    "metrics": {
+      "n": 600,
+      "breached": 146,
+      "prevalence": 0.2433,
+      "radar": {
+        "auc": 0.971,
+        "brier": 0.0574,
+        "flagged": 104,
+        "true_positives": 101,
+        "red_precision": 0.9712,
+        "red_recall": 0.6918
+      },
+      "baseline_scheduled_projection": {
+        "auc": 0.9281,
+        "brier": 0.1433,
+        "flagged": 60,
+        "true_positives": 60,
+        "red_precision": 1.0,
+        "red_recall": 0.411
+      },
+      "baseline_cash_to_payroll": {
+        "auc": 0.7834
+      },
+      "brier_climatology": 0.1841,
+      "conditioned_draw_fallbacks": 8
+    },
+    "bootstrap": {
+      "resamples_used": 1000,
+      "seed": 20261020,
+      "percentile_95_intervals": {
+        "radar_auc": {
+          "low_2_5": 0.954,
+          "high_97_5": 0.984
+        },
+        "scheduled_auc": {
+          "low_2_5": 0.9034,
+          "high_97_5": 0.9498
+        },
+        "cash_ratio_auc": {
+          "low_2_5": 0.7445,
+          "high_97_5": 0.8205
+        },
+        "auc_gain_vs_scheduled": {
+          "low_2_5": 0.0235,
+          "high_97_5": 0.0628
+        },
+        "radar_brier": {
+          "low_2_5": 0.0439,
+          "high_97_5": 0.0714
+        },
+        "scheduled_brier": {
+          "low_2_5": 0.1167,
+          "high_97_5": 0.1717
+        }
+      }
+    },
+    "calibration_bins": [
+      {
+        "predicted_range": [
+          0,
+          0.05
+        ],
+        "n": 375,
+        "mean_predicted": 0.0065,
+        "observed_breach_rate": 0.016
+      },
+      {
+        "predicted_range": [
+          0.05,
+          0.15
+        ],
+        "n": 61,
+        "mean_predicted": 0.0887,
+        "observed_breach_rate": 0.1967
+      },
+      {
+        "predicted_range": [
+          0.15,
+          0.5
+        ],
+        "n": 60,
+        "mean_predicted": 0.3083,
+        "observed_breach_rate": 0.45
+      },
+      {
+        "predicted_range": [
+          0.5,
+          0.9
+        ],
+        "n": 32,
+        "mean_predicted": 0.6941,
+        "observed_breach_rate": 0.9062
+      },
+      {
+        "predicted_range": [
+          0.9,
+          1.0
+        ],
+        "n": 72,
+        "mean_predicted": 0.9972,
+        "observed_breach_rate": 1.0
+      }
+    ],
+    "per_portfolio": [
+      {
+        "seed": 1,
+        "outcome_seed": 1584688534,
+        "n": 60,
+        "breached": 15,
+        "radar_auc": 0.9704,
+        "scheduled_auc": 0.9674,
+        "cash_ratio_auc": 0.7763,
+        "radar_brier": 0.0727
+      },
+      {
+        "seed": 2,
+        "outcome_seed": 1453279327,
+        "n": 60,
+        "breached": 13,
+        "radar_auc": 0.9787,
+        "scheduled_auc": 0.874,
+        "cash_ratio_auc": 0.8069,
+        "radar_brier": 0.0605
+      },
+      {
+        "seed": 3,
+        "outcome_seed": 1436874645,
+        "n": 60,
+        "breached": 14,
+        "radar_auc": 0.979,
+        "scheduled_auc": 0.9581,
+        "cash_ratio_auc": 0.7562,
+        "radar_brier": 0.0419
+      },
+      {
+        "seed": 4,
+        "outcome_seed": 706021262,
+        "n": 60,
+        "breached": 13,
+        "radar_auc": 0.9689,
+        "scheduled_auc": 0.9051,
+        "cash_ratio_auc": 0.7267,
+        "radar_brier": 0.0527
+      },
+      {
+        "seed": 5,
+        "outcome_seed": 1079355926,
+        "n": 60,
+        "breached": 20,
+        "radar_auc": 0.9675,
+        "scheduled_auc": 0.8988,
+        "cash_ratio_auc": 0.7075,
+        "radar_brier": 0.0902
+      },
+      {
+        "seed": 6,
+        "outcome_seed": 2119518064,
+        "n": 60,
+        "breached": 12,
+        "radar_auc": 0.9913,
+        "scheduled_auc": 0.9219,
+        "cash_ratio_auc": 0.8281,
+        "radar_brier": 0.0383
+      },
+      {
+        "seed": 7,
+        "outcome_seed": 1886760229,
+        "n": 60,
+        "breached": 10,
+        "radar_auc": 0.972,
+        "scheduled_auc": 0.926,
+        "cash_ratio_auc": 0.786,
+        "radar_brier": 0.0424
+      },
+      {
+        "seed": 8,
+        "outcome_seed": 1903798505,
+        "n": 60,
+        "breached": 20,
+        "radar_auc": 0.9475,
+        "scheduled_auc": 0.9337,
+        "cash_ratio_auc": 0.7975,
+        "radar_brier": 0.0804
+      },
+      {
+        "seed": 9,
+        "outcome_seed": 1412784670,
+        "n": 60,
+        "breached": 14,
+        "radar_auc": 1.0,
+        "scheduled_auc": 0.9736,
+        "cash_ratio_auc": 0.8137,
+        "radar_brier": 0.0219
+      },
+      {
+        "seed": 10,
+        "outcome_seed": 2099524119,
+        "n": 60,
+        "breached": 15,
+        "radar_auc": 0.9563,
+        "scheduled_auc": 0.923,
+        "cash_ratio_auc": 0.8459,
+        "radar_brier": 0.0726
+      }
+    ],
+    "seconds": 16.3
+  },
+  "security": {
+    "credit_decision": false,
+    "executable_actions": false,
+    "store_access": false,
+    "tenant_data_read": false
+  },
+  "limits": [
+    "Synthetic portfolio only; not validated on real SME or lender data.",
+    "Not a credit decision or a credit score; interventions are advisory text only.",
+    "Only customer payment timing is uncertain in the radar; costs and new sales are fixed assumptions.",
+    "Ledgers include confirmed billing up to day 30; later sales are not modelled, so late-horizon risk is conservative.",
+    "Expected shortfall totals are per currency and never summed across currencies.",
+    "Realised futures come from the same generative family TidePay was trained on (in-distribution), which flatters the radar relative to real data.",
+    "The scheduled-projection baseline ignores lateness by construction; a stronger baseline (e.g. a deterministic TidePay 'likely' projection) was not evaluated."
+  ]
+}

@@ -39,4 +39,4 @@ No finite test suite establishes an error-free system or guarantees a contest re
 
 ## Personal preparation separation
 
-The team's guide and viva bank now live under `personal-prep/project-guide/` and open directly as a local HTML file. Product landing, sidebar, footer and Quick start links were removed. The old guide URLs and direct preparation paths return 404 for both anonymous and signed-in users. Guide assets and screenshots are excluded from submission ZIPs and Docker images. Current privacy checks and product browser evidence are recorded in `evidence/guide-isolation/`; older guide-related observations describe previous source versions.
+The team's study guide is kept outside the product and the repository. Product landing, sidebar, footer and Quick start links were removed. The old guide URLs and direct preparation paths return 404 for both anonymous and signed-in users. Guide assets and screenshots are excluded from submission ZIPs and Docker images. Current privacy checks and product browser evidence are recorded in `evidence/guide-isolation/`; older guide-related observations describe previous source versions.
